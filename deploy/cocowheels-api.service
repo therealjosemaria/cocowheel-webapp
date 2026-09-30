@@ -1,0 +1,22 @@
+[Unit]
+Description=Cocowheels authoritative API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jmos0905
+WorkingDirectory=/home/jmos0905/COCOWHEEL
+EnvironmentFile=/home/jmos0905/COCOWHEEL/.env
+ExecStart=/usr/bin/npm run start:api
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/home/jmos0905/COCOWHEEL/data
+
+[Install]
+WantedBy=multi-user.target
