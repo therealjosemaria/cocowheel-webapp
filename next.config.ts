@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const apiTarget = process.env.COCOWHEELS_API_PROXY_TARGET;
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
   async rewrites() {
     if (!apiTarget) return [];
     return [

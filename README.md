@@ -12,19 +12,19 @@ The first local vertical slice is implemented and verified. It is not externally
 
 ## Local development
 
-Use two terminals:
-
 ```bash
+cd /home/jmos0905/COCOWHEEL
 npm install
-npm run db:init
-PORT=5060 npm run start:api
+npm run dev
 ```
 
-```bash
-COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:5060 npm run dev
-```
+This one command starts the local API and web client together, then stops both when you press `Ctrl+C`. The web client calls same-origin `/api/*`; Next.js forwards those requests to the local authoritative API without exposing its target in browser configuration.
 
-The web client calls same-origin `/api/*`; Next.js forwards those requests to the API target without exposing it in browser configuration.
+## Vercel frontend preview
+
+The frontend can be deployed independently before the Pi API is public. In Vercel, import `therealjosemaria/cocowheel-webapp`, leave the root directory at the repository root, and use the detected Next.js preset. Do not set `COCOWHEELS_API_PROXY_TARGET` for this frontend-only preview: the page will load safely, while server-dependent ride actions remain unavailable until the dedicated API tunnel is configured.
+
+Connect the `initial-mvp` branch for a preview deployment. Keep `main` as the future production branch. Once the permanent Cocowheels API tunnel is ready, set `COCOWHEELS_API_PROXY_TARGET` in Vercel as a server-side environment variable to that HTTPS hostname. Never expose it as `NEXT_PUBLIC_*`.
 
 ## Verification
 
