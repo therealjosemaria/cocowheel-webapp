@@ -53,15 +53,11 @@ const humanError = (error: unknown) => {
 };
 
 export default function HomeClient() {
-  const [screen, setScreen] = useState<
-    "HOME" | "DRIVER" | "RIDER" | "RESULTS" | "HISTORY"
-  >("HOME");
+  const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER" | "RESULTS">(
+    "HOME",
+  );
   const [role, setRole] = useState<Role | null>(null);
   const [ride, setRide] = useState<Ride | null>(null);
-  const [history, setHistory] = useState<{
-    driver: Ride[];
-    rider: Ride[];
-  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
@@ -302,24 +298,6 @@ export default function HomeClient() {
       setBusy(false);
     }
   }
-  async function loadHistory() {
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await cocowheelsApi<{ driver: Ride[]; rider: Ride[] }>(
-        "/api/history",
-      );
-      setHistory(result);
-      setScreen("HISTORY");
-    } catch (reason) {
-      if (reason instanceof ApiError && reason.status === 401) {
-        setHistory({ driver: [], rider: [] });
-        setScreen("HISTORY");
-      } else setError(humanError(reason));
-    } finally {
-      setBusy(false);
-    }
-  }
   async function action(path: string, body?: unknown) {
     if (!ride) return;
     setBusy(true);
@@ -384,7 +362,7 @@ export default function HomeClient() {
       {ride ? (
         status
       ) : screen === "HOME" ? (
-        <Home onBegin={begin} onHistory={() => void loadHistory()} />
+        <Home onBegin={begin} />
       ) : screen === "DRIVER" ? (
         <DriverForm
           pins={driverPins}
@@ -417,8 +395,6 @@ export default function HomeClient() {
           submit={search}
           busy={busy}
         />
-      ) : screen === "HISTORY" ? (
-        <History history={history} back={() => setScreen("HOME")} />
       ) : (
         <Results
           candidates={candidates}
@@ -435,40 +411,15 @@ export default function HomeClient() {
   );
 }
 
-function Home({
-  onBegin,
-  onHistory,
-}: {
-  onBegin: (role: Role) => void;
-  onHistory: () => void;
-}) {
+function Home({ onBegin }: { onBegin: (role: Role) => void }) {
   return (
-    <div className="hero">
-      <p className="eyebrow">Planned rides, simply shared</p>
-      <h1>Where are you headed?</h1>
-      <p className="intro">
-        Choose a role. No account, bargaining, or hidden fare.
-      </p>
-      <button className="role-card driving" onClick={() => onBegin("DRIVER")}>
-        <span className="role-icon">↗</span>
-        <span>
-          <strong>I’m driving</strong>
-          <small>Publish one planned ride at a fixed price.</small>
-        </span>
+    <div className="role-choice">
+      <button className="role-card" onClick={() => onBegin("DRIVER")}>
+        I’m driving
       </button>
-      <button className="role-card riding" onClick={() => onBegin("RIDER")}>
-        <span className="role-icon">●</span>
-        <span>
-          <strong>I need a ride</strong>
-          <small>Find one compatible planned journey.</small>
-        </span>
+      <button className="role-card" onClick={() => onBegin("RIDER")}>
+        I need a ride
       </button>
-      <button className="text-button history-button" onClick={onHistory}>
-        View private history
-      </button>
-      <p className="quiet-note">
-        You can have one open ride or request at a time.
-      </p>
     </div>
   );
 }
@@ -774,58 +725,6 @@ function Results({
               : `REQUEST TO JOIN · A$${active?.priceAud ?? ""}`}
           </button>
         </>
-      )}
-    </div>
-  );
-}
-function History({
-  history,
-  back,
-}: {
-  history: { driver: Ride[]; rider: Ride[] } | null;
-  back: () => void;
-}) {
-  const records = [
-    ...(history?.driver ?? []).map((ride) => ({ role: "Driver", ride })),
-    ...(history?.rider ?? []).map((ride) => ({ role: "Rider", ride })),
-  ];
-  return (
-    <div className="results">
-      <button className="text-button" onClick={back}>
-        ← Back home
-      </button>
-      <p className="eyebrow">Private guest history</p>
-      <h1>Completed co-rides</h1>
-      {records.length === 0 ? (
-        <div className="empty">
-          <h2>Nothing completed here yet</h2>
-          <p>Completed records stay private to this guest session.</p>
-        </div>
-      ) : (
-        <div className="candidate-list">
-          {records.map(({ role, ride }) => (
-            <article
-              className="candidate history-record"
-              key={`${role}-${ride.rideId}`}
-            >
-              <span>
-                <strong>
-                  {role} · {ride.driverAlias}
-                </strong>
-                <small>
-                  {ride.completedAt
-                    ? prettyTime(ride.completedAt)
-                    : "Completed"}{" "}
-                  ·{" "}
-                  {ride.paymentHandoffMethod === "PAYID"
-                    ? "PayID handoff"
-                    : "Cash handoff"}
-                </small>
-              </span>
-              <b>A${ride.priceAud}</b>
-            </article>
-          ))}
-        </div>
       )}
     </div>
   );

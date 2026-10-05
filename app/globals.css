@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #073b4c;
-  --ocean: #118ab2;
-  --coral: #ff6b35;
-  --sun: #ffd166;
-  --mint: #dff4e8;
-  --paper: #fffdf8;
-  --line: #dce6e7;
-  --muted: #5b6d73;
+  --ink: #111827;
+  --ocean: #111827;
+  --coral: #111827;
+  --sun: #f8fafc;
+  --mint: #f8fafc;
+  --paper: #ffffff;
+  --line: #e2e8f0;
+  --muted: #64748b;
   --danger: #b42318;
 }
 * {
@@ -17,7 +17,7 @@
 body {
   margin: 0;
   color: var(--ink);
-  background: linear-gradient(150deg, #f7fbfb 0%, #fff8ed 62%, #fffdf8 100%);
+  background: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
 }
 button,
@@ -40,41 +40,17 @@ button:disabled {
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 18px 0 14px;
+  padding: 22px 0 18px;
 }
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   color: var(--ink);
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-decoration: none;
 }
-.brand-mark {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  color: white;
-  background: var(--coral);
-  border-radius: 50% 50% 50% 8px;
-  transform: rotate(-20deg);
-}
-.guest-label {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
 .page-content {
-  padding: 22px 0 34px;
-}
-.hero {
-  padding: clamp(42px, 11vw, 80px) 0 24px;
+  padding: 0 0 34px;
 }
 h1 {
   max-width: 10ch;
@@ -105,64 +81,28 @@ p {
   color: var(--muted);
   font-size: 1.04rem;
 }
+.role-choice {
+  display: grid;
+  gap: 10px;
+  padding: clamp(88px, 25vh, 190px) 0 24px;
+}
 .role-card {
   display: flex;
   width: 100%;
-  min-height: 112px;
+  min-height: 64px;
   align-items: center;
-  gap: 18px;
-  margin: 12px 0;
-  padding: 20px;
+  margin: 0;
+  padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 12px;
   color: var(--ink);
   text-align: left;
-  background: var(--paper);
-  box-shadow: 0 4px 20px rgb(7 59 76 / 0.05);
+  background: #ffffff;
+  font-weight: 650;
 }
 .role-card:active,
 .candidate:active {
   transform: scale(0.99);
-}
-.role-card.driving {
-  border-color: #a5d9eb;
-  background: #f1fbff;
-}
-.role-card.riding {
-  border-color: #ffd2bd;
-  background: #fff6ef;
-}
-.role-icon {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  flex: none;
-  place-items: center;
-  border-radius: 50%;
-  color: white;
-  font-size: 1.5rem;
-  background: var(--ocean);
-}
-.riding .role-icon {
-  background: var(--coral);
-}
-.role-card strong,
-.role-card small {
-  display: block;
-}
-.role-card strong {
-  margin-bottom: 5px;
-  font-size: 1.15rem;
-}
-.role-card small,
-.quiet-note,
-footer {
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-.quiet-note {
-  margin: 26px 4px;
-  text-align: center;
 }
 .form-page,
 .results,
@@ -511,10 +451,6 @@ footer {
 .complete-card strong {
   display: block;
   margin: 5px 0;
-}
-footer {
-  padding: 18px 0;
-  text-align: center;
 }
 @media (min-width: 700px) {
   .app-shell {

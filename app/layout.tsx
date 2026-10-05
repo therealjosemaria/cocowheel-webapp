@@ -16,13 +16,10 @@ export default function RootLayout({
         <main className="app-shell">
           <header className="topbar">
             <Link href="/" className="brand">
-              <span className="brand-mark">C</span>
-              <span>Cocowheels</span>
+              COCO WHEELS
             </Link>
-            <span className="guest-label">Guest-only rides</span>
           </header>
           {children}
-          <footer>Private by design · No accounts · Fixed prices</footer>
         </main>
       </body>
     </html>
