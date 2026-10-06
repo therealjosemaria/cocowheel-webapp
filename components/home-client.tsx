@@ -27,7 +27,7 @@ const prettyTime = (value: string) =>
   }).format(new Date(value));
 const locationText = (pin?: Pin) =>
   pin
-    ? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}${pin.label ? ` (${pin.label})` : ""}`
+    ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
     : "Place a pin on the map";
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
