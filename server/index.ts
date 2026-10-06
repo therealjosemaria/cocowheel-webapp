@@ -36,6 +36,24 @@ const placeLookupBuckets = new Map<
   { count: number; resetAt: number }
 >();
 
+export function assertRuntimeConfiguration(environment = process.env) {
+  if (environment.NODE_ENV !== "production") return;
+  const encryptionKey = environment.COCOWHEELS_CODE_ENCRYPTION_KEY;
+  if (!encryptionKey)
+    throw new Error("COCOWHEELS_CODE_ENCRYPTION_KEY_REQUIRED");
+  if (Buffer.from(encryptionKey, "base64").length !== 32)
+    throw new Error("INVALID_CODE_ENCRYPTION_KEY");
+  if (!environment.COCOWHEELS_DB_PATH)
+    throw new Error("COCOWHEELS_DB_PATH_REQUIRED");
+  if (
+    !environment.COCOWHEELS_FRONTEND_ORIGINS &&
+    !environment.COCOWHEELS_FRONTEND_ORIGIN
+  )
+    throw new Error("COCOWHEELS_FRONTEND_ORIGINS_REQUIRED");
+  if (!environment.COCOWHEELS_PUBLIC_ORIGIN)
+    throw new Error("COCOWHEELS_PUBLIC_ORIGIN_REQUIRED");
+}
+
 function configuredOrigins() {
   const configured =
     process.env.COCOWHEELS_FRONTEND_ORIGINS ??
@@ -175,6 +193,7 @@ function pathParts(url: string | undefined) {
 }
 
 export function createApiServer(database: Db) {
+  assertRuntimeConfiguration();
   initializeCoreSchema(database);
   return createServer(async (request, response) => {
     const origin = request.headers.origin;

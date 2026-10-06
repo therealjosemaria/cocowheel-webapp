@@ -8,6 +8,7 @@ Type=simple
 User=jmos0905
 WorkingDirectory=/home/jmos0905/COCOWHEEL
 EnvironmentFile=/home/jmos0905/COCOWHEEL/.env
+Environment=NODE_ENV=production
 ExecStart=/usr/bin/npm run start:api
 Restart=always
 RestartSec=3
