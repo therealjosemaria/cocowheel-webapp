@@ -25,9 +25,16 @@ import {
   submitLocation,
 } from "./core";
 import db from "./db";
+import { reversePlaceLabel } from "./place-label";
 
 const MAX_BODY_BYTES = 32_768;
+const PLACE_LOOKUP_WINDOW_MS = 60_000;
+const MAX_PLACE_LOOKUPS_PER_WINDOW = 8;
 type Json = Record<string, unknown>;
+const placeLookupBuckets = new Map<
+  string,
+  { count: number; resetAt: number }
+>();
 
 function originAllowed(origin: string | undefined) {
   if (!origin) return true;
@@ -80,6 +87,7 @@ function errorStatus(error: unknown) {
   )
     return 409;
   if (code === "BODY_TOO_LARGE") return 413;
+  if (code === "PLACE_LOOKUP_RATE_LIMITED") return 429;
   return 400;
 }
 function writeJson(
@@ -108,6 +116,40 @@ function pin(value: unknown) {
     longitude: asNumber(raw?.longitude),
     label: typeof raw?.label === "string" ? raw.label : undefined,
   };
+}
+function validPlacePin(value: unknown) {
+  const place = pin(value);
+  if (
+    !Number.isFinite(place.latitude) ||
+    place.latitude < -90 ||
+    place.latitude > 90 ||
+    !Number.isFinite(place.longitude) ||
+    place.longitude < -180 ||
+    place.longitude > 180
+  )
+    throw new Error("INVALID_PLACE_PIN");
+  return { latitude: place.latitude, longitude: place.longitude };
+}
+function placeLookupKey(request: IncomingMessage) {
+  const forwarded = request.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0)
+    return forwarded.split(",")[0].trim();
+  return request.socket.remoteAddress ?? "unknown";
+}
+function allowPlaceLookup(request: IncomingMessage) {
+  const now = Date.now();
+  const key = placeLookupKey(request);
+  const existing = placeLookupBuckets.get(key);
+  if (!existing || existing.resetAt <= now) {
+    placeLookupBuckets.set(key, {
+      count: 1,
+      resetAt: now + PLACE_LOOKUP_WINDOW_MS,
+    });
+    return true;
+  }
+  if (existing.count >= MAX_PLACE_LOOKUPS_PER_WINDOW) return false;
+  existing.count += 1;
+  return true;
 }
 function inputSearch(body: Json) {
   return {
@@ -158,6 +200,14 @@ export function createApiServer(database: Db) {
         (parts.join("/") === "health" || parts.join("/") === "api/health")
       ) {
         writeJson(response, 200, { status: "ok" }, cors);
+        return;
+      }
+      if (request.method === "POST" && parts.join("/") === "api/place-label") {
+        if (!allowPlaceLookup(request))
+          throw new Error("PLACE_LOOKUP_RATE_LIMITED");
+        const body = await readJson(request);
+        const label = await reversePlaceLabel(validPlacePin(body.pin));
+        writeJson(response, 200, { label }, cors);
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {

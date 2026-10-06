@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
 
@@ -27,8 +27,12 @@ const prettyTime = (value: string) =>
   }).format(new Date(value));
 const locationText = (pin?: Pin) =>
   pin
-    ? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`
+    ? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}${pin.label ? ` (${pin.label})` : ""}`
     : "Place a pin on the map";
+const canonicalPin = (pin: Pin) => ({
+  latitude: pin.latitude,
+  longitude: pin.longitude,
+});
 const humanError = (error: unknown) => {
   const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
   const messages: Record<string, string> = {
@@ -84,6 +88,12 @@ export default function HomeClient() {
     useState<FormPin | null>(null);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
+  const placeLookupIds = useRef<Record<FormPin, number>>({
+    origin: 0,
+    destination: 0,
+    pickup: 0,
+    riderDestination: 0,
+  });
   const selectedCandidate = useMemo(
     () => candidates.find((candidate) => candidate.rideId === selected) ?? null,
     [candidates, selected],
@@ -175,16 +185,33 @@ export default function HomeClient() {
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
   }
+  function setPinForTarget(target: FormPin, pin: Pin) {
+    if (target === "origin")
+      setDriverPins((state) => ({ ...state, origin: pin }));
+    if (target === "destination")
+      setDriverPins((state) => ({ ...state, destination: pin }));
+    if (target === "pickup")
+      setRiderPins((state) => ({ ...state, pickup: pin }));
+    if (target === "riderDestination")
+      setRiderPins((state) => ({ ...state, destination: pin }));
+  }
+  function findNearbyPlace(target: FormPin, pin: Pin) {
+    const requestId = ++placeLookupIds.current[target];
+    void cocowheelsApi<{ label: string | null }>("/api/place-label", {
+      method: "POST",
+      body: JSON.stringify({ pin: canonicalPin(pin) }),
+    })
+      .then(({ label }) => {
+        if (!label || placeLookupIds.current[target] !== requestId) return;
+        setPinForTarget(target, { ...pin, label });
+      })
+      .catch(() => undefined);
+  }
   function setPin(pin: Pin) {
     if (!pinTarget) return;
-    if (pinTarget === "origin")
-      setDriverPins((state) => ({ ...state, origin: pin }));
-    if (pinTarget === "destination")
-      setDriverPins((state) => ({ ...state, destination: pin }));
-    if (pinTarget === "pickup")
-      setRiderPins((state) => ({ ...state, pickup: pin }));
-    if (pinTarget === "riderDestination")
-      setRiderPins((state) => ({ ...state, destination: pin }));
+    const target = pinTarget;
+    setPinForTarget(target, pin);
+    findNearbyPlace(target, pin);
   }
   function requestCurrentLocation(target: FormPin) {
     setPinTarget(target);
@@ -207,12 +234,13 @@ export default function HomeClient() {
           longitude: position.coords.longitude,
         };
         if (target === "origin") {
-          setDriverPins((state) => ({ ...state, origin: pin }));
+          setPinForTarget(target, pin);
           setAllowManualDeparture(false);
         }
         if (target === "pickup") {
-          setRiderPins((state) => ({ ...state, pickup: pin }));
+          setPinForTarget(target, pin);
         }
+        findNearbyPlace(target, pin);
         setLocatingTarget(null);
         setBusy(false);
       },
@@ -238,8 +266,8 @@ export default function HomeClient() {
       const result = await cocowheelsApi<{ ride: Ride }>("/api/rides", {
         method: "POST",
         body: JSON.stringify({
-          origin: driverPins.origin,
-          destination: driverPins.destination,
+          origin: canonicalPin(driverPins.origin),
+          destination: canonicalPin(driverPins.destination),
           scheduledDepartureAt: new Date().toISOString(),
           priceAud: Number(price),
           payId,
@@ -267,8 +295,8 @@ export default function HomeClient() {
         {
           method: "POST",
           body: JSON.stringify({
-            pickup: riderPins.pickup,
-            destination: riderPins.destination,
+            pickup: canonicalPin(riderPins.pickup),
+            destination: canonicalPin(riderPins.destination),
             requestedDepartureAt: new Date(
               leaveNow ? Date.now() : riderTime,
             ).toISOString(),
@@ -295,8 +323,8 @@ export default function HomeClient() {
         {
           method: "POST",
           body: JSON.stringify({
-            pickup: riderPins.pickup,
-            destination: riderPins.destination,
+            pickup: canonicalPin(riderPins.pickup),
+            destination: canonicalPin(riderPins.destination),
             requestedDepartureAt: new Date(
               leaveNow ? Date.now() : riderTime,
             ).toISOString(),

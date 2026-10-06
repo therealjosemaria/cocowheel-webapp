@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ./.env
+  set +a
+fi
+
 api_port="${COCOWHEELS_API_PORT:-5060}"
 export COCOWHEELS_API_PROXY_TARGET="${COCOWHEELS_API_PROXY_TARGET:-http://127.0.0.1:${api_port}}"
 
