@@ -17,7 +17,7 @@ export default function RootLayout({
         <main className="app-shell">
           <header className="topbar">
             <Link href="/" className="brand">
-              COCO WHEELS
+              COCOWHEELS
             </Link>
             <AppNavigation />
           </header>

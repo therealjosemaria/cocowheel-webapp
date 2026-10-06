@@ -72,7 +72,6 @@ export default function HomeClient() {
     destination?: Pin;
   }>({});
   const [pinTarget, setPinTarget] = useState<FormPin>("origin");
-  const [driverTime, setDriverTime] = useState(defaultTime);
   const [riderTime, setRiderTime] = useState(defaultTime);
   const [leaveNow, setLeaveNow] = useState(true);
   const [price, setPrice] = useState("10");
@@ -166,10 +165,10 @@ export default function HomeClient() {
   function begin(roleChoice: Role) {
     if (ride) return;
     setRole(roleChoice);
-    setPinTarget(roleChoice === "DRIVER" ? "origin" : "pickup");
+    setPinTarget(roleChoice === "DRIVER" ? "destination" : "pickup");
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
-    if (roleChoice === "DRIVER") requestCurrentLocation("origin");
+    if (roleChoice === "DRIVER") requestCurrentLocation("origin", false);
   }
   function setPin(pin: Pin) {
     if (pinTarget === "origin")
@@ -181,7 +180,8 @@ export default function HomeClient() {
     if (pinTarget === "riderDestination")
       setRiderPins((state) => ({ ...state, destination: pin }));
   }
-  function requestCurrentLocation(target: FormPin) {
+  function requestCurrentLocation(target: FormPin, selectTarget = true) {
+    if (selectTarget) setPinTarget(target);
     if (!navigator.geolocation) {
       setError(
         "This browser cannot provide location. Place a pin on the map instead.",
@@ -192,15 +192,18 @@ export default function HomeClient() {
     setError(null);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setPinTarget(target);
         const pin = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
-        if (target === "origin")
+        if (target === "origin") {
           setDriverPins((state) => ({ ...state, origin: pin }));
-        if (target === "pickup")
+          setPinTarget("destination");
+        }
+        if (target === "pickup") {
           setRiderPins((state) => ({ ...state, pickup: pin }));
+          setPinTarget("pickup");
+        }
         setBusy(false);
       },
       () => {
@@ -225,9 +228,7 @@ export default function HomeClient() {
         body: JSON.stringify({
           origin: driverPins.origin,
           destination: driverPins.destination,
-          scheduledDepartureAt: new Date(
-            leaveNow ? Date.now() : driverTime,
-          ).toISOString(),
+          scheduledDepartureAt: new Date().toISOString(),
           priceAud: Number(price),
           payId,
         }),
@@ -369,10 +370,6 @@ export default function HomeClient() {
           setTarget={setPinTarget}
           setPin={setPin}
           onCurrent={requestCurrentLocation}
-          time={driverTime}
-          setTime={setDriverTime}
-          leaveNow={leaveNow}
-          setLeaveNow={setLeaveNow}
           price={price}
           setPrice={setPrice}
           payId={payId}
@@ -474,7 +471,7 @@ function PinControls({
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
+  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
   pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
   driver: boolean;
 }) {
@@ -485,7 +482,7 @@ function PinControls({
       <div className="pin-tabs">
         <button
           className={target === first ? "active" : ""}
-          onClick={() => setTarget(first)}
+          onClick={() => (driver ? onCurrent(first) : setTarget(first))}
         >
           {driver ? "Departure" : "Pickup"}
         </button>
@@ -515,15 +512,19 @@ function PinControls({
         onPick={setPin}
       />
       <p className="map-help">
-        Tap the map to place the selected pin. A pin is the source of truth.
+        {driver && target === "destination"
+          ? "Tap the map to place the final destination."
+          : "Tap the map to place the selected pin. A pin is the source of truth."}
       </p>
-      <button
-        type="button"
-        className="secondary"
-        onClick={() => onCurrent(first)}
-      >
-        Use my current location for {driver ? "departure" : "pickup"}
-      </button>
+      {!driver ? (
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => onCurrent(first)}
+        >
+          Use my current location for pickup
+        </button>
+      ) : null}
     </>
   );
 }
@@ -532,11 +533,7 @@ function DriverForm(props: {
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
-  time: string;
-  setTime: (value: string) => void;
-  leaveNow: boolean;
-  setLeaveNow: (value: boolean) => void;
+  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
   price: string;
   setPrice: (value: string) => void;
   payId: string;
@@ -556,14 +553,8 @@ function DriverForm(props: {
         pins={props.pins}
         driver
       />
-      <TimeInput
-        leaveNow={props.leaveNow}
-        setLeaveNow={props.setLeaveNow}
-        time={props.time}
-        setTime={props.setTime}
-      />
       <label className="field">
-        Fixed price <span>AUD, whole dollars</span>
+        Price <span>AUD, whole dollars</span>
         <div className="money">
           <b>A$</b>
           <input
@@ -577,7 +568,7 @@ function DriverForm(props: {
         </div>
       </label>
       <label className="field">
-        PayID <span>Optional and private until pickup is confirmed</span>
+        Your PayID
         <input
           placeholder="Mobile, email, or other identifier"
           value={props.payId}
@@ -595,7 +586,7 @@ function RiderForm(props: {
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
+  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
   time: string;
   setTime: (value: string) => void;
   leaveNow: boolean;
