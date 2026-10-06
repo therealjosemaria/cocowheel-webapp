@@ -560,7 +560,11 @@ function PinControls({
       <div className="pin-summary">
         <p>
           <strong>{driver ? "Departure" : "Pickup"}</strong>
-          {locationText(driver ? pins.origin : pins.pickup)}
+          {driver && locatingDeparture
+            ? "Finding your current location…"
+            : driver && !pins.origin
+              ? "Select Departure to use your current location."
+              : locationText(driver ? pins.origin : pins.pickup)}
         </p>
         <p>
           <strong>{driver ? "Final destination" : "Destination"}</strong>
@@ -580,19 +584,11 @@ function PinControls({
         }
         markerKinds={driver ? ["departure", "destination"] : undefined}
       />
-      <p className="map-help">
-        {driver && !target
-          ? "Choose Departure or Final destination to continue."
-          : driver && target === "destination"
-            ? "Tap the map to place the final destination."
-            : driver && locatingDeparture
-              ? "Finding your current location…"
-              : driver && pins.origin
-                ? "Departure uses your current location. Tap Departure to refresh it."
-                : driver && allowManualDeparture
-                  ? "Location was unavailable. Tap the map to place a departure pin."
-                  : "Tap Departure to use your current location."}
-      </p>
+      {!driver ? (
+        <p className="map-help">
+          Tap the map to place the selected pin. A pin is the source of truth.
+        </p>
+      ) : null}
       {!driver ? (
         <button
           type="button"
@@ -635,7 +631,7 @@ function DriverForm(props: {
         driver
       />
       <label className="field">
-        You receive <span>AUD, whole dollars</span>
+        You receive
         <div className="money">
           <b>A$</b>
           <input
