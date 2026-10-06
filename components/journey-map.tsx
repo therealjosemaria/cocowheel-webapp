@@ -10,6 +10,7 @@ import {
   TileLayer,
   useMap,
   useMapEvents,
+  ZoomControl,
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
 
@@ -19,7 +20,7 @@ type MarkerKind = "departure" | "destination";
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   departure: divIcon({
     className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-departure">D</span>',
+    html: '<span class="journey-marker journey-marker-departure" aria-label="Departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5" fill="currentColor"/><path d="M8.5 15.5 18 6m-6 0h6v6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>',
     iconSize: [32, 32],
     iconAnchor: [16, 16],
   }),
@@ -44,14 +45,14 @@ function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
     const points = [...pins, ...lines.flatMap((line) => line.points)];
     if (points.length === 0) return;
     if (points.length === 1) {
-      map.setView([points[0].latitude, points[0].longitude], 14);
+      map.setView([points[0].latitude, points[0].longitude], 16);
       return;
     }
     map.fitBounds(
       points.map(
         (point) => [point.latitude, point.longitude] as [number, number],
       ),
-      { padding: [28, 28], maxZoom: 14 },
+      { padding: [28, 28], maxZoom: 16 },
     );
   }, [map, pins, lines]);
   return null;
@@ -71,7 +72,7 @@ export default function JourneyMap({
     <div className="map-shell">
       <MapContainer
         center={[-33.8688, 151.2093]}
-        zoom={12}
+        zoom={15}
         scrollWheelZoom={false}
         zoomControl={false}
         className="journey-map"
@@ -117,6 +118,7 @@ export default function JourneyMap({
         )}
         <MapClick onPick={onPick} />
         <Fit pins={pins} lines={lines} />
+        <ZoomControl position="bottomright" />
       </MapContainer>
     </div>
   );
