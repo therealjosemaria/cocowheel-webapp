@@ -284,6 +284,71 @@ p {
   color: var(--muted);
   font-size: 0.78rem;
 }
+.journey-marker-icon {
+  background: transparent;
+  border: 0;
+}
+.journey-marker {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid #111827;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 20%);
+}
+.journey-marker-departure {
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: #111827;
+}
+.journey-marker-destination {
+  width: 34px;
+  height: 28px;
+  border-radius: 3px;
+  background-color: #ffffff;
+  background-image: conic-gradient(
+    #111827 25%,
+    #ffffff 0 50%,
+    #111827 0 75%,
+    #ffffff 0
+  );
+  background-size: 10px 10px;
+}
+.location-prompt-backdrop {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 18px;
+  background: rgb(15 23 42 / 28%);
+}
+.location-prompt {
+  width: min(100%, 500px);
+  margin: 0 auto;
+  padding: 22px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgb(15 23 42 / 24%);
+}
+.location-prompt h2 {
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+.location-prompt p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+}
+.location-prompt-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+.location-prompt-actions .secondary {
+  margin: 0;
+}
 .time-choice {
   display: grid;
   gap: 9px;

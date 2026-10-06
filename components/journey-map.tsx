@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { divIcon } from "leaflet";
 import {
   CircleMarker,
   MapContainer,
+  Marker,
   Polyline,
   TileLayer,
   useMap,
@@ -12,6 +14,22 @@ import {
 import type { Pin } from "@/lib/client-types";
 
 type Line = { points: [Pin, Pin]; color: string; muted?: boolean };
+type MarkerKind = "departure" | "destination";
+
+const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
+  departure: divIcon({
+    className: "journey-marker-icon",
+    html: '<span class="journey-marker journey-marker-departure">D</span>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  }),
+  destination: divIcon({
+    className: "journey-marker-icon",
+    html: '<span class="journey-marker journey-marker-destination" aria-label="Final destination"></span>',
+    iconSize: [34, 28],
+    iconAnchor: [17, 14],
+  }),
+};
 function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {
   useMapEvents({
     click(event) {
@@ -42,10 +60,12 @@ export default function JourneyMap({
   pins = [],
   lines = [],
   onPick,
+  markerKinds,
 }: {
   pins?: Pin[];
   lines?: Line[];
   onPick?: (pin: Pin) => void;
+  markerKinds?: MarkerKind[];
 }) {
   return (
     <div className="map-shell">
@@ -74,19 +94,27 @@ export default function JourneyMap({
             }}
           />
         ))}
-        {pins.map((pin, index) => (
-          <CircleMarker
-            key={`${pin.latitude}-${pin.longitude}-${index}`}
-            center={[pin.latitude, pin.longitude]}
-            radius={8}
-            pathOptions={{
-              color: "#073b4c",
-              fillColor: "#ff6b35",
-              fillOpacity: 1,
-              weight: 2,
-            }}
-          />
-        ))}
+        {pins.map((pin, index) =>
+          markerKinds?.[index] ? (
+            <Marker
+              key={`${pin.latitude}-${pin.longitude}-${index}`}
+              position={[pin.latitude, pin.longitude]}
+              icon={mapMarkerIcons[markerKinds[index]]}
+            />
+          ) : (
+            <CircleMarker
+              key={`${pin.latitude}-${pin.longitude}-${index}`}
+              center={[pin.latitude, pin.longitude]}
+              radius={8}
+              pathOptions={{
+                color: "#073b4c",
+                fillColor: "#ff6b35",
+                fillOpacity: 1,
+                weight: 2,
+              }}
+            />
+          ),
+        )}
         <MapClick onPick={onPick} />
         <Fit pins={pins} lines={lines} />
       </MapContainer>

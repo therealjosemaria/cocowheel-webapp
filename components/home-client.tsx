@@ -79,6 +79,10 @@ export default function HomeClient() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [locationPromptTarget, setLocationPromptTarget] =
+    useState<FormPin | null>(null);
+  const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
+  const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const selectedCandidate = useMemo(
     () => candidates.find((candidate) => candidate.rideId === selected) ?? null,
     [candidates, selected],
@@ -165,10 +169,10 @@ export default function HomeClient() {
   function begin(roleChoice: Role) {
     if (ride) return;
     setRole(roleChoice);
-    setPinTarget(roleChoice === "DRIVER" ? "destination" : "pickup");
+    setPinTarget(roleChoice === "DRIVER" ? "origin" : "pickup");
+    if (roleChoice === "DRIVER") setAllowManualDeparture(false);
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
-    if (roleChoice === "DRIVER") requestCurrentLocation("origin", false);
   }
   function setPin(pin: Pin) {
     if (pinTarget === "origin")
@@ -180,9 +184,13 @@ export default function HomeClient() {
     if (pinTarget === "riderDestination")
       setRiderPins((state) => ({ ...state, destination: pin }));
   }
-  function requestCurrentLocation(target: FormPin, selectTarget = true) {
-    if (selectTarget) setPinTarget(target);
+  function requestCurrentLocation(target: FormPin) {
+    setPinTarget(target);
+    setLocatingTarget(target);
+    if (target === "origin") setAllowManualDeparture(false);
     if (!navigator.geolocation) {
+      setLocatingTarget(null);
+      if (target === "origin") setAllowManualDeparture(true);
       setError(
         "This browser cannot provide location. Place a pin on the map instead.",
       );
@@ -198,15 +206,17 @@ export default function HomeClient() {
         };
         if (target === "origin") {
           setDriverPins((state) => ({ ...state, origin: pin }));
-          setPinTarget("destination");
+          setAllowManualDeparture(false);
         }
         if (target === "pickup") {
           setRiderPins((state) => ({ ...state, pickup: pin }));
-          setPinTarget("pickup");
         }
+        setLocatingTarget(null);
         setBusy(false);
       },
       () => {
+        setLocatingTarget(null);
+        if (target === "origin") setAllowManualDeparture(true);
         setBusy(false);
         setError(
           "Location wasn’t available. You can place a pin manually on the map.",
@@ -354,6 +364,15 @@ export default function HomeClient() {
       {serviceAvailable === false ? (
         <p className="reconnect">Trying to reconnect.</p>
       ) : null}
+      {locationPromptTarget === "origin" ? (
+        <LocationPrompt
+          confirm={() => {
+            setLocationPromptTarget(null);
+            requestCurrentLocation("origin");
+          }}
+          close={() => setLocationPromptTarget(null)}
+        />
+      ) : null}
       {error ? (
         <p className="error" role="alert">
           {error}
@@ -370,6 +389,9 @@ export default function HomeClient() {
           setTarget={setPinTarget}
           setPin={setPin}
           onCurrent={requestCurrentLocation}
+          onDepartureRequest={() => setLocationPromptTarget("origin")}
+          locatingDeparture={locatingTarget === "origin"}
+          allowManualDeparture={allowManualDeparture}
           price={price}
           setPrice={setPrice}
           payId={payId}
@@ -419,6 +441,39 @@ function Home({ onBegin }: { onBegin: (role: Role) => void }) {
     </div>
   );
 }
+function LocationPrompt({
+  confirm,
+  close,
+}: {
+  confirm: () => void;
+  close: () => void;
+}) {
+  return (
+    <div className="location-prompt-backdrop" role="presentation">
+      <section
+        className="location-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="departure-location-title"
+      >
+        <p className="eyebrow">Departure</p>
+        <h2 id="departure-location-title">Use your current location?</h2>
+        <p>
+          Cocowheels will use your current location as the default departure
+          point.
+        </p>
+        <div className="location-prompt-actions">
+          <button type="button" className="secondary" onClick={close}>
+            Not now
+          </button>
+          <button type="button" className="primary" onClick={confirm}>
+            USE CURRENT LOCATION
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
 function TimeInput({
   leaveNow,
   setLeaveNow,
@@ -465,13 +520,19 @@ function PinControls({
   setTarget,
   setPin,
   onCurrent,
+  onDepartureRequest,
+  locatingDeparture,
+  allowManualDeparture,
   pins,
   driver,
 }: {
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
+  onCurrent: (target: FormPin) => void;
+  onDepartureRequest: () => void;
+  locatingDeparture: boolean;
+  allowManualDeparture: boolean;
   pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
   driver: boolean;
 }) {
@@ -482,7 +543,8 @@ function PinControls({
       <div className="pin-tabs">
         <button
           className={target === first ? "active" : ""}
-          onClick={() => (driver ? onCurrent(first) : setTarget(first))}
+          disabled={driver && locatingDeparture}
+          onClick={() => (driver ? onDepartureRequest() : setTarget(first))}
         >
           {driver ? "Departure" : "Pickup"}
         </button>
@@ -509,12 +571,23 @@ function PinControls({
             Boolean,
           ) as Pin[]
         }
-        onPick={setPin}
+        onPick={
+          driver && target === "origin" && !allowManualDeparture
+            ? undefined
+            : setPin
+        }
+        markerKinds={driver ? ["departure", "destination"] : undefined}
       />
       <p className="map-help">
         {driver && target === "destination"
           ? "Tap the map to place the final destination."
-          : "Tap the map to place the selected pin. A pin is the source of truth."}
+          : driver && locatingDeparture
+            ? "Finding your current location…"
+            : driver && pins.origin
+              ? "Departure uses your current location. Tap Departure to refresh it."
+              : driver && allowManualDeparture
+                ? "Location was unavailable. Tap the map to place a departure pin."
+                : "Tap Departure to use your current location."}
       </p>
       {!driver ? (
         <button
@@ -533,7 +606,10 @@ function DriverForm(props: {
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
+  onCurrent: (target: FormPin) => void;
+  onDepartureRequest: () => void;
+  locatingDeparture: boolean;
+  allowManualDeparture: boolean;
   price: string;
   setPrice: (value: string) => void;
   payId: string;
@@ -543,13 +619,14 @@ function DriverForm(props: {
 }) {
   return (
     <div className="form-page">
-      <p className="eyebrow">I’m driving</p>
-      <h1>Publish your planned ride</h1>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
         setPin={props.setPin}
         onCurrent={props.onCurrent}
+        onDepartureRequest={props.onDepartureRequest}
+        locatingDeparture={props.locatingDeparture}
+        allowManualDeparture={props.allowManualDeparture}
         pins={props.pins}
         driver
       />
@@ -586,7 +663,7 @@ function RiderForm(props: {
   target: FormPin;
   setTarget: (target: FormPin) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin, selectTarget?: boolean) => void;
+  onCurrent: (target: FormPin) => void;
   time: string;
   setTime: (value: string) => void;
   leaveNow: boolean;
@@ -606,6 +683,9 @@ function RiderForm(props: {
         setTarget={props.setTarget}
         setPin={props.setPin}
         onCurrent={props.onCurrent}
+        onDepartureRequest={() => undefined}
+        locatingDeparture={false}
+        allowManualDeparture={false}
         pins={props.pins}
         driver={false}
       />
