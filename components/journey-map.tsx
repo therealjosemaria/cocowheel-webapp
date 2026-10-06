@@ -20,7 +20,7 @@ type MarkerKind = "departure" | "destination";
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   departure: divIcon({
     className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-departure" aria-label="Departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5" fill="currentColor"/><path d="M8.5 15.5 18 6m-6 0h6v6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>',
+    html: '<span class="journey-marker journey-marker-departure" aria-label="Departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>',
     iconSize: [32, 32],
     iconAnchor: [16, 16],
   }),
