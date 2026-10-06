@@ -631,7 +631,7 @@ function DriverForm(props: {
         driver
       />
       <label className="field">
-        Price <span>AUD, whole dollars</span>
+        You receive <span>AUD, whole dollars</span>
         <div className="money">
           <b>A$</b>
           <input
