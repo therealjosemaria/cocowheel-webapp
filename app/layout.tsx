@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AppNavigation from "@/components/app-navigation";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export default function RootLayout({
             <Link href="/" className="brand">
               COCO WHEELS
             </Link>
+            <AppNavigation />
           </header>
           {children}
         </main>

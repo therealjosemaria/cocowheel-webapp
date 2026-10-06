@@ -169,6 +169,7 @@ export default function HomeClient() {
     setPinTarget(roleChoice === "DRIVER" ? "origin" : "pickup");
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
+    if (roleChoice === "DRIVER") requestCurrentLocation("origin");
   }
   function setPin(pin: Pin) {
     if (pinTarget === "origin")
@@ -180,7 +181,7 @@ export default function HomeClient() {
     if (pinTarget === "riderDestination")
       setRiderPins((state) => ({ ...state, destination: pin }));
   }
-  function useCurrentLocation(target: FormPin) {
+  function requestCurrentLocation(target: FormPin) {
     if (!navigator.geolocation) {
       setError(
         "This browser cannot provide location. Place a pin on the map instead.",
@@ -350,9 +351,7 @@ export default function HomeClient() {
   return (
     <section className="page-content">
       {serviceAvailable === false ? (
-        <p className="reconnect">
-          Trying to reconnect. Do not rely on a stale map position as live.
-        </p>
+        <p className="reconnect">Trying to reconnect.</p>
       ) : null}
       {error ? (
         <p className="error" role="alert">
@@ -369,7 +368,7 @@ export default function HomeClient() {
           target={pinTarget}
           setTarget={setPinTarget}
           setPin={setPin}
-          onCurrent={useCurrentLocation}
+          onCurrent={requestCurrentLocation}
           time={driverTime}
           setTime={setDriverTime}
           leaveNow={leaveNow}
@@ -387,7 +386,7 @@ export default function HomeClient() {
           target={pinTarget}
           setTarget={setPinTarget}
           setPin={setPin}
-          onCurrent={useCurrentLocation}
+          onCurrent={requestCurrentLocation}
           time={riderTime}
           setTime={setRiderTime}
           leaveNow={leaveNow}
@@ -549,9 +548,6 @@ function DriverForm(props: {
     <div className="form-page">
       <p className="eyebrow">I’m driving</p>
       <h1>Publish your planned ride</h1>
-      <p className="intro">
-        Your exact departure and final destination remain private.
-      </p>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
