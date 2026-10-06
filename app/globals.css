@@ -312,6 +312,14 @@ p {
   color: var(--muted);
   font-size: 0.78rem;
 }
+.map-attribution {
+  margin: 7px 2px 16px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.map-attribution a {
+  color: inherit;
+}
 .journey-marker-icon {
   background: transparent;
   border: 0;

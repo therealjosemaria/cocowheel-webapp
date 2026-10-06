@@ -88,6 +88,10 @@ export default function HomeClient() {
     useState<FormPin | null>(null);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
+  const [driverRoute, setDriverRoute] = useState<{
+    coordinates: string;
+    points: Pin[];
+  } | null>(null);
   const placeLookupIds = useRef<Record<FormPin, number>>({
     origin: 0,
     destination: 0,
@@ -225,6 +229,50 @@ export default function HomeClient() {
         .catch(() => undefined);
     }
   }, [placePins]);
+  const originLatitude = driverPins.origin?.latitude;
+  const originLongitude = driverPins.origin?.longitude;
+  const destinationLatitude = driverPins.destination?.latitude;
+  const destinationLongitude = driverPins.destination?.longitude;
+  const driverRouteInput = useMemo(() => {
+    if (
+      originLatitude === undefined ||
+      originLongitude === undefined ||
+      destinationLatitude === undefined ||
+      destinationLongitude === undefined
+    )
+      return null;
+    return {
+      origin: { latitude: originLatitude, longitude: originLongitude },
+      destination: {
+        latitude: destinationLatitude,
+        longitude: destinationLongitude,
+      },
+    };
+  }, [
+    destinationLatitude,
+    destinationLongitude,
+    originLatitude,
+    originLongitude,
+  ]);
+  const driverRouteCoordinates = driverRouteInput
+    ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
+    : "";
+  useEffect(() => {
+    if (!driverRouteInput) return;
+    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+      method: "POST",
+      body: JSON.stringify(driverRouteInput),
+    })
+      .then(({ points }) => {
+        if (points.length >= 2)
+          setDriverRoute({ coordinates: driverRouteCoordinates, points });
+      })
+      .catch(() => undefined);
+  }, [driverRouteCoordinates, driverRouteInput]);
+  const activeDriverRoute =
+    driverRoute?.coordinates === driverRouteCoordinates
+      ? driverRoute.points
+      : null;
   function setPin(pin: Pin) {
     if (!pinTarget) return;
     const target = pinTarget;
@@ -438,6 +486,7 @@ export default function HomeClient() {
           onDepartureRequest={() => setLocationPromptTarget("origin")}
           locatingDeparture={locatingTarget === "origin"}
           allowManualDeparture={allowManualDeparture}
+          routePoints={activeDriverRoute}
           price={price}
           setPrice={setPrice}
           payId={payId}
@@ -571,6 +620,7 @@ function PinControls({
   allowManualDeparture,
   pins,
   driver,
+  routePoints,
 }: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
@@ -581,6 +631,7 @@ function PinControls({
   allowManualDeparture: boolean;
   pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
   driver: boolean;
+  routePoints?: Pin[] | null;
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
@@ -627,7 +678,28 @@ function PinControls({
             : setPin
         }
         markerKinds={driver ? ["departure", "destination"] : undefined}
+        lines={
+          driver && pins.origin && pins.destination
+            ? [
+                {
+                  points: routePoints?.length
+                    ? routePoints
+                    : [pins.origin, pins.destination],
+                  color: "#111827",
+                  muted: !routePoints?.length,
+                },
+              ]
+            : []
+        }
       />
+      {driver && routePoints?.length ? (
+        <p className="map-attribution">
+          Road path by{" "}
+          <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
+            Geoapify
+          </a>
+        </p>
+      ) : null}
       {!driver ? (
         <p className="map-help">
           Tap the map to place the selected pin. A pin is the source of truth.
@@ -654,6 +726,7 @@ function DriverForm(props: {
   onDepartureRequest: () => void;
   locatingDeparture: boolean;
   allowManualDeparture: boolean;
+  routePoints?: Pin[] | null;
   price: string;
   setPrice: (value: string) => void;
   payId: string;
@@ -671,6 +744,7 @@ function DriverForm(props: {
         onDepartureRequest={props.onDepartureRequest}
         locatingDeparture={props.locatingDeparture}
         allowManualDeparture={props.allowManualDeparture}
+        routePoints={props.routePoints}
         pins={props.pins}
         driver
       />

@@ -14,7 +14,7 @@ import {
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
 
-type Line = { points: [Pin, Pin]; color: string; muted?: boolean };
+type Line = { points: Pin[]; color: string; muted?: boolean };
 type MarkerKind = "departure" | "destination";
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {

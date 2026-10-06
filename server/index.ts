@@ -26,12 +26,19 @@ import {
 } from "./core";
 import db from "./db";
 import { reversePlaceLabel } from "./place-label";
+import { roadRoutePreview } from "./route-preview";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
 const MAX_PLACE_LOOKUPS_PER_WINDOW = 8;
+const ROUTE_PREVIEW_WINDOW_MS = 60_000;
+const MAX_ROUTE_PREVIEWS_PER_WINDOW = 6;
 type Json = Record<string, unknown>;
 const placeLookupBuckets = new Map<
+  string,
+  { count: number; resetAt: number }
+>();
+const routePreviewBuckets = new Map<
   string,
   { count: number; resetAt: number }
 >();
@@ -115,6 +122,7 @@ function errorStatus(error: unknown) {
     return 409;
   if (code === "BODY_TOO_LARGE") return 413;
   if (code === "PLACE_LOOKUP_RATE_LIMITED") return 429;
+  if (code === "ROUTE_PREVIEW_RATE_LIMITED") return 429;
   return 400;
 }
 function writeJson(
@@ -178,6 +186,21 @@ function allowPlaceLookup(request: IncomingMessage) {
   existing.count += 1;
   return true;
 }
+function allowRoutePreview(request: IncomingMessage) {
+  const now = Date.now();
+  const key = placeLookupKey(request);
+  const existing = routePreviewBuckets.get(key);
+  if (!existing || existing.resetAt <= now) {
+    routePreviewBuckets.set(key, {
+      count: 1,
+      resetAt: now + ROUTE_PREVIEW_WINDOW_MS,
+    });
+    return true;
+  }
+  if (existing.count >= MAX_ROUTE_PREVIEWS_PER_WINDOW) return false;
+  existing.count += 1;
+  return true;
+}
 function inputSearch(body: Json) {
   return {
     pickup: pin(body.pickup),
@@ -236,6 +259,20 @@ export function createApiServer(database: Db) {
         const body = await readJson(request);
         const label = await reversePlaceLabel(validPlacePin(body.pin));
         writeJson(response, 200, { label }, cors);
+        return;
+      }
+      if (
+        request.method === "POST" &&
+        parts.join("/") === "api/route-preview"
+      ) {
+        if (!allowRoutePreview(request))
+          throw new Error("ROUTE_PREVIEW_RATE_LIMITED");
+        const body = await readJson(request);
+        const points = await roadRoutePreview(
+          validPlacePin(body.origin),
+          validPlacePin(body.destination),
+        );
+        writeJson(response, 200, { points }, cors);
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {
