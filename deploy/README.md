@@ -23,6 +23,28 @@ sudo systemctl status cocowheels-api
 
 The supplied unit has an independent process name and permits writes only to Cocowheels’ `data` directory. It must not replace or reuse the Corridor service, database, port, cookie, or tunnel configuration.
 
+## Dedicated Cloudflare Tunnel
+
+Create a separate remotely managed tunnel named `cocowheels-api` in Cloudflare,
+with the published hostname `cocowheels-api.santacruzprimero.com` forwarding to
+`http://127.0.0.1:5060`. Do not use Cloudflare's generic `service install`
+command: it can conflict with another project's Cloudflared service.
+
+Store its connection token in the Pi-only root-owned file
+`/etc/cocowheels/tunnel.token` as the raw token only (no variable name,
+quotes, or command), then install the dedicated service:
+
+```bash
+sudo cp deploy/cocowheels-tunnel.service /etc/systemd/system/cocowheels-tunnel.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now cocowheels-tunnel
+sudo systemctl status cocowheels-tunnel
+```
+
+The token is a separate Cocowheels secret. Never add it to the repository,
+the application `.env` file, a systemd environment variable, or another
+project.
+
 ## Verification
 
 ```bash

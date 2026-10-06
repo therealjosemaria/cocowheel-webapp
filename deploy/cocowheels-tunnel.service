@@ -1,0 +1,26 @@
+[Unit]
+Description=Cocowheels Cloudflare Tunnel
+After=network-online.target cocowheels-api.service
+Wants=network-online.target
+Requires=cocowheels-api.service
+
+[Service]
+Type=simple
+User=jmos0905
+# `--token-file` keeps the connector secret out of process arguments and
+# environment logging. The root-owned file contains only the raw token.
+# systemd provides this service a private read-only copy, so the unprivileged
+# Cloudflared process never needs direct access to /etc/cocowheels.
+LoadCredential=cocowheels-tunnel-token:/etc/cocowheels/tunnel.token
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate run --token-file ${CREDENTIALS_DIRECTORY}/cocowheels-tunnel-token
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
