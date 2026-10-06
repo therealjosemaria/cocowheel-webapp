@@ -11,6 +11,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
+type PinTarget = FormPin | null;
 const localDateTime = (date: Date) =>
   new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
     .toISOString()
@@ -71,7 +72,7 @@ export default function HomeClient() {
     pickup?: Pin;
     destination?: Pin;
   }>({});
-  const [pinTarget, setPinTarget] = useState<FormPin>("origin");
+  const [pinTarget, setPinTarget] = useState<PinTarget>(null);
   const [riderTime, setRiderTime] = useState(defaultTime);
   const [leaveNow, setLeaveNow] = useState(true);
   const [price, setPrice] = useState("10");
@@ -169,12 +170,13 @@ export default function HomeClient() {
   function begin(roleChoice: Role) {
     if (ride) return;
     setRole(roleChoice);
-    setPinTarget(roleChoice === "DRIVER" ? "origin" : "pickup");
+    setPinTarget(roleChoice === "DRIVER" ? null : "pickup");
     if (roleChoice === "DRIVER") setAllowManualDeparture(false);
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
   }
   function setPin(pin: Pin) {
+    if (!pinTarget) return;
     if (pinTarget === "origin")
       setDriverPins((state) => ({ ...state, origin: pin }));
     if (pinTarget === "destination")
@@ -526,8 +528,8 @@ function PinControls({
   pins,
   driver,
 }: {
-  target: FormPin;
-  setTarget: (target: FormPin) => void;
+  target: PinTarget;
+  setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
   onCurrent: (target: FormPin) => void;
   onDepartureRequest: () => void;
@@ -572,22 +574,24 @@ function PinControls({
           ) as Pin[]
         }
         onPick={
-          driver && target === "origin" && !allowManualDeparture
+          !target || (driver && target === "origin" && !allowManualDeparture)
             ? undefined
             : setPin
         }
         markerKinds={driver ? ["departure", "destination"] : undefined}
       />
       <p className="map-help">
-        {driver && target === "destination"
-          ? "Tap the map to place the final destination."
-          : driver && locatingDeparture
-            ? "Finding your current location…"
-            : driver && pins.origin
-              ? "Departure uses your current location. Tap Departure to refresh it."
-              : driver && allowManualDeparture
-                ? "Location was unavailable. Tap the map to place a departure pin."
-                : "Tap Departure to use your current location."}
+        {driver && !target
+          ? "Choose Departure or Final destination to continue."
+          : driver && target === "destination"
+            ? "Tap the map to place the final destination."
+            : driver && locatingDeparture
+              ? "Finding your current location…"
+              : driver && pins.origin
+                ? "Departure uses your current location. Tap Departure to refresh it."
+                : driver && allowManualDeparture
+                  ? "Location was unavailable. Tap the map to place a departure pin."
+                  : "Tap Departure to use your current location."}
       </p>
       {!driver ? (
         <button
@@ -603,8 +607,8 @@ function PinControls({
 }
 function DriverForm(props: {
   pins: { origin?: Pin; destination?: Pin };
-  target: FormPin;
-  setTarget: (target: FormPin) => void;
+  target: PinTarget;
+  setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
   onCurrent: (target: FormPin) => void;
   onDepartureRequest: () => void;
@@ -660,8 +664,8 @@ function DriverForm(props: {
 }
 function RiderForm(props: {
   pins: { pickup?: Pin; destination?: Pin };
-  target: FormPin;
-  setTarget: (target: FormPin) => void;
+  target: PinTarget;
+  setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
   onCurrent: (target: FormPin) => void;
   time: string;
