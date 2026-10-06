@@ -195,23 +195,40 @@ export default function HomeClient() {
     if (target === "riderDestination")
       setRiderPins((state) => ({ ...state, destination: pin }));
   }
-  function findNearbyPlace(target: FormPin, pin: Pin) {
-    const requestId = ++placeLookupIds.current[target];
-    void cocowheelsApi<{ label: string | null }>("/api/place-label", {
-      method: "POST",
-      body: JSON.stringify({ pin: canonicalPin(pin) }),
-    })
-      .then(({ label }) => {
-        if (!label || placeLookupIds.current[target] !== requestId) return;
-        setPinForTarget(target, { ...pin, label });
+  const placePins = useMemo(
+    () =>
+      [
+        ["origin", driverPins.origin],
+        ["destination", driverPins.destination],
+        ["pickup", riderPins.pickup],
+        ["riderDestination", riderPins.destination],
+      ] as const,
+    [
+      driverPins.destination,
+      driverPins.origin,
+      riderPins.destination,
+      riderPins.pickup,
+    ],
+  );
+  useEffect(() => {
+    for (const [target, pin] of placePins) {
+      const requestId = ++placeLookupIds.current[target];
+      if (!pin || pin.label) continue;
+      void cocowheelsApi<{ label: string | null }>("/api/place-label", {
+        method: "POST",
+        body: JSON.stringify({ pin: canonicalPin(pin) }),
       })
-      .catch(() => undefined);
-  }
+        .then(({ label }) => {
+          if (!label || placeLookupIds.current[target] !== requestId) return;
+          setPinForTarget(target, { ...pin, label });
+        })
+        .catch(() => undefined);
+    }
+  }, [placePins]);
   function setPin(pin: Pin) {
     if (!pinTarget) return;
     const target = pinTarget;
     setPinForTarget(target, pin);
-    findNearbyPlace(target, pin);
   }
   function requestCurrentLocation(target: FormPin) {
     setPinTarget(target);
@@ -240,7 +257,6 @@ export default function HomeClient() {
         if (target === "pickup") {
           setPinForTarget(target, pin);
         }
-        findNearbyPlace(target, pin);
         setLocatingTarget(null);
         setBusy(false);
       },

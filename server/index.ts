@@ -36,11 +36,20 @@ const placeLookupBuckets = new Map<
   { count: number; resetAt: number }
 >();
 
-function originAllowed(origin: string | undefined) {
-  if (!origin) return true;
+function configuredOrigins() {
   const configured =
-    process.env.COCOWHEELS_FRONTEND_ORIGIN ?? "http://localhost:3000";
-  return origin === configured;
+    process.env.COCOWHEELS_FRONTEND_ORIGINS ??
+    process.env.COCOWHEELS_FRONTEND_ORIGIN ??
+    "http://localhost:3000";
+  return new Set(
+    configured
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  );
+}
+function originAllowed(origin: string | undefined) {
+  return !origin || configuredOrigins().has(origin);
 }
 function requestToken(request: IncomingMessage) {
   const cookie = readGuestCookie(request.headers.cookie);
