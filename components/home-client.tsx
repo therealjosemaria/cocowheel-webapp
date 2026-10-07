@@ -58,6 +58,17 @@ const humanError = (error: unknown) => {
 };
 
 export default function HomeClient() {
+  const [skipCurrentRecovery] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const explicitHome =
+        window.sessionStorage.getItem("cocowheels:show-home") === "1";
+      window.sessionStorage.removeItem("cocowheels:show-home");
+      return explicitHome;
+    } catch {
+      return false;
+    }
+  });
   const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER" | "RESULTS">(
     "HOME",
   );
@@ -123,9 +134,10 @@ export default function HomeClient() {
     }
   }
   useEffect(() => {
+    if (skipCurrentRecovery) return;
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [skipCurrentRecovery]);
   const activeRideId = ride?.rideId;
   const activeRideStatus = ride?.status;
   useEffect(() => {

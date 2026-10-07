@@ -11,6 +11,14 @@ export default function AppNavigation() {
     { href: "/", label: "Home" },
     { href: "/activity", label: "Activity" },
   ];
+  const goHome = () => {
+    try {
+      window.sessionStorage.setItem("cocowheels:show-home", "1");
+    } catch {
+      // A normal reload still provides safe guest-session recovery.
+    }
+    window.location.assign("/");
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -40,9 +48,9 @@ export default function AppNavigation() {
             }
             aria-current={pathname === link.href ? "page" : undefined}
             onClick={(event) => {
-              if (link.href === "/" && pathname === "/") {
+              if (link.href === "/") {
                 event.preventDefault();
-                window.location.assign("/");
+                goHome();
               }
             }}
           >
@@ -91,9 +99,9 @@ export default function AppNavigation() {
                 aria-current={pathname === link.href ? "page" : undefined}
                 onClick={(event) => {
                   setOpen(false);
-                  if (link.href === "/" && pathname === "/") {
+                  if (link.href === "/") {
                     event.preventDefault();
-                    window.location.assign("/");
+                    goHome();
                   }
                 }}
                 tabIndex={open ? undefined : -1}
