@@ -8,7 +8,7 @@ import type { Ride } from "@/lib/client-types";
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
 
-const completedTime = (value?: string | null) =>
+const activityTime = (value?: string | null) =>
   value
     ? new Intl.DateTimeFormat("en-AU", {
         day: "numeric",
@@ -96,20 +96,35 @@ export default function ActivityClient() {
       <p className="eyebrow">Activity</p>
       <h1>Your rides</h1>
       {activity.length === 0 ? (
-        <p className="intro">Completed rides will appear here.</p>
+        <p className="intro">Completed and cancelled rides will appear here.</p>
       ) : (
         <div className="activity-list">
           {activity.map(({ ride, role }) => (
-            <article className="activity-card" key={`${role}-${ride.rideId}`}>
-              <div>
-                <strong>{role === "DRIVER" ? "You drove" : "You rode"}</strong>
-                <p>{completedTime(ride.completedAt)}</p>
-              </div>
-              <span>A${ride.priceAud}</span>
-            </article>
+            <ActivityCard key={`${role}-${ride.rideId}`} ride={ride} role={role} />
           ))}
         </div>
       )}
     </section>
+  );
+}
+
+function ActivityCard({ ride, role }: ActivityItem) {
+  const cancelled =
+    ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
+  const label = cancelled
+    ? role === "RIDER" && ride.status !== "CANCELLED"
+      ? "Request withdrawn"
+      : "Ride cancelled"
+    : role === "DRIVER"
+      ? "You drove"
+      : "You rode";
+  return (
+    <article className="activity-card">
+      <div>
+        <strong>{label}</strong>
+        <p>{activityTime(ride.completedAt ?? ride.cancelledAt)}</p>
+      </div>
+      <span>{cancelled ? "Cancelled" : `A$${ride.priceAud}`}</span>
+    </article>
   );
 }

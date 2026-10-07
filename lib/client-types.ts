@@ -62,5 +62,6 @@ export type Ride = {
   payId?: string | null;
   paymentHandoffMethod?: "PAYID" | "CASH" | null;
   completedAt?: string | null;
+  cancelledAt?: string | null;
   cancellationReason?: string | null;
 };

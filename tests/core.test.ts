@@ -467,3 +467,41 @@ test("cancellation ends a pre-co-ride pair, while completion removes live points
     h.close();
   }
 });
+
+test("private history keeps cancelled rides visible to the accepted pair", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    decideRequest(
+      h.db,
+      flow.published.sessionToken,
+      flow.published.ride.rideId,
+      flow.requested.ride.request!.requestId,
+      "ACCEPT",
+      new Date(baseTime.getTime() + 2_000),
+    );
+    const cancelledAt = new Date(baseTime.getTime() + 3_000);
+    const cancelled = cancelRide(
+      h.db,
+      flow.published.sessionToken,
+      flow.published.ride.rideId,
+      cancelledAt,
+    );
+    assert.equal(cancelled.status, "CANCELLED");
+    assert.equal(cancelled.cancelledAt, cancelledAt.toISOString());
+    const driverHistory = privateHistory(
+      h.db,
+      flow.published.sessionToken,
+      new Date(baseTime.getTime() + 4_000),
+    ).driver;
+    const riderHistory = privateHistory(
+      h.db,
+      flow.requested.sessionToken,
+      new Date(baseTime.getTime() + 4_000),
+    ).rider;
+    assert.equal(driverHistory[0]?.status, "CANCELLED");
+    assert.equal(riderHistory[0]?.status, "CANCELLED");
+  } finally {
+    h.close();
+  }
+});

@@ -1234,7 +1234,7 @@ function RideStatus({
           close={() => setCancelPromptOpen(false)}
           confirm={async () => {
             const cancelled = await onAction(cancelPath);
-            if (cancelled) window.location.assign("/");
+            if (cancelled) window.location.assign("/activity");
           }}
         />
       ) : null}
