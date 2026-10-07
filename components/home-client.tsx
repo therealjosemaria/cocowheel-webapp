@@ -678,6 +678,7 @@ function PinControls({
             : setPin
         }
         markerKinds={driver ? ["departure", "destination"] : undefined}
+        roadPathAttribution={Boolean(driver && routePoints?.length)}
         lines={
           driver && pins.origin && pins.destination
             ? [
@@ -692,14 +693,6 @@ function PinControls({
             : []
         }
       />
-      {driver && routePoints?.length ? (
-        <p className="map-attribution">
-          Road path by{" "}
-          <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
-            Geoapify
-          </a>
-        </p>
-      ) : null}
       {!driver ? (
         <p className="map-help">
           Tap the map to place the selected pin. A pin is the source of truth.

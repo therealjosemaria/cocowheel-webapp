@@ -149,6 +149,42 @@ button:disabled {
   color: #ffffff;
   background: var(--ink);
 }
+.activity-page {
+  padding: clamp(88px, 25vh, 190px) 0 34px;
+  animation: rise 0.22s ease-out;
+}
+.activity-page h1 {
+  margin-bottom: 24px;
+}
+.activity-list {
+  display: grid;
+  gap: 10px;
+}
+.activity-card {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+.activity-card strong {
+  display: block;
+  font-size: 0.94rem;
+}
+.activity-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.activity-card > span {
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
 .page-content {
   padding: 0 0 34px;
 }
@@ -264,6 +300,7 @@ p {
 }
 .map-shell,
 .map-loading {
+  position: relative;
   height: 230px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -313,12 +350,22 @@ p {
   font-size: 0.78rem;
 }
 .map-attribution {
-  margin: 7px 2px 16px;
-  color: var(--muted);
-  font-size: 0.72rem;
+  position: absolute;
+  z-index: 700;
+  bottom: 7px;
+  left: 7px;
+  margin: 0;
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: #475569;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 12%);
 }
 .map-attribution a {
   color: inherit;
+  font-weight: 700;
 }
 .journey-marker-icon {
   background: transparent;
@@ -665,6 +712,7 @@ p {
   .desktop-navigation {
     display: flex;
     align-items: center;
+    gap: 6px;
   }
   .desktop-navigation-link {
     padding: 10px 15px;
@@ -674,6 +722,10 @@ p {
     font-weight: 650;
     text-decoration: none;
     background: #f1f5f9;
+  }
+  .desktop-navigation-link.active {
+    color: #ffffff;
+    background: var(--ink);
   }
   .menu-toggle,
   .menu-backdrop {

@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/activity", label: "Activity" },
+  ];
 
   useEffect(() => {
     if (!open) return;
@@ -23,9 +29,20 @@ export default function AppNavigation() {
   return (
     <>
       <nav aria-label="Primary navigation" className="desktop-navigation">
-        <Link href="/" className="desktop-navigation-link">
-          Home
-        </Link>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={
+              pathname === link.href
+                ? "desktop-navigation-link active"
+                : "desktop-navigation-link"
+            }
+            aria-current={pathname === link.href ? "page" : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
       </nav>
       <button
         type="button"
@@ -56,14 +73,22 @@ export default function AppNavigation() {
           onClick={(event) => event.stopPropagation()}
         >
           <nav aria-label="Mobile navigation">
-            <Link
-              href="/"
-              className="mobile-navigation-link active"
-              onClick={() => setOpen(false)}
-              tabIndex={open ? undefined : -1}
-            >
-              Home
-            </Link>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={
+                  pathname === link.href
+                    ? "mobile-navigation-link active"
+                    : "mobile-navigation-link"
+                }
+                aria-current={pathname === link.href ? "page" : undefined}
+                onClick={() => setOpen(false)}
+                tabIndex={open ? undefined : -1}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </div>

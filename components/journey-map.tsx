@@ -62,11 +62,13 @@ export default function JourneyMap({
   lines = [],
   onPick,
   markerKinds,
+  roadPathAttribution = false,
 }: {
   pins?: Pin[];
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
+  roadPathAttribution?: boolean;
 }) {
   return (
     <div className="map-shell">
@@ -120,6 +122,14 @@ export default function JourneyMap({
         <Fit pins={pins} lines={lines} />
         <ZoomControl position="bottomright" />
       </MapContainer>
+      {roadPathAttribution ? (
+        <p className="map-attribution">
+          Road path by{" "}
+          <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
+            Geoapify
+          </a>
+        </p>
+      ) : null}
     </div>
   );
 }
