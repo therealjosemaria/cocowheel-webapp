@@ -690,13 +690,16 @@ function PinControls({
       <JourneyMap
         pins={mapPins}
         onPick={
-          !target ||
-          (driver &&
-            target === "origin" &&
-            !allowManualDeparture &&
-            !pins.origin)
-            ? undefined
-            : setPin
+          !target
+            ? driver
+              ? () => onDepartureRequest()
+              : undefined
+            : driver &&
+                target === "origin" &&
+                !allowManualDeparture &&
+                !pins.origin
+              ? undefined
+              : setPin
         }
         markerKinds={driver ? driverMapPoints.map((point) => point.kind) : undefined}
         roadPathAttribution={Boolean(driver && routePoints?.length)}
