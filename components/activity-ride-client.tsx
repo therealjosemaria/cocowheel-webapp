@@ -70,8 +70,8 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
 
   return (
     <section className="activity-detail" aria-live={ride ? undefined : "polite"}>
-      <Link href="/activity" className="text-button">
-        Back to activity
+      <Link href="/activity" className="text-button activity-back">
+        <span aria-hidden="true">←</span> Back to activity
       </Link>
       {error ? (
         <>
