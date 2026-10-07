@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const links = [
     { href: "/", label: "Home" },
     { href: "/activity", label: "Activity" },
@@ -17,7 +18,11 @@ export default function AppNavigation() {
     } catch {
       // A normal reload still provides safe guest-session recovery.
     }
-    window.location.assign("/");
+    if (pathname === "/") {
+      window.location.assign("/");
+    } else {
+      router.push("/");
+    }
   };
 
   useEffect(() => {
@@ -114,12 +119,11 @@ export default function AppNavigation() {
                     : undefined
                 }
                 onClick={(event) => {
+                  setOpen(false);
                   if (link.href === "/") {
                     event.preventDefault();
                     goHome();
-                    return;
                   }
-                  setOpen(false);
                 }}
                 tabIndex={open ? undefined : -1}
               >
