@@ -93,7 +93,6 @@ export default function ActivityClient() {
       <p className="eyebrow">Activity</p>
       {current ? (
         <section className="activity-current">
-          <p>Current</p>
           <ActivityCard {...current} current />
         </section>
       ) : null}
@@ -123,6 +122,11 @@ function ActivityCard({
     ? activityTime(ride.scheduledDepartureAt)
     : activityTime(ride.completedAt ?? ride.cancelledAt);
   const status = cancelled ? "CANCELLED" : ride.status;
+  const statusClass = cancelled
+    ? "activity-status cancelled"
+    : ride.status === "PUBLISHED"
+      ? "activity-status published"
+      : "activity-status";
   return (
     <article className="activity-card">
       <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
@@ -131,7 +135,7 @@ function ActivityCard({
           <strong>{ride.driverAlias}</strong>
           <code>Ride ID · {ride.rideId}</code>
         </div>
-        <span>{status}</span>
+        <span className={statusClass}>{status}</span>
       </div>
       <p className="activity-card-time">{time}</p>
       <div className="activity-card-bottom">
