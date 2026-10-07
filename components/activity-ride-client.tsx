@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
@@ -92,7 +92,37 @@ function RideView({ ride }: { ride: Ride }) {
   const [cancelPromptOpen, setCancelPromptOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [roadPath, setRoadPath] = useState<Pin[] | null>(null);
+  const loadedRouteCoordinates = useRef<string | null>(null);
   const location = riderView ? ride.driverLocation : ride.riderLocation;
+  const routeCoordinates = ride.plannedRoute
+    ? `${ride.plannedRoute.origin.latitude}:${ride.plannedRoute.origin.longitude}|${ride.plannedRoute.destination.latitude}:${ride.plannedRoute.destination.longitude}`
+    : null;
+  useEffect(() => {
+    if (!ride.plannedRoute || !routeCoordinates) {
+      loadedRouteCoordinates.current = null;
+      return;
+    }
+    if (loadedRouteCoordinates.current === routeCoordinates) return;
+    loadedRouteCoordinates.current = routeCoordinates;
+    let cancelled = false;
+    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+      method: "POST",
+      body: JSON.stringify({
+        origin: ride.plannedRoute.origin,
+        destination: ride.plannedRoute.destination,
+      }),
+    })
+      .then(({ points }) => {
+        if (!cancelled && points.length >= 2) setRoadPath(points);
+      })
+      .catch(() => {
+        if (!cancelled) setRoadPath(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ride.plannedRoute, routeCoordinates]);
   const canCancel = ![
     "CO_RIDE_ACTIVE",
     "COMPLETED",
@@ -164,9 +194,21 @@ function RideView({ ride }: { ride: Ride }) {
             pins={mapPins}
             lines={
               mapPins.length === 2
-                ? [{ points: mapPins, color: "#111827", muted: true }]
+                ? [
+                    {
+                      points: roadPath?.length ? roadPath : mapPins,
+                      color: "#111827",
+                      muted: !roadPath?.length,
+                    },
+                  ]
                 : []
             }
+            markerKinds={
+              ride.plannedRoute && mapPins.length === 2
+                ? ["departure", "destination"]
+                : undefined
+            }
+            roadPathAttribution={Boolean(roadPath?.length)}
           />
         </div>
       ) : null}
