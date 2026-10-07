@@ -321,7 +321,7 @@ export default function HomeClient() {
   }
   async function publish() {
     if (!driverPins.origin || !driverPins.destination) {
-      setError("Place both departure and destination pins first.");
+      setError("Select both your departure and final destination.");
       return;
     }
     setBusy(true);
