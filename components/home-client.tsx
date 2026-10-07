@@ -1262,7 +1262,6 @@ function CancelPrompt({
         aria-modal="true"
         aria-labelledby="cancel-prompt-title"
       >
-        <p className="eyebrow">{action}</p>
         <h2 id="cancel-prompt-title">Are you sure?</h2>
         <p>This cannot be undone. You will need to start again.</p>
         <div className="cancel-prompt-actions">
