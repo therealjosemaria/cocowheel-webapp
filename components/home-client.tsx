@@ -1260,10 +1260,8 @@ function CancelPrompt({
         className="cancel-prompt"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="cancel-prompt-title"
+        aria-label={action}
       >
-        <h2 id="cancel-prompt-title">Are you sure?</h2>
-        <p>This cannot be undone. You will need to start again.</p>
         <div className="cancel-prompt-actions">
           <button type="button" className="secondary" disabled={busy} onClick={close}>
             KEEP IT
