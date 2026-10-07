@@ -32,10 +32,23 @@ button:disabled {
   opacity: 0.58;
 }
 .app-shell {
+  display: flex;
+  flex-direction: column;
   width: min(100%, 680px);
   min-height: 100svh;
   margin: auto;
   padding: 0 18px 32px;
+}
+.app-content {
+  flex: 1;
+}
+.site-footer {
+  margin-top: 48px;
+  padding: 20px 0 2px;
+  border-top: 1px solid #f1f5f9;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.72rem;
 }
 .topbar {
   display: flex;
@@ -169,36 +182,62 @@ button:disabled {
   text-transform: uppercase;
 }
 .activity-card {
-  display: flex;
-  min-height: 76px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 15px 17px;
+  position: relative;
+  min-height: 150px;
+  padding: 28px 16px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  color: var(--ink);
-  text-decoration: none;
   background: #ffffff;
 }
-.activity-card strong {
-  display: block;
-  font-size: 0.94rem;
+.activity-role {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgb(15 23 42 / 8%);
 }
-.activity-card p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.82rem;
+.activity-card-header,
+.activity-card-bottom,
+.activity-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.activity-card > span {
-  flex: 0 0 auto;
+.activity-card-header code,
+.activity-card-header > span {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.activity-card:focus-visible {
+.activity-card-time {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.activity-metrics {
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+.activity-open {
+  padding: 8px 0;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.activity-open:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }

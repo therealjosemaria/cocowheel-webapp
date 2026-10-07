@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AppNavigation from "@/components/app-navigation";
+import SiteFooter from "@/components/site-footer";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -21,7 +22,8 @@ export default function RootLayout({
             </Link>
             <AppNavigation />
           </header>
-          {children}
+          <div className="app-content">{children}</div>
+          <SiteFooter />
         </main>
       </body>
     </html>

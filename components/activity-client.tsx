@@ -119,37 +119,30 @@ function ActivityCard({
 }: ActivityItem & { current?: boolean }) {
   const cancelled =
     ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
-  const label = cancelled
-    ? role === "RIDER" && ride.status !== "CANCELLED"
-      ? "Request withdrawn"
-      : "Ride cancelled"
-    : current
-      ? {
-          PUBLISHED: "Published ride",
-          REQUESTED: "Rider requests",
-          ACCEPTED: "Rider accepted",
-          RIDE_ACTIVE: "Heading to pickup",
-          CO_RIDE_ACTIVE: "Co-ride in progress",
-          COMPLETED: "Co-ride complete",
-          CANCELLED: "Ride cancelled",
-          EXPIRED: "Ride expired",
-        }[ride.status]
-      : role === "DRIVER"
-        ? "You drove"
-        : "You rode";
   const time = current
-    ? `Departure ${activityTime(ride.scheduledDepartureAt)}`
+    ? activityTime(ride.scheduledDepartureAt)
     : activityTime(ride.completedAt ?? ride.cancelledAt);
+  const status = cancelled ? "CANCELLED" : ride.status;
   return (
-    <Link
-      className="activity-card"
-      href={`/activity/${encodeURIComponent(ride.rideId)}`}
-    >
-      <div>
-        <strong>{label}</strong>
-        <p>{time}</p>
+    <article className="activity-card">
+      <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
+      <div className="activity-card-header">
+        <code>{ride.rideId}</code>
+        <span>{status}</span>
       </div>
-      <span>{cancelled ? "Cancelled" : "OPEN RIDE"}</span>
-    </Link>
+      <p className="activity-card-time">{time}</p>
+      <div className="activity-card-bottom">
+        <div className="activity-metrics">
+          <span>0.00 km</span>
+          <span>A${ride.priceAud}</span>
+        </div>
+        <Link
+          className="activity-open"
+          href={`/activity/${encodeURIComponent(ride.rideId)}`}
+        >
+          OPEN RIDE
+        </Link>
+      </div>
+    </article>
   );
 }
