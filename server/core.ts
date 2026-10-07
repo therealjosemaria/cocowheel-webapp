@@ -123,6 +123,7 @@ export type RideView = {
   priceAud: number;
   scheduledDepartureAt: string;
   request?: RiderRequestView;
+  plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
     alias: string;
     pickup: Pin;
@@ -1036,6 +1037,18 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
+    plannedRoute: {
+      origin: {
+        latitude: row.origin_latitude,
+        longitude: row.origin_longitude,
+        label: row.origin_label ?? undefined,
+      },
+      destination: {
+        latitude: row.destination_latitude,
+        longitude: row.destination_longitude,
+        label: row.destination_label ?? undefined,
+      },
+    },
     rider: selected
       ? {
           alias: selected.rider_alias,

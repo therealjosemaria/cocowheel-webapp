@@ -98,6 +98,15 @@ test("publishes a fixed-price offer and returns only a redacted direction corrid
     });
     assert.equal("origin" in candidates[0], false);
     assert.equal("payId" in candidates[0], false);
+    assert.deepEqual(
+      getRide(
+        h.db,
+        published.ride.rideId,
+        findSession(h.db, published.sessionToken, baseTime)!,
+        baseTime,
+      ).plannedRoute,
+      { origin: driverInput.origin, destination: driverInput.destination },
+    );
     assert.throws(
       () =>
         publishRide(

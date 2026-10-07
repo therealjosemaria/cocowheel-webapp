@@ -209,6 +209,35 @@ button:disabled {
 .activity-detail .text-button {
   display: inline-block;
 }
+.activity-record {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+}
+.activity-record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.activity-record-header strong,
+.activity-record-header span {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.activity-record-header span {
+  color: var(--muted);
+  font-weight: 700;
+}
+.activity-record .ride-summary {
+  margin: 0 0 14px;
+}
+.activity-record-map {
+  margin-top: 16px;
+}
 .activity-note {
   margin-top: 18px;
   color: var(--muted);

@@ -40,6 +40,7 @@ export type Ride = {
     destination: Pin;
     requestedDepartureAt: string;
   };
+  plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
     alias: string;
     pickup: Pin;

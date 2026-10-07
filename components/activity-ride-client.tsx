@@ -23,16 +23,16 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
-const titleFor = (status: Ride["status"]) =>
+const statusFor = (status: Ride["status"]) =>
   ({
-    PUBLISHED: "Published ride",
-    REQUESTED: "Rider requests",
-    ACCEPTED: "Rider accepted",
-    RIDE_ACTIVE: "Heading to pickup",
-    CO_RIDE_ACTIVE: "Co-ride in progress",
-    COMPLETED: "Co-ride complete",
-    CANCELLED: "Ride cancelled",
-    EXPIRED: "Ride expired",
+    PUBLISHED: "Published",
+    REQUESTED: "Requested",
+    ACCEPTED: "Accepted",
+    RIDE_ACTIVE: "Approaching pickup",
+    CO_RIDE_ACTIVE: "In progress",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+    EXPIRED: "Expired",
   })[status];
 
 export default function ActivityRideClient({ rideId }: { rideId: string }) {
@@ -74,15 +74,11 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
       </Link>
       {error ? (
         <>
-          <p className="eyebrow">Ride</p>
           <h1>Not available</h1>
           <p className="intro">{error}</p>
         </>
       ) : !ride ? (
-        <>
-          <p className="eyebrow">Ride</p>
-          <h1>Loading</h1>
-        </>
+        <h1>Loading</h1>
       ) : (
         <RideView ride={ride} />
       )}
@@ -93,10 +89,21 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
 function RideView({ ride }: { ride: Ride }) {
   const riderView = Boolean(ride.request);
   const location = riderView ? ride.driverLocation : ride.riderLocation;
+  const mapPins = ride.plannedRoute
+    ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+    : ride.request
+      ? [ride.request.pickup, ride.request.destination]
+      : ride.rider
+        ? [ride.rider.pickup, ride.rider.destination]
+        : location
+          ? [{ latitude: location.latitude, longitude: location.longitude }]
+          : [];
   return (
-    <>
-      <p className="eyebrow">Ride</p>
-      <h1>{titleFor(ride.status)}</h1>
+    <section className="activity-record">
+      <div className="activity-record-header">
+        <strong>{riderView ? "Rider · ride request" : "Driver · published ride"}</strong>
+        <span>{statusFor(ride.status)}</span>
+      </div>
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
         <strong>A${ride.priceAud}</strong>
@@ -126,20 +133,23 @@ function RideView({ ride }: { ride: Ride }) {
           </p>
         </div>
       ) : null}
-      {location ? (
-        <section className="location-card">
-          <h2>{riderView ? "Driver location" : "Rider location"}</h2>
-          <p>
-            {location.stale ? "Last known location" : "Latest shared location"}
-          </p>
+      {mapPins.length ? (
+        <div className="activity-record-map">
           <JourneyMap
-            pins={[{ latitude: location.latitude, longitude: location.longitude }]}
+            pins={mapPins}
+            lines={
+              mapPins.length === 2
+                ? [{ points: mapPins, color: "#111827", muted: true }]
+                : []
+            }
           />
-        </section>
+        </div>
       ) : null}
-      {ride.status === "CANCELLED" ? (
-        <p className="activity-note">This ride was cancelled.</p>
+      {location ? (
+        <p className="activity-note">
+          {riderView ? "Driver" : "Rider"} location: {location.stale ? "last known" : "latest shared"}
+        </p>
       ) : null}
-    </>
+    </section>
   );
 }
