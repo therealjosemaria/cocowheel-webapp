@@ -254,22 +254,23 @@ button:disabled {
 }
 .activity-open {
   display: inline-flex;
-  min-height: 36px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
   padding: 8px 11px;
-  border-radius: 9px;
-  color: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-decoration: none;
-  background: var(--ink);
-  box-shadow: 0 3px 0 #334155;
+  background: #ffffff;
+  box-shadow: 0 2px 0 #e2e8f0;
 }
 .activity-open:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #334155;
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #e2e8f0;
 }
 .activity-open:focus-visible {
   outline: 2px solid var(--ink);
