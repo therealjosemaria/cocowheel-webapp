@@ -15,12 +15,18 @@ import {
 import type { Pin } from "@/lib/client-types";
 
 type Line = { points: Pin[]; color: string; muted?: boolean };
-type MarkerKind = "departure" | "destination";
+type MarkerKind = "departure" | "pickup" | "destination";
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   departure: divIcon({
     className: "journey-marker-icon",
     html: '<span class="journey-marker journey-marker-departure" aria-label="Departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  }),
+  pickup: divIcon({
+    className: "journey-marker-icon",
+    html: '<span class="journey-marker journey-marker-departure" aria-label="Pickup"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>',
     iconSize: [32, 32],
     iconAnchor: [16, 16],
   }),

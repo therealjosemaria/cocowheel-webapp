@@ -13,11 +13,6 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
-const localDateTime = (date: Date) =>
-  new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16);
-const defaultTime = () => localDateTime(new Date());
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
     hour: "numeric",
@@ -89,8 +84,6 @@ export default function HomeClient() {
     destination?: Pin;
   }>({});
   const [pinTarget, setPinTarget] = useState<PinTarget>(null);
-  const [riderTime, setRiderTime] = useState(defaultTime);
-  const [leaveNow, setLeaveNow] = useState(true);
   const [price, setPrice] = useState("10");
   const [payId, setPayId] = useState("");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -101,6 +94,10 @@ export default function HomeClient() {
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [driverRoute, setDriverRoute] = useState<{
+    coordinates: string;
+    points: Pin[];
+  } | null>(null);
+  const [riderRoute, setRiderRoute] = useState<{
     coordinates: string;
     points: Pin[];
   } | null>(null);
@@ -197,7 +194,7 @@ export default function HomeClient() {
   function begin(roleChoice: Role) {
     if (ride) return;
     setRole(roleChoice);
-    setPinTarget(roleChoice === "DRIVER" ? null : "pickup");
+    setPinTarget(null);
     if (roleChoice === "DRIVER") setAllowManualDeparture(false);
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
@@ -286,12 +283,65 @@ export default function HomeClient() {
     driverRoute?.coordinates === driverRouteCoordinates
       ? driverRoute.points
       : null;
+  const pickupLatitude = riderPins.pickup?.latitude;
+  const pickupLongitude = riderPins.pickup?.longitude;
+  const riderDestinationLatitude = riderPins.destination?.latitude;
+  const riderDestinationLongitude = riderPins.destination?.longitude;
+  const riderRouteInput = useMemo(() => {
+    if (
+      pickupLatitude === undefined ||
+      pickupLongitude === undefined ||
+      riderDestinationLatitude === undefined ||
+      riderDestinationLongitude === undefined
+    )
+      return null;
+    return {
+      origin: { latitude: pickupLatitude, longitude: pickupLongitude },
+      destination: {
+        latitude: riderDestinationLatitude,
+        longitude: riderDestinationLongitude,
+      },
+    };
+  }, [
+    pickupLatitude,
+    pickupLongitude,
+    riderDestinationLatitude,
+    riderDestinationLongitude,
+  ]);
+  const riderRouteCoordinates = riderRouteInput
+    ? `${riderRouteInput.origin.latitude}:${riderRouteInput.origin.longitude}|${riderRouteInput.destination.latitude}:${riderRouteInput.destination.longitude}`
+    : "";
+  useEffect(() => {
+    if (!riderRouteInput) return;
+    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+      method: "POST",
+      body: JSON.stringify(riderRouteInput),
+    })
+      .then(({ points }) => {
+        if (points.length >= 2)
+          setRiderRoute({ coordinates: riderRouteCoordinates, points });
+      })
+      .catch(() => undefined);
+  }, [riderRouteCoordinates, riderRouteInput]);
+  const activeRiderRoute =
+    riderRoute?.coordinates === riderRouteCoordinates ? riderRoute.points : null;
   function setPin(pin: Pin) {
-    if (!pinTarget) return;
+    if (!pinTarget) {
+      if (role === "RIDER") {
+        setPinForTarget("pickup", pin);
+        setPinTarget("pickup");
+      }
+      return;
+    }
     const target = pinTarget;
     if (target === "origin" && driverPins.origin && !allowManualDeparture) {
       setPinForTarget("destination", pin);
       setPinTarget("destination");
+      return;
+    }
+    if (target === "pickup" && riderPins.pickup) {
+      setPinForTarget("riderDestination", pin);
+      setPinTarget("riderDestination");
       return;
     }
     setPinForTarget(target, pin);
@@ -367,7 +417,7 @@ export default function HomeClient() {
   }
   async function search() {
     if (!riderPins.pickup || !riderPins.destination) {
-      setError("Place pickup and destination pins first.");
+      setError("Select both pickup and destination locations.");
       return;
     }
     setBusy(true);
@@ -380,9 +430,7 @@ export default function HomeClient() {
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup),
             destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: new Date(
-              leaveNow ? Date.now() : riderTime,
-            ).toISOString(),
+            requestedDepartureAt: new Date().toISOString(),
           }),
         },
       );
@@ -408,9 +456,7 @@ export default function HomeClient() {
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup),
             destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: new Date(
-              leaveNow ? Date.now() : riderTime,
-            ).toISOString(),
+            requestedDepartureAt: new Date().toISOString(),
           }),
         },
       );
@@ -522,10 +568,7 @@ export default function HomeClient() {
           setTarget={setPinTarget}
           setPin={setPin}
           onCurrent={requestCurrentLocation}
-          time={riderTime}
-          setTime={setRiderTime}
-          leaveNow={leaveNow}
-          setLeaveNow={setLeaveNow}
+          routePoints={activeRiderRoute}
           submit={search}
           busy={busy}
         />
@@ -590,47 +633,6 @@ function LocationPrompt({
     </div>
   );
 }
-function TimeInput({
-  leaveNow,
-  setLeaveNow,
-  time,
-  setTime,
-}: {
-  leaveNow: boolean;
-  setLeaveNow: (value: boolean) => void;
-  time: string;
-  setTime: (value: string) => void;
-}) {
-  return (
-    <fieldset className="time-choice">
-      <legend>Departure timing</legend>
-      <label>
-        <input
-          type="radio"
-          checked={leaveNow}
-          onChange={() => setLeaveNow(true)}
-        />{" "}
-        Leave now
-      </label>
-      <label>
-        <input
-          type="radio"
-          checked={!leaveNow}
-          onChange={() => setLeaveNow(false)}
-        />{" "}
-        Plan a time
-      </label>
-      {!leaveNow ? (
-        <input
-          aria-label="Planned departure time"
-          type="datetime-local"
-          value={time}
-          onChange={(event) => setTime(event.target.value)}
-        />
-      ) : null}
-    </fieldset>
-  );
-}
 function PinControls({
   target,
   setTarget,
@@ -663,12 +665,18 @@ function PinControls({
       : []),
   ];
   const riderMapPoints = [
-    ...(pins.pickup ? [pins.pickup] : []),
-    ...(pins.destination ? [pins.destination] : []),
+    ...(pins.pickup ? [{ pin: pins.pickup, kind: "pickup" as const }] : []),
+    ...(pins.destination
+      ? [{ pin: pins.destination, kind: "destination" as const }]
+      : []),
   ];
   const mapPins = driver
     ? driverMapPoints.map((point) => point.pin)
-    : riderMapPoints;
+    : riderMapPoints.map((point) => point.pin);
+  const markerKinds = driver
+    ? driverMapPoints.map((point) => point.kind)
+    : riderMapPoints.map((point) => point.kind);
+  const startingPoint = driver ? pins.origin : pins.pickup;
   return (
     <>
       <div className="pin-tabs">
@@ -693,11 +701,15 @@ function PinControls({
             ? "Finding your current location…"
             : driver && !pins.origin
               ? "Select Departure to use your current location."
+              : !driver && !pins.pickup
+                ? "Select Pickup or use your current location."
               : locationText(driver ? pins.origin : pins.pickup)}
         </p>
         <p>
           <strong>{driver ? "Final destination" : "Destination"}</strong>
-          {locationText(pins.destination)}
+          {pins.destination
+            ? locationText(pins.destination)
+            : `Select ${driver ? "Final destination" : "Destination"}.`}
         </p>
       </div>
       <JourneyMap
@@ -706,7 +718,7 @@ function PinControls({
           !target
             ? driver
               ? () => onDepartureRequest()
-              : undefined
+              : setPin
             : driver &&
                 target === "origin" &&
                 !allowManualDeparture &&
@@ -714,15 +726,15 @@ function PinControls({
               ? undefined
               : setPin
         }
-        markerKinds={driver ? driverMapPoints.map((point) => point.kind) : undefined}
-        roadPathAttribution={Boolean(driver && routePoints?.length)}
+        markerKinds={markerKinds}
+        roadPathAttribution={Boolean(routePoints?.length)}
         lines={
-          driver && pins.origin && pins.destination
+          startingPoint && pins.destination
             ? [
                 {
                   points: routePoints?.length
                     ? routePoints
-                    : [pins.origin, pins.destination],
+                    : [startingPoint, pins.destination],
                   color: "#111827",
                   muted: !routePoints?.length,
                 },
@@ -730,11 +742,6 @@ function PinControls({
             : []
         }
       />
-      {!driver ? (
-        <p className="map-help">
-          Tap the map to place the selected pin. A pin is the source of truth.
-        </p>
-      ) : null}
       {!driver ? (
         <button
           type="button"
@@ -812,20 +819,12 @@ function RiderForm(props: {
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
   onCurrent: (target: FormPin) => void;
-  time: string;
-  setTime: (value: string) => void;
-  leaveNow: boolean;
-  setLeaveNow: (value: boolean) => void;
+  routePoints?: Pin[] | null;
   submit: () => void;
   busy: boolean;
 }) {
   return (
     <div className="form-page">
-      <p className="eyebrow">I need a ride</p>
-      <h1>Find a planned ride</h1>
-      <p className="intro">
-        Pick your journey, then compare fixed-price offers.
-      </p>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
@@ -834,14 +833,9 @@ function RiderForm(props: {
         onDepartureRequest={() => undefined}
         locatingDeparture={false}
         allowManualDeparture={false}
+        routePoints={props.routePoints}
         pins={props.pins}
         driver={false}
-      />
-      <TimeInput
-        leaveNow={props.leaveNow}
-        setLeaveNow={props.setLeaveNow}
-        time={props.time}
-        setTime={props.setTime}
       />
       <button className="primary" disabled={props.busy} onClick={props.submit}>
         {props.busy ? "Searching…" : "FIND RIDES"}
