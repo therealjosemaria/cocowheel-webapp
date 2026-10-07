@@ -276,10 +276,14 @@ export default function HomeClient() {
   function setPin(pin: Pin) {
     if (!pinTarget) return;
     const target = pinTarget;
+    if (target === "origin" && driverPins.origin && !allowManualDeparture) {
+      setPinForTarget("destination", pin);
+      setPinTarget("destination");
+      return;
+    }
     setPinForTarget(target, pin);
     if (target === "origin") {
       setAllowManualDeparture(false);
-      setPinTarget("destination");
     }
   }
   function requestCurrentLocation(target: FormPin) {
@@ -305,7 +309,6 @@ export default function HomeClient() {
         if (target === "origin") {
           setPinForTarget(target, pin);
           setAllowManualDeparture(false);
-          setPinTarget("destination");
         }
         if (target === "pickup") {
           setPinForTarget(target, pin);
@@ -687,7 +690,11 @@ function PinControls({
       <JourneyMap
         pins={mapPins}
         onPick={
-          !target || (driver && target === "origin" && !allowManualDeparture)
+          !target ||
+          (driver &&
+            target === "origin" &&
+            !allowManualDeparture &&
+            !pins.origin)
             ? undefined
             : setPin
         }
