@@ -640,6 +640,19 @@ function PinControls({
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
+  const driverMapPoints = [
+    ...(pins.origin ? [{ pin: pins.origin, kind: "departure" as const }] : []),
+    ...(pins.destination
+      ? [{ pin: pins.destination, kind: "destination" as const }]
+      : []),
+  ];
+  const riderMapPoints = [
+    ...(pins.pickup ? [pins.pickup] : []),
+    ...(pins.destination ? [pins.destination] : []),
+  ];
+  const mapPins = driver
+    ? driverMapPoints.map((point) => point.pin)
+    : riderMapPoints;
   return (
     <>
       <div className="pin-tabs">
@@ -672,17 +685,13 @@ function PinControls({
         </p>
       </div>
       <JourneyMap
-        pins={
-          [driver ? pins.origin : pins.pickup, pins.destination].filter(
-            Boolean,
-          ) as Pin[]
-        }
+        pins={mapPins}
         onPick={
           !target || (driver && target === "origin" && !allowManualDeparture)
             ? undefined
             : setPin
         }
-        markerKinds={driver ? ["departure", "destination"] : undefined}
+        markerKinds={driver ? driverMapPoints.map((point) => point.kind) : undefined}
         roadPathAttribution={Boolean(driver && routePoints?.length)}
         lines={
           driver && pins.origin && pins.destination
