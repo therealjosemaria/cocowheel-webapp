@@ -277,6 +277,10 @@ export default function HomeClient() {
     if (!pinTarget) return;
     const target = pinTarget;
     setPinForTarget(target, pin);
+    if (target === "origin") {
+      setAllowManualDeparture(false);
+      setPinTarget("destination");
+    }
   }
   function requestCurrentLocation(target: FormPin) {
     setPinTarget(target);
@@ -301,6 +305,7 @@ export default function HomeClient() {
         if (target === "origin") {
           setPinForTarget(target, pin);
           setAllowManualDeparture(false);
+          setPinTarget("destination");
         }
         if (target === "pickup") {
           setPinForTarget(target, pin);
