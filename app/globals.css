@@ -166,6 +166,9 @@ button:disabled {
   padding: 20px 0 34px;
   animation: rise 0.22s ease-out;
 }
+.activity-page > .eyebrow {
+  margin-bottom: 26px;
+}
 .activity-list {
   display: grid;
   gap: 10px;
@@ -183,8 +186,10 @@ button:disabled {
 }
 .activity-card {
   position: relative;
-  min-height: 150px;
-  padding: 28px 16px 16px;
+  display: grid;
+  gap: 14px;
+  min-height: 158px;
+  padding: 30px 16px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #ffffff;
@@ -221,21 +226,33 @@ button:disabled {
   text-transform: uppercase;
 }
 .activity-card-time {
-  margin: 10px 0 18px;
+  margin: 0;
   color: var(--muted);
   font-size: 0.78rem;
 }
 .activity-metrics {
+  gap: 16px;
   color: var(--ink);
   font-size: 0.88rem;
 }
 .activity-open {
-  padding: 8px 0;
-  color: var(--ink);
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 11px;
+  border-radius: 9px;
+  color: #ffffff;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-decoration: none;
+  background: var(--ink);
+  box-shadow: 0 3px 0 #334155;
+}
+.activity-open:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #334155;
 }
 .activity-open:focus-visible {
   outline: 2px solid var(--ink);
