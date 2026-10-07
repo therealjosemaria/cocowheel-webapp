@@ -79,7 +79,7 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
           <p className="intro">{error}</p>
         </>
       ) : !ride ? (
-        <h1>Loading</h1>
+        <div aria-busy="true" />
       ) : (
         <RideView ride={ride} />
       )}

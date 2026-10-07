@@ -63,12 +63,7 @@ export default function ActivityClient() {
   }, [history]);
 
   if (loading) {
-    return (
-      <section className="activity-page" aria-live="polite">
-        <p className="eyebrow">Activity</p>
-        <h1>Loading</h1>
-      </section>
-    );
+    return <section className="activity-page" aria-busy="true" />;
   }
 
   if (error) {
