@@ -150,11 +150,8 @@ button:disabled {
   background: var(--ink);
 }
 .activity-page {
-  padding: clamp(88px, 25vh, 190px) 0 34px;
+  padding: 20px 0 34px;
   animation: rise 0.22s ease-out;
-}
-.activity-page h1 {
-  margin-bottom: 24px;
 }
 .activity-list {
   display: grid;

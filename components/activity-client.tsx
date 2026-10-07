@@ -94,7 +94,6 @@ export default function ActivityClient() {
   return (
     <section className="activity-page">
       <p className="eyebrow">Activity</p>
-      <h1>Your rides</h1>
       {activity.length === 0 ? (
         <p className="intro">Completed and cancelled rides will appear here.</p>
       ) : (
