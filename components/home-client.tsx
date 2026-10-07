@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
+import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
 
@@ -347,7 +348,7 @@ export default function HomeClient() {
     setBusy(true);
     setError(null);
     try {
-      const result = await cocowheelsApi<{ ride: Ride }>("/api/rides", {
+      await cocowheelsApi<{ ride: Ride }>("/api/rides", {
         method: "POST",
         body: JSON.stringify({
           origin: canonicalPin(driverPins.origin),
@@ -357,9 +358,7 @@ export default function HomeClient() {
           payId,
         }),
       });
-      setRide(result.ride);
-      setRole("DRIVER");
-      setScreen("HOME");
+      window.location.assign("/activity");
     } catch (reason) {
       setError(humanError(reason));
     } finally {
@@ -1238,39 +1237,6 @@ function RideStatus({
           }}
         />
       ) : null}
-    </div>
-  );
-}
-
-function CancelPrompt({
-  busy,
-  request,
-  close,
-  confirm,
-}: {
-  busy: boolean;
-  request: boolean;
-  close: () => void;
-  confirm: () => void;
-}) {
-  const action = request ? "Withdraw request" : "Cancel ride";
-  return (
-    <div className="cancel-prompt-backdrop" role="presentation">
-      <section
-        className="cancel-prompt"
-        role="dialog"
-        aria-modal="true"
-        aria-label={action}
-      >
-        <div className="cancel-prompt-actions">
-          <button type="button" className="secondary" disabled={busy} onClick={close}>
-            KEEP IT
-          </button>
-          <button type="button" className="danger" disabled={busy} onClick={confirm}>
-            {busy ? "CANCELLING…" : action.toUpperCase()}
-          </button>
-        </div>
-      </section>
     </div>
   );
 }

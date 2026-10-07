@@ -225,6 +225,15 @@ button:disabled {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+.activity-card-identity strong,
+.activity-card-identity code {
+  display: block;
+}
+.activity-card-identity strong {
+  margin-bottom: 5px;
+  color: var(--ink);
+  font-size: 0.92rem;
+}
 .activity-card-time {
   margin: 0;
   color: var(--muted);
@@ -292,6 +301,9 @@ button:disabled {
   margin: 0 0 14px;
 }
 .activity-record-map {
+  margin-top: 16px;
+}
+.activity-record-cancel {
   margin-top: 16px;
 }
 .activity-note {

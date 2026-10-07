@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
+import CancelPrompt from "./cancel-prompt";
 
 const JourneyMap = dynamic(() => import("./journey-map"), {
   ssr: false,
@@ -88,7 +89,31 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
 
 function RideView({ ride }: { ride: Ride }) {
   const riderView = Boolean(ride.request);
+  const [cancelPromptOpen, setCancelPromptOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
   const location = riderView ? ride.driverLocation : ride.riderLocation;
+  const canCancel = ![
+    "CO_RIDE_ACTIVE",
+    "COMPLETED",
+    "CANCELLED",
+    "EXPIRED",
+  ].includes(ride.status);
+  const cancelPath =
+    riderView && ride.status === "REQUESTED"
+      ? `/api/rides/${encodeURIComponent(ride.rideId)}/request/cancel`
+      : `/api/rides/${encodeURIComponent(ride.rideId)}/cancel`;
+  const cancel = async () => {
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      await cocowheelsApi(cancelPath, { method: "POST" });
+      window.location.assign("/activity");
+    } catch {
+      setCancelError("We couldn’t cancel this ride. Please try again.");
+      setCancelling(false);
+    }
+  };
   const mapPins = ride.plannedRoute
     ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
     : ride.request
@@ -149,6 +174,27 @@ function RideView({ ride }: { ride: Ride }) {
         <p className="activity-note">
           {riderView ? "Driver" : "Rider"} location: {location.stale ? "last known" : "latest shared"}
         </p>
+      ) : null}
+      {cancelError ? <p className="error">{cancelError}</p> : null}
+      {canCancel ? (
+        <button
+          type="button"
+          className="danger activity-record-cancel"
+          disabled={cancelling}
+          onClick={() => setCancelPromptOpen(true)}
+        >
+          {riderView && ride.status === "REQUESTED"
+            ? "WITHDRAW REQUEST"
+            : "CANCEL RIDE"}
+        </button>
+      ) : null}
+      {cancelPromptOpen ? (
+        <CancelPrompt
+          busy={cancelling}
+          request={riderView && ride.status === "REQUESTED"}
+          close={() => setCancelPromptOpen(false)}
+          confirm={cancel}
+        />
       ) : null}
     </section>
   );

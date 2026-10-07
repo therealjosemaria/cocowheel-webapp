@@ -127,7 +127,10 @@ function ActivityCard({
     <article className="activity-card">
       <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
       <div className="activity-card-header">
-        <code>{ride.rideId}</code>
+        <div className="activity-card-identity">
+          <strong>{ride.driverAlias}</strong>
+          <code>Ride ID · {ride.rideId}</code>
+        </div>
         <span>{status}</span>
       </div>
       <p className="activity-card-time">{time}</p>
