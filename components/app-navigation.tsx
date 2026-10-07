@@ -39,6 +39,12 @@ export default function AppNavigation() {
                 : "desktop-navigation-link"
             }
             aria-current={pathname === link.href ? "page" : undefined}
+            onClick={(event) => {
+              if (link.href === "/" && pathname === "/") {
+                event.preventDefault();
+                window.location.assign("/");
+              }
+            }}
           >
             {link.label}
           </Link>
@@ -83,7 +89,13 @@ export default function AppNavigation() {
                     : "mobile-navigation-link"
                 }
                 aria-current={pathname === link.href ? "page" : undefined}
-                onClick={() => setOpen(false)}
+                onClick={(event) => {
+                  setOpen(false);
+                  if (link.href === "/" && pathname === "/") {
+                    event.preventDefault();
+                    window.location.assign("/");
+                  }
+                }}
                 tabIndex={open ? undefined : -1}
               >
                 {link.label}
