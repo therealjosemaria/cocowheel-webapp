@@ -157,6 +157,17 @@ button:disabled {
   display: grid;
   gap: 10px;
 }
+.activity-current {
+  margin-bottom: 18px;
+}
+.activity-current > p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 .activity-card {
   display: flex;
   min-height: 76px;
@@ -166,6 +177,8 @@ button:disabled {
   padding: 15px 17px;
   border: 1px solid var(--line);
   border-radius: 12px;
+  color: var(--ink);
+  text-decoration: none;
   background: #ffffff;
 }
 .activity-card strong {
@@ -179,8 +192,27 @@ button:disabled {
 }
 .activity-card > span {
   flex: 0 0 auto;
-  font-size: 0.9rem;
+  color: var(--muted);
+  font-size: 0.7rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.activity-card:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.activity-detail {
+  padding: 4px 0 34px;
+  animation: rise 0.22s ease-out;
+}
+.activity-detail .text-button {
+  display: inline-block;
+}
+.activity-note {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 0.86rem;
 }
 .page-content {
   padding: 0 0 34px;

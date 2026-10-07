@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
@@ -18,7 +18,7 @@ const activityTime = (value?: string | null) =>
     : "Completed";
 
 export default function ActivityClient() {
-  const router = useRouter();
+  const [current, setCurrent] = useState<ActivityItem | null>(null);
   const [history, setHistory] = useState<History | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +30,7 @@ export default function ActivityClient() {
         const current = await cocowheelsApi<{
           current: { role: "DRIVER" | "RIDER"; ride: Ride } | null;
         }>("/api/current");
-        if (current.current) {
-          router.replace("/");
-          return;
-        }
+        if (!cancelled && current.current) setCurrent(current.current);
         const result = await cocowheelsApi<History>("/api/history");
         if (!cancelled) setHistory(result);
       } catch (reason) {
@@ -51,7 +48,7 @@ export default function ActivityClient() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, []);
 
   const activity = useMemo<ActivityItem[]>(() => {
     if (!history) return [];
@@ -94,8 +91,16 @@ export default function ActivityClient() {
   return (
     <section className="activity-page">
       <p className="eyebrow">Activity</p>
+      {current ? (
+        <section className="activity-current">
+          <p>Current</p>
+          <ActivityCard {...current} current />
+        </section>
+      ) : null}
       {activity.length === 0 ? (
-        <p className="intro">Completed and cancelled rides will appear here.</p>
+        current ? null : (
+          <p className="intro">Completed and cancelled rides will appear here.</p>
+        )
       ) : (
         <div className="activity-list">
           {activity.map(({ ride, role }) => (
@@ -107,23 +112,44 @@ export default function ActivityClient() {
   );
 }
 
-function ActivityCard({ ride, role }: ActivityItem) {
+function ActivityCard({
+  ride,
+  role,
+  current = false,
+}: ActivityItem & { current?: boolean }) {
   const cancelled =
     ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
   const label = cancelled
     ? role === "RIDER" && ride.status !== "CANCELLED"
       ? "Request withdrawn"
       : "Ride cancelled"
-    : role === "DRIVER"
-      ? "You drove"
-      : "You rode";
+    : current
+      ? {
+          PUBLISHED: "Published ride",
+          REQUESTED: "Rider requests",
+          ACCEPTED: "Rider accepted",
+          RIDE_ACTIVE: "Heading to pickup",
+          CO_RIDE_ACTIVE: "Co-ride in progress",
+          COMPLETED: "Co-ride complete",
+          CANCELLED: "Ride cancelled",
+          EXPIRED: "Ride expired",
+        }[ride.status]
+      : role === "DRIVER"
+        ? "You drove"
+        : "You rode";
+  const time = current
+    ? `Departure ${activityTime(ride.scheduledDepartureAt)}`
+    : activityTime(ride.completedAt ?? ride.cancelledAt);
   return (
-    <article className="activity-card">
+    <Link
+      className="activity-card"
+      href={`/activity/${encodeURIComponent(ride.rideId)}`}
+    >
       <div>
         <strong>{label}</strong>
-        <p>{activityTime(ride.completedAt ?? ride.cancelledAt)}</p>
+        <p>{time}</p>
       </div>
-      <span>{cancelled ? "Cancelled" : `A$${ride.priceAud}`}</span>
-    </article>
+      <span>{cancelled ? "Cancelled" : "OPEN RIDE"}</span>
+    </Link>
   );
 }

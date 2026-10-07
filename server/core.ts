@@ -1153,7 +1153,7 @@ export function privateHistory(
     .all(session.id) as Array<{ public_id: string }>;
   const riderRows = db
     .prepare(
-      "SELECT r.public_id FROM rides r JOIN ride_requests q ON q.ride_id = r.id WHERE q.rider_session_id = ? AND ((q.status = 'ACCEPTED' AND r.status = 'COMPLETED') OR q.status = 'CANCELLED') ORDER BY COALESCE(r.completed_at, r.cancelled_at, q.decided_at) DESC",
+      "SELECT r.public_id FROM rides r JOIN ride_requests q ON q.ride_id = r.id WHERE q.rider_session_id = ? AND ((q.status = 'ACCEPTED' AND r.status = 'COMPLETED') OR (q.status = 'CANCELLED' AND r.status = 'CANCELLED')) ORDER BY COALESCE(r.completed_at, r.cancelled_at) DESC",
     )
     .all(session.id) as Array<{ public_id: string }>;
   return {

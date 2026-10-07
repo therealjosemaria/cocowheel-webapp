@@ -42,11 +42,19 @@ export default function AppNavigation() {
             key={link.href}
             href={link.href}
             className={
-              pathname === link.href
+              (link.href === "/activity"
+                ? pathname === "/activity" || pathname.startsWith("/activity/")
+                : pathname === link.href)
                 ? "desktop-navigation-link active"
                 : "desktop-navigation-link"
             }
-            aria-current={pathname === link.href ? "page" : undefined}
+            aria-current={
+              (link.href === "/activity"
+                ? pathname === "/activity" || pathname.startsWith("/activity/")
+                : pathname === link.href)
+                ? "page"
+                : undefined
+            }
             onClick={(event) => {
               if (link.href === "/") {
                 event.preventDefault();
@@ -92,11 +100,19 @@ export default function AppNavigation() {
                 key={link.href}
                 href={link.href}
                 className={
-                  pathname === link.href
+                  (link.href === "/activity"
+                    ? pathname === "/activity" || pathname.startsWith("/activity/")
+                    : pathname === link.href)
                     ? "mobile-navigation-link active"
                     : "mobile-navigation-link"
                 }
-                aria-current={pathname === link.href ? "page" : undefined}
+                aria-current={
+                  (link.href === "/activity"
+                    ? pathname === "/activity" || pathname.startsWith("/activity/")
+                    : pathname === link.href)
+                    ? "page"
+                    : undefined
+                }
                 onClick={(event) => {
                   setOpen(false);
                   if (link.href === "/") {
