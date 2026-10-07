@@ -434,6 +434,43 @@ p {
 .location-prompt-actions .secondary {
   margin: 0;
 }
+.cancel-prompt-backdrop {
+  position: fixed;
+  z-index: 2200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgb(15 23 42 / 28%);
+}
+.cancel-prompt {
+  width: min(100%, 420px);
+  padding: 22px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgb(15 23 42 / 24%);
+}
+.cancel-prompt h2 {
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+.cancel-prompt p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+}
+.cancel-prompt-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+.cancel-prompt-actions .secondary,
+.cancel-prompt-actions .danger {
+  margin: 0;
+}
+.cancel-prompt-actions .danger {
+  border: 1px solid #fecdca;
+  background: #fff5f4;
+}
 .time-choice {
   display: grid;
   gap: 9px;

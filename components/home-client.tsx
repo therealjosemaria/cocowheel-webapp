@@ -413,7 +413,7 @@ export default function HomeClient() {
     }
   }
   async function action(path: string, body?: unknown) {
-    if (!ride) return;
+    if (!ride) return false;
     setBusy(true);
     setError(null);
     try {
@@ -423,8 +423,10 @@ export default function HomeClient() {
       });
       setRide(result.ride);
       setServiceAvailable(true);
+      return true;
     } catch (reason) {
       setError(humanError(reason));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -945,11 +947,12 @@ function RideStatus({
   busy: boolean;
   code: string;
   setCode: (value: string) => void;
-  onAction: (path: string, body?: unknown) => Promise<void>;
+  onAction: (path: string, body?: unknown) => Promise<boolean>;
   onLocation: () => void;
 }) {
   const driver = role === "DRIVER";
   const request = ride.request;
+  const [cancelPromptOpen, setCancelPromptOpen] = useState(false);
   const canCancel = ![
     "CO_RIDE_ACTIVE",
     "COMPLETED",
@@ -957,28 +960,30 @@ function RideStatus({
     "EXPIRED",
   ].includes(ride.status);
   const location = driver ? ride.riderLocation : ride.driverLocation;
+  const statusTitle =
+    ride.status === "REQUESTED" && driver
+      ? "Rider requests"
+      : ride.status === "ACCEPTED"
+        ? "Rider accepted"
+        : ride.status === "RIDE_ACTIVE"
+          ? "Heading to pickup"
+          : ride.status === "CO_RIDE_ACTIVE"
+            ? "Co-ride in progress"
+            : ride.status === "COMPLETED"
+              ? "Co-ride complete"
+              : ride.status === "EXPIRED"
+                ? "Ride expired"
+                : null;
+  const cancelPath =
+    ride.status === "REQUESTED" && !driver
+      ? `/api/rides/${ride.rideId}/request/cancel`
+      : `/api/rides/${ride.rideId}/cancel`;
   return (
     <div className="status-page">
       <p className="eyebrow">
         {driver ? "Your published ride" : "Your ride request"}
       </p>
-      <h1>
-        {ride.status === "PUBLISHED"
-          ? "Waiting for a rider"
-          : ride.status === "REQUESTED" && driver
-            ? "Rider requests"
-            : ride.status === "ACCEPTED"
-              ? "Rider accepted"
-              : ride.status === "RIDE_ACTIVE"
-                ? "Heading to pickup"
-                : ride.status === "CO_RIDE_ACTIVE"
-                  ? "Co-ride in progress"
-                  : ride.status === "COMPLETED"
-                    ? "Co-ride complete"
-                    : ride.status === "CANCELLED"
-                      ? "Ride cancelled"
-                      : "Ride expired"}
-      </h1>
+      {statusTitle ? <h1>{statusTitle}</h1> : null}
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
         <strong>A${ride.priceAud}</strong>
@@ -1203,19 +1208,60 @@ function RideStatus({
         <button
           className="danger"
           disabled={busy}
-          onClick={() =>
-            onAction(
-              ride.status === "REQUESTED" && !driver
-                ? `/api/rides/${ride.rideId}/request/cancel`
-                : `/api/rides/${ride.rideId}/cancel`,
-            )
-          }
+          onClick={() => setCancelPromptOpen(true)}
         >
           {ride.status === "REQUESTED" && !driver
             ? "WITHDRAW REQUEST"
             : "CANCEL RIDE"}
         </button>
       ) : null}
+      {cancelPromptOpen ? (
+        <CancelPrompt
+          busy={busy}
+          request={ride.status === "REQUESTED" && !driver}
+          close={() => setCancelPromptOpen(false)}
+          confirm={async () => {
+            const cancelled = await onAction(cancelPath);
+            if (cancelled) window.location.assign("/");
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function CancelPrompt({
+  busy,
+  request,
+  close,
+  confirm,
+}: {
+  busy: boolean;
+  request: boolean;
+  close: () => void;
+  confirm: () => void;
+}) {
+  const action = request ? "Withdraw request" : "Cancel ride";
+  return (
+    <div className="cancel-prompt-backdrop" role="presentation">
+      <section
+        className="cancel-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-prompt-title"
+      >
+        <p className="eyebrow">{action}</p>
+        <h2 id="cancel-prompt-title">Are you sure?</h2>
+        <p>This cannot be undone. You will need to start again.</p>
+        <div className="cancel-prompt-actions">
+          <button type="button" className="secondary" disabled={busy} onClick={close}>
+            KEEP IT
+          </button>
+          <button type="button" className="danger" disabled={busy} onClick={confirm}>
+            {busy ? "CANCELLING…" : action.toUpperCase()}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
