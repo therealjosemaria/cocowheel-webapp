@@ -114,11 +114,12 @@ export default function AppNavigation() {
                     : undefined
                 }
                 onClick={(event) => {
-                  setOpen(false);
                   if (link.href === "/") {
                     event.preventDefault();
                     goHome();
+                    return;
                   }
+                  setOpen(false);
                 }}
                 tabIndex={open ? undefined : -1}
               >
