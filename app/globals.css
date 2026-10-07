@@ -283,11 +283,10 @@ button:disabled {
   display: inline-flex;
   min-height: 40px;
   align-items: center;
-  gap: 7px;
   margin-bottom: 20px;
   padding: 8px 11px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 14px;
   color: var(--ink);
   font-size: 0.78rem;
   background: #ffffff;
