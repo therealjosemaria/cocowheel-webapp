@@ -8,6 +8,7 @@ import type { Pin } from "@/lib/client-types";
 import {
   cacheRiderRoadPath,
   cachedRiderRoadPath,
+  markRiderSearchReturn,
   riderPreviewRoute,
 } from "@/lib/ride-preview-cache";
 
@@ -109,8 +110,12 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
 
   return (
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
-      <Link href="/" className="text-button activity-back">
-        Back to rides
+      <Link
+        href="/"
+        className="text-button activity-back"
+        onClick={markRiderSearchReturn}
+      >
+        Back to Find a ride
       </Link>
       {error ? (
         <><h1>Not available</h1><p className="intro">{error}</p></>

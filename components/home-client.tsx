@@ -6,7 +6,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
-import { saveRiderPreviewRoute } from "@/lib/ride-preview-cache";
+import {
+  consumeRiderSearchReturn,
+  markRiderSearchReturn,
+  riderSearchDraft,
+  saveRiderPreviewRoute,
+  saveRiderSearchDraft,
+} from "@/lib/ride-preview-cache";
 
 const JourneyMap = dynamic(() => import("./journey-map"), {
   ssr: false,
@@ -259,7 +265,6 @@ export default function HomeClient() {
       }>("/api/current");
       setServiceAvailable(true);
       setHomeCurrent(result.currents);
-      setScreen("HOME");
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setServiceAvailable(true);
@@ -268,6 +273,20 @@ export default function HomeClient() {
       setServiceAvailable(false);
     }
   }
+  useEffect(() => {
+    if (!consumeRiderSearchReturn()) return;
+    const draft = riderSearchDraft();
+    if (!draft) return;
+    const timer = window.setTimeout(() => {
+      setRole("RIDER");
+      setPinTarget(null);
+      setRiderMapOpen(false);
+      setRiderPins({ pickup: draft.pickup, destination: draft.destination });
+      setRiderTime(draft.departureAt);
+      setScreen("RIDER");
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   useEffect(() => {
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
     return () => window.clearTimeout(timer);
@@ -341,7 +360,15 @@ export default function HomeClient() {
     setPinTarget(null);
     if (roleChoice === "RIDER") {
       setRiderMapOpen(false);
-      if (recentLocation)
+      const draft = riderSearchDraft();
+      if (draft) {
+        setRiderPins((state) =>
+          state.pickup || state.destination
+            ? state
+            : { pickup: draft.pickup, destination: draft.destination },
+        );
+        setRiderTime(draft.departureAt);
+      } else if (recentLocation)
         setRiderPins((state) =>
           state.pickup ? state : { ...state, pickup: recentLocation },
         );
@@ -764,6 +791,12 @@ export default function HomeClient() {
           onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
           previewRoute={(rideId) => {
             if (!riderPins.pickup || !riderPins.destination) return;
+            saveRiderSearchDraft(
+              riderPins.pickup,
+              riderPins.destination,
+              riderTime,
+            );
+            markRiderSearchReturn();
             saveRiderPreviewRoute(rideId, riderPins.pickup, riderPins.destination);
           }}
           time={riderTime}

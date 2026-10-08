@@ -1,8 +1,11 @@
 import type { Pin } from "./client-types";
 
 type RiderRouteContext = { pickup: Pin; destination: Pin };
+type RiderSearchDraft = RiderRouteContext & { departureAt: string | null };
 const contextPrefix = "cocowheels:ride-preview:v1:";
 const roadPathPrefix = "cocowheels:road-path:v1:";
+const searchDraftKey = "cocowheels:find-ride-draft:v1";
+const searchReturnKey = "cocowheels:find-ride-return:v1";
 
 function read<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -30,6 +33,44 @@ export function saveRiderPreviewRoute(
   destination: Pin,
 ) {
   write(`${contextPrefix}${rideId}`, { pickup, destination } satisfies RiderRouteContext);
+}
+export function saveRiderSearchDraft(
+  pickup: Pin,
+  destination: Pin,
+  departureAt: string | null,
+) {
+  write(
+    searchDraftKey,
+    { pickup, destination, departureAt } satisfies RiderSearchDraft,
+  );
+}
+export function riderSearchDraft(): RiderSearchDraft | null {
+  const draft = read<RiderSearchDraft>(searchDraftKey);
+  if (
+    !draft ||
+    !draft.pickup ||
+    !draft.destination ||
+    typeof draft.pickup.latitude !== "number" ||
+    typeof draft.pickup.longitude !== "number" ||
+    typeof draft.destination.latitude !== "number" ||
+    typeof draft.destination.longitude !== "number" ||
+    (draft.departureAt !== null && typeof draft.departureAt !== "string")
+  )
+    return null;
+  return draft;
+}
+export function markRiderSearchReturn() {
+  write(searchReturnKey, true);
+}
+export function consumeRiderSearchReturn() {
+  if (typeof window === "undefined") return false;
+  try {
+    const marked = window.sessionStorage.getItem(searchReturnKey) === "true";
+    window.sessionStorage.removeItem(searchReturnKey);
+    return marked;
+  } catch {
+    return false;
+  }
 }
 export function riderPreviewRoute(rideId: string) {
   const context = read<RiderRouteContext>(`${contextPrefix}${rideId}`);
