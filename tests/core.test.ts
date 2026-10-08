@@ -143,9 +143,17 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
       new Date(baseTime.getTime() + 2_000),
       ownOffer.sessionToken,
     );
-    assert.deepEqual(ownSearch.map((candidate) => candidate.rideId), [
-      otherOffer.ride.rideId,
-    ]);
+    assert.equal(ownSearch.length, 2);
+    assert.equal(
+      ownSearch.find((candidate) => candidate.rideId === ownOffer.ride.rideId)
+        ?.isOwnOffer,
+      true,
+    );
+    assert.equal(
+      ownSearch.find((candidate) => candidate.rideId === otherOffer.ride.rideId)
+        ?.isOwnOffer,
+      false,
+    );
     requestRide(
       h.db,
       ownOffer.sessionToken,

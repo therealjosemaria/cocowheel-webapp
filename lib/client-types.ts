@@ -26,6 +26,7 @@ export type Candidate = {
   redactedCorridor: [Pin, Pin];
   pickupDistanceMeters: number;
   destinationDistanceMeters: number;
+  isOwnOffer: boolean;
 };
 export type Ride = {
   rideId: string;

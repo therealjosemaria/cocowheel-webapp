@@ -115,6 +115,7 @@ export type Candidate = {
   redactedCorridor: [Pin, Pin];
   pickupDistanceMeters: number;
   destinationDistanceMeters: number;
+  isOwnOffer: boolean;
 };
 export type RideView = {
   rideId: string;
@@ -589,9 +590,7 @@ export function searchRides(
     )
     .all(iso(new Date(requested.getTime() + 1))) as RideRow[];
   const session = rawSessionToken ? findSession(db, rawSessionToken, now) : null;
-  return rows
-    .filter((row) => row.driver_session_id !== session?.id)
-    .map((row) => {
+  return rows.map((row) => {
       const fit = directionFit(row, input);
       const corridor = redactedCorridor(
         { latitude: row.origin_latitude, longitude: row.origin_longitude },
@@ -609,6 +608,7 @@ export function searchRides(
         redactedCorridor: corridor,
         pickupDistanceMeters: Math.round(fit.pickupDistanceMeters),
         destinationDistanceMeters: Math.round(fit.destinationDistanceMeters),
+        isOwnOffer: row.driver_session_id === session?.id,
       };
     })
     .sort(

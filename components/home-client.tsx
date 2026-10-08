@@ -83,6 +83,7 @@ export default function HomeClient() {
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
     useState<"origin" | "pickup" | null>(null);
+  const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [driverRoute, setDriverRoute] = useState<{
@@ -435,6 +436,10 @@ export default function HomeClient() {
   async function requestSelected() {
     if (!selectedCandidate || !riderPins.pickup || !riderPins.destination)
       return;
+    if (selectedCandidate.isOwnOffer) {
+      setOwnOfferPromptOpen(true);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -453,6 +458,10 @@ export default function HomeClient() {
       setRole("RIDER");
       setScreen("HOME");
     } catch (reason) {
+      if (reason instanceof ApiError && reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION") {
+        setOwnOfferPromptOpen(true);
+        return;
+      }
       setError(humanError(reason));
     } finally {
       setBusy(false);
@@ -524,6 +533,9 @@ export default function HomeClient() {
           }}
           close={() => setLocationPromptTarget(null)}
         />
+      ) : null}
+      {ownOfferPromptOpen ? (
+        <OwnOfferPrompt close={() => setOwnOfferPromptOpen(false)} />
       ) : null}
       {error ? (
         <p className="error" role="alert">
@@ -658,6 +670,26 @@ function LocationPrompt({
           </button>
           <button type="button" className="primary" onClick={confirm}>
             USE CURRENT LOCATION
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function OwnOfferPrompt({ close }: { close: () => void }) {
+  return (
+    <div className="location-prompt-backdrop" role="presentation">
+      <section
+        className="location-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="own-offer-title"
+      >
+        <p className="eyebrow">Your ride</p>
+        <h2 id="own-offer-title">You can’t join your own ride.</h2>
+        <div className="location-prompt-actions">
+          <button type="button" className="primary" onClick={close}>
+            OKAY
           </button>
         </div>
       </section>
