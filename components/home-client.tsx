@@ -54,7 +54,7 @@ const humanError = (error: unknown) => {
 };
 
 export default function HomeClient() {
-  const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER" | "RESULTS">(
+  const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER">(
     "HOME",
   );
   const [role, setRole] = useState<Role | null>(null);
@@ -81,6 +81,8 @@ export default function HomeClient() {
   const [payId, setPayId] = useState("");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
     useState<"origin" | "pickup" | null>(null);
@@ -186,6 +188,7 @@ export default function HomeClient() {
     if (ride) return;
     setRole(roleChoice);
     setPinTarget(null);
+    if (roleChoice === "RIDER") setRiderMapOpen(false);
     if (roleChoice === "DRIVER") setAllowManualDeparture(false);
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
@@ -406,34 +409,37 @@ export default function HomeClient() {
       setBusy(false);
     }
   }
-  async function search() {
-    if (!riderPins.pickup || !riderPins.destination) {
-      setError("Select both pickup and destination locations.");
+  const riderSearchKey = riderPins.pickup && riderPins.destination
+    ? `${riderPins.pickup.latitude}:${riderPins.pickup.longitude}|${riderPins.destination.latitude}:${riderPins.destination.longitude}`
+    : null;
+  useEffect(() => {
+    if (screen !== "RIDER" || !riderSearchKey || !riderPins.pickup || !riderPins.destination) {
       return;
     }
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await cocowheelsApi<{ candidates: Candidate[] }>(
-        "/api/search",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            pickup: canonicalPin(riderPins.pickup),
-            destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: new Date().toISOString(),
-          }),
-        },
-      );
-      setCandidates(result.candidates);
-      setSelected(result.candidates[0]?.rideId ?? null);
-      setScreen("RESULTS");
-    } catch (reason) {
-      setError(humanError(reason));
-    } finally {
-      setBusy(false);
-    }
-  }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setSearching(true);
+      void cocowheelsApi<{ candidates: Candidate[] }>("/api/search", {
+        method: "POST",
+        body: JSON.stringify({
+          pickup: canonicalPin(riderPins.pickup!),
+          destination: canonicalPin(riderPins.destination!),
+          requestedDepartureAt: new Date().toISOString(),
+        }),
+      })
+        .then((result) => {
+          if (cancelled) return;
+          setCandidates(result.candidates);
+          setSelected(result.candidates[0]?.rideId ?? null);
+        })
+        .catch((reason) => !cancelled && setError(humanError(reason)))
+        .finally(() => !cancelled && setSearching(false));
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [riderPins.destination, riderPins.pickup, riderSearchKey, screen]);
   async function requestSelected() {
     if (!selectedCandidate || !riderPins.pickup || !riderPins.destination)
       return;
@@ -575,21 +581,16 @@ export default function HomeClient() {
           setPin={setPin}
           onPickupRequest={() => setLocationPromptTarget("pickup")}
           routePoints={activeRiderRoute}
-          submit={search}
-          busy={busy}
-        />
-      ) : (
-        <Results
+          mapOpen={riderMapOpen}
+          setMapOpen={setRiderMapOpen}
           candidates={candidates}
           selected={selected}
           setSelected={setSelected}
-          pickup={riderPins.pickup!}
-          destination={riderPins.destination!}
           request={requestSelected}
-          back={() => setScreen("RIDER")}
           busy={busy}
+          searching={searching}
         />
-      )}
+      ) : null}
     </section>
   );
 }
@@ -700,6 +701,7 @@ function PinControls({
   pins,
   driver,
   routePoints,
+  mapVisible = true,
 }: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
@@ -711,6 +713,7 @@ function PinControls({
   pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
   driver: boolean;
   routePoints?: Pin[] | null;
+  mapVisible?: boolean;
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
@@ -770,7 +773,7 @@ function PinControls({
             : `Select ${driver ? "Final destination" : "Destination"}.`}
         </p>
       </div>
-      <JourneyMap
+      {mapVisible ? <JourneyMap
         pins={mapPins}
         onPick={
           !target
@@ -800,6 +803,7 @@ function PinControls({
             : []
         }
       />
+      : null}
     </>
   );
 }
@@ -868,8 +872,14 @@ function RiderForm(props: {
   setPin: (pin: Pin) => void;
   onPickupRequest: () => void;
   routePoints?: Pin[] | null;
-  submit: () => void;
+  mapOpen: boolean;
+  setMapOpen: (open: boolean) => void;
+  candidates: Candidate[];
+  selected: string | null;
+  setSelected: (id: string) => void;
+  request: () => void;
   busy: boolean;
+  searching: boolean;
 }) {
   return (
     <div className="form-page">
@@ -885,10 +895,23 @@ function RiderForm(props: {
         routePoints={props.routePoints}
         pins={props.pins}
         driver={false}
+        mapVisible={props.mapOpen}
       />
-      <button className="primary" disabled={props.busy} onClick={props.submit}>
-        {props.busy ? "Searching…" : "FIND RIDES"}
+      <button type="button" className="secondary" onClick={() => props.setMapOpen(!props.mapOpen)}>
+        {props.mapOpen ? "HIDE MAP" : "SHOW MAP"}
       </button>
+      {props.pins.pickup && props.pins.destination ? (
+        <Results
+          candidates={props.candidates}
+          selected={props.selected}
+          setSelected={props.setSelected}
+          request={props.request}
+          busy={props.busy}
+          searching={props.searching}
+        />
+      ) : (
+        <div className="empty rider-empty"><p>Set pickup and destination to see matching rides.</p></div>
+      )}
     </div>
   );
 }
@@ -896,30 +919,22 @@ function Results({
   candidates,
   selected,
   setSelected,
-  pickup,
-  destination,
   request,
-  back,
   busy,
+  searching,
 }: {
   candidates: Candidate[];
   selected: string | null;
   setSelected: (id: string) => void;
-  pickup: Pin;
-  destination: Pin;
   request: () => void;
-  back: () => void;
   busy: boolean;
+  searching: boolean;
 }) {
   const active = candidates.find((candidate) => candidate.rideId === selected);
   return (
     <div className="results">
-      <button className="text-button" onClick={back}>
-        ← Edit journey
-      </button>
-      <p className="eyebrow">Compatible planned rides</p>
-      <h1>Choose one offer</h1>
-      {candidates.length === 0 ? (
+      <h2>Rides available</h2>
+      {searching ? null : candidates.length === 0 ? (
         <div className="empty">
           <h2>No planned rides yet</h2>
           <p>
@@ -949,30 +964,6 @@ function Results({
               </button>
             ))}
           </div>
-          <JourneyMap
-            pins={[pickup, destination]}
-            lines={candidates
-              .map((candidate) => ({
-                points: candidate.redactedCorridor,
-                color: candidate.rideId === selected ? "#ef476f" : "#073b4c",
-                muted: candidate.rideId !== selected,
-              }))
-              .concat(
-                active
-                  ? [
-                      {
-                        points: [pickup, destination] as [Pin, Pin],
-                        color: "#ff6b35",
-                        muted: false,
-                      },
-                    ]
-                  : [],
-              )}
-          />
-          <p className="map-help">
-            The map shows simple planned direction lines, not road routes or
-            navigation.
-          </p>
           <button
             className="primary"
             disabled={!active || busy}
