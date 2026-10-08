@@ -170,6 +170,22 @@ function RideView({ ride }: { ride: Ride }) {
   if (!riderView && ride.status === "PUBLISHED") {
     return <RidePreviewClient rideId={ride.rideId} driverOwned />;
   }
+  const historicalRequest =
+    ride.request &&
+    ["CANCELLED", "DECLINED", "DISCARDED"].includes(ride.request.status);
+  const historicalRide = ["COMPLETED", "CANCELLED", "EXPIRED"].includes(
+    ride.status,
+  );
+  if (historicalRequest || historicalRide) {
+    return (
+      <RidePreviewClient
+        rideId={ride.rideId}
+        activityRide={ride}
+        driverOwned={!riderView}
+        readOnly
+      />
+    );
+  }
   return (
     <section className="activity-record">
       <div className="activity-record-header">

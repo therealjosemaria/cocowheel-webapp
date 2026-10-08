@@ -27,11 +27,35 @@ type PreviewRide = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
-  expiresAt: string;
-  status: "PUBLISHED" | "REQUESTED";
+  expiresAt?: string;
+  status: Ride["status"];
+  requestStatus?: NonNullable<Ride["request"]>["status"];
   departureLabel: string;
   destinationLabel: string;
-  plannedRoute: { origin: Pin; destination: Pin };
+  plannedRoute?: { origin: Pin; destination: Pin };
+};
+const locationLabel = (pin?: Pin) =>
+  pin?.label ??
+  (pin ? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}` : "—");
+
+const previewFromActivity = (ride: Ride): PreviewRide => {
+  const participantRoute = ride.request
+    ? { origin: ride.request.pickup, destination: ride.request.destination }
+    : ride.rider
+      ? { origin: ride.rider.pickup, destination: ride.rider.destination }
+      : undefined;
+  const visibleRoute = ride.plannedRoute ?? participantRoute;
+  return {
+    rideId: ride.rideId,
+    driverAlias: ride.driverAlias,
+    priceAud: ride.priceAud,
+    scheduledDepartureAt: ride.scheduledDepartureAt,
+    status: ride.status,
+    requestStatus: ride.request?.status,
+    departureLabel: locationLabel(visibleRoute?.origin),
+    destinationLabel: locationLabel(visibleRoute?.destination),
+    ...(ride.plannedRoute ? { plannedRoute: ride.plannedRoute } : {}),
+  };
 };
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
@@ -46,13 +70,19 @@ export default function RidePreviewClient({
   rideId,
   pendingRequest,
   driverOwned = false,
+  activityRide,
+  readOnly = false,
 }: {
   rideId: string;
   pendingRequest?: NonNullable<Ride["request"]>;
   driverOwned?: boolean;
+  activityRide?: Ride;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
-  const [ride, setRide] = useState<PreviewRide | null>(null);
+  const [ride, setRide] = useState<PreviewRide | null>(() =>
+    activityRide ? previewFromActivity(activityRide) : null,
+  );
   const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
@@ -62,6 +92,7 @@ export default function RidePreviewClient({
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
+  const activityRequest = pendingRequest ?? activityRide?.request;
   const [riderRoute] = useState<{
     pickup: Pin;
     destination: Pin;
@@ -70,10 +101,10 @@ export default function RidePreviewClient({
     driverOwned
       ? null
       : riderPreviewRoute(rideId) ??
-        (pendingRequest
+        (activityRequest
           ? {
-              pickup: pendingRequest.pickup,
-              destination: pendingRequest.destination,
+              pickup: activityRequest.pickup,
+              destination: activityRequest.destination,
             }
           : null),
   );
@@ -88,6 +119,7 @@ export default function RidePreviewClient({
   } | null>(null);
 
   useEffect(() => {
+    if (activityRide) return;
     let cancelled = false;
     void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
       `/api/rides/${encodeURIComponent(rideId)}/preview`,
@@ -109,14 +141,14 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [rideId]);
+  }, [activityRide, rideId]);
 
   const routeKey = riderRoute
     ? `${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
     : null;
   const driverRouteInput = useMemo(
     () =>
-      ride
+      ride?.plannedRoute
         ? {
             origin: ride.plannedRoute.origin,
             destination: ride.plannedRoute.destination,
@@ -250,14 +282,18 @@ export default function RidePreviewClient({
   const lines = useMemo(() => {
     if (!ride) return [];
     return [
-      {
-        points: activeDriverRoadPath?.length
-          ? activeDriverRoadPath
-          : [ride.plannedRoute.origin, ride.plannedRoute.destination],
-        color: "#2563eb",
-        weight: 8,
-        opacity: 0.9,
-      },
+      ...(ride.plannedRoute
+        ? [
+            {
+              points: activeDriverRoadPath?.length
+                ? activeDriverRoadPath
+                : [ride.plannedRoute.origin, ride.plannedRoute.destination],
+              color: "#2563eb",
+              weight: 8,
+              opacity: 0.9,
+            },
+          ]
+        : []),
       ...(riderRoute
         ? [
             {
@@ -306,7 +342,7 @@ export default function RidePreviewClient({
           </section>
         </div>
       ) : null}
-      {endPromptOpen ? (
+      {endPromptOpen && !readOnly ? (
         <CancelPrompt
           busy={ending}
           request={!driverOwned}
@@ -325,7 +361,17 @@ export default function RidePreviewClient({
             <div className="ride-preview-header">
               <code>Route ID · {routeReference(ride.rideId)}</code>
               <strong className="route-status">
-                {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
+                {ride.requestStatus === "CANCELLED"
+                  ? "Request withdrawn"
+                  : ride.requestStatus === "DECLINED"
+                    ? "Request declined"
+                    : ride.requestStatus === "DISCARDED"
+                      ? "Request unavailable"
+                      : ride.status === "PUBLISHED"
+                        ? <>Route <span className="route-status-active">active</span></>
+                        : ride.status === "REQUESTED"
+                          ? "Route requested"
+                          : `Route ${ride.status.toLowerCase().replaceAll("_", " ")}`}
               </strong>
             </div>
             <dl className="ride-preview-fields">
@@ -347,7 +393,7 @@ export default function RidePreviewClient({
               </div>
               <div>
                 <dt>Expiry</dt>
-                <dd>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</dd>
+                <dd>{serverNow && ride.expiresAt ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</dd>
               </div>
               <div>
                 <dt>Fit</dt>
@@ -372,7 +418,7 @@ export default function RidePreviewClient({
               <div className="preview-field-action">
                 <dt>Action</dt>
                 <dd>
-                  {pendingRequest || driverOwned ? (
+                  {readOnly ? null : pendingRequest || driverOwned ? (
                     <button
                       type="button"
                       className="preview-end-action"
@@ -403,14 +449,19 @@ export default function RidePreviewClient({
           </div>
           <JourneyMap
             pins={[
-              ride.plannedRoute.origin,
-              ride.plannedRoute.destination,
+              ...(ride.plannedRoute
+                ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+                : []),
               ...(riderRoute ? [riderRoute.pickup, riderRoute.destination] : []),
             ]}
             markerKinds={
-              riderRoute
+              ride.plannedRoute && riderRoute
                 ? ["driver", "destination", "pickup", "destination"]
-                : ["driver", "destination"]
+                : ride.plannedRoute
+                  ? ["driver", "destination"]
+                  : riderRoute
+                    ? ["pickup", "destination"]
+                    : undefined
             }
             lines={lines}
             roadPathAttribution={Boolean(
@@ -418,7 +469,9 @@ export default function RidePreviewClient({
             )}
           />
           <div className="route-key">
-            <span><i className="route-key-driver" />Driver route</span>
+            {ride.plannedRoute ? (
+              <span><i className="route-key-driver" />Driver route</span>
+            ) : null}
             {riderRoute ? (
               <span><i className="route-key-rider" />Your route</span>
             ) : null}
