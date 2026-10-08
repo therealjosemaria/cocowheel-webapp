@@ -55,7 +55,10 @@ const canonicalPin = (pin: Pin) => ({
 const placeCachePrefix = "cocowheels:place-label:v1:";
 const countryPreferenceKey = "cocowheels:country-preference:v1";
 const countryPreferenceTtlMs = 7 * 24 * 60 * 60 * 1_000;
+const recentDeviceLocationKey = "cocowheels:recent-device-location:v1";
+const recentDeviceLocationTtlMs = 5 * 60 * 1_000;
 type CachedPlace = { label: string; countryCode?: string };
+type RecentDeviceLocation = { pin: Pin; capturedAt: number };
 const placeCacheKey = (pin: Pin) =>
   `${placeCachePrefix}${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
 function cachedPlace(pin: Pin): CachedPlace | null {
@@ -126,6 +129,47 @@ function storeCountryPreference(countryCode: string) {
     );
   } catch {
     // Searching still works if local browser storage is unavailable.
+  }
+}
+function recentDeviceLocation(): Pin | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value: unknown = JSON.parse(
+      window.sessionStorage.getItem(recentDeviceLocationKey) ?? "null",
+    );
+    if (
+      !value ||
+      typeof value !== "object" ||
+      !("pin" in value) ||
+      !("capturedAt" in value) ||
+      typeof value.capturedAt !== "number" ||
+      value.capturedAt + recentDeviceLocationTtlMs <= Date.now() ||
+      !value.pin ||
+      typeof value.pin !== "object" ||
+      !("latitude" in value.pin) ||
+      !("longitude" in value.pin) ||
+      typeof value.pin.latitude !== "number" ||
+      !Number.isFinite(value.pin.latitude) ||
+      typeof value.pin.longitude !== "number" ||
+      !Number.isFinite(value.pin.longitude)
+    ) {
+      window.sessionStorage.removeItem(recentDeviceLocationKey);
+      return null;
+    }
+    return value.pin as Pin;
+  } catch {
+    return null;
+  }
+}
+function storeRecentDeviceLocation(pin: Pin, capturedAt: number) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      recentDeviceLocationKey,
+      JSON.stringify({ pin, capturedAt } satisfies RecentDeviceLocation),
+    );
+  } catch {
+    // Location setup still works if browser session storage is unavailable.
   }
 }
 const humanError = (error: unknown) => {
@@ -292,10 +336,23 @@ export default function HomeClient() {
 
   function begin(roleChoice: Role) {
     if (ride) return;
+    const recentLocation = recentDeviceLocation();
     setRole(roleChoice);
     setPinTarget(null);
-    if (roleChoice === "RIDER") setRiderMapOpen(false);
-    if (roleChoice === "DRIVER") setAllowManualDeparture(false);
+    if (roleChoice === "RIDER") {
+      setRiderMapOpen(false);
+      if (recentLocation)
+        setRiderPins((state) =>
+          state.pickup ? state : { ...state, pickup: recentLocation },
+        );
+    }
+    if (roleChoice === "DRIVER") {
+      setAllowManualDeparture(false);
+      if (recentLocation)
+        setDriverPins((state) =>
+          state.origin ? state : { ...state, origin: recentLocation },
+        );
+    }
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
     setError(null);
   }
@@ -449,6 +506,7 @@ export default function HomeClient() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
+        storeRecentDeviceLocation(pin, position.timestamp);
         if (target === "origin") {
           setPinForTarget(target, pin);
           setAllowManualDeparture(false);
@@ -906,7 +964,7 @@ function PinControls({
               : !driver && !pins.pickup
                 ? null
               : locationText(driver ? pins.origin : pins.pickup)}
-          {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
+          {!driver ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>{pins.pickup ? "Update location" : "Use current location"}</button> : null}
         </p>
         <p>
           <strong className="location-heading">
@@ -981,7 +1039,7 @@ function DriverForm(props: {
             : props.pins.origin
               ? locationText(props.pins.origin)
               : null}
-          {!props.locatingDeparture && !props.pins.origin ? <button type="button" className="pickup-location-button" onClick={props.onDepartureRequest}>Use current location</button> : null}
+          {!props.locatingDeparture ? <button type="button" className="pickup-location-button" onClick={props.onDepartureRequest}>{props.pins.origin ? "Update location" : "Use current location"}</button> : null}
         </p>
         <p>
           <strong className="location-heading">
