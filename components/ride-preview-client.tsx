@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -10,7 +9,6 @@ import {
   cacheRiderRoadPath,
   cachedRoadPath,
   cachedRiderRoadPath,
-  markRiderSearchReturn,
   riderPreviewRoute,
 } from "@/lib/ride-preview-cache";
 
@@ -179,13 +177,6 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
 
   return (
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
-      <Link
-        href="/"
-        className="text-button activity-back"
-        onClick={markRiderSearchReturn}
-      >
-        Back to Find a ride
-      </Link>
       {error ? (
         <><h1>Not available</h1><p className="intro">{error}</p></>
       ) : !ride ? (

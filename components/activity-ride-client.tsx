@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -70,9 +69,6 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
 
   return (
     <section className="activity-detail" aria-live={ride ? undefined : "polite"}>
-      <Link href="/activity" className="text-button activity-back">
-        Back to activity
-      </Link>
       {error ? (
         <>
           <h1>Not available</h1>
