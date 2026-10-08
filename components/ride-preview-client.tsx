@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
+import ExpiryCountdown from "./expiry-countdown";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -40,6 +41,7 @@ const prettyTime = (value: string) =>
 
 export default function RidePreviewClient({ rideId }: { rideId: string }) {
   const [ride, setRide] = useState<PreviewRide | null>(null);
+  const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [riderRoute] = useState(() => riderPreviewRoute(rideId));
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
@@ -54,11 +56,14 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    void cocowheelsApi<{ ride: PreviewRide }>(
+    void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
       `/api/rides/${encodeURIComponent(rideId)}/preview`,
     )
       .then((result) => {
-        if (!cancelled) setRide(result.ride);
+        if (!cancelled) {
+          setRide(result.ride);
+          setServerNow(result.serverNow);
+        }
       })
       .catch((reason) => {
         if (cancelled) return;
@@ -213,7 +218,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
               </div>
               <div>
                 <dt>Expiry</dt>
-                <dd>{prettyTime(ride.expiresAt)}</dd>
+                <dd>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</dd>
               </div>
               {riderRoute?.directionFit ? (
                 <div>

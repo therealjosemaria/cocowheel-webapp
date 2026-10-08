@@ -372,6 +372,7 @@ export function createApiServer(database: Db) {
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {
         await hydratePublishedPlaceLabels(database);
+        const now = new Date();
         writeJson(
           response,
           200,
@@ -379,9 +380,10 @@ export function createApiServer(database: Db) {
             candidates: searchRides(
               database,
               inputSearch(await readJson(request)),
-              new Date(),
+              now,
               token,
             ),
+            serverNow: now.toISOString(),
           },
           cors,
         );
@@ -389,7 +391,13 @@ export function createApiServer(database: Db) {
       }
       if (request.method === "GET" && parts.join("/") === "api/availability") {
         await hydratePublishedPlaceLabels(database);
-        writeJson(response, 200, { rides: availableRides(database) }, cors);
+        const now = new Date();
+        writeJson(
+          response,
+          200,
+          { rides: availableRides(database, now), serverNow: now.toISOString() },
+          cors,
+        );
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/current") {
@@ -446,10 +454,11 @@ export function createApiServer(database: Db) {
         parts[1] === "rides" &&
         parts[3] === "preview"
       ) {
+        const now = new Date();
         writeJson(
           response,
           200,
-          { ride: publicRidePreview(database, parts[2]) },
+          { ride: publicRidePreview(database, parts[2], now), serverNow: now.toISOString() },
           cors,
         );
         return;

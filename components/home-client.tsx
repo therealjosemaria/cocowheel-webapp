@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
+import ExpiryCountdown from "./expiry-countdown";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -236,6 +237,8 @@ export default function HomeClient() {
   const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [riderTime, setRiderTime] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
+  const [availabilityServerNow, setAvailabilityServerNow] = useState<string | null>(null);
+  const [candidateServerNow, setCandidateServerNow] = useState<string | null>(null);
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
@@ -630,7 +633,7 @@ export default function HomeClient() {
     let cancelled = false;
     const timer = window.setTimeout(() => {
       setSearching(true);
-      void cocowheelsApi<{ candidates: Candidate[] }>("/api/search", {
+      void cocowheelsApi<{ candidates: Candidate[]; serverNow: string }>("/api/search", {
         method: "POST",
         body: JSON.stringify({
           pickup: canonicalPin(riderPins.pickup!),
@@ -641,6 +644,7 @@ export default function HomeClient() {
         .then((result) => {
           if (cancelled) return;
           setCandidates(result.candidates);
+          setCandidateServerNow(result.serverNow);
           setSelected(result.candidates[0]?.rideId ?? null);
         })
         .catch((reason) => !cancelled && setError(humanError(reason)))
@@ -656,8 +660,12 @@ export default function HomeClient() {
     let cancelled = false;
     const load = () => {
       if (!cancelled) setAvailabilityChecking(true);
-      cocowheelsApi<{ rides: AvailabilityOffer[] }>("/api/availability")
-        .then((result) => !cancelled && setAvailability(result.rides))
+      cocowheelsApi<{ rides: AvailabilityOffer[]; serverNow: string }>("/api/availability")
+        .then((result) => {
+          if (cancelled) return;
+          setAvailability(result.rides);
+          setAvailabilityServerNow(result.serverNow);
+        })
         .catch(() => undefined)
         .finally(() => !cancelled && setAvailabilityChecking(false));
     };
@@ -825,7 +833,9 @@ export default function HomeClient() {
           busy={busy}
           searching={searching}
           availability={availability}
+          availabilityServerNow={availabilityServerNow}
           availabilityChecking={availabilityChecking}
+          candidateServerNow={candidateServerNow}
           onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
           previewRoute={(candidate) => {
             if (!riderPins.pickup || !riderPins.destination) return;
@@ -1183,7 +1193,9 @@ function RiderForm(props: {
   busy: boolean;
   searching: boolean;
   availability: AvailabilityOffer[];
+  availabilityServerNow: string | null;
   availabilityChecking: boolean;
+  candidateServerNow: string | null;
   onAvailabilityJoin: () => void;
   previewRoute: (candidate: Candidate) => void;
   time: string | null;
@@ -1228,6 +1240,7 @@ function RiderForm(props: {
       {props.pins.pickup && props.pins.destination ? (
         <Results
           candidates={props.candidates}
+          serverNow={props.candidateServerNow}
           selected={props.selected}
           setSelected={props.setSelected}
           request={props.request}
@@ -1238,6 +1251,7 @@ function RiderForm(props: {
       ) : (
         <AvailabilityBoard
           rides={props.availability}
+          serverNow={props.availabilityServerNow}
           checking={props.availabilityChecking}
           onJoin={props.onAvailabilityJoin}
         />
@@ -1285,7 +1299,7 @@ function PlaceSearch({
     </div>
   );
 }
-function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOffer[]; checking: boolean; onJoin: () => void }) {
+function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: AvailabilityOffer[]; serverNow: string | null; checking: boolean; onJoin: () => void }) {
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
@@ -1298,7 +1312,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
-          <span>{availabilityTime(ride.expiresAt)}</span>
+          <span>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
           <b>A${ride.priceAud}</b>
           <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
           <span aria-label="Set a route to calculate direction fit"></span>
@@ -1311,6 +1325,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
 }
 function Results({
   candidates,
+  serverNow,
   selected,
   setSelected,
   request,
@@ -1319,6 +1334,7 @@ function Results({
   searching,
 }: {
   candidates: Candidate[];
+  serverNow: string | null;
   selected: string | null;
   setSelected: (id: string) => void;
   request: (candidate?: Candidate) => void;
@@ -1350,7 +1366,7 @@ function Results({
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
-                <span>{availabilityTime(candidate.expiresAt)}</span>
+                <span>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
                 <b>A${candidate.priceAud}</b>
                 <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
                 <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
