@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -548,11 +549,6 @@ export default function HomeClient() {
         <Home
           current={homeCurrent}
           onBegin={begin}
-          onContinue={(current) => {
-            setRole(current.role);
-            setRide(current.ride);
-            setHomeCurrent([]);
-          }}
         />
       ) : screen === "DRIVER" ? (
         <DriverForm
@@ -601,11 +597,9 @@ export default function HomeClient() {
 function Home({
   current,
   onBegin,
-  onContinue,
 }: {
   current: Array<{ role: Role; ride: Ride }>;
   onBegin: (role: Role) => void;
-  onContinue: (current: { role: Role; ride: Ride }) => void;
 }) {
   return (
     <div className="role-choice">
@@ -622,11 +616,10 @@ function Home({
         Find a ride
       </button>
       {current.map((item) => (
-        <button
+        <Link
           key={`${item.role}-${item.ride.rideId}`}
-          type="button"
           className="home-current-ride"
-          onClick={() => onContinue(item)}
+          href={`/activity/${encodeURIComponent(item.ride.rideId)}`}
         >
           <strong>
             {item.role === "DRIVER"
@@ -634,7 +627,7 @@ function Home({
               : "Continue ride request"}
           </strong>
           <code>Ride ID · {item.ride.rideId}</code>
-        </button>
+        </Link>
       ))}
     </div>
   );

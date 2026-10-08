@@ -383,6 +383,7 @@ p {
   border-radius: 14px;
   color: var(--ink);
   text-align: left;
+  text-decoration: none;
   background: #ffffff;
   box-shadow: 0 2px 0 #e2e8f0;
 }
