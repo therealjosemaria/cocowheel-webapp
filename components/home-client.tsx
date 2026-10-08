@@ -796,16 +796,16 @@ function PinControls({
             driver ? onDepartureRequest() : onPickupRequest?.()
           }
         >
-          {driver ? "Departure" : "Pickup"}
+          {driver ? <><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>Departure</> : "Pickup"}
         </button>
         <button className={target === second ? "active" : ""} onClick={() => setTarget(second)}>
-          Final destination
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>Final destination
         </button>
       </div> : null}
-      <div className={`pin-summary${driver ? "" : " rider-location-summary"}`}>
+      <div className={`pin-summary ${driver ? "driver-location-summary" : "rider-location-summary"}`}>
         <p>
-          <strong className={!driver ? "location-heading" : undefined}>
-            {!driver ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg> : null}
+          <strong className="location-heading">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>
             {driver ? "Departure" : "Where from?"}
           </strong>
           {driver && locatingDeparture
@@ -818,8 +818,8 @@ function PinControls({
           {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
         </p>
         <p>
-          <strong className={!driver ? "location-heading" : undefined}>
-            {!driver ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg> : null}
+          <strong className="location-heading">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
             {driver ? "Final destination" : "Where to?"}
           </strong>
           {pins.destination

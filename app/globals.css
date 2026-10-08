@@ -458,6 +458,10 @@ p {
   margin: 20px 0 12px;
 }
 .pin-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 48px;
   padding: 7px;
   border: 1px solid var(--line);
@@ -465,6 +469,16 @@ p {
   color: var(--ink);
   background: white;
   font-weight: 700;
+}
+.pin-tabs button svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 .pin-tabs button.active {
   color: white;
@@ -501,7 +515,16 @@ p {
   align-items: start;
   padding: 2px 14px;
 }
+.driver-location-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
 .rider-location-summary p {
+  min-width: 0;
+}
+.driver-location-summary p {
   min-width: 0;
 }
 .location-heading {
