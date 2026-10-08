@@ -1078,7 +1078,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span></span>
+              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article

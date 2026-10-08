@@ -820,7 +820,8 @@ p {
   margin-top: 24px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: thin;
   background: #ffffff;
 }
 .place-search {
@@ -970,10 +971,16 @@ p {
 .availability-heading,
 .availability-row {
   display: grid;
-  grid-template-columns: minmax(0, .75fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, .8fr) auto;
+  min-width: 510px;
+  grid-template-columns: 72px 106px 106px 104px 58px;
   gap: 7px;
   align-items: center;
   padding: 12px 14px;
+}
+.matched-availability .availability-heading,
+.matched-availability .availability-row {
+  min-width: 605px;
+  grid-template-columns: 72px 106px 106px 104px 58px 72px;
 }
 .availability-heading {
   border-top: 1px solid var(--line);
@@ -1001,6 +1008,22 @@ p {
 }
 .availability-row b {
   font-size: 0.72rem;
+}
+.availability-join {
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: var(--ink);
+  box-shadow: 0 2px 0 #042b38;
+}
+.availability-join:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #042b38;
 }
 .availability-row strong:focus,
 .availability-row span:focus {
