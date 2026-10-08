@@ -64,6 +64,30 @@ CREATE INDEX IF NOT EXISTS rides_discovery_index ON rides(status, scheduled_depa
 CREATE INDEX IF NOT EXISTS ride_requests_rider_index ON ride_requests(rider_session_id, status);
 CREATE INDEX IF NOT EXISTS ride_requests_ride_index ON ride_requests(ride_id, status);
 
+-- External map-provider responses are reusable but temporary. These tables are
+-- intentionally independent from a guest's ride history and clean themselves
+-- after seven days.
+CREATE TABLE IF NOT EXISTS place_lookup_cache (
+  cache_key TEXT PRIMARY KEY,
+  label TEXT,
+  country_code TEXT,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  last_used_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS place_lookup_cache_expiry_index ON place_lookup_cache(expires_at);
+
+CREATE TABLE IF NOT EXISTS route_preview_cache (
+  cache_key TEXT PRIMARY KEY,
+  points_json TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  last_used_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS route_preview_cache_expiry_index ON route_preview_cache(expires_at);
+
 CREATE TABLE IF NOT EXISTS live_locations (
   ride_id TEXT NOT NULL REFERENCES rides(id),
   participant TEXT NOT NULL CHECK (participant IN ('DRIVER', 'RIDER')),

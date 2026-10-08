@@ -29,6 +29,7 @@ import {
 } from "./core";
 import db from "./db";
 import { reversePlaceDetails, searchPlaces } from "./place-label";
+import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
 
 const MAX_BODY_BYTES = 32_768;
@@ -171,12 +172,12 @@ function validPlacePin(value: unknown) {
 function coordinateLabel(pin: { latitude: number; longitude: number }) {
   return `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`;
 }
-async function pinWithPublishedLabel(value: unknown) {
+async function pinWithPublishedLabel(value: unknown, database: Db) {
   const place = pin(value);
   if (place.label?.trim()) return place;
   const coordinates = validPlacePin(value);
   try {
-    const resolved = await reversePlaceDetails(coordinates);
+    const resolved = await reversePlaceDetails(coordinates, undefined, fetch, database);
     return { ...place, label: resolved.label ?? coordinateLabel(coordinates) };
   } catch {
     return { ...place, label: coordinateLabel(coordinates) };
@@ -215,7 +216,7 @@ async function hydratePublishedPlaceLabels(database: Db) {
           reversePlaceDetails({
             latitude: ride.origin_latitude,
             longitude: ride.origin_longitude,
-          })
+          }, undefined, fetch, database)
             .then((place) => {
               if (!place.label) return;
               database
@@ -230,7 +231,7 @@ async function hydratePublishedPlaceLabels(database: Db) {
           reversePlaceDetails({
             latitude: ride.destination_latitude,
             longitude: ride.destination_longitude,
-          })
+          }, undefined, fetch, database)
             .then((place) => {
               if (!place.label) return;
               database
@@ -297,6 +298,7 @@ function pathParts(url: string | undefined) {
 export function createApiServer(database: Db) {
   assertRuntimeConfiguration();
   initializeCoreSchema(database);
+  pruneProviderCache(database);
   return createServer(async (request, response) => {
     const origin = request.headers.origin;
     if (!originAllowed(origin)) {
@@ -336,7 +338,7 @@ export function createApiServer(database: Db) {
         if (!allowPlaceLookup(request))
           throw new Error("PLACE_LOOKUP_RATE_LIMITED");
         const body = await readJson(request);
-        const place = await reversePlaceDetails(validPlacePin(body.pin));
+        const place = await reversePlaceDetails(validPlacePin(body.pin), undefined, fetch, database);
         writeJson(response, 200, place, cors);
         return;
       }
@@ -361,6 +363,9 @@ export function createApiServer(database: Db) {
         const points = await roadRoutePreview(
           validPlacePin(body.origin),
           validPlacePin(body.destination),
+          undefined,
+          fetch,
+          database,
         );
         writeJson(response, 200, { points }, cors);
         return;
@@ -402,8 +407,8 @@ export function createApiServer(database: Db) {
       if (request.method === "POST" && parts.join("/") === "api/rides") {
         const body = await readJson(request);
         const [rideOrigin, rideDestination] = await Promise.all([
-          pinWithPublishedLabel(body.origin),
-          pinWithPublishedLabel(body.destination),
+          pinWithPublishedLabel(body.origin, database),
+          pinWithPublishedLabel(body.destination, database),
         ]);
         const result = publishRide(database, token, {
           origin: rideOrigin,

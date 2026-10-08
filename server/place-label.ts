@@ -1,4 +1,5 @@
-import type { Pin } from "./core";
+import type { Db, Pin } from "./core";
+import { cachePlaceLookup, cachedPlaceLookup } from "./provider-cache";
 
 type GeoapifyFeature = {
   properties?: {
@@ -32,15 +33,19 @@ export async function reversePlaceLabel(
   pin: Pin,
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
+  database?: Db,
 ) {
-  return (await reversePlaceDetails(pin, apiKey, fetcher)).label;
+  return (await reversePlaceDetails(pin, apiKey, fetcher, database)).label;
 }
 
 export async function reversePlaceDetails(
   pin: Pin,
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
+  database?: Db,
 ) {
+  const cached = cachedPlaceLookup(database, pin);
+  if (cached) return cached;
   if (!apiKey) throw new Error("PLACE_LOOKUP_UNAVAILABLE");
   const url = new URL("https://api.geoapify.com/v1/geocode/reverse");
   url.searchParams.set("lat", String(pin.latitude));
@@ -60,13 +65,15 @@ export async function reversePlaceDetails(
   const payload = (await response.json()) as GeoapifyResponse;
   const properties = payload.results?.[0] ?? payload.features?.[0]?.properties;
   const countryCode = properties?.country_code;
-  return {
+  const place = {
     label: conciseLabel(properties),
     countryCode:
       typeof countryCode === "string" && /^[a-z]{2}$/i.test(countryCode)
         ? countryCode.toLowerCase()
         : null,
   };
+  cachePlaceLookup(database, pin, place);
+  return place;
 }
 
 export async function searchPlaces(

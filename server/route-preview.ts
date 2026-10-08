@@ -1,35 +1,10 @@
-import type { Pin } from "./core";
+import type { Db, Pin } from "./core";
+import { cacheRoutePreview, cachedRoutePreview } from "./provider-cache";
 
 type GeoapifyGeometry = { type?: unknown; coordinates?: unknown };
 type GeoapifyRouteResponse = {
   features?: Array<{ geometry?: GeoapifyGeometry }>;
 };
-const ROUTE_CACHE_TTL_MS = 10 * 60 * 1000;
-const ROUTE_CACHE_MAX_ENTRIES = 100;
-const routeCache = new Map<string, { points: Pin[]; expiresAt: number }>();
-
-function routeCacheKey(origin: Pin, destination: Pin) {
-  return [origin, destination]
-    .map((pin) => `${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`)
-    .join("|");
-}
-function cachedRoute(key: string) {
-  const cached = routeCache.get(key);
-  if (!cached) return null;
-  if (cached.expiresAt <= Date.now()) {
-    routeCache.delete(key);
-    return null;
-  }
-  return cached.points;
-}
-function cacheRoute(key: string, points: Pin[]) {
-  if (routeCache.size >= ROUTE_CACHE_MAX_ENTRIES) {
-    const oldest = routeCache.keys().next().value;
-    if (oldest) routeCache.delete(oldest);
-  }
-  routeCache.set(key, { points, expiresAt: Date.now() + ROUTE_CACHE_TTL_MS });
-}
-
 function validPoint(value: unknown): value is [number, number] {
   return (
     Array.isArray(value) &&
@@ -65,11 +40,11 @@ export async function roadRoutePreview(
   destination: Pin,
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
+  database?: Db,
 ) {
-  if (!apiKey) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
-  const cacheKey = routeCacheKey(origin, destination);
-  const cached = cachedRoute(cacheKey);
+  const cached = cachedRoutePreview(database, origin, destination);
   if (cached) return cached;
+  if (!apiKey) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
   const url = new URL("https://api.geoapify.com/v1/routing");
   url.searchParams.set(
     "waypoints",
@@ -90,6 +65,6 @@ export async function roadRoutePreview(
   const payload = (await response.json()) as GeoapifyRouteResponse;
   const points = routePoints(payload.features?.[0]?.geometry);
   if (points.length < 2) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
-  cacheRoute(cacheKey, points);
+  cacheRoutePreview(database, origin, destination, points);
   return points;
 }

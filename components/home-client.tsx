@@ -53,6 +53,8 @@ const canonicalPin = (pin: Pin) => ({
   longitude: pin.longitude,
 });
 const placeCachePrefix = "cocowheels:place-label:v1:";
+const countryPreferenceKey = "cocowheels:country-preference:v1";
+const countryPreferenceTtlMs = 7 * 24 * 60 * 60 * 1_000;
 type CachedPlace = { label: string; countryCode?: string };
 const placeCacheKey = (pin: Pin) =>
   `${placeCachePrefix}${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
@@ -86,6 +88,44 @@ function cachePlace(pin: Pin, place: CachedPlace) {
     window.sessionStorage.setItem(placeCacheKey(pin), JSON.stringify(place));
   } catch {
     // Location labelling still works when browser storage is unavailable.
+  }
+}
+function storedCountryPreference() {
+  if (typeof window === "undefined") return null;
+  try {
+    const value: unknown = JSON.parse(
+      window.localStorage.getItem(countryPreferenceKey) ?? "null",
+    );
+    if (
+      !value ||
+      typeof value !== "object" ||
+      !("countryCode" in value) ||
+      !("expiresAt" in value) ||
+      typeof value.countryCode !== "string" ||
+      !/^[a-z]{2}$/i.test(value.countryCode) ||
+      typeof value.expiresAt !== "number" ||
+      value.expiresAt <= Date.now()
+    ) {
+      window.localStorage.removeItem(countryPreferenceKey);
+      return null;
+    }
+    return value.countryCode.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+function storeCountryPreference(countryCode: string) {
+  if (typeof window === "undefined" || !/^[a-z]{2}$/i.test(countryCode)) return;
+  try {
+    window.localStorage.setItem(
+      countryPreferenceKey,
+      JSON.stringify({
+        countryCode: countryCode.toLowerCase(),
+        expiresAt: Date.now() + countryPreferenceTtlMs,
+      }),
+    );
+  } catch {
+    // Searching still works if local browser storage is unavailable.
   }
 }
 const humanError = (error: unknown) => {
@@ -126,6 +166,7 @@ export default function HomeClient() {
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
     null,
   );
+  const [countryPreference, setCountryPreference] = useState<string | null>(null);
   const [driverPins, setDriverPins] = useState<{
     origin?: Pin;
     destination?: Pin;
@@ -185,6 +226,13 @@ export default function HomeClient() {
   }
   useEffect(() => {
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setCountryPreference(storedCountryPreference()),
+      0,
+    );
     return () => window.clearTimeout(timer);
   }, []);
   const activeRideId = ride?.rideId;
@@ -284,6 +332,10 @@ export default function HomeClient() {
       if (cached) {
         void Promise.resolve(cached).then((place) => {
           if (placeLookupIds.current[target] !== requestId) return;
+          if (place.countryCode) {
+            storeCountryPreference(place.countryCode);
+            setCountryPreference(place.countryCode);
+          }
           setPinForTarget(target, { ...pin, ...place });
         });
         continue;
@@ -296,6 +348,10 @@ export default function HomeClient() {
           if (placeLookupIds.current[target] !== requestId) return;
           if (!label && !countryCode) return;
           if (label) cachePlace(pin, { label, ...(countryCode ? { countryCode } : {}) });
+          if (countryCode) {
+            storeCountryPreference(countryCode);
+            setCountryPreference(countryCode);
+          }
           setPinForTarget(target, {
             ...pin,
             ...(label ? { label } : {}),
@@ -611,6 +667,7 @@ export default function HomeClient() {
       ) : screen === "DRIVER" ? (
         <DriverForm
           pins={driverPins}
+          countryPreference={countryPreference}
           onDepartureRequest={() => setLocationPromptTarget("origin")}
           locatingDeparture={locatingTarget === "origin"}
           allowManualDeparture={allowManualDeparture}
@@ -629,6 +686,7 @@ export default function HomeClient() {
       ) : screen === "RIDER" ? (
         <RiderForm
           pins={riderPins}
+          countryPreference={countryPreference}
           target={pinTarget}
           setTarget={setPinTarget}
           setPin={setPin}
@@ -896,6 +954,7 @@ function PinControls({
 }
 function DriverForm(props: {
   pins: { origin?: Pin; destination?: Pin };
+  countryPreference: string | null;
   onDepartureRequest: () => void;
   locatingDeparture: boolean;
   allowManualDeparture: boolean;
@@ -939,7 +998,7 @@ function DriverForm(props: {
       /> : null}
       <PlaceSearch
         bias={props.pins.origin}
-        countryCode={props.pins.origin?.countryCode}
+        countryCode={props.pins.origin?.countryCode ?? props.countryPreference ?? undefined}
         placeholder="Search destination"
         autoFocus={!props.allowManualDeparture}
         choose={props.setDestination}
@@ -974,6 +1033,7 @@ function DriverForm(props: {
 }
 function RiderForm(props: {
   pins: { pickup?: Pin; destination?: Pin };
+  countryPreference: string | null;
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
@@ -1013,7 +1073,7 @@ function RiderForm(props: {
       />
       <PlaceSearch
         bias={props.pins.pickup}
-        countryCode={props.pins.pickup?.countryCode}
+        countryCode={props.pins.pickup?.countryCode ?? props.countryPreference ?? undefined}
         placeholder="Search destination"
         autoFocus
         choose={(pin) => {
