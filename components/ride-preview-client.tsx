@@ -44,8 +44,9 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
   const [ride, setRide] = useState<PreviewRide | null>(null);
   const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [joinError, setJoinError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
+  const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
+  const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
   const [riderRoute] = useState(() => riderPreviewRoute(rideId));
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
@@ -168,7 +169,6 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
       return;
     }
     setJoining(true);
-    setJoinError(null);
     try {
       const draft = riderSearchDraft();
       await cocowheelsApi<{ ride: unknown }>(
@@ -186,11 +186,12 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
       );
       window.location.assign("/activity");
     } catch (reason) {
-      setJoinError(
-        reason instanceof ApiError && reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
-          ? "You can’t join your own ride."
-          : "We couldn’t join this ride. Please try again.",
-      );
+      if (
+        reason instanceof ApiError &&
+        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+      )
+        setSelfJoinPromptOpen(true);
+      else setJoinFailurePromptOpen(true);
     } finally {
       setJoining(false);
     }
@@ -235,6 +236,26 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           </section>
         </div>
       ) : null}
+      {selfJoinPromptOpen ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="self-join-title">
+            <h2 id="self-join-title">We apologise, drivers are not allowed to join their own rides.</h2>
+            <div className="location-prompt-actions">
+              <button type="button" className="primary" onClick={() => setSelfJoinPromptOpen(false)}>OKAY</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {joinFailurePromptOpen ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="join-failure-title">
+            <h2 id="join-failure-title">We couldn’t join this ride.</h2>
+            <div className="location-prompt-actions">
+              <button type="button" className="primary" onClick={() => setJoinFailurePromptOpen(false)}>OKAY</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       {error ? (
         <><h1>Not available</h1><p className="intro">{error}</p></>
       ) : !ride ? (
@@ -249,7 +270,6 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
               </strong>
             </div>
-            {joinError ? <p className="error" role="alert">{joinError}</p> : null}
             <dl className="ride-preview-fields">
               <div>
                 <dt>Driver</dt>
