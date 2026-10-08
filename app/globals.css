@@ -411,6 +411,15 @@ p {
   gap: 12px;
   padding: clamp(88px, 25vh, 190px) 0 24px;
 }
+.home-hero {
+  margin: 0 0 30px;
+  color: var(--ink);
+  font-size: clamp(3.45rem, 14vw, 5.4rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+  text-align: center;
+}
 .home-current-ride {
   display: grid;
   width: 100%;

@@ -869,6 +869,9 @@ function Home({
 }) {
   return (
     <div className="role-choice">
+      <h1 className="home-hero">
+        Hop in, share<br />the ride.
+      </h1>
       <button
         className="role-card"
         onClick={() => onBegin("DRIVER")}
