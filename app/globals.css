@@ -434,6 +434,12 @@ p {
 .status-page {
   padding-top: 20px;
 }
+.status-page > .page-title {
+  margin-bottom: 26px;
+}
+.status-heading {
+  margin-bottom: 16px;
+}
 @keyframes rise {
   from {
     transform: translateY(8px);

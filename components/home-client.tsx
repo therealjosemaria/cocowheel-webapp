@@ -1041,10 +1041,10 @@ function RideStatus({
       : `/api/rides/${ride.rideId}/cancel`;
   return (
     <div className="status-page">
-      <p className="eyebrow">
+      <h1 className="page-title">
         {driver ? "Your published ride" : "Your ride request"}
-      </p>
-      {statusTitle ? <h1>{statusTitle}</h1> : null}
+      </h1>
+      {statusTitle ? <h2 className="status-heading">{statusTitle}</h2> : null}
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
         <strong>A${ride.priceAud}</strong>
