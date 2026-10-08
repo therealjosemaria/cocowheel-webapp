@@ -948,8 +948,7 @@ function OwnOfferPrompt({ close }: { close: () => void }) {
         aria-modal="true"
         aria-labelledby="own-offer-title"
       >
-        <p className="eyebrow">Your ride</p>
-        <h2 id="own-offer-title">You can’t join your own ride.</h2>
+        <h2 id="own-offer-title">We apologise, drivers are not allowed to join their own rides.</h2>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
