@@ -14,6 +14,10 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
+const localDateTime = (date: Date) =>
+  new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16);
 type AvailabilityOffer = {
   rideId: string;
   driverAlias: string;
@@ -31,6 +35,14 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
+const availabilityTime = (value: string) => {
+  const date = new Date(value);
+  const hours = (date.getTime() - Date.now()) / 3_600_000;
+  const time = new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(date);
+  if (date.toDateString() === new Date().toDateString()) return `Today ${time}`;
+  if (hours >= 0 && hours < 36) return `Tomorrow ${time}`;
+  return prettyTime(value);
+};
 const locationText = (pin?: Pin) =>
   pin
     ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
@@ -468,10 +480,10 @@ export default function HomeClient() {
       window.clearInterval(timer);
     };
   }, [screen]);
-  async function requestSelected() {
-    if (!selectedCandidate || !riderPins.pickup || !riderPins.destination)
+  async function requestSelected(candidate = selectedCandidate) {
+    if (!candidate || !riderPins.pickup || !riderPins.destination)
       return;
-    if (selectedCandidate.isOwnOffer) {
+    if (candidate.isOwnOffer) {
       setOwnOfferPromptOpen(true);
       return;
     }
@@ -479,7 +491,7 @@ export default function HomeClient() {
     setError(null);
     try {
       const result = await cocowheelsApi<{ ride: Ride }>(
-        `/api/rides/${encodeURIComponent(selectedCandidate.rideId)}/requests`,
+        `/api/rides/${encodeURIComponent(candidate.rideId)}/requests`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -941,10 +953,7 @@ function RiderForm(props: {
         }}
       />
       <label className="rider-time-field">Departure
-        <div className="rider-time-control">
-          <button type="button" className={props.time === null ? "active" : ""} onClick={() => props.setTime(null)}>NOW</button>
-          <input type="datetime-local" value={props.time ?? ""} onChange={(event) => props.setTime(event.target.value || null)} />
-        </div>
+        <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
       </label>
       {props.pins.pickup && props.pins.destination ? (
         <Results
@@ -1013,11 +1022,10 @@ function Results({
   candidates: Candidate[];
   selected: string | null;
   setSelected: (id: string) => void;
-  request: () => void;
+  request: (candidate?: Candidate) => void;
   busy: boolean;
   searching: boolean;
 }) {
-  const active = candidates.find((candidate) => candidate.rideId === selected);
   return (
     <div className="results">
       <h2>Rides available</h2>
@@ -1033,10 +1041,10 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span>
+              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span></span>
             </div>
             {candidates.map((candidate) => (
-              <button
+              <article
                 key={candidate.rideId}
                 className={`availability-row availability-select ${candidate.rideId === selected ? "selected" : ""}`}
                 onClick={() => setSelected(candidate.rideId)}
@@ -1044,20 +1052,12 @@ function Results({
                 <strong>{candidate.driverAlias}</strong>
                 <span>{candidate.departureLabel ?? "Matched route"}</span>
                 <span>{candidate.destinationLabel ?? "Matched route"}</span>
-                <span>{prettyTime(candidate.scheduledDepartureAt)}</span>
+                <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
                 <b>A${candidate.priceAud}</b>
-              </button>
+                <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
+              </article>
             ))}
           </div>
-          <button
-            className="primary"
-            disabled={!active || busy}
-            onClick={request}
-          >
-            {busy
-              ? "Requesting…"
-              : `REQUEST TO JOIN · A$${active?.priceAud ?? ""}`}
-          </button>
         </>
       )}
     </div>
