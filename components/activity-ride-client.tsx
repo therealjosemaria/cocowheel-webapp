@@ -36,7 +36,13 @@ const statusFor = (status: Ride["status"]) =>
     EXPIRED: "Expired",
   })[status];
 
-export default function ActivityRideClient({ rideId }: { rideId: string }) {
+export default function ActivityRideClient({
+  rideId,
+  requestId,
+}: {
+  rideId: string;
+  requestId?: string;
+}) {
   const [ride, setRide] = useState<Ride | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +51,9 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
     const load = async () => {
       try {
         const result = await cocowheelsApi<{ ride: Ride }>(
-          `/api/rides/${encodeURIComponent(rideId)}`,
+          `/api/rides/${encodeURIComponent(rideId)}${
+            requestId ? `?request=${encodeURIComponent(requestId)}` : ""
+          }`,
         );
         if (!cancelled) {
           setRide(result.ride);
@@ -66,7 +74,7 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [rideId]);
+  }, [requestId, rideId]);
 
   return (
     <section className="activity-detail" aria-live={ride ? undefined : "polite"}>
@@ -119,14 +127,16 @@ function RideView({ ride }: { ride: Ride }) {
       cancelled = true;
     };
   }, [ride.plannedRoute, routeCoordinates]);
-  const canCancel = ![
-    "CO_RIDE_ACTIVE",
-    "COMPLETED",
-    "CANCELLED",
-    "EXPIRED",
-  ].includes(ride.status);
+  const canCancel = riderView
+    ? ride.request?.status === "PENDING" || ride.request?.status === "ACCEPTED"
+    : ![
+        "CO_RIDE_ACTIVE",
+        "COMPLETED",
+        "CANCELLED",
+        "EXPIRED",
+      ].includes(ride.status);
   const cancelPath =
-    riderView && ride.status === "REQUESTED"
+    riderView && ride.request?.status === "PENDING"
       ? `/api/rides/${encodeURIComponent(ride.rideId)}/request/cancel`
       : `/api/rides/${encodeURIComponent(ride.rideId)}/cancel`;
   const cancel = async () => {
@@ -164,7 +174,15 @@ function RideView({ ride }: { ride: Ride }) {
     <section className="activity-record">
       <div className="activity-record-header">
         <strong>{riderView ? "Rider · ride request" : "Driver · published ride"}</strong>
-        <span>{statusFor(ride.status)}</span>
+        <span>
+          {ride.request?.status === "CANCELLED"
+            ? "Withdrawn"
+            : ride.request?.status === "DECLINED"
+              ? "Declined"
+              : ride.request?.status === "DISCARDED"
+                ? "Unavailable"
+                : statusFor(ride.status)}
+        </span>
       </div>
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
@@ -232,7 +250,7 @@ function RideView({ ride }: { ride: Ride }) {
           disabled={cancelling}
           onClick={() => setCancelPromptOpen(true)}
         >
-          {riderView && ride.status === "REQUESTED"
+          {riderView && ride.request?.status === "PENDING"
             ? "WITHDRAW REQUEST"
             : "CANCEL RIDE"}
         </button>
@@ -240,7 +258,7 @@ function RideView({ ride }: { ride: Ride }) {
       {cancelPromptOpen ? (
         <CancelPrompt
           busy={cancelling}
-          request={riderView && ride.status === "REQUESTED"}
+          request={riderView && ride.request?.status === "PENDING"}
           close={() => setCancelPromptOpen(false)}
           confirm={cancel}
         />

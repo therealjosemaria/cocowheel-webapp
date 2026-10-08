@@ -6,6 +6,7 @@ import test from "node:test";
 import { openDatabase } from "../server/db";
 import {
   beginRide,
+  cancelPendingRequest,
   cancelRide,
   completeCoRide,
   confirmCoRideCode,
@@ -36,6 +37,48 @@ function harness() {
     },
   };
 }
+
+test("schema initialization removes the legacy one-request-per-ride constraint", () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "cocowheels-migration-"));
+  const db = openDatabase(path.join(directory, "test.db"));
+  try {
+    db.exec(`
+      CREATE TABLE ride_requests (
+        id TEXT PRIMARY KEY,
+        ride_id TEXT NOT NULL,
+        rider_session_id TEXT NOT NULL,
+        rider_alias TEXT NOT NULL,
+        pickup_latitude REAL NOT NULL,
+        pickup_longitude REAL NOT NULL,
+        pickup_label TEXT,
+        destination_latitude REAL NOT NULL,
+        destination_longitude REAL NOT NULL,
+        destination_label TEXT,
+        requested_departure_at TEXT NOT NULL,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        decided_at TEXT,
+        UNIQUE (ride_id, rider_session_id)
+      );
+    `);
+    initializeCoreSchema(db);
+    const definition = db
+      .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'")
+      .get() as { sql: string };
+    assert.doesNotMatch(
+      definition.sql,
+      /UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i,
+    );
+    const indexes = db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ride_requests'")
+      .all() as Array<{ name: string }>;
+    assert.ok(indexes.some((index) => index.name === "ride_requests_rider_index"));
+    assert.ok(indexes.some((index) => index.name === "ride_requests_ride_index"));
+  } finally {
+    db.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 const baseTime = new Date("2026-10-01T10:00:00.000Z");
 const departure = new Date(baseTime.getTime() + 5 * 60_000).toISOString();
 const driverInput = {
@@ -667,6 +710,61 @@ test("private history keeps expired rides visible to their driver and requester"
     assert.equal(driverHistory[0]?.status, "EXPIRED");
     assert.equal(riderHistory[0]?.status, "EXPIRED");
     assert.equal(driverHistory[0]?.expiredAt, expiredAt.toISOString());
+  } finally {
+    h.close();
+  }
+});
+
+test("withdrawn rider requests remain in history and the rider may request the same ride again", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    const firstRequestId = flow.requested.ride.request!.requestId;
+    const withdrawnAt = new Date(baseTime.getTime() + 2_000);
+    const withdrawn = cancelPendingRequest(
+      h.db,
+      flow.requested.sessionToken,
+      flow.published.ride.rideId,
+      withdrawnAt,
+    );
+    assert.equal(withdrawn.status, "PUBLISHED");
+    assert.equal(withdrawn.request?.status, "CANCELLED");
+    assert.equal(withdrawn.request?.decidedAt, withdrawnAt.toISOString());
+
+    const firstHistory = privateHistory(
+      h.db,
+      flow.requested.sessionToken,
+      new Date(baseTime.getTime() + 3_000),
+    ).rider;
+    assert.equal(firstHistory.length, 1);
+    assert.equal(firstHistory[0]?.request?.requestId, firstRequestId);
+    assert.equal(firstHistory[0]?.request?.status, "CANCELLED");
+
+    const requestedAgain = requestRide(
+      h.db,
+      flow.requested.sessionToken,
+      flow.published.ride.rideId,
+      riderInput,
+      new Date(baseTime.getTime() + 4_000),
+    );
+    assert.equal(requestedAgain.ride.request?.status, "PENDING");
+    assert.notEqual(requestedAgain.ride.request?.requestId, firstRequestId);
+    assert.equal(
+      currentOpenRides(
+        h.db,
+        flow.requested.sessionToken,
+        new Date(baseTime.getTime() + 5_000),
+      ).find((item) => item.role === "RIDER")?.ride.request?.requestId,
+      requestedAgain.ride.request?.requestId,
+    );
+    assert.equal(
+      privateHistory(
+        h.db,
+        flow.requested.sessionToken,
+        new Date(baseTime.getTime() + 5_000),
+      ).rider[0]?.request?.requestId,
+      firstRequestId,
+    );
   } finally {
     h.close();
   }

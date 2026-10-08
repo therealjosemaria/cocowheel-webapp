@@ -181,6 +181,7 @@ export type RiderRequestView = {
   pickup: Pin;
   destination: Pin;
   requestedDepartureAt: string;
+  decidedAt?: string | null;
 };
 export type PublicLocation = {
   latitude: number;
@@ -228,6 +229,56 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  const requestTable = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'")
+    .get() as { sql: string } | undefined;
+  if (!requestTable?.sql.match(/UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i))
+    return;
+
+  db.pragma("foreign_keys = OFF");
+  try {
+    db.exec(`
+      BEGIN IMMEDIATE;
+      ALTER TABLE ride_requests RENAME TO ride_requests_legacy_unique;
+      CREATE TABLE ride_requests (
+        id TEXT PRIMARY KEY,
+        ride_id TEXT NOT NULL REFERENCES rides(id),
+        rider_session_id TEXT NOT NULL REFERENCES guest_sessions(id),
+        rider_alias TEXT NOT NULL,
+        pickup_latitude REAL NOT NULL,
+        pickup_longitude REAL NOT NULL,
+        pickup_label TEXT,
+        destination_latitude REAL NOT NULL,
+        destination_longitude REAL NOT NULL,
+        destination_label TEXT,
+        requested_departure_at TEXT NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'DISCARDED', 'CANCELLED')),
+        created_at TEXT NOT NULL,
+        decided_at TEXT
+      );
+      INSERT INTO ride_requests (
+        id, ride_id, rider_session_id, rider_alias,
+        pickup_latitude, pickup_longitude, pickup_label,
+        destination_latitude, destination_longitude, destination_label,
+        requested_departure_at, status, created_at, decided_at
+      )
+      SELECT
+        id, ride_id, rider_session_id, rider_alias,
+        pickup_latitude, pickup_longitude, pickup_label,
+        destination_latitude, destination_longitude, destination_label,
+        requested_departure_at, status, created_at, decided_at
+      FROM ride_requests_legacy_unique;
+      DROP TABLE ride_requests_legacy_unique;
+      CREATE INDEX ride_requests_rider_index ON ride_requests(rider_session_id, status);
+      CREATE INDEX ride_requests_ride_index ON ride_requests(ride_id, status);
+      COMMIT;
+    `);
+  } catch (error) {
+    if (db.inTransaction) db.exec("ROLLBACK");
+    throw error;
+  } finally {
+    db.pragma("foreign_keys = ON");
+  }
 }
 
 export function guestCookie(
@@ -341,10 +392,24 @@ function requestRow(db: Db, requestId: string) {
     .prepare("SELECT * FROM ride_requests WHERE id = ?")
     .get(requestId) as RequestRow | undefined;
 }
-function requestForSession(db: Db, rideId: string, sessionId: string) {
+function requestForSession(
+  db: Db,
+  rideId: string,
+  sessionId: string,
+  requestId?: string,
+) {
+  if (requestId)
+    return db
+      .prepare(
+        "SELECT * FROM ride_requests WHERE id = ? AND ride_id = ? AND rider_session_id = ?",
+      )
+      .get(requestId, rideId, sessionId) as RequestRow | undefined;
   return db
     .prepare(
-      "SELECT * FROM ride_requests WHERE ride_id = ? AND rider_session_id = ?",
+      `SELECT * FROM ride_requests
+       WHERE ride_id = ? AND rider_session_id = ?
+       ORDER BY CASE WHEN status IN ('PENDING', 'ACCEPTED') THEN 0 ELSE 1 END, created_at DESC
+       LIMIT 1`,
     )
     .get(rideId, sessionId) as RequestRow | undefined;
 }
@@ -1150,6 +1215,7 @@ function riderRequestView(request: RequestRow): RiderRequestView {
       label: request.destination_label ?? undefined,
     },
     requestedDepartureAt: request.requested_departure_at,
+    decidedAt: request.decided_at,
   };
 }
 function driverView(db: Db, row: RideRow, now: Date): RideView {
@@ -1272,12 +1338,13 @@ export function getRide(
   rideId: string,
   session: Session,
   now = new Date(),
+  requestId?: string,
 ): RideView {
   expireStaleRides(db, now);
   const row = rideRow(db, rideId);
   if (!row) throw new Error("RIDE_NOT_FOUND");
   if (row.driver_session_id === session.id) return driverView(db, row, now);
-  const request = requestForSession(db, row.id, session.id);
+  const request = requestForSession(db, row.id, session.id, requestId);
   if (!request) throw new Error("RIDE_ACCESS_DENIED");
   return riderView(db, row, request, now);
 }
@@ -1296,12 +1363,23 @@ export function privateHistory(
     .all(session.id) as Array<{ public_id: string }>;
   const riderRows = db
     .prepare(
-      "SELECT r.public_id FROM rides r JOIN ride_requests q ON q.ride_id = r.id WHERE q.rider_session_id = ? AND ((q.status = 'ACCEPTED' AND r.status = 'COMPLETED') OR (q.status = 'CANCELLED' AND r.status = 'CANCELLED') OR r.status = 'EXPIRED') ORDER BY COALESCE(r.completed_at, r.cancelled_at, r.expired_at) DESC",
+      `SELECT r.public_id, q.id AS request_id
+       FROM rides r
+       JOIN ride_requests q ON q.ride_id = r.id
+       WHERE q.rider_session_id = ?
+         AND (
+           (q.status = 'ACCEPTED' AND r.status = 'COMPLETED')
+           OR q.status IN ('CANCELLED', 'DECLINED', 'DISCARDED')
+           OR r.status = 'EXPIRED'
+         )
+       ORDER BY COALESCE(q.decided_at, r.completed_at, r.cancelled_at, r.expired_at, q.created_at) DESC`,
     )
-    .all(session.id) as Array<{ public_id: string }>;
+    .all(session.id) as Array<{ public_id: string; request_id: string }>;
   return {
     driver: driverRows.map((row) => getRide(db, row.public_id, session, now)),
-    rider: riderRows.map((row) => getRide(db, row.public_id, session, now)),
+    rider: riderRows.map((row) =>
+      getRide(db, row.public_id, session, now, row.request_id),
+    ),
   };
 }
 
@@ -1333,13 +1411,13 @@ export function currentOpenRides(
     });
   const rider = db
     .prepare(
-      "SELECT r.public_id FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') ORDER BY q.created_at DESC LIMIT 1",
+      "SELECT r.public_id, q.id AS request_id FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') ORDER BY q.created_at DESC LIMIT 1",
     )
-    .get(session.id) as { public_id: string } | undefined;
+    .get(session.id) as { public_id: string; request_id: string } | undefined;
   if (rider)
     current.push({
       role: "RIDER",
-      ride: getRide(db, rider.public_id, session, now),
+      ride: getRide(db, rider.public_id, session, now, rider.request_id),
     });
   return current;
 }

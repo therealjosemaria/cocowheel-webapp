@@ -59,8 +59,8 @@ export default function ActivityClient() {
       ...history.rider.map((ride) => ({ ride, role: "RIDER" as const })),
     ].sort(
       (a, b) =>
-        new Date(b.ride.completedAt ?? b.ride.cancelledAt ?? b.ride.expiredAt ?? 0).getTime() -
-        new Date(a.ride.completedAt ?? a.ride.cancelledAt ?? a.ride.expiredAt ?? 0).getTime(),
+        new Date(b.ride.request?.decidedAt ?? b.ride.completedAt ?? b.ride.cancelledAt ?? b.ride.expiredAt ?? 0).getTime() -
+        new Date(a.ride.request?.decidedAt ?? a.ride.completedAt ?? a.ride.cancelledAt ?? a.ride.expiredAt ?? 0).getTime(),
     );
   }, [history]);
 
@@ -97,7 +97,11 @@ export default function ActivityClient() {
           {current.length ? (
             <section className="activity-current">
               {current.map((item) => (
-                <ActivityCard key={`${item.role}-${item.ride.rideId}`} {...item} current />
+                <ActivityCard
+                  key={`${item.role}-${item.ride.rideId}-${item.ride.request?.requestId ?? "driver"}`}
+                  {...item}
+                  current
+                />
               ))}
             </section>
           ) : null}
@@ -108,7 +112,11 @@ export default function ActivityClient() {
           ) : (
             <div className="activity-list">
               {activity.map(({ ride, role }) => (
-                <ActivityCard key={`${role}-${ride.rideId}`} ride={ride} role={role} />
+                <ActivityCard
+                  key={`${role}-${ride.rideId}-${ride.request?.requestId ?? "driver"}`}
+                  ride={ride}
+                  role={role}
+                />
               ))}
             </div>
           )}
@@ -123,12 +131,19 @@ function ActivityCard({
   role,
   current = false,
 }: ActivityItem & { current?: boolean }) {
+  const withdrawn =
+    ride.request?.status === "CANCELLED" && ride.status !== "CANCELLED";
   const cancelled =
     ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
   const time = current
     ? activityTime(ride.scheduledDepartureAt)
-    : activityTime(ride.completedAt ?? ride.cancelledAt ?? ride.expiredAt);
-  const status = cancelled ? "CANCELLED" : ride.status;
+    : activityTime(
+        ride.request?.decidedAt ??
+          ride.completedAt ??
+          ride.cancelledAt ??
+          ride.expiredAt,
+      );
+  const status = withdrawn ? "WITHDRAWN" : cancelled ? "CANCELLED" : ride.status;
   const statusClass = cancelled
     ? "activity-status cancelled"
       : ride.status === "PUBLISHED"
@@ -154,7 +169,11 @@ function ActivityCard({
         </div>
         <Link
           className="activity-open"
-          href={`/activity/${encodeURIComponent(ride.rideId)}`}
+          href={`/activity/${encodeURIComponent(ride.rideId)}${
+            role === "RIDER" && ride.request
+              ? `?request=${encodeURIComponent(ride.request.requestId)}`
+              : ""
+          }`}
         >
           OPEN RIDE
         </Link>

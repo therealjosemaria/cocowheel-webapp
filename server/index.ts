@@ -474,7 +474,17 @@ export function createApiServer(database: Db) {
         writeJson(
           response,
           200,
-          { ride: getRide(database, parts[2], session) },
+          {
+            ride: getRide(
+              database,
+              parts[2],
+              session,
+              new Date(),
+              new URL(request.url ?? "/", "http://api.local").searchParams.get(
+                "request",
+              ) ?? undefined,
+            ),
+          },
           cors,
         );
         return;

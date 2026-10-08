@@ -953,7 +953,11 @@ function Home({
         <Link
           key={`${item.role}-${item.ride.rideId}`}
           className="home-current-ride"
-          href={`/activity/${encodeURIComponent(item.ride.rideId)}`}
+          href={`/activity/${encodeURIComponent(item.ride.rideId)}${
+            item.role === "RIDER" && item.ride.request
+              ? `?request=${encodeURIComponent(item.ride.request.requestId)}`
+              : ""
+          }`}
         >
           <strong>
             {item.role === "DRIVER"

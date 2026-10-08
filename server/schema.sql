@@ -56,8 +56,7 @@ CREATE TABLE IF NOT EXISTS ride_requests (
   requested_departure_at TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'DISCARDED', 'CANCELLED')),
   created_at TEXT NOT NULL,
-  decided_at TEXT,
-  UNIQUE (ride_id, rider_session_id)
+  decided_at TEXT
 );
 
 CREATE INDEX IF NOT EXISTS rides_discovery_index ON rides(status, scheduled_departure_at);
