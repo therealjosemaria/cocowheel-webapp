@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { divIcon } from "leaflet";
 import {
   CircleMarker,
@@ -23,18 +23,11 @@ type Line = {
 };
 type MarkerKind =
   | "driver"
-  | "driverPickup"
   | "departure"
   | "pickup"
   | "destination";
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
-  driverPickup: divIcon({
-    className: "journey-marker-icon",
-    html: '<span class="journey-marker-pair" role="img" aria-label="Driver and rider pickup"><span class="journey-marker journey-marker-driver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5h14l-1.45-4.35a2 2 0 0 0-1.9-1.36H7.35a2 2 0 0 0-1.9 1.36L4 14.5v3.25c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V17h8v.75c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V14.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M7.2 14.5h.01M16.8 14.5h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.8"/></svg></span><span class="journey-marker journey-marker-departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span></span>',
-    iconSize: [58, 34],
-    iconAnchor: [29, 17],
-  }),
   driver: divIcon({
     className: "journey-marker-icon",
     html: '<span class="journey-marker journey-marker-driver" aria-label="Driver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5h14l-1.45-4.35a2 2 0 0 0-1.9-1.36H7.35a2 2 0 0 0-1.9 1.36L4 14.5v3.25c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V17h8v.75c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V14.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M7.2 14.5h.01M16.8 14.5h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.8"/></svg></span>',
@@ -60,10 +53,6 @@ const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
     iconAnchor: [17, 14],
   }),
 };
-const sameLocation = (left: Pin, right: Pin) =>
-  Math.abs(left.latitude - right.latitude) <= 0.00005 &&
-  Math.abs(left.longitude - right.longitude) <= 0.00005;
-
 function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {
   useMapEvents({
     click(event) {
@@ -94,6 +83,78 @@ function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, pointKey]);
   return null;
+}
+function sameIndexes(left: Set<number>, right: Set<number>) {
+  return left.size === right.size && [...left].every((index) => right.has(index));
+}
+function PinMarkers({
+  pins,
+  markerKinds,
+}: {
+  pins: Pin[];
+  markerKinds?: MarkerKind[];
+}) {
+  const map = useMap();
+  const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
+  const updateOverlap = useCallback(() => {
+    const next = new Set<number>();
+    pins.forEach((driverPin, driverIndex) => {
+      if (markerKinds?.[driverIndex] !== "driver") return;
+      pins.forEach((pickupPin, pickupIndex) => {
+        if (markerKinds?.[pickupIndex] !== "pickup") return;
+        const driverPoint = map.latLngToContainerPoint([
+          driverPin.latitude,
+          driverPin.longitude,
+        ]);
+        const pickupPoint = map.latLngToContainerPoint([
+          pickupPin.latitude,
+          pickupPin.longitude,
+        ]);
+        if (driverPoint.distanceTo(pickupPoint) <= 32) {
+          next.add(driverIndex);
+          next.add(pickupIndex);
+        }
+      });
+    });
+    setOverlapping((current) => (sameIndexes(current, next) ? current : next));
+  }, [map, markerKinds, pins]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(updateOverlap);
+    map.on("zoomend moveend resize", updateOverlap);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      map.off("zoomend moveend resize", updateOverlap);
+    };
+  }, [map, updateOverlap]);
+
+  return (
+    <>
+      {pins.map((pin, index) => {
+        const markerKind = markerKinds?.[index];
+        return markerKind ? (
+          <Marker
+            key={`${pin.latitude}-${pin.longitude}-${index}`}
+            position={[pin.latitude, pin.longitude]}
+            icon={mapMarkerIcons[markerKind]}
+            opacity={overlapping.has(index) ? 0.62 : 1}
+            zIndexOffset={markerKind === "pickup" ? 2 : 1}
+          />
+        ) : (
+          <CircleMarker
+            key={`${pin.latitude}-${pin.longitude}-${index}`}
+            center={[pin.latitude, pin.longitude]}
+            radius={8}
+            pathOptions={{
+              color: "#073b4c",
+              fillColor: "#ff6b35",
+              fillOpacity: 1,
+              weight: 2,
+            }}
+          />
+        );
+      })}
+    </>
+  );
 }
 export default function JourneyMap({
   pins = [],
@@ -135,37 +196,7 @@ export default function JourneyMap({
             }}
           />
         ))}
-        {pins.map((pin, index) => {
-          const markerKind = markerKinds?.[index];
-          const sharesDriverPickup = markerKind === "pickup" && pins.some(
-            (otherPin, otherIndex) =>
-              markerKinds?.[otherIndex] === "driver" && sameLocation(pin, otherPin),
-          );
-          const driverWithPickup = markerKind === "driver" && pins.some(
-            (otherPin, otherIndex) =>
-              markerKinds?.[otherIndex] === "pickup" && sameLocation(pin, otherPin),
-          );
-          if (sharesDriverPickup) return null;
-          return markerKind ? (
-            <Marker
-              key={`${pin.latitude}-${pin.longitude}-${index}`}
-              position={[pin.latitude, pin.longitude]}
-              icon={mapMarkerIcons[driverWithPickup ? "driverPickup" : markerKind]}
-            />
-          ) : (
-            <CircleMarker
-              key={`${pin.latitude}-${pin.longitude}-${index}`}
-              center={[pin.latitude, pin.longitude]}
-              radius={8}
-              pathOptions={{
-                color: "#073b4c",
-                fillColor: "#ff6b35",
-                fillOpacity: 1,
-                weight: 2,
-              }}
-            />
-          );
-        })}
+        <PinMarkers pins={pins} markerKinds={markerKinds} />
         <MapClick onPick={onPick} />
         <Fit pins={pins} lines={lines} />
         <ZoomControl position="bottomright" />

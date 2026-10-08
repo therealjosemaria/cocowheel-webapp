@@ -688,28 +688,6 @@ p {
   width: 21px;
   height: 21px;
 }
-.journey-marker-pair {
-  position: relative;
-  display: block;
-  width: 58px;
-  height: 34px;
-}
-.journey-marker-pair .journey-marker {
-  position: absolute;
-  top: 1px;
-  width: 32px;
-  height: 32px;
-}
-.journey-marker-pair .journey-marker-driver {
-  left: 0;
-}
-.journey-marker-pair .journey-marker-departure {
-  right: 0;
-}
-.journey-marker-pair .journey-marker svg {
-  width: 19px;
-  height: 19px;
-}
 .journey-marker-destination {
   width: 34px;
   height: 28px;
