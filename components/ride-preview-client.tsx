@@ -220,14 +220,22 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 <dt>Expiry</dt>
                 <dd>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</dd>
               </div>
-              {riderRoute?.directionFit ? (
-                <div>
-                  <dt>Fit</dt>
-                  <dd className={`preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`}>
-                    {riderRoute.directionFit === "GOOD" ? "Good" : "Poor"}
-                  </dd>
-                </div>
-              ) : null}
+              <div>
+                <dt>Fit</dt>
+                <dd
+                  className={
+                    riderRoute?.directionFit
+                      ? `preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`
+                      : undefined
+                  }
+                >
+                  {riderRoute?.directionFit
+                    ? riderRoute.directionFit === "GOOD"
+                      ? "Good"
+                      : "Poor"
+                    : null}
+                </dd>
+              </div>
               <div className="preview-field-price">
                 <dt>Price</dt>
                 <dd>A${ride.priceAud}</dd>
@@ -252,11 +260,8 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           />
           <div className="route-key">
             <span><i className="route-key-driver" />Driver route</span>
-            {riderRoute ? <span><i className="route-key-rider" />Your route</span> : null}
+            <span><i className="route-key-rider" />Your route</span>
           </div>
-          {!riderRoute ? (
-            <p className="intro">Add your route in Find a ride to compare paths.</p>
-          ) : null}
         </>
       )}
     </section>
