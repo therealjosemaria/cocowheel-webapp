@@ -46,8 +46,8 @@ test("road route previews convert Geoapify GeoJSON into Leaflet pins", async () 
 test("road route previews fail closed for unusable provider geometry", async () => {
   await assert.rejects(
     roadRoutePreview(
-      { latitude: -33.87, longitude: 151.21 },
-      { latitude: -33.88, longitude: 151.22 },
+      { latitude: -33.89, longitude: 151.23 },
+      { latitude: -33.9, longitude: 151.24 },
       "private-test-key",
       async () =>
         new Response(

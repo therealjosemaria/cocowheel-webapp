@@ -128,6 +128,16 @@ export type AvailabilityOffer = {
   destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
 };
+export type PublicRidePreview = {
+  rideId: string;
+  driverAlias: string;
+  priceAud: number;
+  scheduledDepartureAt: string;
+  status: "PUBLISHED" | "REQUESTED";
+  departureLabel: string;
+  destinationLabel: string;
+  redactedCorridor: [Pin, Pin];
+};
 export type RideView = {
   rideId: string;
   status: RideStatus;
@@ -686,6 +696,38 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
       }),
     status: ride.status,
   }));
+}
+
+export function publicRidePreview(
+  db: Db,
+  rideId: string,
+  now = new Date(),
+): PublicRidePreview {
+  expireStaleRides(db, now);
+  const ride = rideRow(db, rideId);
+  if (!ride) throw new Error("RIDE_UNAVAILABLE");
+  const status = ride.status;
+  if (status !== "PUBLISHED" && status !== "REQUESTED")
+    throw new Error("RIDE_UNAVAILABLE");
+  const origin = {
+    latitude: ride.origin_latitude,
+    longitude: ride.origin_longitude,
+  };
+  const destination = {
+    latitude: ride.destination_latitude,
+    longitude: ride.destination_longitude,
+  };
+  return {
+    rideId: ride.public_id,
+    driverAlias: ride.driver_alias,
+    priceAud: ride.price_aud,
+    scheduledDepartureAt: ride.scheduled_departure_at,
+    status,
+    departureLabel: ride.origin_label ?? fallbackLocationLabel(origin),
+    destinationLabel:
+      ride.destination_label ?? fallbackLocationLabel(destination),
+    redactedCorridor: redactedCorridor(origin, destination),
+  };
 }
 
 export function requestRide(

@@ -20,6 +20,7 @@ import {
   guestCookie,
   initializeCoreSchema,
   privateHistory,
+  publicRidePreview,
   publishRide,
   readGuestCookie,
   requestRide,
@@ -431,6 +432,21 @@ export function createApiServer(database: Db) {
             ? { sessionToken: result.sessionToken }
             : {};
         writeJson(response, 201, { ride: result.ride, ...fallback }, headers);
+        return;
+      }
+      if (
+        request.method === "GET" &&
+        parts.length === 4 &&
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "preview"
+      ) {
+        writeJson(
+          response,
+          200,
+          { ride: publicRidePreview(database, parts[2]) },
+          cors,
+        );
         return;
       }
       if (

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
+import { saveRiderPreviewRoute } from "@/lib/ride-preview-cache";
 
 const JourneyMap = dynamic(() => import("./journey-map"), {
   ssr: false,
@@ -645,6 +646,10 @@ export default function HomeClient() {
           availability={availability}
           availabilityChecking={availabilityChecking}
           onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
+          previewRoute={(rideId) => {
+            if (!riderPins.pickup || !riderPins.destination) return;
+            saveRiderPreviewRoute(rideId, riderPins.pickup, riderPins.destination);
+          }}
           time={riderTime}
           setTime={setRiderTime}
         />
@@ -986,6 +991,7 @@ function RiderForm(props: {
   availability: AvailabilityOffer[];
   availabilityChecking: boolean;
   onAvailabilityJoin: () => void;
+  previewRoute: (rideId: string) => void;
   time: string | null;
   setTime: (value: string | null) => void;
 }) {
@@ -1031,6 +1037,7 @@ function RiderForm(props: {
           selected={props.selected}
           setSelected={props.setSelected}
           request={props.request}
+          previewRoute={props.previewRoute}
           busy={props.busy}
           searching={props.searching}
         />
@@ -1082,7 +1089,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span>
+        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span><span>View</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1093,6 +1100,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
           <b>A${ride.priceAud}</b>
           <span aria-label="Set a route to calculate direction fit"></span>
           <button type="button" className="availability-join" onClick={onJoin}>JOIN</button>
+          <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
         </div>
       ))}
       {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
@@ -1104,6 +1112,7 @@ function Results({
   selected,
   setSelected,
   request,
+  previewRoute,
   busy,
   searching,
 }: {
@@ -1111,6 +1120,7 @@ function Results({
   selected: string | null;
   setSelected: (id: string) => void;
   request: (candidate?: Candidate) => void;
+  previewRoute: (rideId: string) => void;
   busy: boolean;
   searching: boolean;
 }) {
@@ -1129,7 +1139,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span>
+              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span><span>View</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1146,6 +1156,7 @@ function Results({
                   {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
                 </span>
                 <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
+                <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate.rideId)}>OPEN</Link>
               </article>
             ))}
           </div>

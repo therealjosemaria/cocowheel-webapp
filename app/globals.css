@@ -982,16 +982,16 @@ p {
 .availability-heading,
 .availability-row {
   display: grid;
-  min-width: 665px;
-  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px;
+  min-width: 742px;
+  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px 64px;
   gap: 7px;
   align-items: center;
   padding: 12px 14px;
 }
 .matched-availability .availability-heading,
 .matched-availability .availability-row {
-  min-width: 665px;
-  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px;
+  min-width: 742px;
+  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px 64px;
 }
 .availability-heading {
   border-top: 1px solid var(--line);
@@ -1055,6 +1055,22 @@ p {
   transform: translateY(1px);
   box-shadow: 0 1px 0 #042b38;
 }
+.availability-view {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  background: #ffffff;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
 .availability-row strong:focus,
 .availability-row span:focus {
   outline: 1px solid var(--ink);
@@ -1065,6 +1081,54 @@ p {
   padding: 16px 14px;
   color: var(--muted);
   font-size: 0.82rem;
+}
+.ride-preview {
+  padding-top: 20px;
+}
+.ride-preview > .page-title {
+  margin: 0 0 20px;
+}
+.ride-preview-summary {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+}
+.ride-preview-summary strong {
+  font-size: 0.9rem;
+}
+.ride-preview-summary span,
+.ride-preview-summary small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.route-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.route-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.route-key i {
+  display: inline-block;
+  width: 19px;
+  border-top: 3px solid;
+}
+.route-key-driver {
+  border-top-style: dashed !important;
+  color: #64748b;
+}
+.route-key-rider {
+  color: var(--ink);
 }
 .candidate {
   display: flex;
