@@ -1312,7 +1312,7 @@ function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: Avai
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
-          <span>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
+          <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
           <b>A${ride.priceAud}</b>
           <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
           <span aria-label="Set a route to calculate direction fit"></span>
@@ -1366,7 +1366,7 @@ function Results({
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
-                <span>{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
+                <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
                 <b>A${candidate.priceAud}</b>
                 <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
                 <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>

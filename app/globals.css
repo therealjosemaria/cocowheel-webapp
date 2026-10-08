@@ -1076,6 +1076,12 @@ p {
   color: var(--muted);
   font-size: 0.68rem;
 }
+.availability-row .availability-expiry {
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+  text-align: center;
+}
 .availability-row b {
   font-size: 0.72rem;
 }
