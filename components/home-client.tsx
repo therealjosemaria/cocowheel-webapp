@@ -1166,7 +1166,7 @@ function RiderForm(props: {
         bias={props.pins.pickup}
         countryCode={props.pins.pickup?.countryCode ?? props.countryPreference ?? undefined}
         placeholder="Search destination"
-        autoFocus
+        autoFocus={!props.pins.destination}
         choose={(pin) => {
           props.setDestination(pin);
           props.setTarget("riderDestination");
