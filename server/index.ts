@@ -6,6 +6,7 @@ import {
 import type { Db } from "./core";
 import {
   beginRide,
+  availableRides,
   cancelPendingRequest,
   cancelRide,
   completeCoRide,
@@ -290,6 +291,10 @@ export function createApiServer(database: Db) {
           },
           cors,
         );
+        return;
+      }
+      if (request.method === "GET" && parts.join("/") === "api/availability") {
+        writeJson(response, 200, { rides: availableRides(database) }, cors);
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/current") {

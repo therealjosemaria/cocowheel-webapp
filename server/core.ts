@@ -117,6 +117,13 @@ export type Candidate = {
   destinationDistanceMeters: number;
   isOwnOffer: boolean;
 };
+export type AvailabilityOffer = {
+  rideId: string;
+  driverAlias: string;
+  priceAud: number;
+  scheduledDepartureAt: string;
+  status: "PUBLISHED" | "REQUESTED";
+};
 export type RideView = {
   rideId: string;
   status: RideStatus;
@@ -617,6 +624,29 @@ export function searchRides(
         a.pickupDistanceMeters - b.pickupDistanceMeters ||
         a.priceAud - b.priceAud,
     );
+}
+
+export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
+  expireStaleRides(db, now);
+  return (
+    db
+      .prepare(
+        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+      )
+      .all() as Array<{
+      public_id: string;
+      driver_alias: string;
+      price_aud: number;
+      scheduled_departure_at: string;
+      status: "PUBLISHED" | "REQUESTED";
+    }>
+  ).map((ride) => ({
+    rideId: ride.public_id,
+    driverAlias: ride.driver_alias,
+    priceAud: ride.price_aud,
+    scheduledDepartureAt: ride.scheduled_departure_at,
+    status: ride.status,
+  }));
 }
 
 export function requestRide(

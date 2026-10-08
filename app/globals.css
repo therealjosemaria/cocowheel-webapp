@@ -767,6 +767,57 @@ p {
   gap: 10px;
   margin: 20px 0;
 }
+.availability-board {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+}
+.availability-board h2 {
+  margin: 0;
+  padding: 15px 14px 12px;
+}
+.availability-heading,
+.availability-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.35fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+}
+.availability-heading {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+.availability-row {
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.78rem;
+}
+.availability-row strong,
+.availability-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.availability-row span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.availability-row b {
+  font-size: 0.82rem;
+}
+.availability-empty {
+  margin: 0;
+  padding: 16px 14px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
 .candidate {
   display: flex;
   width: 100%;

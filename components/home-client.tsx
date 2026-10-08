@@ -14,6 +14,13 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
+type AvailabilityOffer = {
+  rideId: string;
+  driverAlias: string;
+  priceAud: number;
+  scheduledDepartureAt: string;
+  status: "PUBLISHED" | "REQUESTED";
+};
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
     hour: "numeric",
@@ -83,6 +90,7 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [riderMapOpen, setRiderMapOpen] = useState(false);
+  const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
     useState<"origin" | "pickup" | null>(null);
@@ -440,6 +448,20 @@ export default function HomeClient() {
       window.clearTimeout(timer);
     };
   }, [riderPins.destination, riderPins.pickup, riderSearchKey, screen]);
+  useEffect(() => {
+    if (screen !== "RIDER") return;
+    let cancelled = false;
+    const load = () =>
+      cocowheelsApi<{ rides: AvailabilityOffer[] }>("/api/availability")
+        .then((result) => !cancelled && setAvailability(result.rides))
+        .catch(() => undefined);
+    void load();
+    const timer = window.setInterval(load, 10_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [screen]);
   async function requestSelected() {
     if (!selectedCandidate || !riderPins.pickup || !riderPins.destination)
       return;
@@ -589,6 +611,7 @@ export default function HomeClient() {
           request={requestSelected}
           busy={busy}
           searching={searching}
+          availability={availability}
         />
       ) : null}
     </section>
@@ -880,6 +903,7 @@ function RiderForm(props: {
   request: () => void;
   busy: boolean;
   searching: boolean;
+  availability: AvailabilityOffer[];
 }) {
   return (
     <div className="form-page">
@@ -910,9 +934,27 @@ function RiderForm(props: {
           searching={props.searching}
         />
       ) : (
-        <div className="empty rider-empty"><p>Set pickup and destination to see matching rides.</p></div>
+        <AvailabilityBoard rides={props.availability} />
       )}
     </div>
+  );
+}
+function AvailabilityBoard({ rides }: { rides: AvailabilityOffer[] }) {
+  return (
+    <section className="availability-board" aria-live="polite">
+      <h2>Rides available</h2>
+      <div className="availability-heading" aria-hidden="true">
+        <span>Driver</span><span>Depart</span><span>Price</span>
+      </div>
+      {rides.map((ride) => (
+        <div className="availability-row" key={ride.rideId}>
+          <strong>{ride.driverAlias}</strong>
+          <span>{prettyTime(ride.scheduledDepartureAt)}</span>
+          <b>A${ride.priceAud}</b>
+        </div>
+      ))}
+      {!rides.length ? <p className="availability-empty">Checking available rides…</p> : null}
+    </section>
   );
 }
 function Results({
