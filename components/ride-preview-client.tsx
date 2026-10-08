@@ -22,6 +22,7 @@ type PreviewRide = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  status: "PUBLISHED" | "REQUESTED";
   departureLabel: string;
   destinationLabel: string;
   plannedRoute: { origin: Pin; destination: Pin };
@@ -185,10 +186,32 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
         <>
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-summary">
-            <strong>{ride.driverAlias}</strong>
-            <span>{ride.departureLabel}</span>
-            <span>{ride.destinationLabel}</span>
-            <small>{prettyTime(ride.scheduledDepartureAt)} · A${ride.priceAud}</small>
+            <div className="ride-preview-header">
+              <strong>Driver</strong>
+              <span>{ride.status === "PUBLISHED" ? "Active" : "Requested"}</span>
+            </div>
+            <dl className="ride-preview-fields">
+              <div>
+                <dt>Driver</dt>
+                <dd>{ride.driverAlias}</dd>
+              </div>
+              <div>
+                <dt>Where from?</dt>
+                <dd>{ride.departureLabel}</dd>
+              </div>
+              <div>
+                <dt>Where to?</dt>
+                <dd>{ride.destinationLabel}</dd>
+              </div>
+              <div>
+                <dt>Departure</dt>
+                <dd>{prettyTime(ride.scheduledDepartureAt)}</dd>
+              </div>
+              <div>
+                <dt>Price</dt>
+                <dd>A${ride.priceAud}</dd>
+              </div>
+            </dl>
           </div>
           <JourneyMap
             pins={[
