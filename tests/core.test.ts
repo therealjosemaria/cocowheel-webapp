@@ -83,7 +83,7 @@ function sessions(h: ReturnType<typeof harness>) {
   return { published, requested, driver, rider };
 }
 
-test("publishes a fixed-price offer and returns only a redacted direction corridor to discovery", () => {
+test("publishes a fixed-price offer and keeps discovery redacted while allowing a full preview", () => {
   const h = harness();
   try {
     const published = publishRide(h.db, null, driverInput, baseTime);
@@ -102,9 +102,16 @@ test("publishes a fixed-price offer and returns only a redacted direction corrid
     assert.equal("origin" in candidates[0], false);
     assert.equal("payId" in candidates[0], false);
     const preview = publicRidePreview(h.db, published.ride.rideId, baseTime);
-    assert.equal("plannedRoute" in preview, false);
-    assert.notDeepEqual(preview.redactedCorridor[0], driverInput.origin);
-    assert.notDeepEqual(preview.redactedCorridor[1], driverInput.destination);
+    assert.deepEqual(preview.plannedRoute, {
+      origin: {
+        latitude: driverInput.origin.latitude,
+        longitude: driverInput.origin.longitude,
+      },
+      destination: {
+        latitude: driverInput.destination.latitude,
+        longitude: driverInput.destination.longitude,
+      },
+    });
     assert.deepEqual(
       getRide(
         h.db,

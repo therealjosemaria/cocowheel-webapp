@@ -136,7 +136,7 @@ export type PublicRidePreview = {
   status: "PUBLISHED" | "REQUESTED";
   departureLabel: string;
   destinationLabel: string;
-  redactedCorridor: [Pin, Pin];
+  plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
   rideId: string;
@@ -726,7 +726,7 @@ export function publicRidePreview(
     departureLabel: ride.origin_label ?? fallbackLocationLabel(origin),
     destinationLabel:
       ride.destination_label ?? fallbackLocationLabel(destination),
-    redactedCorridor: redactedCorridor(origin, destination),
+    plannedRoute: { origin, destination },
   };
 }
 

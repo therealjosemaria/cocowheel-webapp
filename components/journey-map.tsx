@@ -14,7 +14,13 @@ import {
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
 
-type Line = { points: Pin[]; color: string; muted?: boolean };
+type Line = {
+  points: Pin[];
+  color: string;
+  muted?: boolean;
+  weight?: number;
+  opacity?: number;
+};
 type MarkerKind = "departure" | "pickup" | "destination";
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
@@ -102,8 +108,8 @@ export default function JourneyMap({
             )}
             pathOptions={{
               color: line.color,
-              weight: line.muted ? 3 : 5,
-              opacity: line.muted ? 0.25 : 0.85,
+              weight: line.weight ?? (line.muted ? 3 : 5),
+              opacity: line.opacity ?? (line.muted ? 0.25 : 0.85),
               dashArray: line.muted ? "7 9" : undefined,
             }}
           />

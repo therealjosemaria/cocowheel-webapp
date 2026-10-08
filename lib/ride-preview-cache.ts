@@ -77,9 +77,15 @@ export function riderPreviewRoute(rideId: string) {
   if (!context || !context.pickup || !context.destination) return null;
   return context;
 }
+export function cachedRoadPath(origin: Pin, destination: Pin) {
+  return read<Pin[]>(routeKey(origin, destination));
+}
+export function cacheRoadPath(origin: Pin, destination: Pin, points: Pin[]) {
+  write(routeKey(origin, destination), points);
+}
 export function cachedRiderRoadPath(pickup: Pin, destination: Pin) {
-  return read<Pin[]>(routeKey(pickup, destination));
+  return cachedRoadPath(pickup, destination);
 }
 export function cacheRiderRoadPath(pickup: Pin, destination: Pin, points: Pin[]) {
-  write(routeKey(pickup, destination), points);
+  cacheRoadPath(pickup, destination, points);
 }

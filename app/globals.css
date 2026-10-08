@@ -1121,11 +1121,10 @@ p {
   border-top: 3px solid;
 }
 .route-key-driver {
-  border-top-style: dashed !important;
-  color: #64748b;
+  color: #2563eb;
 }
 .route-key-rider {
-  color: var(--ink);
+  color: #f97316;
 }
 .candidate {
   display: flex;

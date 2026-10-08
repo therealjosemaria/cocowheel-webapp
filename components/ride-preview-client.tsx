@@ -6,7 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin } from "@/lib/client-types";
 import {
+  cacheRoadPath,
   cacheRiderRoadPath,
+  cachedRoadPath,
   cachedRiderRoadPath,
   markRiderSearchReturn,
   riderPreviewRoute,
@@ -24,7 +26,7 @@ type PreviewRide = {
   scheduledDepartureAt: string;
   departureLabel: string;
   destinationLabel: string;
-  redactedCorridor: [Pin, Pin];
+  plannedRoute: { origin: Pin; destination: Pin };
 };
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
@@ -44,6 +46,10 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
       ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
       : null,
   );
+  const [driverRoadPath, setDriverRoadPath] = useState<{
+    coordinates: string;
+    points: Pin[];
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +75,19 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
   const routeKey = riderRoute
     ? `${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
     : null;
+  const driverRouteInput = useMemo(
+    () =>
+      ride
+        ? {
+            origin: ride.plannedRoute.origin,
+            destination: ride.plannedRoute.destination,
+          }
+        : null,
+    [ride],
+  );
+  const driverRouteCoordinates = driverRouteInput
+    ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
+    : "";
   useEffect(() => {
     if (!riderRoute || roadPath?.length) return;
     let cancelled = false;
@@ -90,23 +109,73 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
     };
   }, [riderRoute, roadPath?.length, routeKey]);
 
+  useEffect(() => {
+    if (!driverRouteInput) return;
+    const cached = cachedRoadPath(
+      driverRouteInput.origin,
+      driverRouteInput.destination,
+    );
+    if (cached?.length) {
+      const timer = window.setTimeout(
+        () =>
+          setDriverRoadPath({
+            coordinates: driverRouteCoordinates,
+            points: cached,
+          }),
+        0,
+      );
+      return () => window.clearTimeout(timer);
+    }
+    let cancelled = false;
+    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+      method: "POST",
+      body: JSON.stringify(driverRouteInput),
+    })
+      .then(({ points }) => {
+        if (cancelled || points.length < 2) return;
+        cacheRoadPath(
+          driverRouteInput.origin,
+          driverRouteInput.destination,
+          points,
+        );
+        setDriverRoadPath({ coordinates: driverRouteCoordinates, points });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [driverRouteCoordinates, driverRouteInput]);
+
+  const activeDriverRoadPath =
+    driverRoadPath?.coordinates === driverRouteCoordinates
+      ? driverRoadPath.points
+      : null;
+
   const lines = useMemo(() => {
     if (!ride) return [];
     return [
-      { points: ride.redactedCorridor, color: "#64748b", muted: true },
+      {
+        points: activeDriverRoadPath?.length
+          ? activeDriverRoadPath
+          : [ride.plannedRoute.origin, ride.plannedRoute.destination],
+        color: "#2563eb",
+        weight: 8,
+        opacity: 0.9,
+      },
       ...(riderRoute
         ? [
             {
               points: roadPath?.length
                 ? roadPath
                 : [riderRoute.pickup, riderRoute.destination],
-              color: "#111827",
-              muted: !roadPath?.length,
+              color: "#f97316",
+              weight: 4,
+              opacity: 0.95,
             },
           ]
         : []),
     ];
-  }, [ride, riderRoute, roadPath]);
+  }, [ride, activeDriverRoadPath, riderRoute, roadPath]);
 
   return (
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
@@ -131,13 +200,23 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
             <small>{prettyTime(ride.scheduledDepartureAt)} · A${ride.priceAud}</small>
           </div>
           <JourneyMap
-            pins={riderRoute ? [riderRoute.pickup, riderRoute.destination] : []}
-            markerKinds={riderRoute ? ["pickup", "destination"] : undefined}
+            pins={[
+              ride.plannedRoute.origin,
+              ride.plannedRoute.destination,
+              ...(riderRoute ? [riderRoute.pickup, riderRoute.destination] : []),
+            ]}
+            markerKinds={
+              riderRoute
+                ? ["departure", "destination", "pickup", "destination"]
+                : ["departure", "destination"]
+            }
             lines={lines}
-            roadPathAttribution={Boolean(roadPath?.length)}
+            roadPathAttribution={Boolean(
+              activeDriverRoadPath?.length || roadPath?.length,
+            )}
           />
           <div className="route-key">
-            <span><i className="route-key-driver" />Driver direction</span>
+            <span><i className="route-key-driver" />Driver route</span>
             {riderRoute ? <span><i className="route-key-rider" />Your route</span> : null}
           </div>
           {!riderRoute ? (
