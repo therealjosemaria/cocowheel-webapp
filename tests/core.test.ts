@@ -12,6 +12,7 @@ import {
   currentOpenRide,
   currentOpenRides,
   decideRequest,
+  expireStaleRides,
   findSession,
   getRide,
   initializeCoreSchema,
@@ -479,6 +480,19 @@ test("requires fresh locations, confines live coordinates to the accepted pair, 
         ),
       /CO_RIDE_CODE_EXPIRED/,
     );
+    const expiryTime = new Date(baseTime.getTime() + 24 * 60 * 60 * 1_000 + 12_000);
+    assert.equal(expireStaleRides(h.db, expiryTime), 1);
+    const expired = getRide(
+      h.db,
+      flow.published.ride.rideId,
+      flow.driver,
+      expiryTime,
+    );
+    assert.equal(expired.status, "EXPIRED");
+    const remainingLocations = h.db
+      .prepare("SELECT COUNT(*) AS count FROM live_locations")
+      .get() as { count: number };
+    assert.equal(remainingLocations.count, 0);
   } finally {
     h.close();
   }

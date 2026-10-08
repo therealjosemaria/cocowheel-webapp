@@ -525,7 +525,7 @@ export function expireStaleRides(db: Db, now = new Date()) {
     .run(iso(now), iso(now), staleScheduled).changes;
   const active = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status = 'RIDE_ACTIVE' AND last_activity_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
     )
     .run(iso(now), iso(now), staleActive).changes;
   if (scheduled || active)
