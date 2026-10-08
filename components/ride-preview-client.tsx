@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin } from "@/lib/client-types";
+import { routeReference } from "@/lib/route-id";
 import {
   cacheRoadPath,
   cacheRiderRoadPath,
@@ -187,7 +188,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-summary">
             <div className="ride-preview-header">
-              <code>Route ID · {ride.rideId}</code>
+              <code>Route ID · {routeReference(ride.rideId)}</code>
               <strong className="route-status">
                 {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
               </strong>

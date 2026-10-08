@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
+import { routeReference } from "@/lib/route-id";
 import {
   consumeRiderSearchReturn,
   markRiderSearchReturn,
@@ -870,7 +871,7 @@ function Home({
               ? "Continue offering a ride"
               : "Continue ride request"}
           </strong>
-          <code>Ride ID · {item.ride.rideId}</code>
+          <code>Ride ID · {routeReference(item.ride.rideId)}</code>
         </Link>
       ))}
     </div>
@@ -1281,7 +1282,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
-          <code>{ride.rideId}</code>
+          <code>{routeReference(ride.rideId)}</code>
           <strong tabIndex={0}>{ride.driverAlias}</strong>
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
@@ -1332,7 +1333,7 @@ function Results({
                 className={`availability-row availability-select ${candidate.rideId === selected ? "selected" : ""}`}
                 onClick={() => setSelected(candidate.rideId)}
               >
-                <code>{candidate.rideId}</code>
+                <code>{routeReference(candidate.rideId)}</code>
                 <strong>{candidate.driverAlias}</strong>
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
@@ -1583,7 +1584,7 @@ function RideStatus({
               className="secondary"
               onClick={() =>
                 void navigator.clipboard?.writeText(
-                  `Cocowheels co-ride ${ride.rideId}`,
+                  `Cocowheels co-ride ${routeReference(ride.rideId)}`,
                 )
               }
             >
@@ -1619,7 +1620,7 @@ function RideStatus({
               ? "PayID handoff selected"
               : "Cash handoff selected"}
           </strong>
-          <small>Ride reference: {ride.rideId}</small>
+          <small>Ride reference: {routeReference(ride.rideId)}</small>
         </section>
       ) : null}
       {canCancel ? (

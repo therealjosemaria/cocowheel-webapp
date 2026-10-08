@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
+import { routeReference } from "@/lib/route-id";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
@@ -131,7 +132,7 @@ function ActivityCard({
       <div className="activity-card-header">
         <div className="activity-card-identity">
           <strong>{ride.driverAlias}</strong>
-          <code>Ride ID · {ride.rideId}</code>
+          <code>Ride ID · {routeReference(ride.rideId)}</code>
         </div>
         <span className={statusClass}>{status}</span>
       </div>
