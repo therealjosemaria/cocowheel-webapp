@@ -192,7 +192,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 {ride.status === "PUBLISHED" ? <><span>Route</span> active</> : "Route requested"}
               </strong>
             </div>
-            <dl className="ride-preview-fields">
+            <dl className={`ride-preview-fields${riderRoute?.directionFit ? " has-fit" : ""}`}>
               <div>
                 <dt>Driver</dt>
                 <dd>{ride.driverAlias}</dd>
@@ -213,6 +213,14 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 <dt>Price</dt>
                 <dd>A${ride.priceAud}</dd>
               </div>
+              {riderRoute?.directionFit ? (
+                <div>
+                  <dt>Fit</dt>
+                  <dd className={`preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`}>
+                    {riderRoute.directionFit === "GOOD" ? "Good" : "Poor"}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           </div>
           <JourneyMap

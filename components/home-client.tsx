@@ -809,7 +809,7 @@ export default function HomeClient() {
           availability={availability}
           availabilityChecking={availabilityChecking}
           onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
-          previewRoute={(rideId) => {
+          previewRoute={(candidate) => {
             if (!riderPins.pickup || !riderPins.destination) return;
             saveRiderSearchDraft(
               riderPins.pickup,
@@ -817,7 +817,12 @@ export default function HomeClient() {
               riderTime,
             );
             markRiderSearchReturn();
-            saveRiderPreviewRoute(rideId, riderPins.pickup, riderPins.destination);
+            saveRiderPreviewRoute(
+              candidate.rideId,
+              riderPins.pickup,
+              riderPins.destination,
+              candidate.directionFit,
+            );
           }}
           time={riderTime}
           setTime={setRiderTime}
@@ -1162,7 +1167,7 @@ function RiderForm(props: {
   availability: AvailabilityOffer[];
   availabilityChecking: boolean;
   onAvailabilityJoin: () => void;
-  previewRoute: (rideId: string) => void;
+  previewRoute: (candidate: Candidate) => void;
   time: string | null;
   setTime: (value: string | null) => void;
 }) {
@@ -1298,7 +1303,7 @@ function Results({
   selected: string | null;
   setSelected: (id: string) => void;
   request: (candidate?: Candidate) => void;
-  previewRoute: (rideId: string) => void;
+  previewRoute: (candidate: Candidate) => void;
   busy: boolean;
   searching: boolean;
 }) {
@@ -1327,7 +1332,7 @@ function Results({
                 <span>{candidate.destinationLabel ?? "—"}</span>
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
                 <b>A${candidate.priceAud}</b>
-                <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate.rideId)}>VIEW</Link>
+                <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>VIEW</Link>
                 <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
                   {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
                 </span>

@@ -32,8 +32,8 @@ const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   driverPickup: divIcon({
     className: "journey-marker-icon",
     html: '<span class="journey-marker-pair" role="img" aria-label="Driver and rider pickup"><span class="journey-marker journey-marker-driver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5h14l-1.45-4.35a2 2 0 0 0-1.9-1.36H7.35a2 2 0 0 0-1.9 1.36L4 14.5v3.25c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V17h8v.75c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V14.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M7.2 14.5h.01M16.8 14.5h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.8"/></svg></span><span class="journey-marker journey-marker-departure"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span></span>',
-    iconSize: [46, 32],
-    iconAnchor: [23, 16],
+    iconSize: [58, 34],
+    iconAnchor: [29, 17],
   }),
   driver: divIcon({
     className: "journey-marker-icon",
@@ -61,8 +61,8 @@ const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   }),
 };
 const sameLocation = (left: Pin, right: Pin) =>
-  Math.abs(left.latitude - right.latitude) <= 0.00001 &&
-  Math.abs(left.longitude - right.longitude) <= 0.00001;
+  Math.abs(left.latitude - right.latitude) <= 0.00005 &&
+  Math.abs(left.longitude - right.longitude) <= 0.00005;
 
 function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {
   useMapEvents({

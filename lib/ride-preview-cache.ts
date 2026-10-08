@@ -1,6 +1,11 @@
 import type { Pin } from "./client-types";
 
-type RiderRouteContext = { pickup: Pin; destination: Pin };
+type DirectionFit = "GOOD" | "POOR";
+type RiderRouteContext = {
+  pickup: Pin;
+  destination: Pin;
+  directionFit?: DirectionFit;
+};
 type RiderSearchDraft = RiderRouteContext & { departureAt: string | null };
 const contextPrefix = "cocowheels:ride-preview:v1:";
 const roadPathPrefix = "cocowheels:road-path:v1:";
@@ -31,8 +36,12 @@ export function saveRiderPreviewRoute(
   rideId: string,
   pickup: Pin,
   destination: Pin,
+  directionFit: DirectionFit,
 ) {
-  write(`${contextPrefix}${rideId}`, { pickup, destination } satisfies RiderRouteContext);
+  write(
+    `${contextPrefix}${rideId}`,
+    { pickup, destination, directionFit } satisfies RiderRouteContext,
+  );
 }
 export function saveRiderSearchDraft(
   pickup: Pin,
@@ -75,7 +84,13 @@ export function consumeRiderSearchReturn() {
 export function riderPreviewRoute(rideId: string) {
   const context = read<RiderRouteContext>(`${contextPrefix}${rideId}`);
   if (!context || !context.pickup || !context.destination) return null;
-  return context;
+  return {
+    ...context,
+    directionFit:
+      context.directionFit === "GOOD" || context.directionFit === "POOR"
+        ? context.directionFit
+        : undefined,
+  };
 }
 export function cachedRoadPath(origin: Pin, destination: Pin) {
   return read<Pin[]>(routeKey(origin, destination));
