@@ -1333,7 +1333,10 @@ function PlaceSearch({
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus]);
   const search = () => {
-    if (text.trim().length < 3) return;
+    if (text.trim().length < 3) {
+      inputRef.current?.focus();
+      return;
+    }
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
       body: JSON.stringify({ text, ...(bias ? { bias: canonicalPin(bias) } : {}), ...(countryCode ? { countryCode } : {}) }),
@@ -1343,7 +1346,7 @@ function PlaceSearch({
     <div className="place-search">
       <div className="place-search-input">
         <input ref={inputRef} autoFocus={autoFocus} value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder={placeholder} aria-label={placeholder} />
-        <button type="button" onClick={search} disabled={text.trim().length < 3}>Search</button>
+        <button type="button" onClick={search}>Search</button>
       </div>
       {places.length ? <div className="place-results">
         {places.map((place) => <button type="button" key={`${place.latitude}:${place.longitude}`} onClick={() => { choose(place); setText(place.label ?? ""); setPlaces([]); }}>{place.label ?? `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}</button>)}
