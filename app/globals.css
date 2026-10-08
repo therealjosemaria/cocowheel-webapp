@@ -494,6 +494,43 @@ p {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.rider-location-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+  gap: 5px;
+  align-items: center;
+  padding: 2px 9px;
+}
+.rider-location-summary p {
+  min-width: 0;
+}
+.location-swap {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  background: #ffffff;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.location-swap svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+.location-swap:not(:disabled):hover,
+.location-swap:not(:disabled):focus-visible {
+  color: #ffffff;
+  border-color: var(--ink);
+  background: var(--ink);
+}
 .pickup-location-button {
   min-height: 34px;
   margin-top: 7px;
@@ -841,11 +878,47 @@ p {
 .rider-time-field {
   display: block;
   margin-top: 12px;
-  color: var(--ink);
-  font-size: 0.72rem;
+  color: var(--muted);
+  font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+.rider-time-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  overflow: hidden;
+  border: 1px solid #b9c9cc;
+  border-radius: 11px;
+  color: var(--ink);
+  background: #ffffff;
+}
+.rider-time-input:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgb(17 24 39 / 10%);
+}
+.rider-time-input svg {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+.rider-time-input input {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px 10px 48px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
 }
 .rider-time-control {
   display: flex;

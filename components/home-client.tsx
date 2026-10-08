@@ -626,6 +626,14 @@ export default function HomeClient() {
           setPin={setPin}
           onPickupRequest={() => setLocationPromptTarget("pickup")}
           setDestination={(pin) => setPinForTarget("riderDestination", pin)}
+          swapPins={() => {
+            if (!riderPins.pickup || !riderPins.destination) return;
+            setRiderPins({
+              pickup: riderPins.destination,
+              destination: riderPins.pickup,
+            });
+            setPinTarget(null);
+          }}
           routePoints={activeRiderRoute}
           mapOpen={riderMapOpen}
           setMapOpen={setRiderMapOpen}
@@ -752,6 +760,7 @@ function PinControls({
   driver,
   routePoints,
   mapVisible = true,
+  onSwap,
 }: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
@@ -764,6 +773,7 @@ function PinControls({
   driver: boolean;
   routePoints?: Pin[] | null;
   mapVisible?: boolean;
+  onSwap?: () => void;
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
@@ -802,7 +812,7 @@ function PinControls({
           Final destination
         </button>
       </div> : null}
-      <div className="pin-summary">
+      <div className={`pin-summary${driver ? "" : " rider-location-summary"}`}>
         <p>
           <strong>{driver ? "Departure" : "Where from?"}</strong>
           {driver && locatingDeparture
@@ -814,6 +824,18 @@ function PinControls({
               : locationText(driver ? pins.origin : pins.pickup)}
           {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
         </p>
+        {!driver ? <button
+          type="button"
+          className="location-swap"
+          onClick={onSwap}
+          disabled={!pins.pickup || !pins.destination}
+          aria-label="Swap pickup and destination"
+          title="Swap pickup and destination"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 7h10m0 0-3-3m3 3-3 3M17 17H7m0 0 3-3m-3 3 3 3" />
+          </svg>
+        </button> : null}
         <p>
           <strong>{driver ? "Final destination" : "Where to?"}</strong>
           {pins.destination
@@ -920,6 +942,7 @@ function RiderForm(props: {
   setPin: (pin: Pin) => void;
   onPickupRequest: () => void;
   setDestination: (pin: Pin) => void;
+  swapPins: () => void;
   routePoints?: Pin[] | null;
   mapOpen: boolean;
   setMapOpen: (open: boolean) => void;
@@ -949,6 +972,7 @@ function RiderForm(props: {
         pins={props.pins}
         driver={false}
         mapVisible={props.mapOpen}
+        onSwap={props.swapPins}
       />
       <DestinationSearch
         bias={props.pins.pickup}
@@ -959,8 +983,14 @@ function RiderForm(props: {
           props.setMapOpen(false);
         }}
       />
-      <label className="rider-time-field">Departure
-        <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
+      <label className="rider-time-field">
+        <span>Departure</span>
+        <span className="rider-time-input">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 3v3m10-3v3M4.5 9h15M6.5 5h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+          </svg>
+          <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
+        </span>
       </label>
       {props.pins.pickup && props.pins.destination ? (
         <Results
