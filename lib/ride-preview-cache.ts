@@ -6,7 +6,7 @@ type RiderRouteContext = {
   destination: Pin;
   directionFit?: DirectionFit;
 };
-type RiderSearchDraft = RiderRouteContext & {
+export type RiderSearchDraft = RiderRouteContext & {
   departureAt: string | null;
   savedAt: number;
 };
@@ -14,7 +14,7 @@ const contextPrefix = "cocowheels:ride-preview:v1:";
 const roadPathPrefix = "cocowheels:road-path:v1:";
 const searchDraftKey = "cocowheels:find-ride-draft:v1";
 const searchReturnKey = "cocowheels:find-ride-return:v1";
-const riderSearchDraftTtlMs = 30 * 60 * 1_000;
+export const riderSearchDraftTtlMs = 30 * 60 * 1_000;
 
 function read<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -83,6 +83,9 @@ export function riderSearchDraft(): RiderSearchDraft | null {
     return null;
   }
   return draft;
+}
+export function clearRiderSearchDraft() {
+  remove(searchDraftKey);
 }
 export function markRiderSearchReturn() {
   write(searchReturnKey, true);

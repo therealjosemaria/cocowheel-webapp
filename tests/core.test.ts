@@ -648,3 +648,26 @@ test("private history keeps cancelled rides visible to the accepted pair", () =>
     h.close();
   }
 });
+
+test("private history keeps expired rides visible to their driver and requester", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    const expiredAt = new Date(new Date(departure).getTime() + 30 * 60_000 + 1);
+    const driverHistory = privateHistory(
+      h.db,
+      flow.published.sessionToken,
+      expiredAt,
+    ).driver;
+    const riderHistory = privateHistory(
+      h.db,
+      flow.requested.sessionToken,
+      expiredAt,
+    ).rider;
+    assert.equal(driverHistory[0]?.status, "EXPIRED");
+    assert.equal(riderHistory[0]?.status, "EXPIRED");
+    assert.equal(driverHistory[0]?.expiredAt, expiredAt.toISOString());
+  } finally {
+    h.close();
+  }
+});

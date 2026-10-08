@@ -10,8 +10,10 @@ import type { Candidate, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
   consumeRiderSearchReturn,
+  clearRiderSearchDraft,
   markRiderSearchReturn,
   riderSearchDraft,
+  riderSearchDraftTtlMs,
   saveRiderPreviewRoute,
   saveRiderSearchDraft,
 } from "@/lib/ride-preview-cache";
@@ -277,10 +279,10 @@ export default function HomeClient() {
             : { pickup: draft.pickup, destination: draft.destination },
         );
         setRiderTime(draft.departureAt);
-      } else if (recentLocation)
-        setRiderPins((state) =>
-          state.pickup ? state : { ...state, pickup: recentLocation },
-        );
+      } else {
+        setRiderPins(recentLocation ? { pickup: recentLocation } : {});
+        setRiderTime(null);
+      }
     }
     if (roleChoice === "DRIVER") {
       setAllowManualDeparture(false);
@@ -637,6 +639,28 @@ export default function HomeClient() {
   const riderSearchKey = riderPins.pickup && riderPins.destination
     ? `${riderPins.pickup.latitude}:${riderPins.pickup.longitude}|${riderPins.destination.latitude}:${riderPins.destination.longitude}`
     : null;
+  useEffect(() => {
+    if (!riderSearchKey || !riderPins.pickup || !riderPins.destination)
+      return;
+    const draft = riderSearchDraft();
+    const matchesDraft =
+      draft?.pickup.latitude === riderPins.pickup.latitude &&
+      draft.pickup.longitude === riderPins.pickup.longitude &&
+      draft.destination.latitude === riderPins.destination.latitude &&
+      draft.destination.longitude === riderPins.destination.longitude;
+    const savedAt = matchesDraft ? draft.savedAt : Date.now();
+    if (!matchesDraft)
+      saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime);
+    const timer = window.setTimeout(() => {
+      clearRiderSearchDraft();
+      setRiderPins({});
+      setRiderTime(null);
+      setCandidates([]);
+      setSelected(null);
+      setRiderRoute(null);
+    }, Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime]);
   useEffect(() => {
     if (screen !== "RIDER" || !riderSearchKey || !riderPins.pickup || !riderPins.destination) {
       return;

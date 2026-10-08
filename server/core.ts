@@ -172,6 +172,7 @@ export type RideView = {
   paymentHandoffMethod?: "PAYID" | "CASH" | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
+  expiredAt?: string | null;
   cancellationReason?: string | null;
 };
 export type RiderRequestView = {
@@ -1218,6 +1219,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     paymentHandoffMethod: row.payment_handoff_method,
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,
+    expiredAt: row.expired_at,
     cancellationReason: row.cancellation_reason,
   };
 }
@@ -1260,6 +1262,7 @@ function riderView(
     paymentHandoffMethod: row.payment_handoff_method,
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,
+    expiredAt: row.expired_at,
     cancellationReason: row.cancellation_reason,
   };
 }
@@ -1288,12 +1291,12 @@ export function privateHistory(
   expireStaleRides(db, now);
   const driverRows = db
     .prepare(
-      "SELECT public_id FROM rides WHERE driver_session_id = ? AND status IN ('COMPLETED', 'CANCELLED') ORDER BY COALESCE(completed_at, cancelled_at) DESC",
+      "SELECT public_id FROM rides WHERE driver_session_id = ? AND status IN ('COMPLETED', 'CANCELLED', 'EXPIRED') ORDER BY COALESCE(completed_at, cancelled_at, expired_at) DESC",
     )
     .all(session.id) as Array<{ public_id: string }>;
   const riderRows = db
     .prepare(
-      "SELECT r.public_id FROM rides r JOIN ride_requests q ON q.ride_id = r.id WHERE q.rider_session_id = ? AND ((q.status = 'ACCEPTED' AND r.status = 'COMPLETED') OR (q.status = 'CANCELLED' AND r.status = 'CANCELLED')) ORDER BY COALESCE(r.completed_at, r.cancelled_at) DESC",
+      "SELECT r.public_id FROM rides r JOIN ride_requests q ON q.ride_id = r.id WHERE q.rider_session_id = ? AND ((q.status = 'ACCEPTED' AND r.status = 'COMPLETED') OR (q.status = 'CANCELLED' AND r.status = 'CANCELLED') OR r.status = 'EXPIRED') ORDER BY COALESCE(r.completed_at, r.cancelled_at, r.expired_at) DESC",
     )
     .all(session.id) as Array<{ public_id: string }>;
   return {

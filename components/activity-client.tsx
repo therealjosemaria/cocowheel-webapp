@@ -59,8 +59,8 @@ export default function ActivityClient() {
       ...history.rider.map((ride) => ({ ride, role: "RIDER" as const })),
     ].sort(
       (a, b) =>
-        new Date(b.ride.completedAt ?? 0).getTime() -
-        new Date(a.ride.completedAt ?? 0).getTime(),
+        new Date(b.ride.completedAt ?? b.ride.cancelledAt ?? b.ride.expiredAt ?? 0).getTime() -
+        new Date(a.ride.completedAt ?? a.ride.cancelledAt ?? a.ride.expiredAt ?? 0).getTime(),
     );
   }, [history]);
 
@@ -97,7 +97,7 @@ export default function ActivityClient() {
       ) : null}
       {activity.length === 0 ? (
         current.length ? null : (
-          <p className="intro">Completed and cancelled rides will appear here.</p>
+          <p className="intro">Completed, cancelled, and expired rides will appear here.</p>
         )
       ) : (
         <div className="activity-list">
@@ -119,13 +119,15 @@ function ActivityCard({
     ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
   const time = current
     ? activityTime(ride.scheduledDepartureAt)
-    : activityTime(ride.completedAt ?? ride.cancelledAt);
+    : activityTime(ride.completedAt ?? ride.cancelledAt ?? ride.expiredAt);
   const status = cancelled ? "CANCELLED" : ride.status;
   const statusClass = cancelled
     ? "activity-status cancelled"
-    : ride.status === "PUBLISHED"
-      ? "activity-status published"
-      : "activity-status";
+      : ride.status === "PUBLISHED"
+        ? "activity-status published"
+        : ride.status === "EXPIRED"
+          ? "activity-status expired"
+        : "activity-status";
   return (
     <article className="activity-card">
       <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
