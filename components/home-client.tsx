@@ -810,7 +810,13 @@ export default function HomeClient({
     />
   ) : null;
   return (
-    <section className="page-content">
+    <section
+      className={
+        !ride && screen === "HOME"
+          ? "page-content home-page-content"
+          : "page-content"
+      }
+    >
       {serviceAvailable === false ? (
         <p className="reconnect">Trying to reconnect.</p>
       ) : null}

@@ -405,11 +405,14 @@ p {
 }
 .role-choice {
   display: grid;
-  min-height: calc(100svh - 170px);
+  min-height: calc(100svh - 206px);
   align-content: center;
   gap: 12px;
   padding: 0 0 24px;
   transform: translateY(-3vh);
+}
+.home-page-content {
+  padding-bottom: 0;
 }
 .home-hero {
   display: flex;
@@ -1458,6 +1461,12 @@ p {
   }
   .page-content {
     padding-top: 38px;
+  }
+  .home-page-content {
+    padding-bottom: 0;
+  }
+  .role-choice {
+    min-height: calc(100svh - 242px);
   }
   .desktop-navigation {
     display: flex;
