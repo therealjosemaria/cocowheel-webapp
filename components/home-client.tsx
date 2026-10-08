@@ -1051,7 +1051,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Action</span>
+              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1060,10 +1060,13 @@ function Results({
                 onClick={() => setSelected(candidate.rideId)}
               >
                 <strong>{candidate.driverAlias}</strong>
-                <span>{candidate.departureLabel ?? "Matched route"}</span>
-                <span>{candidate.destinationLabel ?? "Matched route"}</span>
+                <span>{candidate.departureLabel ?? "—"}</span>
+                <span>{candidate.destinationLabel ?? "—"}</span>
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
                 <b>A${candidate.priceAud}</b>
+                <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
+                  {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
+                </span>
                 <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
               </article>
             ))}

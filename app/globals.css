@@ -990,8 +990,8 @@ p {
 }
 .matched-availability .availability-heading,
 .matched-availability .availability-row {
-  min-width: 605px;
-  grid-template-columns: 72px 106px 106px 104px 58px 72px;
+  min-width: 665px;
+  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px;
 }
 .availability-heading {
   border-top: 1px solid var(--line);
@@ -1019,6 +1019,25 @@ p {
 }
 .availability-row b {
   font-size: 0.72rem;
+}
+.availability-row .direction-fit {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 25px;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  white-space: nowrap;
+  background: #ffffff;
+}
+.availability-row .direction-fit-good {
+  color: var(--ink);
+  border-color: #94a3b8;
+  background: #f8fafc;
 }
 .availability-join {
   min-height: 34px;
