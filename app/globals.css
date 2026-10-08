@@ -847,10 +847,30 @@ p {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.rider-time-field input {
+.rider-time-control {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 6px;
+}
+.rider-time-control button {
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #ffffff;
+}
+.rider-time-control button.active {
+  color: #ffffff;
+  border-color: var(--ink);
+  background: var(--ink);
+}
+.rider-time-control input {
   width: 100%;
   min-height: 44px;
-  margin-top: 6px;
   padding: 8px 10px;
   border: 1px solid #b9c9cc;
   border-radius: 10px;

@@ -14,7 +14,6 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
-const localDateTime = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 type AvailabilityOffer = {
   rideId: string;
   driverAlias: string;
@@ -93,7 +92,7 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [riderMapOpen, setRiderMapOpen] = useState(false);
-  const [riderTime, setRiderTime] = useState(() => localDateTime(new Date()));
+  const [riderTime, setRiderTime] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
@@ -437,7 +436,7 @@ export default function HomeClient() {
         body: JSON.stringify({
           pickup: canonicalPin(riderPins.pickup!),
           destination: canonicalPin(riderPins.destination!),
-          requestedDepartureAt: new Date(riderTime).toISOString(),
+          requestedDepartureAt: riderTime ? new Date(riderTime).toISOString() : new Date().toISOString(),
         }),
       })
         .then((result) => {
@@ -486,7 +485,7 @@ export default function HomeClient() {
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup),
             destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: new Date(riderTime).toISOString(),
+            requestedDepartureAt: riderTime ? new Date(riderTime).toISOString() : new Date().toISOString(),
           }),
         },
       );
@@ -802,7 +801,7 @@ function PinControls({
           <strong>{driver ? "Final destination" : "Where to?"}</strong>
           {pins.destination
             ? locationText(pins.destination)
-            : `Select ${driver ? "Final destination" : "Destination"}.`}
+            : driver ? "Select Final destination." : null}
         </p>
       </div>
       {mapVisible ? <JourneyMap
@@ -915,8 +914,8 @@ function RiderForm(props: {
   searching: boolean;
   availability: AvailabilityOffer[];
   availabilityChecking: boolean;
-  time: string;
-  setTime: (value: string) => void;
+  time: string | null;
+  setTime: (value: string | null) => void;
 }) {
   return (
     <div className="form-page">
@@ -942,7 +941,10 @@ function RiderForm(props: {
         }}
       />
       <label className="rider-time-field">Departure
-        <input type="datetime-local" value={props.time} onChange={(event) => props.setTime(event.target.value)} />
+        <div className="rider-time-control">
+          <button type="button" className={props.time === null ? "active" : ""} onClick={() => props.setTime(null)}>NOW</button>
+          <input type="datetime-local" value={props.time ?? ""} onChange={(event) => props.setTime(event.target.value || null)} />
+        </div>
       </label>
       {props.pins.pickup && props.pins.destination ? (
         <Results
@@ -985,7 +987,7 @@ function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; ch
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Departure</span><span>Destination</span><span>Schedule</span><span>Price</span>
+        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
