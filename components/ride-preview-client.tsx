@@ -207,8 +207,8 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
             ]}
             markerKinds={
               riderRoute
-                ? ["departure", "destination", "pickup", "destination"]
-                : ["departure", "destination"]
+                ? ["driver", "destination", "pickup", "destination"]
+                : ["driver", "destination"]
             }
             lines={lines}
             roadPathAttribution={Boolean(

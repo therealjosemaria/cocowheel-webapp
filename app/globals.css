@@ -676,6 +676,12 @@ p {
   color: #ffffff;
   background: #111827;
 }
+.journey-marker-driver {
+  border-radius: 9px;
+  color: #ffffff;
+  background: #111827;
+}
+.journey-marker-driver svg,
 .journey-marker-departure svg {
   width: 21px;
   height: 21px;

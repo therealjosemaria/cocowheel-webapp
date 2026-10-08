@@ -205,7 +205,7 @@ function RideView({ ride }: { ride: Ride }) {
             }
             markerKinds={
               ride.plannedRoute && mapPins.length === 2
-                ? ["departure", "destination"]
+                ? ["driver", "destination"]
                 : undefined
             }
             roadPathAttribution={Boolean(roadPath?.length)}
