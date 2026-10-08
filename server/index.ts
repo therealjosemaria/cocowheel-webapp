@@ -27,7 +27,7 @@ import {
   submitLocation,
 } from "./core";
 import db from "./db";
-import { reversePlaceLabel, searchPlaces } from "./place-label";
+import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { roadRoutePreview } from "./route-preview";
 
 const MAX_BODY_BYTES = 32_768;
@@ -259,15 +259,19 @@ export function createApiServer(database: Db) {
         if (!allowPlaceLookup(request))
           throw new Error("PLACE_LOOKUP_RATE_LIMITED");
         const body = await readJson(request);
-        const label = await reversePlaceLabel(validPlacePin(body.pin));
-        writeJson(response, 200, { label }, cors);
+        const place = await reversePlaceDetails(validPlacePin(body.pin));
+        writeJson(response, 200, place, cors);
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/place-search") {
         const body = await readJson(request);
         const text = typeof body.text === "string" ? body.text : "";
         const bias = body.bias ? validPlacePin(body.bias) : undefined;
-        writeJson(response, 200, { places: await searchPlaces(text, bias) }, cors);
+        const countryCode =
+          typeof body.countryCode === "string" && /^[a-z]{2}$/i.test(body.countryCode)
+            ? body.countryCode.toLowerCase()
+            : undefined;
+        writeJson(response, 200, { places: await searchPlaces(text, bias, countryCode) }, cors);
         return;
       }
       if (

@@ -5,6 +5,7 @@ type GeoapifyFeature = {
     name?: unknown;
     address_line1?: unknown;
     formatted?: unknown;
+    country_code?: unknown;
   };
 };
 type GeoapifyResult = NonNullable<GeoapifyFeature["properties"]>;
@@ -32,6 +33,14 @@ export async function reversePlaceLabel(
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
 ) {
+  return (await reversePlaceDetails(pin, apiKey, fetcher)).label;
+}
+
+export async function reversePlaceDetails(
+  pin: Pin,
+  apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
+  fetcher: typeof fetch = fetch,
+) {
   if (!apiKey) throw new Error("PLACE_LOOKUP_UNAVAILABLE");
   const url = new URL("https://api.geoapify.com/v1/geocode/reverse");
   url.searchParams.set("lat", String(pin.latitude));
@@ -49,14 +58,21 @@ export async function reversePlaceLabel(
   }
   if (!response.ok) throw new Error("PLACE_LOOKUP_UNAVAILABLE");
   const payload = (await response.json()) as GeoapifyResponse;
-  return conciseLabel(
-    payload.results?.[0] ?? payload.features?.[0]?.properties,
-  );
+  const properties = payload.results?.[0] ?? payload.features?.[0]?.properties;
+  const countryCode = properties?.country_code;
+  return {
+    label: conciseLabel(properties),
+    countryCode:
+      typeof countryCode === "string" && /^[a-z]{2}$/i.test(countryCode)
+        ? countryCode.toLowerCase()
+        : null,
+  };
 }
 
 export async function searchPlaces(
   text: string,
   bias?: Pin,
+  countryCode?: string,
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
 ): Promise<Pin[]> {
@@ -65,6 +81,8 @@ export async function searchPlaces(
   url.searchParams.set("text", text.trim().slice(0, 160));
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", "5");
+  if (countryCode && /^[a-z]{2}$/i.test(countryCode))
+    url.searchParams.set("filter", `countrycode:${countryCode.toLowerCase()}`);
   if (bias)
     url.searchParams.set("bias", `proximity:${bias.longitude},${bias.latitude}`);
   url.searchParams.set("apiKey", apiKey);

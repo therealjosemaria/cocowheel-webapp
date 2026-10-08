@@ -1,4 +1,10 @@
-export type Pin = { latitude: number; longitude: number; label?: string };
+export type Pin = {
+  latitude: number;
+  longitude: number;
+  label?: string;
+  /** A short country code used only to keep destination suggestions local. */
+  countryCode?: string;
+};
 export type RequestStatus =
   "PENDING" | "ACCEPTED" | "DECLINED" | "DISCARDED" | "CANCELLED";
 export type RideStatus =

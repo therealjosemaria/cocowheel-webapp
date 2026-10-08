@@ -246,13 +246,18 @@ export default function HomeClient() {
     for (const [target, pin] of placePins) {
       const requestId = ++placeLookupIds.current[target];
       if (!pin || pin.label) continue;
-      void cocowheelsApi<{ label: string | null }>("/api/place-label", {
+      void cocowheelsApi<{ label: string | null; countryCode: string | null }>("/api/place-label", {
         method: "POST",
         body: JSON.stringify({ pin: canonicalPin(pin) }),
       })
-        .then(({ label }) => {
-          if (!label || placeLookupIds.current[target] !== requestId) return;
-          setPinForTarget(target, { ...pin, label });
+        .then(({ label, countryCode }) => {
+          if (placeLookupIds.current[target] !== requestId) return;
+          if (!label && !countryCode) return;
+          setPinForTarget(target, {
+            ...pin,
+            ...(label ? { label } : {}),
+            ...(countryCode ? { countryCode } : {}),
+          });
         })
         .catch(() => undefined);
     }
@@ -947,6 +952,7 @@ function RiderForm(props: {
       />
       <DestinationSearch
         bias={props.pins.pickup}
+        countryCode={props.pins.pickup?.countryCode}
         choose={(pin) => {
           props.setDestination(pin);
           props.setTarget("riderDestination");
@@ -971,14 +977,14 @@ function RiderForm(props: {
     </div>
   );
 }
-function DestinationSearch({ bias, choose }: { bias?: Pin; choose: (pin: Pin) => void }) {
+function DestinationSearch({ bias, countryCode, choose }: { bias?: Pin; countryCode?: string; choose: (pin: Pin) => void }) {
   const [text, setText] = useState("");
   const [places, setPlaces] = useState<Pin[]>([]);
   const search = () => {
     if (text.trim().length < 3) return;
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
-      body: JSON.stringify({ text, ...(bias ? { bias: canonicalPin(bias) } : {}) }),
+      body: JSON.stringify({ text, ...(bias ? { bias: canonicalPin(bias) } : {}), ...(countryCode ? { countryCode } : {}) }),
     }).then((result) => setPlaces(result.places)).catch(() => setPlaces([]));
   };
   return (

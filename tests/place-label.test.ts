@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { reversePlaceLabel, searchPlaces } from "../server/place-label";
+import { reversePlaceLabel, reversePlaceDetails, searchPlaces } from "../server/place-label";
 
 test("reverse place labels use the server key and prefer a nearby named place", async () => {
   let requested: URL | null = null;
@@ -40,11 +40,25 @@ test("reverse place labels fail closed when the provider cannot respond", async 
   );
 });
 
+test("reverse place lookup returns the selected pickup country", async () => {
+  const place = await reversePlaceDetails(
+    { latitude: -33.8688, longitude: 151.2093 },
+    "private-test-key",
+    async () =>
+      new Response(
+        JSON.stringify({ results: [{ formatted: "Sydney NSW, Australia", country_code: "AU" }] }),
+        { status: 200 },
+      ),
+  );
+  assert.equal(place.countryCode, "au");
+});
+
 test("destination search biases place suggestions toward pickup", async () => {
   let requested: URL | null = null;
   await searchPlaces(
     "Miami",
     { latitude: -33.8688, longitude: 151.2093 },
+    "au",
     "private-test-key",
     async (input) => {
       requested = new URL(input);
@@ -53,4 +67,5 @@ test("destination search biases place suggestions toward pickup", async () => {
   );
   assert.ok(requested);
   assert.equal(requested.searchParams.get("bias"), "proximity:151.2093,-33.8688");
+  assert.equal(requested.searchParams.get("filter"), "countrycode:au");
 });
