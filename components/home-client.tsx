@@ -592,10 +592,10 @@ function Home({ onBegin }: { onBegin: (role: Role) => void }) {
   return (
     <div className="role-choice">
       <button className="role-card" onClick={() => onBegin("DRIVER")}>
-        I’m driving
+        Offer a ride
       </button>
       <button className="role-card" onClick={() => onBegin("RIDER")}>
-        I need a ride
+        Find a ride
       </button>
     </div>
   );
@@ -773,6 +773,7 @@ function DriverForm(props: {
 }) {
   return (
     <div className="form-page">
+      <h1>Offer a ride</h1>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
@@ -825,6 +826,7 @@ function RiderForm(props: {
 }) {
   return (
     <div className="form-page">
+      <h1>Find a ride</h1>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
