@@ -600,28 +600,32 @@ function Home({
   onBegin: (role: Role) => void;
   onContinue: () => void;
 }) {
-  if (current) {
-    const label =
-      current.role === "DRIVER"
-        ? "Continue offering a ride"
-        : "Continue ride request";
-    return (
-      <div className="home-current">
-        <button type="button" className="home-current-ride" onClick={onContinue}>
-          <strong>{label}</strong>
-          <code>Ride ID · {current.ride.rideId}</code>
-        </button>
-      </div>
-    );
-  }
   return (
     <div className="role-choice">
-      <button className="role-card" onClick={() => onBegin("DRIVER")}>
+      <button
+        className="role-card"
+        disabled={Boolean(current)}
+        onClick={() => onBegin("DRIVER")}
+      >
         Offer a ride
       </button>
-      <button className="role-card" onClick={() => onBegin("RIDER")}>
+      <button
+        className="role-card"
+        disabled={Boolean(current)}
+        onClick={() => onBegin("RIDER")}
+      >
         Find a ride
       </button>
+      {current ? (
+        <button type="button" className="home-current-ride" onClick={onContinue}>
+          <strong>
+            {current.role === "DRIVER"
+              ? "Continue offering a ride"
+              : "Continue ride request"}
+          </strong>
+          <code>Ride ID · {current.ride.rideId}</code>
+        </button>
+      ) : null}
     </div>
   );
 }

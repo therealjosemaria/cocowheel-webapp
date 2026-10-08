@@ -373,9 +373,6 @@ p {
   gap: 10px;
   padding: clamp(88px, 25vh, 190px) 0 24px;
 }
-.home-current {
-  padding: 28px 0 24px;
-}
 .home-current-ride {
   display: grid;
   width: 100%;
