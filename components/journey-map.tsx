@@ -136,7 +136,7 @@ function PinMarkers({
             key={`${pin.latitude}-${pin.longitude}-${index}`}
             position={[pin.latitude, pin.longitude]}
             icon={mapMarkerIcons[markerKind]}
-            opacity={overlapping.has(index) ? 0.62 : 1}
+            opacity={overlapping.has(index) ? 0.52 : 1}
             zIndexOffset={markerKind === "pickup" ? 2 : 1}
           />
         ) : (
