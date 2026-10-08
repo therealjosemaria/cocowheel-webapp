@@ -1278,7 +1278,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
+        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1325,7 +1325,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
+              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article
