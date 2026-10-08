@@ -487,7 +487,11 @@ p {
   animation: rise 0.22s ease-out;
 }
 .form-page {
-  padding-top: 20px;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
 }
 .page-title {
   max-width: 12ch;
@@ -497,8 +501,13 @@ p {
   letter-spacing: -0.055em;
 }
 .form-page > .page-title {
-  margin-top: 0;
-  margin-bottom: 26px;
+  max-width: none;
+  margin: 0;
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.form-panel-content {
+  padding: 18px 14px 14px;
 }
 .status-page {
   padding-top: 20px;
@@ -1456,12 +1465,17 @@ p {
     gap: 6px;
   }
   .desktop-navigation-link {
-    padding: 10px 15px;
+    display: inline-flex;
+    width: 106px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
     border: 1px solid transparent;
     border-radius: 999px;
     color: var(--ink);
-    font-size: 0.88rem;
-    font-weight: 650;
+    font-size: 0.78rem;
+    font-weight: 700;
     text-decoration: none;
     background: transparent;
     transition:
@@ -1477,14 +1491,14 @@ p {
     box-shadow: none;
   }
   .desktop-navigation-cta {
-    width: auto;
-    min-height: 36px;
+    width: 106px;
+    min-height: 40px;
     padding: 8px 10px;
     border: 1px solid transparent;
     border-radius: 999px;
     color: var(--ink);
     font: inherit;
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.01em;
     background: transparent;
@@ -1496,8 +1510,8 @@ p {
       box-shadow 0.2s ease;
   }
   .desktop-navigation-cta.find {
-    font-weight: 850;
-    letter-spacing: 0.025em;
+    font-weight: 700;
+    letter-spacing: 0.01em;
   }
   .desktop-navigation-cta.active {
     border-color: transparent;

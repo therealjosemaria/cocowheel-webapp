@@ -1152,7 +1152,8 @@ function DriverForm(props: {
   return (
     <div className="form-page">
       <h1 className="page-title">Offer a ride</h1>
-      <div className="pin-summary driver-location-summary">
+      <div className="form-panel-content">
+        <div className="pin-summary driver-location-summary">
         <p>
           <strong className="location-heading">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>
@@ -1172,44 +1173,45 @@ function DriverForm(props: {
           </strong>
           {props.pins.destination ? locationText(props.pins.destination) : null}
         </p>
-      </div>
-      {props.allowManualDeparture && !props.pins.origin ? <PlaceSearch
-        placeholder="Search departure"
-        autoFocus
-        choose={props.setOrigin}
-      /> : null}
-      <PlaceSearch
-        bias={props.pins.origin}
-        countryCode={props.pins.origin?.countryCode ?? props.countryPreference ?? undefined}
-        placeholder="Search destination"
-        autoFocus={!props.allowManualDeparture}
-        choose={props.setDestination}
-      />
-      <label className="field">
-        You receive
-        <div className="money">
-          <b>A$</b>
-          <input
-            inputMode="numeric"
-            type="number"
-            min="5"
-            step="1"
-            value={props.price}
-            onChange={(event) => props.setPrice(event.target.value)}
-          />
         </div>
-      </label>
-      <label className="field">
-        Your PayID
-        <input
-          placeholder="Mobile, email, or other identifier"
-          value={props.payId}
-          onChange={(event) => props.setPayId(event.target.value)}
+        {props.allowManualDeparture && !props.pins.origin ? <PlaceSearch
+          placeholder="Search departure"
+          autoFocus
+          choose={props.setOrigin}
+        /> : null}
+        <PlaceSearch
+          bias={props.pins.origin}
+          countryCode={props.pins.origin?.countryCode ?? props.countryPreference ?? undefined}
+          placeholder="Search destination"
+          autoFocus={!props.allowManualDeparture}
+          choose={props.setDestination}
         />
-      </label>
-      <button className="primary" disabled={props.busy} onClick={props.submit}>
-        {props.busy ? "Publishing…" : "PUBLISH RIDE"}
-      </button>
+        <label className="field">
+          You receive
+          <div className="money">
+            <b>A$</b>
+            <input
+              inputMode="numeric"
+              type="number"
+              min="5"
+              step="1"
+              value={props.price}
+              onChange={(event) => props.setPrice(event.target.value)}
+            />
+          </div>
+        </label>
+        <label className="field">
+          Your PayID
+          <input
+            placeholder="Mobile, email, or other identifier"
+            value={props.payId}
+            onChange={(event) => props.setPayId(event.target.value)}
+          />
+        </label>
+        <button className="primary" disabled={props.busy} onClick={props.submit}>
+          {props.busy ? "Publishing…" : "PUBLISH RIDE"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1242,58 +1244,60 @@ function RiderForm(props: {
   return (
     <div className="form-page">
       <h1 className="page-title">Find a ride</h1>
-      <PinControls
-        target={props.target}
-        setTarget={props.setTarget}
-        setPin={props.setPin}
-        onDepartureRequest={() => undefined}
-        onPickupRequest={props.onPickupRequest}
-        locatingDeparture={false}
-        allowManualDeparture={false}
-        routePoints={props.routePoints}
-        pins={props.pins}
-        driver={false}
-        mapVisible={props.mapOpen}
-      />
-      <PlaceSearch
-        bias={props.pins.pickup}
-        countryCode={props.pins.pickup?.countryCode ?? props.countryPreference ?? undefined}
-        placeholder="Search destination"
-        autoFocus={!props.pins.destination}
-        choose={(pin) => {
-          props.setDestination(pin);
-          props.setTarget("riderDestination");
-          props.setMapOpen(false);
-        }}
-      />
-      <label className="rider-time-field">
-        <span>Departure</span>
-        <span className="rider-time-input">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 3v3m10-3v3M4.5 9h15M6.5 5h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
-          </svg>
-          <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
-        </span>
-      </label>
-      {props.pins.pickup && props.pins.destination ? (
-        <Results
-          candidates={props.candidates}
-          serverNow={props.candidateServerNow}
-          selected={props.selected}
-          setSelected={props.setSelected}
-          request={props.request}
-          previewRoute={props.previewRoute}
-          busy={props.busy}
-          searching={props.searching}
+      <div className="form-panel-content">
+        <PinControls
+          target={props.target}
+          setTarget={props.setTarget}
+          setPin={props.setPin}
+          onDepartureRequest={() => undefined}
+          onPickupRequest={props.onPickupRequest}
+          locatingDeparture={false}
+          allowManualDeparture={false}
+          routePoints={props.routePoints}
+          pins={props.pins}
+          driver={false}
+          mapVisible={props.mapOpen}
         />
-      ) : (
-        <AvailabilityBoard
-          rides={props.availability}
-          serverNow={props.availabilityServerNow}
-          checking={props.availabilityChecking}
-          onJoin={props.onAvailabilityJoin}
+        <PlaceSearch
+          bias={props.pins.pickup}
+          countryCode={props.pins.pickup?.countryCode ?? props.countryPreference ?? undefined}
+          placeholder="Search destination"
+          autoFocus={!props.pins.destination}
+          choose={(pin) => {
+            props.setDestination(pin);
+            props.setTarget("riderDestination");
+            props.setMapOpen(false);
+          }}
         />
-      )}
+        <label className="rider-time-field">
+          <span>Departure</span>
+          <span className="rider-time-input">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 3v3m10-3v3M4.5 9h15M6.5 5h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+            </svg>
+            <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
+          </span>
+        </label>
+        {props.pins.pickup && props.pins.destination ? (
+          <Results
+            candidates={props.candidates}
+            serverNow={props.candidateServerNow}
+            selected={props.selected}
+            setSelected={props.setSelected}
+            request={props.request}
+            previewRoute={props.previewRoute}
+            busy={props.busy}
+            searching={props.searching}
+          />
+        ) : (
+          <AvailabilityBoard
+            rides={props.availability}
+            serverNow={props.availabilityServerNow}
+            checking={props.availabilityChecking}
+            onJoin={props.onAvailabilityJoin}
+          />
+        )}
+      </div>
     </div>
   );
 }
