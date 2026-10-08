@@ -174,8 +174,10 @@ button:disabled {
   padding: 20px 0 34px;
   animation: rise 0.22s ease-out;
 }
-.activity-page > .page-title {
+.activity-page > .page-title,
+.form-page > .page-title {
   margin-bottom: 26px;
+  font-size: clamp(1.9rem, 7.5vw, 2.75rem);
 }
 .activity-list {
   display: grid;
@@ -464,6 +466,9 @@ p {
 .status-page {
   animation: rise 0.22s ease-out;
 }
+.form-page {
+  padding-top: 20px;
+}
 .page-title {
   max-width: 12ch;
   margin: 0 0 12px;
@@ -473,7 +478,6 @@ p {
 }
 .form-page > .page-title {
   margin-top: 0;
-  margin-bottom: 26px;
 }
 .status-page {
   padding-top: 20px;
