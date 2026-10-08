@@ -494,6 +494,18 @@ p {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.pickup-location-button {
+  min-height: 34px;
+  margin-top: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #ffffff;
+  box-shadow: 0 1px 0 #e2e8f0;
+}
 .map-shell,
 .map-loading {
   position: relative;

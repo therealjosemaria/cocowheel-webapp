@@ -93,6 +93,7 @@ export default function HomeClient() {
   const [searching, setSearching] = useState(false);
   const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
+  const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
     useState<"origin" | "pickup" | null>(null);
@@ -453,11 +454,13 @@ export default function HomeClient() {
   useEffect(() => {
     if (screen !== "RIDER") return;
     let cancelled = false;
-    const load = () =>
+    const load = () => {
+      if (!cancelled) setAvailabilityChecking(true);
       cocowheelsApi<{ rides: AvailabilityOffer[] }>("/api/availability")
         .then((result) => !cancelled && setAvailability(result.rides))
-        .catch(() => undefined);
-    void load();
+        .catch(() => undefined)
+        .finally(() => !cancelled && setAvailabilityChecking(false));
+    };
     const timer = window.setInterval(load, 10_000);
     return () => {
       cancelled = true;
@@ -615,6 +618,7 @@ export default function HomeClient() {
           busy={busy}
           searching={searching}
           availability={availability}
+          availabilityChecking={availabilityChecking}
         />
       ) : null}
     </section>
@@ -764,7 +768,7 @@ function PinControls({
   const startingPoint = driver ? pins.origin : pins.pickup;
   return (
     <>
-      <div className="pin-tabs">
+      {driver ? <div className="pin-tabs">
         <button
           className={target === first ? "active" : ""}
           disabled={driver && locatingDeparture}
@@ -774,13 +778,10 @@ function PinControls({
         >
           {driver ? "Departure" : "Pickup"}
         </button>
-        <button
-          className={target === second ? "active" : ""}
-          onClick={() => setTarget(second)}
-        >
-          {driver ? "Final destination" : "Destination"}
+        <button className={target === second ? "active" : ""} onClick={() => setTarget(second)}>
+          Final destination
         </button>
-      </div>
+      </div> : null}
       <div className="pin-summary">
         <p>
           <strong>{driver ? "Departure" : "Pickup"}</strong>
@@ -789,8 +790,9 @@ function PinControls({
             : driver && !pins.origin
               ? "Select Departure to use your current location."
               : !driver && !pins.pickup
-                ? "Select Pickup to use your current location."
+                ? null
               : locationText(driver ? pins.origin : pins.pickup)}
+          {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
         </p>
         <p>
           <strong>{driver ? "Final destination" : "Destination"}</strong>
@@ -908,6 +910,7 @@ function RiderForm(props: {
   busy: boolean;
   searching: boolean;
   availability: AvailabilityOffer[];
+  availabilityChecking: boolean;
 }) {
   return (
     <div className="form-page">
@@ -942,7 +945,7 @@ function RiderForm(props: {
           searching={props.searching}
         />
       ) : (
-        <AvailabilityBoard rides={props.availability} />
+        <AvailabilityBoard rides={props.availability} checking={props.availabilityChecking} />
       )}
     </div>
   );
@@ -960,7 +963,7 @@ function DestinationSearch({ choose }: { choose: (pin: Pin) => void }) {
   return (
     <div className="place-search">
       <div className="place-search-input">
-        <input value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder="Search destination" aria-label="Search destination" />
+        <input autoFocus value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder="Search destination" aria-label="Search destination" />
         <button type="button" onClick={search} disabled={text.trim().length < 3}>Search</button>
       </div>
       {places.length ? <div className="place-results">
@@ -969,10 +972,9 @@ function DestinationSearch({ choose }: { choose: (pin: Pin) => void }) {
     </div>
   );
 }
-function AvailabilityBoard({ rides }: { rides: AvailabilityOffer[] }) {
+function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; checking: boolean }) {
   return (
     <section className="availability-board" aria-live="polite">
-      <h2>Live availability</h2>
       <div className="availability-heading" aria-hidden="true">
         <span>Driver</span><span>Departure</span><span>Destination</span><span>Schedule</span><span>Price</span>
       </div>
@@ -985,7 +987,7 @@ function AvailabilityBoard({ rides }: { rides: AvailabilityOffer[] }) {
           <b>A${ride.priceAud}</b>
         </div>
       ))}
-      {!rides.length ? <p className="availability-empty">Checking available rides…</p> : null}
+      {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
     </section>
   );
 }
