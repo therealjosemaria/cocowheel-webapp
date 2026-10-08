@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
+  const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const links = [
@@ -13,6 +14,7 @@ export default function AppNavigation() {
     { href: "/activity", label: "Activity" },
   ];
   const goHome = () => {
+    setRideTab(null);
     if (pathname === "/") {
       window.location.assign("/");
     } else {
@@ -20,6 +22,7 @@ export default function AppNavigation() {
     }
   };
   const startRide = (role: "driver" | "rider") => {
+    setRideTab(role);
     setOpen(false);
     if (pathname === "/") {
       window.dispatchEvent(
@@ -29,6 +32,21 @@ export default function AppNavigation() {
     }
     window.location.assign(`/?start=${role}`);
   };
+
+  useEffect(() => {
+    const syncRideTab = (event: Event) => {
+      const tab = (event as CustomEvent<unknown>).detail;
+      if (tab === "driver" || tab === "rider") setRideTab(tab);
+      if (tab === "home") setRideTab(null);
+    };
+    window.addEventListener("cocowheels:ride-tab", syncRideTab);
+    return () => window.removeEventListener("cocowheels:ride-tab", syncRideTab);
+  }, []);
+
+  const isLinkActive = (href: string) =>
+    href === "/"
+      ? pathname === "/" && rideTab === null
+      : pathname === "/activity" || pathname.startsWith("/activity/");
 
   useEffect(() => {
     if (!open) return;
@@ -51,21 +69,10 @@ export default function AppNavigation() {
           <Link
             key={link.href}
             href={link.href}
-            className={
-              (link.href === "/activity"
-                ? pathname === "/activity" || pathname.startsWith("/activity/")
-                : pathname === link.href)
-                ? "desktop-navigation-link active"
-                : "desktop-navigation-link"
-            }
-            aria-current={
-              (link.href === "/activity"
-                ? pathname === "/activity" || pathname.startsWith("/activity/")
-                : pathname === link.href)
-                ? "page"
-                : undefined
-            }
+            className={isLinkActive(link.href) ? "desktop-navigation-link active" : "desktop-navigation-link"}
+            aria-current={isLinkActive(link.href) ? "page" : undefined}
             onClick={(event) => {
+              if (link.href === "/activity") setRideTab(null);
               if (link.href === "/") {
                 event.preventDefault();
                 goHome();
@@ -77,15 +84,17 @@ export default function AppNavigation() {
         ))}
         <button
           type="button"
-          className="desktop-navigation-cta"
+          className={rideTab === "driver" ? "desktop-navigation-cta active" : "desktop-navigation-cta"}
           onClick={() => startRide("driver")}
+          aria-pressed={rideTab === "driver"}
         >
           OFFER A RIDE
         </button>
         <button
           type="button"
-          className="desktop-navigation-cta primary"
+          className={rideTab === "rider" ? "desktop-navigation-cta find active" : "desktop-navigation-cta find"}
           onClick={() => startRide("rider")}
+          aria-pressed={rideTab === "rider"}
         >
           FIND A RIDE
         </button>
@@ -123,22 +132,11 @@ export default function AppNavigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={
-                  (link.href === "/activity"
-                    ? pathname === "/activity" || pathname.startsWith("/activity/")
-                    : pathname === link.href)
-                    ? "mobile-navigation-link active"
-                    : "mobile-navigation-link"
-                }
-                aria-current={
-                  (link.href === "/activity"
-                    ? pathname === "/activity" || pathname.startsWith("/activity/")
-                    : pathname === link.href)
-                    ? "page"
-                    : undefined
-                }
+                className={isLinkActive(link.href) ? "mobile-navigation-link active" : "mobile-navigation-link"}
+                aria-current={isLinkActive(link.href) ? "page" : undefined}
                 onClick={(event) => {
                   setOpen(false);
+                  if (link.href === "/activity") setRideTab(null);
                   if (link.href === "/") {
                     event.preventDefault();
                     goHome();

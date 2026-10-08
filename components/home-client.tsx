@@ -290,6 +290,11 @@ export default function HomeClient() {
         );
     }
     setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
+    window.dispatchEvent(
+      new CustomEvent("cocowheels:ride-tab", {
+        detail: roleChoice === "DRIVER" ? "driver" : "rider",
+      }),
+    );
     setError(null);
   }, [ride]);
 
@@ -320,6 +325,7 @@ export default function HomeClient() {
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
       setScreen("RIDER");
+      window.dispatchEvent(new CustomEvent("cocowheels:ride-tab", { detail: "rider" }));
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -346,6 +352,11 @@ export default function HomeClient() {
         }
       }
       setScreen(roleChoice);
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:ride-tab", {
+          detail: roleChoice === "DRIVER" ? "driver" : "rider",
+        }),
+      );
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);

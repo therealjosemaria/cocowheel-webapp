@@ -1455,40 +1455,51 @@ p {
   }
   .desktop-navigation-link {
     padding: 10px 15px;
+    border: 1px solid transparent;
     border-radius: 999px;
     color: var(--ink);
     font-size: 0.88rem;
     font-weight: 650;
     text-decoration: none;
-    background: #f1f5f9;
+    background: transparent;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
   .desktop-navigation-link.active {
     color: var(--ink);
-    background: #e2e8f0;
+    border-color: #cbd5e1;
+    background: #ffffff;
   }
   .desktop-navigation-cta {
     width: auto;
     min-height: 36px;
     padding: 8px 10px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
     color: var(--ink);
     font: inherit;
     font-size: 0.68rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.01em;
-    background: #ffffff;
-    box-shadow: 0 1px 0 #e2e8f0;
+    background: transparent;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
   }
-  .desktop-navigation-cta.primary {
+  .desktop-navigation-cta.find {
+    font-weight: 850;
+    letter-spacing: 0.025em;
+  }
+  .desktop-navigation-cta.active {
     border-color: var(--ink);
-    color: #ffffff;
-    background: var(--ink);
-    box-shadow: 0 1px 0 #042b38;
+    background: #ffffff;
   }
   .desktop-navigation-cta:active {
     transform: translateY(1px);
-    box-shadow: none;
   }
   .menu-toggle,
   .menu-backdrop {
