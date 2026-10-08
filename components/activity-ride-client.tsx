@@ -157,6 +157,9 @@ function RideView({ ride }: { ride: Ride }) {
       />
     );
   }
+  if (!riderView && ride.status === "PUBLISHED") {
+    return <RidePreviewClient rideId={ride.rideId} driverOwned />;
+  }
   return (
     <section className="activity-record">
       <div className="activity-record-header">

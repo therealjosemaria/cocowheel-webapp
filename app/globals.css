@@ -1264,7 +1264,7 @@ p {
   font-size: 0.88rem;
   overflow-wrap: anywhere;
 }
-.preview-withdraw {
+.preview-end-action {
   min-height: 34px;
   padding: 7px 9px;
   border: 1px solid #fecdca;
@@ -1275,7 +1275,7 @@ p {
   letter-spacing: 0.035em;
   background: #fff5f4;
 }
-.preview-withdraw:active:not(:disabled) {
+.preview-end-action:active:not(:disabled) {
   transform: translateY(1px);
 }
 .preview-fit {

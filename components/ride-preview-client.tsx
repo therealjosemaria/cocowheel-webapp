@@ -45,9 +45,11 @@ const prettyTime = (value: string) =>
 export default function RidePreviewClient({
   rideId,
   pendingRequest,
+  driverOwned = false,
 }: {
   rideId: string;
   pendingRequest?: NonNullable<Ride["request"]>;
+  driverOwned?: boolean;
 }) {
   const router = useRouter();
   const [ride, setRide] = useState<PreviewRide | null>(null);
@@ -57,21 +59,23 @@ export default function RidePreviewClient({
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [withdrawPromptOpen, setWithdrawPromptOpen] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [endPromptOpen, setEndPromptOpen] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
   const [riderRoute] = useState<{
     pickup: Pin;
     destination: Pin;
     directionFit?: "GOOD" | "POOR";
   } | null>(() =>
-    riderPreviewRoute(rideId) ??
-    (pendingRequest
-      ? {
-          pickup: pendingRequest.pickup,
-          destination: pendingRequest.destination,
-        }
-      : null),
+    driverOwned
+      ? null
+      : riderPreviewRoute(rideId) ??
+        (pendingRequest
+          ? {
+              pickup: pendingRequest.pickup,
+              destination: pendingRequest.destination,
+            }
+          : null),
   );
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
     riderRoute
@@ -221,19 +225,25 @@ export default function RidePreviewClient({
     }
   }
 
-  async function withdrawRequest() {
-    setWithdrawing(true);
-    setWithdrawError(null);
+  async function endOpenRide() {
+    setEnding(true);
+    setEndError(null);
     try {
       await cocowheelsApi(
-        `/api/rides/${encodeURIComponent(rideId)}/request/cancel`,
+        driverOwned
+          ? `/api/rides/${encodeURIComponent(rideId)}/cancel`
+          : `/api/rides/${encodeURIComponent(rideId)}/request/cancel`,
         { method: "POST" },
       );
       router.push("/activity");
     } catch {
-      setWithdrawError("We couldn’t withdraw this request. Please try again.");
-      setWithdrawing(false);
-      setWithdrawPromptOpen(false);
+      setEndError(
+        driverOwned
+          ? "We couldn’t cancel this ride. Please try again."
+          : "We couldn’t withdraw this request. Please try again.",
+      );
+      setEnding(false);
+      setEndPromptOpen(false);
     }
   }
 
@@ -296,12 +306,12 @@ export default function RidePreviewClient({
           </section>
         </div>
       ) : null}
-      {withdrawPromptOpen ? (
+      {endPromptOpen ? (
         <CancelPrompt
-          busy={withdrawing}
-          request
-          close={() => setWithdrawPromptOpen(false)}
-          confirm={withdrawRequest}
+          busy={ending}
+          request={!driverOwned}
+          close={() => setEndPromptOpen(false)}
+          confirm={endOpenRide}
         />
       ) : null}
       {error ? (
@@ -362,14 +372,20 @@ export default function RidePreviewClient({
               <div className="preview-field-action">
                 <dt>Action</dt>
                 <dd>
-                  {pendingRequest ? (
+                  {pendingRequest || driverOwned ? (
                     <button
                       type="button"
-                      className="preview-withdraw"
-                      disabled={withdrawing}
-                      onClick={() => setWithdrawPromptOpen(true)}
+                      className="preview-end-action"
+                      disabled={ending}
+                      onClick={() => setEndPromptOpen(true)}
                     >
-                      {withdrawing ? "WITHDRAWING…" : "WITHDRAW"}
+                      {ending
+                        ? driverOwned
+                          ? "CANCELLING…"
+                          : "WITHDRAWING…"
+                        : driverOwned
+                          ? "CANCEL RIDE"
+                          : "WITHDRAW"}
                     </button>
                   ) : (
                     <button
@@ -403,9 +419,11 @@ export default function RidePreviewClient({
           />
           <div className="route-key">
             <span><i className="route-key-driver" />Driver route</span>
-            <span><i className="route-key-rider" />Your route</span>
+            {riderRoute ? (
+              <span><i className="route-key-rider" />Your route</span>
+            ) : null}
           </div>
-          {withdrawError ? <p className="error">{withdrawError}</p> : null}
+          {endError ? <p className="error">{endError}</p> : null}
         </>
       )}
     </section>
