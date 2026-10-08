@@ -915,7 +915,7 @@ function Home({
         OFFER A RIDE
       </button>
       <button
-        className="role-card primary"
+        className="role-card role-card-primary"
         onClick={() => onBegin("RIDER")}
       >
         FIND A RIDE

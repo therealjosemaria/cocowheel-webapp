@@ -480,7 +480,7 @@ p {
   font-weight: 750;
   box-shadow: 0 2px 0 #e2e8f0;
 }
-.role-card.primary {
+.role-card-primary {
   border-color: var(--ink);
   color: #ffffff;
   background: var(--ink);
@@ -1480,7 +1480,7 @@ p {
     color: var(--ink);
     border-color: transparent;
     background: #ffffff;
-    box-shadow: 0 2px 5px rgb(15 23 42 / 12%);
+    box-shadow: 0 3px 8px rgb(71 85 105 / 34%);
   }
   .desktop-navigation-cta {
     width: auto;
@@ -1508,7 +1508,7 @@ p {
   .desktop-navigation-cta.active {
     border-color: transparent;
     background: #ffffff;
-    box-shadow: 0 2px 5px rgb(15 23 42 / 12%);
+    box-shadow: 0 3px 8px rgb(71 85 105 / 34%);
   }
   .desktop-navigation-cta:active {
     transform: translateY(1px);
