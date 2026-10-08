@@ -626,14 +626,6 @@ export default function HomeClient() {
           setPin={setPin}
           onPickupRequest={() => setLocationPromptTarget("pickup")}
           setDestination={(pin) => setPinForTarget("riderDestination", pin)}
-          swapPins={() => {
-            if (!riderPins.pickup || !riderPins.destination) return;
-            setRiderPins({
-              pickup: riderPins.destination,
-              destination: riderPins.pickup,
-            });
-            setPinTarget(null);
-          }}
           routePoints={activeRiderRoute}
           mapOpen={riderMapOpen}
           setMapOpen={setRiderMapOpen}
@@ -760,7 +752,6 @@ function PinControls({
   driver,
   routePoints,
   mapVisible = true,
-  onSwap,
 }: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
@@ -773,7 +764,6 @@ function PinControls({
   driver: boolean;
   routePoints?: Pin[] | null;
   mapVisible?: boolean;
-  onSwap?: () => void;
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
@@ -824,18 +814,6 @@ function PinControls({
               : locationText(driver ? pins.origin : pins.pickup)}
           {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
         </p>
-        {!driver ? <button
-          type="button"
-          className="location-swap"
-          onClick={onSwap}
-          disabled={!pins.pickup || !pins.destination}
-          aria-label="Swap pickup and destination"
-          title="Swap pickup and destination"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 7h10m0 0-3-3m3 3-3 3M17 17H7m0 0 3-3m-3 3 3 3" />
-          </svg>
-        </button> : null}
         <p>
           <strong>{driver ? "Final destination" : "Where to?"}</strong>
           {pins.destination
@@ -942,7 +920,6 @@ function RiderForm(props: {
   setPin: (pin: Pin) => void;
   onPickupRequest: () => void;
   setDestination: (pin: Pin) => void;
-  swapPins: () => void;
   routePoints?: Pin[] | null;
   mapOpen: boolean;
   setMapOpen: (open: boolean) => void;
@@ -972,7 +949,6 @@ function RiderForm(props: {
         pins={props.pins}
         driver={false}
         mapVisible={props.mapOpen}
-        onSwap={props.swapPins}
       />
       <DestinationSearch
         bias={props.pins.pickup}
