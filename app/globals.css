@@ -175,13 +175,13 @@ button:disabled {
   padding-top: 24px;
 }
 .mobile-navigation-cta {
-  min-height: 52px;
+  min-height: 58px;
   padding: 10px 8px;
   border: 1px solid var(--line);
   border-radius: 14px;
   color: var(--ink);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.94rem;
   font-weight: 750;
   background: #ffffff;
   box-shadow: 0 2px 0 #e2e8f0;
@@ -448,7 +448,7 @@ p {
   color: var(--ink);
   text-align: center;
   background: #ffffff;
-  font-size: 1.08rem;
+  font-size: 1.22rem;
   font-weight: 750;
 }
 .role-card:active,

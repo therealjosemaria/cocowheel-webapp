@@ -879,7 +879,7 @@ function Home({
         >
           <strong>
             {item.role === "DRIVER"
-              ? "Continue offering a ride"
+              ? "Open your offered ride"
               : "Continue ride request"}
           </strong>
           <code>Ride ID · {routeReference(item.ride.rideId)}</code>
