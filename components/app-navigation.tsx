@@ -140,18 +140,18 @@ export default function AppNavigation() {
             <button
               type="button"
               className="mobile-navigation-cta"
-              onClick={() => startRide("driver")}
-              tabIndex={open ? undefined : -1}
-            >
-              Offer a ride
+            onClick={() => startRide("driver")}
+            tabIndex={open ? undefined : -1}
+          >
+              OFFER A RIDE
             </button>
             <button
               type="button"
               className="mobile-navigation-cta primary"
-              onClick={() => startRide("rider")}
-              tabIndex={open ? undefined : -1}
-            >
-              Find a ride
+            onClick={() => startRide("rider")}
+            tabIndex={open ? undefined : -1}
+          >
+              FIND A RIDE
             </button>
           </div>
         </div>

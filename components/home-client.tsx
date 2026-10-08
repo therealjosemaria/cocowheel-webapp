@@ -873,13 +873,13 @@ function Home({
         className="role-card"
         onClick={() => onBegin("DRIVER")}
       >
-        Offer a ride
+        OFFER A RIDE
       </button>
       <button
-        className="role-card"
+        className="role-card primary"
         onClick={() => onBegin("RIDER")}
       >
-        Find a ride
+        FIND A RIDE
       </button>
       {current.map((item) => (
         <Link

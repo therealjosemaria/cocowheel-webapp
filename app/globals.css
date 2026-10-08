@@ -163,9 +163,9 @@ button:disabled {
   background: #ffffff;
 }
 .mobile-navigation-link.active {
-  border-color: var(--ink);
-  color: #ffffff;
-  background: var(--ink);
+  border-color: #cbd5e1;
+  color: var(--ink);
+  background: #e2e8f0;
 }
 .mobile-navigation-ctas {
   display: grid;
@@ -183,6 +183,7 @@ button:disabled {
   font: inherit;
   font-size: 0.94rem;
   font-weight: 750;
+  letter-spacing: 0.01em;
   background: #ffffff;
   box-shadow: 0 2px 0 #e2e8f0;
 }
@@ -450,6 +451,12 @@ p {
   background: #ffffff;
   font-size: 1.22rem;
   font-weight: 750;
+}
+.role-card.primary {
+  border-color: var(--ink);
+  color: #ffffff;
+  background: var(--ink);
+  box-shadow: 0 2px 0 #042b38;
 }
 .role-card:active,
 .candidate:active {
@@ -1439,8 +1446,8 @@ p {
     background: #f1f5f9;
   }
   .desktop-navigation-link.active {
-    color: #ffffff;
-    background: var(--ink);
+    color: var(--ink);
+    background: #e2e8f0;
   }
   .menu-toggle,
   .menu-backdrop {
