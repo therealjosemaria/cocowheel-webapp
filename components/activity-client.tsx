@@ -9,14 +9,23 @@ import { routeReference } from "@/lib/route-id";
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
 
-const activityTime = (value?: string | null) =>
-  value
-    ? new Intl.DateTimeFormat("en-AU", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }).format(new Date(value))
-    : "Completed";
+const departureTime = (value: string) =>
+  new Intl.DateTimeFormat("en-AU", {
+    hour: "numeric",
+    minute: "2-digit",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(value));
+const locationText = (location?: {
+  latitude: number;
+  longitude: number;
+  label?: string;
+}) =>
+  location?.label ??
+  (location
+    ? location.latitude.toFixed(5) + ", " + location.longitude.toFixed(5)
+    : "—");
 
 export default function ActivityClient() {
   const [current, setCurrent] = useState<ActivityItem[]>([]);
@@ -100,7 +109,6 @@ export default function ActivityClient() {
                 <ActivityCard
                   key={`${item.role}-${item.ride.rideId}-${item.ride.request?.requestId ?? "driver"}`}
                   {...item}
-                  current
                 />
               ))}
             </section>
@@ -129,55 +137,96 @@ export default function ActivityClient() {
 function ActivityCard({
   ride,
   role,
-  current = false,
-}: ActivityItem & { current?: boolean }) {
+}: ActivityItem) {
   const withdrawn =
     ride.request?.status === "CANCELLED" && ride.status !== "CANCELLED";
   const cancelled =
     ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
-  const time = current
-    ? activityTime(ride.scheduledDepartureAt)
-    : activityTime(
-        ride.request?.decidedAt ??
-          ride.completedAt ??
-          ride.cancelledAt ??
-          ride.expiredAt,
-      );
-  const status = withdrawn ? "WITHDRAWN" : cancelled ? "CANCELLED" : ride.status;
-  const statusClass = cancelled
+  const unavailableRequest =
+    ride.request?.status === "DECLINED" ||
+    ride.request?.status === "DISCARDED";
+  const status = withdrawn
+    ? "Request withdrawn"
+    : ride.request?.status === "DECLINED"
+      ? "Request declined"
+      : ride.request?.status === "DISCARDED"
+        ? "Request unavailable"
+        : cancelled
+          ? "Cancelled"
+          : ({
+              PUBLISHED: "Active",
+              REQUESTED: "Requested",
+              ACCEPTED: "Accepted",
+              RIDE_ACTIVE: "Ride active",
+              CO_RIDE_ACTIVE: "Co-ride active",
+              COMPLETED: "Completed",
+              CANCELLED: "Cancelled",
+              EXPIRED: "Expired",
+            })[ride.status];
+  const statusClass = cancelled || unavailableRequest
     ? "activity-status cancelled"
-      : ride.status === "PUBLISHED"
+      : ride.status === "PUBLISHED" || ride.status === "REQUESTED"
         ? "activity-status published"
         : ride.status === "EXPIRED"
           ? "activity-status expired"
         : "activity-status";
+  const route =
+    role === "DRIVER"
+      ? ride.plannedRoute
+      : ride.request
+        ? { origin: ride.request.pickup, destination: ride.request.destination }
+        : undefined;
+  const href =
+    "/activity/" +
+    encodeURIComponent(ride.rideId) +
+    (role === "RIDER" && ride.request
+      ? "?request=" + encodeURIComponent(ride.request.requestId)
+      : "");
   return (
     <article className="activity-card">
       <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
-      <div className="activity-card-header">
-        <div className="activity-card-identity">
-          <strong>{ride.driverAlias}</strong>
-          <code>Ride ID · {routeReference(ride.rideId)}</code>
+      <dl className="activity-card-fields">
+        <div>
+          <dt>Route ID</dt>
+          <dd><code>{routeReference(ride.rideId)}</code></dd>
         </div>
-        <span className={statusClass}>{status}</span>
-      </div>
-      <p className="activity-card-time">{time}</p>
-      <div className="activity-card-bottom">
-        <div className="activity-metrics">
-          <span>0.00 km</span>
-          <span>A${ride.priceAud}</span>
+        <div>
+          <dt>Status</dt>
+          <dd className={statusClass}>{status}</dd>
         </div>
-        <Link
-          className="activity-open"
-          href={`/activity/${encodeURIComponent(ride.rideId)}${
-            role === "RIDER" && ride.request
-              ? `?request=${encodeURIComponent(ride.request.requestId)}`
-              : ""
-          }`}
-        >
-          OPEN RIDE
-        </Link>
-      </div>
+        <div>
+          <dt>Driver</dt>
+          <dd>{ride.driverAlias}</dd>
+        </div>
+        <div>
+          <dt>Departure</dt>
+          <dd>{departureTime(ride.scheduledDepartureAt)}</dd>
+        </div>
+        <div>
+          <dt>Where from?</dt>
+          <dd>{locationText(route?.origin)}</dd>
+        </div>
+        <div>
+          <dt>Where to?</dt>
+          <dd>{locationText(route?.destination)}</dd>
+        </div>
+        <div>
+          <dt>Price</dt>
+          <dd>A${ride.priceAud}</dd>
+        </div>
+        <div className="activity-card-action">
+          <dt>Action</dt>
+          <dd>
+            <Link
+              className="activity-open"
+              href={href}
+              aria-label={`Open ride ${routeReference(ride.rideId)}`}
+            >
+              OPEN RIDE
+            </Link>
+          </dd>
+        </div>
+      </dl>
     </article>
   );
 }
