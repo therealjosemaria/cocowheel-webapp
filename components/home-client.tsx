@@ -602,6 +602,7 @@ export default function HomeClient() {
           setTarget={setPinTarget}
           setPin={setPin}
           onPickupRequest={() => setLocationPromptTarget("pickup")}
+          setDestination={(pin) => setPinForTarget("riderDestination", pin)}
           routePoints={activeRiderRoute}
           mapOpen={riderMapOpen}
           setMapOpen={setRiderMapOpen}
@@ -894,6 +895,7 @@ function RiderForm(props: {
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
   onPickupRequest: () => void;
+  setDestination: (pin: Pin) => void;
   routePoints?: Pin[] | null;
   mapOpen: boolean;
   setMapOpen: (open: boolean) => void;
@@ -923,8 +925,8 @@ function RiderForm(props: {
       />
       <DestinationSearch
         choose={(pin) => {
+          props.setDestination(pin);
           props.setTarget("riderDestination");
-          props.setPin(pin);
           props.setMapOpen(false);
         }}
       />
@@ -949,22 +951,19 @@ function RiderForm(props: {
 function DestinationSearch({ choose }: { choose: (pin: Pin) => void }) {
   const [text, setText] = useState("");
   const [places, setPlaces] = useState<Pin[]>([]);
-  useEffect(() => {
-    if (text.trim().length < 3) {
-      return;
-    }
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
-        method: "POST",
-        body: JSON.stringify({ text }),
-      }).then((result) => !cancelled && setPlaces(result.places)).catch(() => undefined);
-    }, 250);
-    return () => { cancelled = true; window.clearTimeout(timer); };
-  }, [text]);
+  const search = () => {
+    if (text.trim().length < 3) return;
+    void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    }).then((result) => setPlaces(result.places)).catch(() => setPlaces([]));
+  };
   return (
     <div className="place-search">
-      <input value={text} onChange={(event) => { setText(event.target.value); if (event.target.value.trim().length < 3) setPlaces([]); }} placeholder="Search destination" aria-label="Search destination" />
+      <div className="place-search-input">
+        <input value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder="Search destination" aria-label="Search destination" />
+        <button type="button" onClick={search} disabled={text.trim().length < 3}>Search</button>
+      </div>
       {places.length ? <div className="place-results">
         {places.map((place) => <button type="button" key={`${place.latitude}:${place.longitude}`} onClick={() => { choose(place); setText(place.label ?? ""); setPlaces([]); }}>{place.label ?? `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}</button>)}
       </div> : null}
