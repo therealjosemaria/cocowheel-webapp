@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import CancelPrompt from "./cancel-prompt";
 import ExpiryCountdown from "./expiry-countdown";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
-import type { Pin } from "@/lib/client-types";
+import type { Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
   cacheRoadPath,
@@ -40,7 +42,14 @@ const prettyTime = (value: string) =>
     month: "short",
   }).format(new Date(value));
 
-export default function RidePreviewClient({ rideId }: { rideId: string }) {
+export default function RidePreviewClient({
+  rideId,
+  pendingRequest,
+}: {
+  rideId: string;
+  pendingRequest?: NonNullable<Ride["request"]>;
+}) {
+  const router = useRouter();
   const [ride, setRide] = useState<PreviewRide | null>(null);
   const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +57,22 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [riderRoute] = useState(() => riderPreviewRoute(rideId));
+  const [withdrawPromptOpen, setWithdrawPromptOpen] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [riderRoute] = useState<{
+    pickup: Pin;
+    destination: Pin;
+    directionFit?: "GOOD" | "POOR";
+  } | null>(() =>
+    riderPreviewRoute(rideId) ??
+    (pendingRequest
+      ? {
+          pickup: pendingRequest.pickup,
+          destination: pendingRequest.destination,
+        }
+      : null),
+  );
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
     riderRoute
       ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
@@ -197,6 +221,22 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
     }
   }
 
+  async function withdrawRequest() {
+    setWithdrawing(true);
+    setWithdrawError(null);
+    try {
+      await cocowheelsApi(
+        `/api/rides/${encodeURIComponent(rideId)}/request/cancel`,
+        { method: "POST" },
+      );
+      router.push("/activity");
+    } catch {
+      setWithdrawError("We couldn’t withdraw this request. Please try again.");
+      setWithdrawing(false);
+      setWithdrawPromptOpen(false);
+    }
+  }
+
   const lines = useMemo(() => {
     if (!ride) return [];
     return [
@@ -256,6 +296,14 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           </section>
         </div>
       ) : null}
+      {withdrawPromptOpen ? (
+        <CancelPrompt
+          busy={withdrawing}
+          request
+          close={() => setWithdrawPromptOpen(false)}
+          confirm={withdrawRequest}
+        />
+      ) : null}
       {error ? (
         <><h1>Not available</h1><p className="intro">{error}</p></>
       ) : !ride ? (
@@ -313,7 +361,27 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
               </div>
               <div className="preview-field-action">
                 <dt>Action</dt>
-                <dd><button type="button" className="availability-join" disabled={joining} onClick={() => void joinRide()}>{joining ? "JOINING…" : "JOIN"}</button></dd>
+                <dd>
+                  {pendingRequest ? (
+                    <button
+                      type="button"
+                      className="preview-withdraw"
+                      disabled={withdrawing}
+                      onClick={() => setWithdrawPromptOpen(true)}
+                    >
+                      {withdrawing ? "WITHDRAWING…" : "WITHDRAW"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="availability-join"
+                      disabled={joining}
+                      onClick={() => void joinRide()}
+                    >
+                      {joining ? "JOINING…" : "JOIN"}
+                    </button>
+                  )}
+                </dd>
               </div>
             </dl>
           </div>
@@ -337,6 +405,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
             <span><i className="route-key-driver" />Driver route</span>
             <span><i className="route-key-rider" />Your route</span>
           </div>
+          {withdrawError ? <p className="error">{withdrawError}</p> : null}
         </>
       )}
     </section>

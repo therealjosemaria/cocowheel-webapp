@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import ExpiryCountdown from "./expiry-countdown";
@@ -211,6 +212,7 @@ export default function HomeClient({
 }: {
   initialScreen?: "HOME" | "DRIVER" | "RIDER";
 }) {
+  const router = useRouter();
   const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER">(
     initialScreen,
   );
@@ -734,7 +736,13 @@ export default function HomeClient({
     setBusy(true);
     setError(null);
     try {
-      const result = await cocowheelsApi<{ ride: Ride }>(
+      saveRiderPreviewRoute(
+        candidate.rideId,
+        riderPins.pickup,
+        riderPins.destination,
+        candidate.directionFit,
+      );
+      await cocowheelsApi<{ ride: Ride }>(
         `/api/rides/${encodeURIComponent(candidate.rideId)}/requests`,
         {
           method: "POST",
@@ -745,9 +753,7 @@ export default function HomeClient({
           }),
         },
       );
-      setRide(result.ride);
-      setRole("RIDER");
-      setScreen("HOME");
+      router.push("/activity");
     } catch (reason) {
       if (reason instanceof ApiError && reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION") {
         setOwnOfferPromptOpen(true);

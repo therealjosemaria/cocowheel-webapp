@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
+import RidePreviewClient from "./ride-preview-client";
 
 const JourneyMap = dynamic(() => import("./journey-map"), {
   ssr: false,
@@ -82,7 +83,6 @@ export default function ActivityRideClient({ rideId }: { rideId: string }) {
     </section>
   );
 }
-
 function RideView({ ride }: { ride: Ride }) {
   const riderView = Boolean(ride.request);
   const [cancelPromptOpen, setCancelPromptOpen] = useState(false);
@@ -149,6 +149,14 @@ function RideView({ ride }: { ride: Ride }) {
         : location
           ? [{ latitude: location.latitude, longitude: location.longitude }]
           : [];
+  if (riderView && ride.status === "REQUESTED" && ride.request) {
+    return (
+      <RidePreviewClient
+        rideId={ride.rideId}
+        pendingRequest={ride.request}
+      />
+    );
+  }
   return (
     <section className="activity-record">
       <div className="activity-record-header">

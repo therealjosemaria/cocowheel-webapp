@@ -1188,6 +1188,9 @@ p {
 .ride-preview {
   padding-top: 20px;
 }
+.activity-detail > .ride-preview {
+  padding-top: 16px;
+}
 .ride-preview > .page-title {
   margin: 0 0 20px;
 }
@@ -1260,6 +1263,20 @@ p {
   color: var(--ink);
   font-size: 0.88rem;
   overflow-wrap: anywhere;
+}
+.preview-withdraw {
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid #fecdca;
+  border-radius: 9px;
+  color: var(--danger);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  background: #fff5f4;
+}
+.preview-withdraw:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .preview-fit {
   font-size: 0.76rem;
