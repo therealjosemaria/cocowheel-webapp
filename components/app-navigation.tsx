@@ -75,6 +75,20 @@ export default function AppNavigation() {
             {link.label}
           </Link>
         ))}
+        <button
+          type="button"
+          className="desktop-navigation-cta"
+          onClick={() => startRide("driver")}
+        >
+          OFFER A RIDE
+        </button>
+        <button
+          type="button"
+          className="desktop-navigation-cta primary"
+          onClick={() => startRide("rider")}
+        >
+          FIND A RIDE
+        </button>
       </nav>
       <button
         type="button"

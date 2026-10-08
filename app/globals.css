@@ -82,6 +82,7 @@ button:disabled {
 }
 .menu-toggle:focus-visible,
 .desktop-navigation-link:focus-visible,
+.desktop-navigation-cta:focus-visible,
 .mobile-navigation-link:focus-visible,
 .mobile-navigation-cta:focus-visible {
   outline: 2px solid var(--ink);
@@ -1464,6 +1465,30 @@ p {
   .desktop-navigation-link.active {
     color: var(--ink);
     background: #e2e8f0;
+  }
+  .desktop-navigation-cta {
+    width: auto;
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    background: #ffffff;
+    box-shadow: 0 1px 0 #e2e8f0;
+  }
+  .desktop-navigation-cta.primary {
+    border-color: var(--ink);
+    color: #ffffff;
+    background: var(--ink);
+    box-shadow: 0 1px 0 #042b38;
+  }
+  .desktop-navigation-cta:active {
+    transform: translateY(1px);
+    box-shadow: none;
   }
   .menu-toggle,
   .menu-backdrop {
