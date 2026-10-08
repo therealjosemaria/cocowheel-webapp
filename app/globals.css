@@ -982,8 +982,8 @@ p {
 .availability-heading,
 .availability-row {
   display: grid;
-  min-width: 575px;
-  grid-template-columns: 72px 106px 106px 104px 58px 65px;
+  min-width: 665px;
+  grid-template-columns: 72px 106px 106px 104px 58px 54px 72px;
   gap: 7px;
   align-items: center;
   padding: 12px 14px;

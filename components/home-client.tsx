@@ -147,6 +147,7 @@ export default function HomeClient() {
   const [locationPromptTarget, setLocationPromptTarget] =
     useState<"origin" | "pickup" | null>(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
+  const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [riderRoute, setRiderRoute] = useState<{
@@ -591,6 +592,9 @@ export default function HomeClient() {
       {ownOfferPromptOpen ? (
         <OwnOfferPrompt close={() => setOwnOfferPromptOpen(false)} />
       ) : null}
+      {routeRequiredPromptOpen ? (
+        <RouteRequiredPrompt close={() => setRouteRequiredPromptOpen(false)} />
+      ) : null}
       {error ? (
         <p className="error" role="alert">
           {error}
@@ -640,6 +644,7 @@ export default function HomeClient() {
           searching={searching}
           availability={availability}
           availabilityChecking={availabilityChecking}
+          onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
           time={riderTime}
           setTime={setRiderTime}
         />
@@ -734,6 +739,27 @@ function OwnOfferPrompt({ close }: { close: () => void }) {
       >
         <p className="eyebrow">Your ride</p>
         <h2 id="own-offer-title">You can’t join your own ride.</h2>
+        <div className="location-prompt-actions">
+          <button type="button" className="primary" onClick={close}>
+            OKAY
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function RouteRequiredPrompt({ close }: { close: () => void }) {
+  return (
+    <div className="location-prompt-backdrop" role="presentation">
+      <section
+        className="location-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="route-required-title"
+      >
+        <p className="eyebrow">Before you join</p>
+        <h2 id="route-required-title">Add your route first</h2>
+        <p>Choose Where from? and Where to? to compare this ride.</p>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
@@ -960,6 +986,7 @@ function RiderForm(props: {
   searching: boolean;
   availability: AvailabilityOffer[];
   availabilityChecking: boolean;
+  onAvailabilityJoin: () => void;
   time: string | null;
   setTime: (value: string | null) => void;
 }) {
@@ -1009,7 +1036,11 @@ function RiderForm(props: {
           searching={props.searching}
         />
       ) : (
-        <AvailabilityBoard rides={props.availability} checking={props.availabilityChecking} />
+        <AvailabilityBoard
+          rides={props.availability}
+          checking={props.availabilityChecking}
+          onJoin={props.onAvailabilityJoin}
+        />
       )}
     </div>
   );
@@ -1048,11 +1079,11 @@ function PlaceSearch({
     </div>
   );
 }
-function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; checking: boolean }) {
+function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOffer[]; checking: boolean; onJoin: () => void }) {
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span>
+        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span><span>Action</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1062,6 +1093,7 @@ function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; ch
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <b>A${ride.priceAud}</b>
           <span aria-label="Set a route to calculate direction fit"></span>
+          <button type="button" className="availability-join" onClick={onJoin}>JOIN</button>
         </div>
       ))}
       {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
