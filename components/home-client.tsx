@@ -1007,7 +1007,7 @@ function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; ch
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span>
+        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>Fit</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1016,6 +1016,7 @@ function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; ch
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <b>A${ride.priceAud}</b>
+          <span className="direction-fit direction-fit-pending">Set route</span>
         </div>
       ))}
       {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
