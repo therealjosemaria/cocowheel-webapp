@@ -88,7 +88,7 @@ export default function AppNavigation() {
           onClick={() => startRide("driver")}
           aria-pressed={rideTab === "driver"}
         >
-          OFFER A RIDE
+          Offer a ride
         </button>
         <button
           type="button"
@@ -96,7 +96,7 @@ export default function AppNavigation() {
           onClick={() => startRide("rider")}
           aria-pressed={rideTab === "rider"}
         >
-          FIND A RIDE
+          Find a ride
         </button>
       </nav>
       <button
@@ -147,25 +147,25 @@ export default function AppNavigation() {
                 {link.label}
               </Link>
             ))}
+            <button
+              type="button"
+              className={rideTab === "driver" ? "mobile-navigation-link active" : "mobile-navigation-link"}
+              onClick={() => startRide("driver")}
+              aria-pressed={rideTab === "driver"}
+              tabIndex={open ? undefined : -1}
+            >
+              Offer a ride
+            </button>
+            <button
+              type="button"
+              className={rideTab === "rider" ? "mobile-navigation-link active" : "mobile-navigation-link"}
+              onClick={() => startRide("rider")}
+              aria-pressed={rideTab === "rider"}
+              tabIndex={open ? undefined : -1}
+            >
+              Find a ride
+            </button>
           </nav>
-          <div className="mobile-navigation-ctas">
-            <button
-              type="button"
-              className="mobile-navigation-cta"
-            onClick={() => startRide("driver")}
-            tabIndex={open ? undefined : -1}
-          >
-              OFFER A RIDE
-            </button>
-            <button
-              type="button"
-              className="mobile-navigation-cta primary"
-            onClick={() => startRide("rider")}
-            tabIndex={open ? undefined : -1}
-          >
-              FIND A RIDE
-            </button>
-          </div>
         </div>
       </div>
     </>
