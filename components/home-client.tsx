@@ -90,7 +90,7 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] =
-    useState<FormPin | null>(null);
+    useState<"origin" | "pickup" | null>(null);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [driverRoute, setDriverRoute] = useState<{
@@ -525,11 +525,13 @@ export default function HomeClient() {
       {serviceAvailable === false ? (
         <p className="reconnect">Trying to reconnect.</p>
       ) : null}
-      {locationPromptTarget === "origin" ? (
+      {locationPromptTarget ? (
         <LocationPrompt
+          target={locationPromptTarget}
           confirm={() => {
+            const target = locationPromptTarget;
             setLocationPromptTarget(null);
-            requestCurrentLocation("origin");
+            requestCurrentLocation(target);
           }}
           close={() => setLocationPromptTarget(null)}
         />
@@ -549,7 +551,6 @@ export default function HomeClient() {
           target={pinTarget}
           setTarget={setPinTarget}
           setPin={setPin}
-          onCurrent={requestCurrentLocation}
           onDepartureRequest={() => setLocationPromptTarget("origin")}
           locatingDeparture={locatingTarget === "origin"}
           allowManualDeparture={allowManualDeparture}
@@ -567,7 +568,7 @@ export default function HomeClient() {
           target={pinTarget}
           setTarget={setPinTarget}
           setPin={setPin}
-          onCurrent={requestCurrentLocation}
+          onPickupRequest={() => setLocationPromptTarget("pickup")}
           routePoints={activeRiderRoute}
           submit={search}
           busy={busy}
@@ -601,25 +602,29 @@ function Home({ onBegin }: { onBegin: (role: Role) => void }) {
   );
 }
 function LocationPrompt({
+  target,
   confirm,
   close,
 }: {
+  target: "origin" | "pickup";
   confirm: () => void;
   close: () => void;
 }) {
+  const departure = target === "origin";
   return (
     <div className="location-prompt-backdrop" role="presentation">
       <section
         className="location-prompt"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="departure-location-title"
+        aria-labelledby="location-prompt-title"
       >
-        <p className="eyebrow">Departure</p>
-        <h2 id="departure-location-title">Use your current location?</h2>
+        <p className="eyebrow">{departure ? "Departure" : "Pickup"}</p>
+        <h2 id="location-prompt-title">Use your current location?</h2>
         <p>
-          Cocowheels will use your current location as the default departure
-          point.
+          Cocowheels will use your current location as the {departure
+            ? "default departure point"
+            : "pickup location"}.
         </p>
         <div className="location-prompt-actions">
           <button type="button" className="secondary" onClick={close}>
@@ -637,8 +642,8 @@ function PinControls({
   target,
   setTarget,
   setPin,
-  onCurrent,
   onDepartureRequest,
+  onPickupRequest,
   locatingDeparture,
   allowManualDeparture,
   pins,
@@ -648,8 +653,8 @@ function PinControls({
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
   onDepartureRequest: () => void;
+  onPickupRequest?: () => void;
   locatingDeparture: boolean;
   allowManualDeparture: boolean;
   pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
@@ -683,7 +688,9 @@ function PinControls({
         <button
           className={target === first ? "active" : ""}
           disabled={driver && locatingDeparture}
-          onClick={() => (driver ? onDepartureRequest() : setTarget(first))}
+          onClick={() =>
+            driver ? onDepartureRequest() : onPickupRequest?.()
+          }
         >
           {driver ? "Departure" : "Pickup"}
         </button>
@@ -742,15 +749,6 @@ function PinControls({
             : []
         }
       />
-      {!driver ? (
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => onCurrent(first)}
-        >
-          Use my current location for pickup
-        </button>
-      ) : null}
     </>
   );
 }
@@ -759,7 +757,6 @@ function DriverForm(props: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
   onDepartureRequest: () => void;
   locatingDeparture: boolean;
   allowManualDeparture: boolean;
@@ -778,7 +775,6 @@ function DriverForm(props: {
         target={props.target}
         setTarget={props.setTarget}
         setPin={props.setPin}
-        onCurrent={props.onCurrent}
         onDepartureRequest={props.onDepartureRequest}
         locatingDeparture={props.locatingDeparture}
         allowManualDeparture={props.allowManualDeparture}
@@ -819,7 +815,7 @@ function RiderForm(props: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
   setPin: (pin: Pin) => void;
-  onCurrent: (target: FormPin) => void;
+  onPickupRequest: () => void;
   routePoints?: Pin[] | null;
   submit: () => void;
   busy: boolean;
@@ -831,8 +827,8 @@ function RiderForm(props: {
         target={props.target}
         setTarget={props.setTarget}
         setPin={props.setPin}
-        onCurrent={props.onCurrent}
         onDepartureRequest={() => undefined}
+        onPickupRequest={props.onPickupRequest}
         locatingDeparture={false}
         allowManualDeparture={false}
         routePoints={props.routePoints}
