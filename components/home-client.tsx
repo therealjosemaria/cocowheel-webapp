@@ -206,11 +206,21 @@ const humanError = (error: unknown) => {
   );
 };
 
-export default function HomeClient() {
+export default function HomeClient({
+  initialScreen = "HOME",
+}: {
+  initialScreen?: "HOME" | "DRIVER" | "RIDER";
+}) {
   const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER">(
-    "HOME",
+    initialScreen,
   );
-  const [role, setRole] = useState<Role | null>(null);
+  const [role, setRole] = useState<Role | null>(
+    initialScreen === "DRIVER"
+      ? "DRIVER"
+      : initialScreen === "RIDER"
+        ? "RIDER"
+        : null,
+  );
   const [ride, setRide] = useState<Ride | null>(null);
   const [homeCurrent, setHomeCurrent] = useState<Array<{
     role: Role;

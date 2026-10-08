@@ -30,7 +30,7 @@ export default function AppNavigation() {
       );
       return;
     }
-    window.location.assign(`/?start=${role}`);
+    router.push(`/?start=${role}`);
   };
 
   useEffect(() => {
