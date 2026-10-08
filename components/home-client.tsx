@@ -1281,10 +1281,6 @@ function Results({
       {searching ? null : candidates.length === 0 ? (
         <div className="empty">
           <h2>No planned rides yet</h2>
-          <p>
-            Try another time or check again soon. Cocowheels does not invent
-            routes or drivers.
-          </p>
         </div>
       ) : (
         <>
