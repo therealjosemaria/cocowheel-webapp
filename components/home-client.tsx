@@ -757,9 +757,8 @@ function RouteRequiredPrompt({ close }: { close: () => void }) {
         aria-modal="true"
         aria-labelledby="route-required-title"
       >
-        <p className="eyebrow">Before you join</p>
         <h2 id="route-required-title">Add your route first</h2>
-        <p>Choose Where from? and Where to? to compare this ride.</p>
+        <p>Fill Where from? and Where to? to enable Join.</p>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
