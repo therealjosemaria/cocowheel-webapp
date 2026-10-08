@@ -54,22 +54,15 @@ const humanError = (error: unknown) => {
 };
 
 export default function HomeClient() {
-  const [skipCurrentRecovery] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      const explicitHome =
-        window.sessionStorage.getItem("cocowheels:show-home") === "1";
-      window.sessionStorage.removeItem("cocowheels:show-home");
-      return explicitHome;
-    } catch {
-      return false;
-    }
-  });
   const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER" | "RESULTS">(
     "HOME",
   );
   const [role, setRole] = useState<Role | null>(null);
   const [ride, setRide] = useState<Ride | null>(null);
+  const [homeCurrent, setHomeCurrent] = useState<{
+    role: Role;
+    ride: Ride;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
@@ -119,9 +112,10 @@ export default function HomeClient() {
       }>("/api/current");
       setServiceAvailable(true);
       if (result.current) {
-        setRole(result.current.role);
-        setRide(result.current.ride);
+        setHomeCurrent(result.current);
         setScreen("HOME");
+      } else {
+        setHomeCurrent(null);
       }
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
@@ -132,10 +126,9 @@ export default function HomeClient() {
     }
   }
   useEffect(() => {
-    if (skipCurrentRecovery) return;
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
     return () => window.clearTimeout(timer);
-  }, [skipCurrentRecovery]);
+  }, []);
   const activeRideId = ride?.rideId;
   const activeRideStatus = ride?.status;
   useEffect(() => {
@@ -544,7 +537,16 @@ export default function HomeClient() {
       {ride ? (
         status
       ) : screen === "HOME" ? (
-        <Home onBegin={begin} />
+        <Home
+          current={homeCurrent}
+          onBegin={begin}
+          onContinue={() => {
+            if (!homeCurrent) return;
+            setRole(homeCurrent.role);
+            setRide(homeCurrent.ride);
+            setHomeCurrent(null);
+          }}
+        />
       ) : screen === "DRIVER" ? (
         <DriverForm
           pins={driverPins}
@@ -589,7 +591,29 @@ export default function HomeClient() {
   );
 }
 
-function Home({ onBegin }: { onBegin: (role: Role) => void }) {
+function Home({
+  current,
+  onBegin,
+  onContinue,
+}: {
+  current: { role: Role; ride: Ride } | null;
+  onBegin: (role: Role) => void;
+  onContinue: () => void;
+}) {
+  if (current) {
+    const label =
+      current.role === "DRIVER"
+        ? "Continue offering a ride"
+        : "Continue ride request";
+    return (
+      <div className="home-current">
+        <button type="button" className="home-current-ride" onClick={onContinue}>
+          <strong>{label}</strong>
+          <code>Ride ID · {current.ride.rideId}</code>
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="role-choice">
       <button className="role-card" onClick={() => onBegin("DRIVER")}>

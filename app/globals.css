@@ -373,6 +373,33 @@ p {
   gap: 10px;
   padding: clamp(88px, 25vh, 190px) 0 24px;
 }
+.home-current {
+  padding: 28px 0 24px;
+}
+.home-current-ride {
+  display: grid;
+  width: 100%;
+  min-height: 76px;
+  gap: 5px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  text-align: left;
+  background: #ffffff;
+  box-shadow: 0 2px 0 #e2e8f0;
+}
+.home-current-ride:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #e2e8f0;
+}
+.home-current-ride strong {
+  font-size: 0.94rem;
+}
+.home-current-ride code {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
 .role-card {
   display: flex;
   width: 100%;

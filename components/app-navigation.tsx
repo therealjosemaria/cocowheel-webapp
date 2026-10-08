@@ -13,11 +13,6 @@ export default function AppNavigation() {
     { href: "/activity", label: "Activity" },
   ];
   const goHome = () => {
-    try {
-      window.sessionStorage.setItem("cocowheels:show-home", "1");
-    } catch {
-      // A normal reload still provides safe guest-session recovery.
-    }
     if (pathname === "/") {
       window.location.assign("/");
     } else {
