@@ -27,6 +27,8 @@ export type Candidate = {
   pickupDistanceMeters: number;
   destinationDistanceMeters: number;
   isOwnOffer: boolean;
+  departureLabel: string | null;
+  destinationLabel: string | null;
 };
 export type Ride = {
   rideId: string;

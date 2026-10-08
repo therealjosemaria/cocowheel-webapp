@@ -71,7 +71,11 @@ export async function searchPlaces(
     const payload = (await response.json()) as { results?: Array<{ lat?: unknown; lon?: unknown; formatted?: unknown; address_line1?: unknown }> };
     return (payload.results ?? []).flatMap((place) =>
       typeof place.lat === "number" && typeof place.lon === "number"
-        ? [{ latitude: place.lat, longitude: place.lon, label: conciseLabel(place as GeoapifyFeature["properties"]) ?? undefined }]
+        ? [{
+            latitude: place.lat,
+            longitude: place.lon,
+            label: typeof place.formatted === "string" ? place.formatted.slice(0, 96) : conciseLabel(place as GeoapifyFeature["properties"]) ?? undefined,
+          }]
         : [],
     );
   } catch {

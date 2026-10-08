@@ -116,6 +116,8 @@ export type Candidate = {
   pickupDistanceMeters: number;
   destinationDistanceMeters: number;
   isOwnOffer: boolean;
+  departureLabel: string | null;
+  destinationLabel: string | null;
 };
 export type AvailabilityOffer = {
   rideId: string;
@@ -618,6 +620,8 @@ export function searchRides(
         pickupDistanceMeters: Math.round(fit.pickupDistanceMeters),
         destinationDistanceMeters: Math.round(fit.destinationDistanceMeters),
         isOwnOffer: row.driver_session_id === session?.id,
+        departureLabel: row.origin_label,
+        destinationLabel: row.destination_label,
       };
     })
     .sort(
