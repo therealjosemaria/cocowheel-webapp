@@ -187,8 +187,10 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-summary">
             <div className="ride-preview-header">
-              <strong>{ride.status === "PUBLISHED" ? "Route active" : "Route requested"}</strong>
               <code>Route ID · {ride.rideId}</code>
+              <strong className={ride.status === "PUBLISHED" ? "route-status-active" : "route-status-requested"}>
+                {ride.status === "PUBLISHED" ? <><span>Route</span> active</> : "Route requested"}
+              </strong>
             </div>
             <dl className="ride-preview-fields">
               <div>
@@ -200,12 +202,12 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 <dd>{ride.departureLabel}</dd>
               </div>
               <div>
-                <dt>Where to?</dt>
-                <dd>{ride.destinationLabel}</dd>
-              </div>
-              <div>
                 <dt>Departure</dt>
                 <dd>{prettyTime(ride.scheduledDepartureAt)}</dd>
+              </div>
+              <div>
+                <dt>Where to?</dt>
+                <dd>{ride.destinationLabel}</dd>
               </div>
               <div>
                 <dt>Price</dt>
