@@ -1307,7 +1307,7 @@ function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: Avai
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>Action</span><span>View</span><span>Fit</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1318,9 +1318,9 @@ function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: Avai
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
           <b>A${ride.priceAud}</b>
+          <button type="button" className="availability-join" onClick={onJoin}>JOIN</button>
           <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
           <span aria-label="Set a route to calculate direction fit"></span>
-          <button type="button" className="availability-join" onClick={onJoin}>JOIN</button>
         </div>
       ))}
       {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
@@ -1357,7 +1357,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>Action</span><span>View</span><span>Fit</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1372,11 +1372,11 @@ function Results({
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
                 <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
                 <b>A${candidate.priceAud}</b>
+                <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
                 <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
                 <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
                   {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
                 </span>
-                <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
               </article>
             ))}
           </div>

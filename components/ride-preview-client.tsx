@@ -11,6 +11,7 @@ import {
   cacheRiderRoadPath,
   cachedRoadPath,
   cachedRiderRoadPath,
+  riderSearchDraft,
   riderPreviewRoute,
 } from "@/lib/ride-preview-cache";
 
@@ -43,6 +44,9 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
   const [ride, setRide] = useState<PreviewRide | null>(null);
   const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [riderRoute] = useState(() => riderPreviewRoute(rideId));
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
     riderRoute
@@ -157,6 +161,41 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
       ? driverRoadPath.points
       : null;
 
+  async function joinRide() {
+    if (!ride) return;
+    if (!riderRoute) {
+      setRouteRequiredPromptOpen(true);
+      return;
+    }
+    setJoining(true);
+    setJoinError(null);
+    try {
+      const draft = riderSearchDraft();
+      await cocowheelsApi<{ ride: unknown }>(
+        `/api/rides/${encodeURIComponent(ride.rideId)}/requests`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            pickup: riderRoute.pickup,
+            destination: riderRoute.destination,
+            requestedDepartureAt: draft?.departureAt
+              ? new Date(draft.departureAt).toISOString()
+              : new Date().toISOString(),
+          }),
+        },
+      );
+      window.location.assign("/activity");
+    } catch (reason) {
+      setJoinError(
+        reason instanceof ApiError && reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+          ? "You can’t join your own ride."
+          : "We couldn’t join this ride. Please try again.",
+      );
+    } finally {
+      setJoining(false);
+    }
+  }
+
   const lines = useMemo(() => {
     if (!ride) return [];
     return [
@@ -185,6 +224,17 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
 
   return (
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
+      {routeRequiredPromptOpen ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="route-required-title">
+            <h2 id="route-required-title">Add your route first</h2>
+            <p>Fill Where from and Where to to join.</p>
+            <div className="location-prompt-actions">
+              <button type="button" className="primary" onClick={() => setRouteRequiredPromptOpen(false)}>OKAY</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       {error ? (
         <><h1>Not available</h1><p className="intro">{error}</p></>
       ) : !ride ? (
@@ -199,6 +249,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
               </strong>
             </div>
+            {joinError ? <p className="error" role="alert">{joinError}</p> : null}
             <dl className="ride-preview-fields">
               <div>
                 <dt>Driver</dt>
@@ -236,9 +287,13 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                     : null}
                 </dd>
               </div>
-              <div className="preview-field-price">
+              <div>
                 <dt>Price</dt>
                 <dd>A${ride.priceAud}</dd>
+              </div>
+              <div className="preview-field-action">
+                <dt>Action</dt>
+                <dd><button type="button" className="availability-join" disabled={joining} onClick={() => void joinRide()}>{joining ? "JOINING…" : "JOIN"}</button></dd>
               </div>
             </dl>
           </div>
