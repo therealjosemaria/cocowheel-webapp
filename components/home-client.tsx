@@ -929,8 +929,7 @@ function Home({
   return (
     <div className="role-choice">
       <h1 className="home-hero">
-        <span>Hop in, share</span>
-        <span>the ride.</span>
+        <span>Going your way.</span>
       </h1>
       <button
         className="role-card"
