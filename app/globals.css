@@ -1046,7 +1046,7 @@ p {
   text-transform: uppercase;
   background: #f8fafc;
 }
-.availability-heading span:nth-child(n + 5) {
+.availability-heading span {
   text-align: center;
 }
 .availability-row {
