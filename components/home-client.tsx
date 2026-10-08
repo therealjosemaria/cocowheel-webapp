@@ -301,7 +301,13 @@ export default function HomeClient() {
         if (recentLocation) setDriverPins((state) => ({ ...state, origin: recentLocation }));
       } else {
         setRiderMapOpen(false);
-        if (recentLocation) setRiderPins((state) => ({ ...state, pickup: recentLocation }));
+        const draft = riderSearchDraft();
+        if (draft) {
+          setRiderPins({ pickup: draft.pickup, destination: draft.destination });
+          setRiderTime(draft.departureAt);
+        } else if (recentLocation) {
+          setRiderPins({ pickup: recentLocation });
+        }
       }
       setScreen(roleChoice);
     }, 0);
