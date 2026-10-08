@@ -1237,6 +1237,12 @@ function PlaceSearch({
 }) {
   const [text, setText] = useState("");
   const [places, setPlaces] = useState<Pin[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!autoFocus) return;
+    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [autoFocus]);
   const search = () => {
     if (text.trim().length < 3) return;
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
@@ -1247,7 +1253,7 @@ function PlaceSearch({
   return (
     <div className="place-search">
       <div className="place-search-input">
-        <input autoFocus={autoFocus} value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder={placeholder} aria-label={placeholder} />
+        <input ref={inputRef} autoFocus={autoFocus} value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder={placeholder} aria-label={placeholder} />
         <button type="button" onClick={search} disabled={text.trim().length < 3}>Search</button>
       </div>
       {places.length ? <div className="place-results">
