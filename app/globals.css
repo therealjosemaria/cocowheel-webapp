@@ -174,9 +174,26 @@ button:disabled {
   padding: 20px 0 34px;
   animation: rise 0.22s ease-out;
 }
-.activity-page > .page-title,
+.activity-panel {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+.activity-panel > .page-title {
+  max-width: none;
+  margin: 0;
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.activity-panel-content {
+  padding: 25px 14px 14px;
+}
+.activity-panel-content > .intro:last-child {
+  margin-bottom: 0;
+}
+.activity-panel > .page-title,
 .form-page > .page-title {
-  margin-bottom: 26px;
   font-size: clamp(1.9rem, 7.5vw, 2.75rem);
 }
 .activity-list {
@@ -185,6 +202,9 @@ button:disabled {
 }
 .activity-current {
   margin-bottom: 18px;
+}
+.activity-current:last-child {
+  margin-bottom: 0;
 }
 .activity-card {
   position: relative;
@@ -478,6 +498,7 @@ p {
 }
 .form-page > .page-title {
   margin-top: 0;
+  margin-bottom: 26px;
 }
 .status-page {
   padding-top: 20px;

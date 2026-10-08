@@ -71,41 +71,49 @@ export default function ActivityClient() {
   if (error) {
     return (
       <section className="activity-page">
-        <h1 className="page-title">Activity</h1>
-        <h1>Not available</h1>
-        <p className="intro">{error}</p>
-        <button
-          type="button"
-          className="primary"
-          onClick={() => window.location.reload()}
-        >
-          Try again
-        </button>
+        <div className="activity-panel">
+          <h1 className="page-title">Activity</h1>
+          <div className="activity-panel-content">
+            <h1>Not available</h1>
+            <p className="intro">{error}</p>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
+          </div>
+        </div>
       </section>
     );
   }
 
   return (
     <section className="activity-page">
-      <h1 className="page-title">Activity</h1>
-      {current.length ? (
-        <section className="activity-current">
-          {current.map((item) => (
-            <ActivityCard key={`${item.role}-${item.ride.rideId}`} {...item} current />
-          ))}
-        </section>
-      ) : null}
-      {activity.length === 0 ? (
-        current.length ? null : (
-          <p className="intro">Completed, cancelled, and expired rides will appear here.</p>
-        )
-      ) : (
-        <div className="activity-list">
-          {activity.map(({ ride, role }) => (
-            <ActivityCard key={`${role}-${ride.rideId}`} ride={ride} role={role} />
-          ))}
+      <div className="activity-panel">
+        <h1 className="page-title">Activity</h1>
+        <div className="activity-panel-content">
+          {current.length ? (
+            <section className="activity-current">
+              {current.map((item) => (
+                <ActivityCard key={`${item.role}-${item.ride.rideId}`} {...item} current />
+              ))}
+            </section>
+          ) : null}
+          {activity.length === 0 ? (
+            current.length ? null : (
+              <p className="intro">Completed, cancelled, and expired rides will appear here.</p>
+            )
+          ) : (
+            <div className="activity-list">
+              {activity.map(({ ride, role }) => (
+                <ActivityCard key={`${role}-${ride.rideId}`} ride={ride} role={role} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }
