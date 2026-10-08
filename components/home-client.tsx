@@ -257,6 +257,8 @@ export default function HomeClient({
     useState<"origin" | "pickup" | null>(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
+  const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
+    useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [riderRoute, setRiderRoute] = useState<{
@@ -623,7 +625,8 @@ export default function HomeClient({
   }
   async function publish() {
     if (!driverPins.origin || !driverPins.destination) {
-      setError("Select both your departure and final destination.");
+      setError(null);
+      setPublishRouteRequiredPromptOpen(true);
       return;
     }
     setBusy(true);
@@ -828,6 +831,11 @@ export default function HomeClient({
       {routeRequiredPromptOpen ? (
         <RouteRequiredPrompt close={() => setRouteRequiredPromptOpen(false)} />
       ) : null}
+      {publishRouteRequiredPromptOpen ? (
+        <PublishRouteRequiredPrompt
+          close={() => setPublishRouteRequiredPromptOpen(false)}
+        />
+      ) : null}
       {error ? (
         <p className="error" role="alert">
           {error}
@@ -1014,6 +1022,26 @@ function RouteRequiredPrompt({ close }: { close: () => void }) {
       >
         <h2 id="route-required-title">Add your route first</h2>
         <p>Fill Where from? and Where to? to join.</p>
+        <div className="location-prompt-actions">
+          <button type="button" className="primary" onClick={close}>
+            OKAY
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function PublishRouteRequiredPrompt({ close }: { close: () => void }) {
+  return (
+    <div className="location-prompt-backdrop" role="presentation">
+      <section
+        className="location-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="publish-route-required-title"
+      >
+        <h2 id="publish-route-required-title">Add your route first</h2>
+        <p>Fill Where from? and Where to? to publish.</p>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
