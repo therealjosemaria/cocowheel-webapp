@@ -6,11 +6,15 @@ type RiderRouteContext = {
   destination: Pin;
   directionFit?: DirectionFit;
 };
-type RiderSearchDraft = RiderRouteContext & { departureAt: string | null };
+type RiderSearchDraft = RiderRouteContext & {
+  departureAt: string | null;
+  savedAt: number;
+};
 const contextPrefix = "cocowheels:ride-preview:v1:";
 const roadPathPrefix = "cocowheels:road-path:v1:";
 const searchDraftKey = "cocowheels:find-ride-draft:v1";
 const searchReturnKey = "cocowheels:find-ride-return:v1";
+const riderSearchDraftTtlMs = 30 * 60 * 1_000;
 
 function read<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -27,6 +31,14 @@ function write(key: string, value: unknown) {
     window.sessionStorage.setItem(key, JSON.stringify(value));
   } catch {
     // Preview still works if browser storage is unavailable.
+  }
+}
+function remove(key: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    // Expired drafts simply cannot be restored if storage is unavailable.
   }
 }
 const routeKey = (pickup: Pin, destination: Pin) =>
@@ -50,7 +62,7 @@ export function saveRiderSearchDraft(
 ) {
   write(
     searchDraftKey,
-    { pickup, destination, departureAt } satisfies RiderSearchDraft,
+    { pickup, destination, departureAt, savedAt: Date.now() } satisfies RiderSearchDraft,
   );
 }
 export function riderSearchDraft(): RiderSearchDraft | null {
@@ -63,9 +75,13 @@ export function riderSearchDraft(): RiderSearchDraft | null {
     typeof draft.pickup.longitude !== "number" ||
     typeof draft.destination.latitude !== "number" ||
     typeof draft.destination.longitude !== "number" ||
-    (draft.departureAt !== null && typeof draft.departureAt !== "string")
-  )
+    (draft.departureAt !== null && typeof draft.departureAt !== "string") ||
+    typeof draft.savedAt !== "number" ||
+    draft.savedAt + riderSearchDraftTtlMs <= Date.now()
+  ) {
+    remove(searchDraftKey);
     return null;
+  }
   return draft;
 }
 export function markRiderSearchReturn() {
