@@ -346,18 +346,23 @@ function publicId(db: Db) {
   }
 }
 
-function hasOpenItem(db: Db, sessionId: string) {
-  const driver = db
+function hasOpenDriverRide(db: Db, sessionId: string) {
+  return Boolean(
+    db
     .prepare(
       "SELECT 1 FROM rides WHERE driver_session_id = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
     )
-    .get(sessionId);
-  const rider = db
+    .get(sessionId),
+  );
+}
+function hasOpenRiderRequest(db: Db, sessionId: string) {
+  return Boolean(
+    db
     .prepare(
       "SELECT 1 FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
     )
-    .get(sessionId);
-  return Boolean(driver || rider);
+    .get(sessionId),
+  );
 }
 
 function metersBetween(a: Pin, b: Pin) {
@@ -530,7 +535,7 @@ export function publishRide(
   const existing = findSession(db, rawSessionToken, now);
   const created = existing ? null : createGuestSession(db, now);
   const session = existing ?? created!.session;
-  if (hasOpenItem(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
+  if (hasOpenDriverRide(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
   const rideId = uuid();
   const publicIdValue = publicId(db);
   const timestamp = iso(now);
@@ -567,6 +572,7 @@ export function searchRides(
   db: Db,
   input: SearchInput,
   now = new Date(),
+  rawSessionToken: string | null = null,
 ): Candidate[] {
   expireStaleRides(db, now);
   validPin(input.pickup, "PICKUP");
@@ -582,7 +588,9 @@ export function searchRides(
       "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND scheduled_departure_at <= ? ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
     .all(iso(new Date(requested.getTime() + 1))) as RideRow[];
+  const session = rawSessionToken ? findSession(db, rawSessionToken, now) : null;
   return rows
+    .filter((row) => row.driver_session_id !== session?.id)
     .map((row) => {
       const fit = directionFit(row, input);
       const corridor = redactedCorridor(
@@ -632,7 +640,7 @@ export function requestRide(
   const session = existing ?? created!.session;
   if (session.id === ride.driver_session_id)
     throw new Error("ROLE_CHANGE_REQUIRES_TERMINATION");
-  if (hasOpenItem(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
+  if (hasOpenRiderRequest(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
   const requestId = uuid();
   const timestamp = iso(now);
   db.transaction(() => {
@@ -1180,6 +1188,14 @@ export function currentOpenRide(
   rawSessionToken: string | null,
   now = new Date(),
 ) {
+  return currentOpenRides(db, rawSessionToken, now)[0] ?? null;
+}
+
+export function currentOpenRides(
+  db: Db,
+  rawSessionToken: string | null,
+  now = new Date(),
+) {
   const session = requireSession(db, rawSessionToken, now);
   expireStaleRides(db, now);
   const driver = db
@@ -1187,20 +1203,21 @@ export function currentOpenRide(
       "SELECT public_id FROM rides WHERE driver_session_id = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') ORDER BY created_at DESC LIMIT 1",
     )
     .get(session.id) as { public_id: string } | undefined;
+  const current = [] as Array<{ role: Participant; ride: RideView }>;
   if (driver)
-    return {
-      role: "DRIVER" as const,
+    current.push({
+      role: "DRIVER",
       ride: getRide(db, driver.public_id, session, now),
-    };
+    });
   const rider = db
     .prepare(
       "SELECT r.public_id FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') ORDER BY q.created_at DESC LIMIT 1",
     )
     .get(session.id) as { public_id: string } | undefined;
-  return rider
-    ? {
-        role: "RIDER" as const,
-        ride: getRide(db, rider.public_id, session, now),
-      }
-    : null;
+  if (rider)
+    current.push({
+      role: "RIDER",
+      ride: getRide(db, rider.public_id, session, now),
+    });
+  return current;
 }

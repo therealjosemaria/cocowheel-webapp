@@ -11,6 +11,7 @@ import {
   completeCoRide,
   confirmCoRideCode,
   currentOpenRide,
+  currentOpenRides,
   decideRequest,
   expireStaleRides,
   findSession,
@@ -283,6 +284,8 @@ export function createApiServer(database: Db) {
             candidates: searchRides(
               database,
               inputSearch(await readJson(request)),
+              new Date(),
+              token,
             ),
           },
           cors,
@@ -293,7 +296,10 @@ export function createApiServer(database: Db) {
         writeJson(
           response,
           200,
-          { current: currentOpenRide(database, token) },
+          {
+            current: currentOpenRide(database, token),
+            currents: currentOpenRides(database, token),
+          },
           cors,
         );
         return;

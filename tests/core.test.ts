@@ -10,6 +10,7 @@ import {
   completeCoRide,
   confirmCoRideCode,
   currentOpenRide,
+  currentOpenRides,
   decideRequest,
   findSession,
   getRide,
@@ -116,6 +117,79 @@ test("publishes a fixed-price offer and returns only a redacted direction corrid
           baseTime,
         ),
       /INVALID_FIXED_PRICE/,
+    );
+  } finally {
+    h.close();
+  }
+});
+
+test("a guest may hold one driver offer and one unrelated rider request, but never match itself", () => {
+  const h = harness();
+  try {
+    const ownOffer = publishRide(h.db, null, driverInput, baseTime);
+    const otherOffer = publishRide(
+      h.db,
+      null,
+      {
+        ...driverInput,
+        origin: { latitude: -33.87, longitude: 151.2 },
+        destination: { latitude: -33.8, longitude: 151.29 },
+      },
+      new Date(baseTime.getTime() + 1_000),
+    );
+    const ownSearch = searchRides(
+      h.db,
+      riderInput,
+      new Date(baseTime.getTime() + 2_000),
+      ownOffer.sessionToken,
+    );
+    assert.deepEqual(ownSearch.map((candidate) => candidate.rideId), [
+      otherOffer.ride.rideId,
+    ]);
+    requestRide(
+      h.db,
+      ownOffer.sessionToken,
+      otherOffer.ride.rideId,
+      riderInput,
+      new Date(baseTime.getTime() + 3_000),
+    );
+    assert.deepEqual(
+      currentOpenRides(h.db, ownOffer.sessionToken, new Date(baseTime.getTime() + 4_000)).map(
+        (item) => item.role,
+      ),
+      ["DRIVER", "RIDER"],
+    );
+    assert.throws(
+      () =>
+        requestRide(
+          h.db,
+          ownOffer.sessionToken,
+          ownOffer.ride.rideId,
+          riderInput,
+          new Date(baseTime.getTime() + 5_000),
+        ),
+      /ROLE_CHANGE_REQUIRES_TERMINATION/,
+    );
+    assert.throws(
+      () =>
+        publishRide(
+          h.db,
+          ownOffer.sessionToken,
+          driverInput,
+          new Date(baseTime.getTime() + 6_000),
+        ),
+      /OPEN_ITEM_EXISTS/,
+    );
+    assert.throws(
+      () =>
+        requestRide(
+          h.db,
+          ownOffer.sessionToken,
+          otherOffer.ride.rideId,
+          riderInput,
+          new Date(baseTime.getTime() + 7_000),
+        ),
+      /OPEN_ITEM_EXISTS/,
     );
   } finally {
     h.close();

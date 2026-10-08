@@ -34,8 +34,7 @@ const humanError = (error: unknown) => {
   const messages: Record<string, string> = {
     SERVICE_UNAVAILABLE:
       "Trying to reconnect. Your last known ride is still safe on the server.",
-    OPEN_ITEM_EXISTS:
-      "Finish or cancel your current item before changing role.",
+    OPEN_ITEM_EXISTS: "You already have an open item in this role.",
     FRESH_LOCATIONS_REQUIRED:
       "Both phones need a fresh location before the driver can begin.",
     LOCATION_STALE: "That location is no longer fresh. Try again now.",
@@ -59,10 +58,10 @@ export default function HomeClient() {
   );
   const [role, setRole] = useState<Role | null>(null);
   const [ride, setRide] = useState<Ride | null>(null);
-  const [homeCurrent, setHomeCurrent] = useState<{
+  const [homeCurrent, setHomeCurrent] = useState<Array<{
     role: Role;
     ride: Ride;
-  } | null>(null);
+  }>>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
@@ -109,14 +108,11 @@ export default function HomeClient() {
     try {
       const result = await cocowheelsApi<{
         current: { role: Role; ride: Ride } | null;
+        currents: Array<{ role: Role; ride: Ride }>;
       }>("/api/current");
       setServiceAvailable(true);
-      if (result.current) {
-        setHomeCurrent(result.current);
-        setScreen("HOME");
-      } else {
-        setHomeCurrent(null);
-      }
+      setHomeCurrent(result.currents);
+      setScreen("HOME");
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setServiceAvailable(true);
@@ -540,11 +536,10 @@ export default function HomeClient() {
         <Home
           current={homeCurrent}
           onBegin={begin}
-          onContinue={() => {
-            if (!homeCurrent) return;
-            setRole(homeCurrent.role);
-            setRide(homeCurrent.ride);
-            setHomeCurrent(null);
+          onContinue={(current) => {
+            setRole(current.role);
+            setRide(current.ride);
+            setHomeCurrent([]);
           }}
         />
       ) : screen === "DRIVER" ? (
@@ -596,36 +591,39 @@ function Home({
   onBegin,
   onContinue,
 }: {
-  current: { role: Role; ride: Ride } | null;
+  current: Array<{ role: Role; ride: Ride }>;
   onBegin: (role: Role) => void;
-  onContinue: () => void;
+  onContinue: (current: { role: Role; ride: Ride }) => void;
 }) {
   return (
     <div className="role-choice">
       <button
         className="role-card"
-        disabled={Boolean(current)}
         onClick={() => onBegin("DRIVER")}
       >
         Offer a ride
       </button>
       <button
         className="role-card"
-        disabled={Boolean(current)}
         onClick={() => onBegin("RIDER")}
       >
         Find a ride
       </button>
-      {current ? (
-        <button type="button" className="home-current-ride" onClick={onContinue}>
+      {current.map((item) => (
+        <button
+          key={`${item.role}-${item.ride.rideId}`}
+          type="button"
+          className="home-current-ride"
+          onClick={() => onContinue(item)}
+        >
           <strong>
-            {current.role === "DRIVER"
+            {item.role === "DRIVER"
               ? "Continue offering a ride"
               : "Continue ride request"}
           </strong>
-          <code>Ride ID · {current.ride.rideId}</code>
+          <code>Ride ID · {item.ride.rideId}</code>
         </button>
-      ) : null}
+      ))}
     </div>
   );
 }

@@ -18,7 +18,7 @@ const activityTime = (value?: string | null) =>
     : "Completed";
 
 export default function ActivityClient() {
-  const [current, setCurrent] = useState<ActivityItem | null>(null);
+  const [current, setCurrent] = useState<ActivityItem[]>([]);
   const [history, setHistory] = useState<History | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +29,9 @@ export default function ActivityClient() {
       try {
         const current = await cocowheelsApi<{
           current: { role: "DRIVER" | "RIDER"; ride: Ride } | null;
+          currents: ActivityItem[];
         }>("/api/current");
-        if (!cancelled && current.current) setCurrent(current.current);
+        if (!cancelled) setCurrent(current.currents);
         const result = await cocowheelsApi<History>("/api/history");
         if (!cancelled) setHistory(result);
       } catch (reason) {
@@ -86,13 +87,15 @@ export default function ActivityClient() {
   return (
     <section className="activity-page">
       <h1 className="page-title">Activity</h1>
-      {current ? (
+      {current.length ? (
         <section className="activity-current">
-          <ActivityCard {...current} current />
+          {current.map((item) => (
+            <ActivityCard key={`${item.role}-${item.ride.rideId}`} {...item} current />
+          ))}
         </section>
       ) : null}
       {activity.length === 0 ? (
-        current ? null : (
+        current.length ? null : (
           <p className="intro">Completed and cancelled rides will appear here.</p>
         )
       ) : (
