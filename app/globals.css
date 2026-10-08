@@ -1231,10 +1231,10 @@ p {
   font-size: 0.76rem;
   font-weight: 750;
 }
-.preview-fit-good {
+.ride-preview-fields .preview-fit-good {
   color: #15803d;
 }
-.preview-fit-poor {
+.ride-preview-fields .preview-fit-poor {
   color: #b42318;
 }
 .route-key {
