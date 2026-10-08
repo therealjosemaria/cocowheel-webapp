@@ -408,13 +408,16 @@ p {
 }
 .role-choice {
   display: grid;
+  min-height: calc(100svh - 170px);
+  align-content: center;
   gap: 12px;
-  padding: clamp(88px, 25vh, 190px) 0 24px;
+  padding: 0 0 24px;
+  transform: translateY(-3vh);
 }
 .home-hero {
   margin: 0 0 30px;
   color: var(--ink);
-  font-size: clamp(3.45rem, 14vw, 5.4rem);
+  font-size: clamp(3.65rem, 15vw, 5.6rem);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.075em;
