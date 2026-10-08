@@ -187,8 +187,8 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-summary">
             <div className="ride-preview-header">
-              <strong>Driver</strong>
-              <span>{ride.status === "PUBLISHED" ? "Active" : "Requested"}</span>
+              <strong>{ride.status === "PUBLISHED" ? "Route active" : "Route requested"}</strong>
+              <code>Route ID · {ride.rideId}</code>
             </div>
             <dl className="ride-preview-fields">
               <div>

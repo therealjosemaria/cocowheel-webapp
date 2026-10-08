@@ -1266,10 +1266,11 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
+        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
+          <code>{ride.rideId}</code>
           <strong tabIndex={0}>{ride.driverAlias}</strong>
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
@@ -1312,7 +1313,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
+              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Join</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1320,6 +1321,7 @@ function Results({
                 className={`availability-row availability-select ${candidate.rideId === selected ? "selected" : ""}`}
                 onClick={() => setSelected(candidate.rideId)}
               >
+                <code>{candidate.rideId}</code>
                 <strong>{candidate.driverAlias}</strong>
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
