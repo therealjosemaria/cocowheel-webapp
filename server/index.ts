@@ -27,7 +27,7 @@ import {
   submitLocation,
 } from "./core";
 import db from "./db";
-import { reversePlaceLabel } from "./place-label";
+import { reversePlaceLabel, searchPlaces } from "./place-label";
 import { roadRoutePreview } from "./route-preview";
 
 const MAX_BODY_BYTES = 32_768;
@@ -261,6 +261,12 @@ export function createApiServer(database: Db) {
         const body = await readJson(request);
         const label = await reversePlaceLabel(validPlacePin(body.pin));
         writeJson(response, 200, { label }, cors);
+        return;
+      }
+      if (request.method === "POST" && parts.join("/") === "api/place-search") {
+        const body = await readJson(request);
+        const text = typeof body.text === "string" ? body.text : "";
+        writeJson(response, 200, { places: await searchPlaces(text) }, cors);
         return;
       }
       if (

@@ -53,3 +53,28 @@ export async function reversePlaceLabel(
     payload.results?.[0] ?? payload.features?.[0]?.properties,
   );
 }
+
+export async function searchPlaces(
+  text: string,
+  apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
+  fetcher: typeof fetch = fetch,
+): Promise<Pin[]> {
+  if (!apiKey || text.trim().length < 3) return [];
+  const url = new URL("https://api.geoapify.com/v1/geocode/search");
+  url.searchParams.set("text", text.trim().slice(0, 160));
+  url.searchParams.set("format", "json");
+  url.searchParams.set("limit", "5");
+  url.searchParams.set("apiKey", apiKey);
+  try {
+    const response = await fetcher(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(4_000) });
+    if (!response.ok) return [];
+    const payload = (await response.json()) as { results?: Array<{ lat?: unknown; lon?: unknown; formatted?: unknown; address_line1?: unknown }> };
+    return (payload.results ?? []).flatMap((place) =>
+      typeof place.lat === "number" && typeof place.lon === "number"
+        ? [{ latitude: place.lat, longitude: place.lon, label: conciseLabel(place as GeoapifyFeature["properties"]) ?? undefined }]
+        : [],
+    );
+  } catch {
+    return [];
+  }
+}

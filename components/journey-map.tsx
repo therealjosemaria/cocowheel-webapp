@@ -47,6 +47,9 @@ function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {
 }
 function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
   const map = useMap();
+  const pointKey = [...pins, ...lines.flatMap((line) => line.points)]
+    .map((point) => `${point.latitude}:${point.longitude}`)
+    .join("|");
   useEffect(() => {
     const points = [...pins, ...lines.flatMap((line) => line.points)];
     if (points.length === 0) return;
@@ -60,7 +63,9 @@ function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
       ),
       { padding: [28, 28], maxZoom: 16 },
     );
-  }, [map, pins, lines]);
+  // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, pointKey]);
   return null;
 }
 export default function JourneyMap({
