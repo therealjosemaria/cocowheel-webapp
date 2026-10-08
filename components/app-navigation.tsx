@@ -21,6 +21,12 @@ export default function AppNavigation() {
   };
   const startRide = (role: "driver" | "rider") => {
     setOpen(false);
+    if (pathname === "/") {
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:start", { detail: role }),
+      );
+      return;
+    }
     window.location.assign(`/?start=${role}`);
   };
 

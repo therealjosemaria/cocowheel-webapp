@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, Pin, Ride } from "@/lib/client-types";
@@ -259,6 +259,37 @@ export default function HomeClient() {
     [candidates, selected],
   );
 
+  const begin = useCallback((roleChoice: Role) => {
+    if (ride) return;
+    const recentLocation = recentDeviceLocation();
+    setRole(roleChoice);
+    setPinTarget(null);
+    if (roleChoice === "RIDER") {
+      setRiderMapOpen(false);
+      const draft = riderSearchDraft();
+      if (draft) {
+        setRiderPins((state) =>
+          state.pickup || state.destination
+            ? state
+            : { pickup: draft.pickup, destination: draft.destination },
+        );
+        setRiderTime(draft.departureAt);
+      } else if (recentLocation)
+        setRiderPins((state) =>
+          state.pickup ? state : { ...state, pickup: recentLocation },
+        );
+    }
+    if (roleChoice === "DRIVER") {
+      setAllowManualDeparture(false);
+      if (recentLocation)
+        setDriverPins((state) =>
+          state.origin ? state : { ...state, origin: recentLocation },
+        );
+    }
+    setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
+    setError(null);
+  }, [ride]);
+
   async function refreshCurrent() {
     try {
       const result = await cocowheelsApi<{
@@ -315,6 +346,15 @@ export default function HomeClient() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    const handleStart = (event: Event) => {
+      const roleChoice = (event as CustomEvent<unknown>).detail;
+      if (roleChoice === "driver") begin("DRIVER");
+      if (roleChoice === "rider") begin("RIDER");
+    };
+    window.addEventListener("cocowheels:start", handleStart);
+    return () => window.removeEventListener("cocowheels:start", handleStart);
+  }, [begin]);
   useEffect(() => {
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
     return () => window.clearTimeout(timer);
@@ -381,36 +421,6 @@ export default function HomeClient() {
     return () => window.clearInterval(timer);
   }, [activeRideId, activeRideStatus]);
 
-  function begin(roleChoice: Role) {
-    if (ride) return;
-    const recentLocation = recentDeviceLocation();
-    setRole(roleChoice);
-    setPinTarget(null);
-    if (roleChoice === "RIDER") {
-      setRiderMapOpen(false);
-      const draft = riderSearchDraft();
-      if (draft) {
-        setRiderPins((state) =>
-          state.pickup || state.destination
-            ? state
-            : { pickup: draft.pickup, destination: draft.destination },
-        );
-        setRiderTime(draft.departureAt);
-      } else if (recentLocation)
-        setRiderPins((state) =>
-          state.pickup ? state : { ...state, pickup: recentLocation },
-        );
-    }
-    if (roleChoice === "DRIVER") {
-      setAllowManualDeparture(false);
-      if (recentLocation)
-        setDriverPins((state) =>
-          state.origin ? state : { ...state, origin: recentLocation },
-        );
-    }
-    setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
-    setError(null);
-  }
   function setPinForTarget(target: FormPin, pin: Pin) {
     if (target === "origin")
       setDriverPins((state) => ({ ...state, origin: pin }));
