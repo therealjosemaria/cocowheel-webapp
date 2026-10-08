@@ -773,7 +773,7 @@ function DriverForm(props: {
 }) {
   return (
     <div className="form-page">
-      <h1>Offer a ride</h1>
+      <h1 className="page-title">Offer a ride</h1>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}
@@ -826,7 +826,7 @@ function RiderForm(props: {
 }) {
   return (
     <div className="form-page">
-      <h1>Find a ride</h1>
+      <h1 className="page-title">Find a ride</h1>
       <PinControls
         target={props.target}
         setTarget={props.setTarget}

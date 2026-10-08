@@ -168,7 +168,7 @@ button:disabled {
   padding: 20px 0 34px;
   animation: rise 0.22s ease-out;
 }
-.activity-page > h1 {
+.activity-page > .page-title {
   margin-bottom: 26px;
 }
 .activity-list {
@@ -396,7 +396,14 @@ p {
 .status-page {
   animation: rise 0.22s ease-out;
 }
-.form-page > h1 {
+.page-title {
+  max-width: 12ch;
+  margin: 0 0 12px;
+  font-size: clamp(2.15rem, 9vw, 3.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.form-page > .page-title {
   margin-top: 20px;
   margin-bottom: 26px;
 }

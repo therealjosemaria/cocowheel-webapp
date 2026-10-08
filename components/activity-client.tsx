@@ -69,7 +69,7 @@ export default function ActivityClient() {
   if (error) {
     return (
       <section className="activity-page">
-        <h1>Activity</h1>
+        <h1 className="page-title">Activity</h1>
         <h1>Not available</h1>
         <p className="intro">{error}</p>
         <button
@@ -85,7 +85,7 @@ export default function ActivityClient() {
 
   return (
     <section className="activity-page">
-      <h1>Activity</h1>
+      <h1 className="page-title">Activity</h1>
       {current ? (
         <section className="activity-current">
           <ActivityCard {...current} current />
