@@ -504,6 +504,21 @@ p {
 .rider-location-summary p {
   min-width: 0;
 }
+.location-heading {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.location-heading svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
 .pickup-location-button {
   min-height: 34px;
   margin-top: 7px;

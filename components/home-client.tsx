@@ -804,7 +804,10 @@ function PinControls({
       </div> : null}
       <div className={`pin-summary${driver ? "" : " rider-location-summary"}`}>
         <p>
-          <strong>{driver ? "Departure" : "Where from?"}</strong>
+          <strong className={!driver ? "location-heading" : undefined}>
+            {!driver ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg> : null}
+            {driver ? "Departure" : "Where from?"}
+          </strong>
           {driver && locatingDeparture
             ? "Finding your current location…"
             : driver && !pins.origin
@@ -815,7 +818,10 @@ function PinControls({
           {!driver && !pins.pickup ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>Use current location</button> : null}
         </p>
         <p>
-          <strong>{driver ? "Final destination" : "Where to?"}</strong>
+          <strong className={!driver ? "location-heading" : undefined}>
+            {!driver ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg> : null}
+            {driver ? "Final destination" : "Where to?"}
+          </strong>
           {pins.destination
             ? locationText(pins.destination)
             : driver ? "Select Final destination." : null}
