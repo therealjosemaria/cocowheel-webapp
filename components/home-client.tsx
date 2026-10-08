@@ -113,10 +113,6 @@ export default function HomeClient() {
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
   const [allowManualDeparture, setAllowManualDeparture] = useState(false);
-  const [driverRoute, setDriverRoute] = useState<{
-    coordinates: string;
-    points: Pin[];
-  } | null>(null);
   const [riderRoute, setRiderRoute] = useState<{
     coordinates: string;
     points: Pin[];
@@ -262,50 +258,6 @@ export default function HomeClient() {
         .catch(() => undefined);
     }
   }, [placePins]);
-  const originLatitude = driverPins.origin?.latitude;
-  const originLongitude = driverPins.origin?.longitude;
-  const destinationLatitude = driverPins.destination?.latitude;
-  const destinationLongitude = driverPins.destination?.longitude;
-  const driverRouteInput = useMemo(() => {
-    if (
-      originLatitude === undefined ||
-      originLongitude === undefined ||
-      destinationLatitude === undefined ||
-      destinationLongitude === undefined
-    )
-      return null;
-    return {
-      origin: { latitude: originLatitude, longitude: originLongitude },
-      destination: {
-        latitude: destinationLatitude,
-        longitude: destinationLongitude,
-      },
-    };
-  }, [
-    destinationLatitude,
-    destinationLongitude,
-    originLatitude,
-    originLongitude,
-  ]);
-  const driverRouteCoordinates = driverRouteInput
-    ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
-    : "";
-  useEffect(() => {
-    if (!driverRouteInput) return;
-    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
-      method: "POST",
-      body: JSON.stringify(driverRouteInput),
-    })
-      .then(({ points }) => {
-        if (points.length >= 2)
-          setDriverRoute({ coordinates: driverRouteCoordinates, points });
-      })
-      .catch(() => undefined);
-  }, [driverRouteCoordinates, driverRouteInput]);
-  const activeDriverRoute =
-    driverRoute?.coordinates === driverRouteCoordinates
-      ? driverRoute.points
-      : null;
   const pickupLatitude = riderPins.pickup?.latitude;
   const pickupLongitude = riderPins.pickup?.longitude;
   const riderDestinationLatitude = riderPins.destination?.latitude;
@@ -380,7 +332,9 @@ export default function HomeClient() {
       setLocatingTarget(null);
       if (target === "origin") setAllowManualDeparture(true);
       setError(
-        "This browser cannot provide location. Place a pin on the map instead.",
+        target === "origin"
+          ? "Location wasn’t available. Search for your departure instead."
+          : "Location wasn’t available. Search for your pickup instead.",
       );
       return;
     }
@@ -407,7 +361,9 @@ export default function HomeClient() {
         if (target === "origin") setAllowManualDeparture(true);
         setBusy(false);
         setError(
-          "Location wasn’t available. You can place a pin manually on the map.",
+          target === "origin"
+            ? "Location wasn’t available. Search for your departure instead."
+            : "Location wasn’t available. Search for your pickup instead.",
         );
       },
       { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 },
@@ -604,13 +560,14 @@ export default function HomeClient() {
       ) : screen === "DRIVER" ? (
         <DriverForm
           pins={driverPins}
-          target={pinTarget}
-          setTarget={setPinTarget}
-          setPin={setPin}
           onDepartureRequest={() => setLocationPromptTarget("origin")}
           locatingDeparture={locatingTarget === "origin"}
           allowManualDeparture={allowManualDeparture}
-          routePoints={activeDriverRoute}
+          setOrigin={(pin) => {
+            setPinForTarget("origin", pin);
+            setAllowManualDeparture(false);
+          }}
+          setDestination={(pin) => setPinForTarget("destination", pin)}
           price={price}
           setPrice={setPrice}
           payId={payId}
@@ -863,13 +820,11 @@ function PinControls({
 }
 function DriverForm(props: {
   pins: { origin?: Pin; destination?: Pin };
-  target: PinTarget;
-  setTarget: (target: PinTarget) => void;
-  setPin: (pin: Pin) => void;
   onDepartureRequest: () => void;
   locatingDeparture: boolean;
   allowManualDeparture: boolean;
-  routePoints?: Pin[] | null;
+  setOrigin: (pin: Pin) => void;
+  setDestination: (pin: Pin) => void;
   price: string;
   setPrice: (value: string) => void;
   payId: string;
@@ -880,16 +835,38 @@ function DriverForm(props: {
   return (
     <div className="form-page">
       <h1 className="page-title">Offer a ride</h1>
-      <PinControls
-        target={props.target}
-        setTarget={props.setTarget}
-        setPin={props.setPin}
-        onDepartureRequest={props.onDepartureRequest}
-        locatingDeparture={props.locatingDeparture}
-        allowManualDeparture={props.allowManualDeparture}
-        routePoints={props.routePoints}
-        pins={props.pins}
-        driver
+      <div className="pin-summary driver-location-summary">
+        <p>
+          <strong className="location-heading">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>
+            Where from?
+          </strong>
+          {props.locatingDeparture
+            ? "Finding your current location…"
+            : props.pins.origin
+              ? locationText(props.pins.origin)
+              : null}
+          {!props.locatingDeparture && !props.pins.origin ? <button type="button" className="pickup-location-button" onClick={props.onDepartureRequest}>Use current location</button> : null}
+        </p>
+        <p>
+          <strong className="location-heading">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
+            Where to?
+          </strong>
+          {props.pins.destination ? locationText(props.pins.destination) : null}
+        </p>
+      </div>
+      {props.allowManualDeparture && !props.pins.origin ? <PlaceSearch
+        placeholder="Search departure"
+        autoFocus
+        choose={props.setOrigin}
+      /> : null}
+      <PlaceSearch
+        bias={props.pins.origin}
+        countryCode={props.pins.origin?.countryCode}
+        placeholder="Search destination"
+        autoFocus={!props.allowManualDeparture}
+        choose={props.setDestination}
       />
       <label className="field">
         You receive
@@ -956,9 +933,11 @@ function RiderForm(props: {
         driver={false}
         mapVisible={props.mapOpen}
       />
-      <DestinationSearch
+      <PlaceSearch
         bias={props.pins.pickup}
         countryCode={props.pins.pickup?.countryCode}
+        placeholder="Search destination"
+        autoFocus
         choose={(pin) => {
           props.setDestination(pin);
           props.setTarget("riderDestination");
@@ -989,7 +968,19 @@ function RiderForm(props: {
     </div>
   );
 }
-function DestinationSearch({ bias, countryCode, choose }: { bias?: Pin; countryCode?: string; choose: (pin: Pin) => void }) {
+function PlaceSearch({
+  bias,
+  countryCode,
+  choose,
+  placeholder,
+  autoFocus = false,
+}: {
+  bias?: Pin;
+  countryCode?: string;
+  choose: (pin: Pin) => void;
+  placeholder: string;
+  autoFocus?: boolean;
+}) {
   const [text, setText] = useState("");
   const [places, setPlaces] = useState<Pin[]>([]);
   const search = () => {
@@ -1002,7 +993,7 @@ function DestinationSearch({ bias, countryCode, choose }: { bias?: Pin; countryC
   return (
     <div className="place-search">
       <div className="place-search-input">
-        <input autoFocus value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder="Search destination" aria-label="Search destination" />
+        <input autoFocus={autoFocus} value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder={placeholder} aria-label={placeholder} />
         <button type="button" onClick={search} disabled={text.trim().length < 3}>Search</button>
       </div>
       {places.length ? <div className="place-results">
