@@ -288,6 +288,26 @@ export default function HomeClient() {
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("start");
+    if (requested !== "driver" && requested !== "rider") return;
+    window.history.replaceState(window.history.state, "", window.location.pathname);
+    const timer = window.setTimeout(() => {
+      const recentLocation = recentDeviceLocation();
+      const roleChoice: Role = requested === "driver" ? "DRIVER" : "RIDER";
+      setRole(roleChoice);
+      setPinTarget(null);
+      if (roleChoice === "DRIVER") {
+        setAllowManualDeparture(false);
+        if (recentLocation) setDriverPins((state) => ({ ...state, origin: recentLocation }));
+      } else {
+        setRiderMapOpen(false);
+        if (recentLocation) setRiderPins((state) => ({ ...state, pickup: recentLocation }));
+      }
+      setScreen(roleChoice);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  useEffect(() => {
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
     return () => window.clearTimeout(timer);
   }, []);

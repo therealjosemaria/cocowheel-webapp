@@ -19,6 +19,10 @@ export default function AppNavigation() {
       router.push("/");
     }
   };
+  const startRide = (role: "driver" | "rider") => {
+    setOpen(false);
+    window.location.assign(`/?start=${role}`);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -126,6 +130,24 @@ export default function AppNavigation() {
               </Link>
             ))}
           </nav>
+          <div className="mobile-navigation-ctas">
+            <button
+              type="button"
+              className="mobile-navigation-cta"
+              onClick={() => startRide("driver")}
+              tabIndex={open ? undefined : -1}
+            >
+              Offer a ride
+            </button>
+            <button
+              type="button"
+              className="mobile-navigation-cta primary"
+              onClick={() => startRide("rider")}
+              tabIndex={open ? undefined : -1}
+            >
+              Find a ride
+            </button>
+          </div>
         </div>
       </div>
     </>
