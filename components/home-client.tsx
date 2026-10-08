@@ -51,6 +51,42 @@ const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
 });
+const placeCachePrefix = "cocowheels:place-label:v1:";
+type CachedPlace = { label: string; countryCode?: string };
+const placeCacheKey = (pin: Pin) =>
+  `${placeCachePrefix}${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
+function cachedPlace(pin: Pin): CachedPlace | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const parsed: unknown = JSON.parse(
+      window.sessionStorage.getItem(placeCacheKey(pin)) ?? "null",
+    );
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !("label" in parsed) ||
+      typeof parsed.label !== "string" ||
+      !parsed.label.trim()
+    )
+      return null;
+    return {
+      label: parsed.label,
+      ...("countryCode" in parsed && typeof parsed.countryCode === "string"
+        ? { countryCode: parsed.countryCode }
+        : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+function cachePlace(pin: Pin, place: CachedPlace) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(placeCacheKey(pin), JSON.stringify(place));
+  } catch {
+    // Location labelling still works when browser storage is unavailable.
+  }
+}
 const humanError = (error: unknown) => {
   const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
   const messages: Record<string, string> = {
@@ -242,6 +278,14 @@ export default function HomeClient() {
     for (const [target, pin] of placePins) {
       const requestId = ++placeLookupIds.current[target];
       if (!pin || pin.label) continue;
+      const cached = cachedPlace(pin);
+      if (cached) {
+        void Promise.resolve(cached).then((place) => {
+          if (placeLookupIds.current[target] !== requestId) return;
+          setPinForTarget(target, { ...pin, ...place });
+        });
+        continue;
+      }
       void cocowheelsApi<{ label: string | null; countryCode: string | null }>("/api/place-label", {
         method: "POST",
         body: JSON.stringify({ pin: canonicalPin(pin) }),
@@ -249,6 +293,7 @@ export default function HomeClient() {
         .then(({ label, countryCode }) => {
           if (placeLookupIds.current[target] !== requestId) return;
           if (!label && !countryCode) return;
+          if (label) cachePlace(pin, { label, ...(countryCode ? { countryCode } : {}) });
           setPinForTarget(target, {
             ...pin,
             ...(label ? { label } : {}),
