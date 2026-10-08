@@ -266,7 +266,8 @@ export function createApiServer(database: Db) {
       if (request.method === "POST" && parts.join("/") === "api/place-search") {
         const body = await readJson(request);
         const text = typeof body.text === "string" ? body.text : "";
-        writeJson(response, 200, { places: await searchPlaces(text) }, cors);
+        const bias = body.bias ? validPlacePin(body.bias) : undefined;
+        writeJson(response, 200, { places: await searchPlaces(text, bias) }, cors);
         return;
       }
       if (

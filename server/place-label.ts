@@ -56,6 +56,7 @@ export async function reversePlaceLabel(
 
 export async function searchPlaces(
   text: string,
+  bias?: Pin,
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
 ): Promise<Pin[]> {
@@ -64,6 +65,8 @@ export async function searchPlaces(
   url.searchParams.set("text", text.trim().slice(0, 160));
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", "5");
+  if (bias)
+    url.searchParams.set("bias", `proximity:${bias.longitude},${bias.latitude}`);
   url.searchParams.set("apiKey", apiKey);
   try {
     const response = await fetcher(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(4_000) });

@@ -946,6 +946,7 @@ function RiderForm(props: {
         mapVisible={props.mapOpen}
       />
       <DestinationSearch
+        bias={props.pins.pickup}
         choose={(pin) => {
           props.setDestination(pin);
           props.setTarget("riderDestination");
@@ -970,14 +971,14 @@ function RiderForm(props: {
     </div>
   );
 }
-function DestinationSearch({ choose }: { choose: (pin: Pin) => void }) {
+function DestinationSearch({ bias, choose }: { bias?: Pin; choose: (pin: Pin) => void }) {
   const [text, setText] = useState("");
   const [places, setPlaces] = useState<Pin[]>([]);
   const search = () => {
     if (text.trim().length < 3) return;
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, ...(bias ? { bias: canonicalPin(bias) } : {}) }),
     }).then((result) => setPlaces(result.places)).catch(() => setPlaces([]));
   };
   return (

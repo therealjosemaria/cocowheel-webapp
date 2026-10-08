@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { reversePlaceLabel } from "../server/place-label";
+import { reversePlaceLabel, searchPlaces } from "../server/place-label";
 
 test("reverse place labels use the server key and prefer a nearby named place", async () => {
   let requested: URL | null = null;
@@ -38,4 +38,19 @@ test("reverse place labels fail closed when the provider cannot respond", async 
     ),
     /PLACE_LOOKUP_UNAVAILABLE/,
   );
+});
+
+test("destination search biases place suggestions toward pickup", async () => {
+  let requested: URL | null = null;
+  await searchPlaces(
+    "Miami",
+    { latitude: -33.8688, longitude: 151.2093 },
+    "private-test-key",
+    async (input) => {
+      requested = new URL(input);
+      return new Response(JSON.stringify({ results: [] }), { status: 200 });
+    },
+  );
+  assert.ok(requested);
+  assert.equal(requested.searchParams.get("bias"), "proximity:151.2093,-33.8688");
 });
