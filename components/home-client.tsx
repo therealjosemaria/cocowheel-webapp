@@ -435,6 +435,7 @@ export default function HomeClient() {
         .catch(() => undefined)
         .finally(() => !cancelled && setAvailabilityChecking(false));
     };
+    load();
     const timer = window.setInterval(load, 10_000);
     return () => {
       cancelled = true;
