@@ -88,10 +88,10 @@ export default function JourneyMap({
         zoom={15}
         scrollWheelZoom={false}
         zoomControl={false}
+        attributionControl={false}
         className="journey-map"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {lines.map((line, index) => (
@@ -133,14 +133,21 @@ export default function JourneyMap({
         <Fit pins={pins} lines={lines} />
         <ZoomControl position="bottomright" />
       </MapContainer>
-      {roadPathAttribution ? (
-        <p className="map-attribution">
+      <p className="map-attribution">
+        {roadPathAttribution ? <>
           Road path by{" "}
           <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
             Geoapify
           </a>
-        </p>
-      ) : null}
+          <span aria-hidden="true"> · </span>
+        </> : null}
+        <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
+        <span aria-hidden="true"> · </span>
+        ©{" "}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+          OpenStreetMap contributors
+        </a>
+      </p>
     </div>
   );
 }
