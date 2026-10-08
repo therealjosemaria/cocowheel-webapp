@@ -1201,25 +1201,11 @@ p {
   background: #ffffff;
   overflow: hidden;
 }
-.ride-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.ride-preview-header strong,
 .ride-preview-fields dt {
   font-size: 0.78rem;
   font-weight: 750;
   letter-spacing: 0.055em;
   text-transform: uppercase;
-}
-.ride-preview-header code {
-  color: var(--muted);
-  font-size: 0.68rem;
-  white-space: nowrap;
 }
 .route-status {
   color: var(--muted);
@@ -1263,6 +1249,9 @@ p {
   color: var(--ink);
   font-size: 0.88rem;
   overflow-wrap: anywhere;
+}
+.ride-preview-fields dd.route-status {
+  color: var(--muted);
 }
 .preview-end-action {
   min-height: 34px;

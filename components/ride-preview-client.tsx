@@ -65,6 +65,17 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
+const rideStatusLabel = (status: Ride["status"]) =>
+  ({
+    PUBLISHED: "Active",
+    REQUESTED: "Requested",
+    ACCEPTED: "Accepted",
+    RIDE_ACTIVE: "Ride active",
+    CO_RIDE_ACTIVE: "Co-ride active",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+    EXPIRED: "Expired",
+  })[status];
 
 export default function RidePreviewClient({
   rideId,
@@ -358,23 +369,25 @@ export default function RidePreviewClient({
         <>
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-summary">
-            <div className="ride-preview-header">
-              <code>Route ID · {routeReference(ride.rideId)}</code>
-              <strong className="route-status">
-                {ride.requestStatus === "CANCELLED"
-                  ? "Request withdrawn"
-                  : ride.requestStatus === "DECLINED"
-                    ? "Request declined"
-                    : ride.requestStatus === "DISCARDED"
-                      ? "Request unavailable"
-                      : ride.status === "PUBLISHED"
-                        ? <>Route <span className="route-status-active">active</span></>
-                        : ride.status === "REQUESTED"
-                          ? "Route requested"
-                          : `Route ${ride.status.toLowerCase().replaceAll("_", " ")}`}
-              </strong>
-            </div>
             <dl className="ride-preview-fields">
+              <div>
+                <dt>Route ID</dt>
+                <dd><code>{routeReference(ride.rideId)}</code></dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd className="route-status">
+                  {ride.requestStatus === "CANCELLED"
+                    ? "Request withdrawn"
+                    : ride.requestStatus === "DECLINED"
+                      ? "Request declined"
+                      : ride.requestStatus === "DISCARDED"
+                        ? "Request unavailable"
+                        : ride.status === "PUBLISHED"
+                          ? <span className="route-status-active">Active</span>
+                          : rideStatusLabel(ride.status)}
+                </dd>
+              </div>
               <div>
                 <dt>Driver</dt>
                 <dd>{ride.driverAlias}</dd>
