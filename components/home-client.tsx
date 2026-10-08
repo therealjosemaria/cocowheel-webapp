@@ -1016,7 +1016,7 @@ function AvailabilityBoard({ rides, checking }: { rides: AvailabilityOffer[]; ch
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <b>A${ride.priceAud}</b>
-          <span className="direction-fit direction-fit-pending">Set route</span>
+          <span className="direction-fit direction-fit-pending" aria-label="Set a route to calculate direction fit"></span>
         </div>
       ))}
       {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}

@@ -181,6 +181,68 @@ async function pinWithPublishedLabel(value: unknown) {
     return { ...place, label: coordinateLabel(coordinates) };
   }
 }
+function isCoordinateLabel(value: string | null) {
+  return value != null && /^-?\d{1,2}\.\d{5}, -?\d{1,3}\.\d{5}$/.test(value);
+}
+async function hydratePublishedPlaceLabels(database: Db) {
+  const rides = database
+    .prepare(
+      "SELECT id, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') LIMIT 20",
+    )
+    .all() as Array<{
+    id: string;
+    origin_latitude: number;
+    origin_longitude: number;
+    origin_label: string | null;
+    destination_latitude: number;
+    destination_longitude: number;
+    destination_label: string | null;
+  }>;
+  await Promise.all(
+    rides
+      .filter(
+        (ride) =>
+          ride.origin_label == null ||
+          ride.destination_label == null ||
+          isCoordinateLabel(ride.origin_label) ||
+          isCoordinateLabel(ride.destination_label),
+      )
+      .flatMap((ride) => {
+      const updates: Array<Promise<void>> = [];
+      if (ride.origin_label == null || isCoordinateLabel(ride.origin_label)) {
+        updates.push(
+          reversePlaceDetails({
+            latitude: ride.origin_latitude,
+            longitude: ride.origin_longitude,
+          })
+            .then((place) => {
+              if (!place.label) return;
+              database
+                .prepare("UPDATE rides SET origin_label = ? WHERE id = ?")
+                .run(place.label, ride.id);
+            })
+            .catch(() => undefined),
+        );
+      }
+      if (ride.destination_label == null || isCoordinateLabel(ride.destination_label)) {
+        updates.push(
+          reversePlaceDetails({
+            latitude: ride.destination_latitude,
+            longitude: ride.destination_longitude,
+          })
+            .then((place) => {
+              if (!place.label) return;
+              database
+                .prepare("UPDATE rides SET destination_label = ? WHERE id = ?")
+                .run(place.label, ride.id);
+            })
+            .catch(() => undefined),
+        );
+      }
+      return updates;
+    }),
+  );
+}
 function placeLookupKey(request: IncomingMessage) {
   const forwarded = request.headers["x-forwarded-for"];
   if (typeof forwarded === "string" && forwarded.length > 0)
@@ -303,6 +365,7 @@ export function createApiServer(database: Db) {
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {
+        await hydratePublishedPlaceLabels(database);
         writeJson(
           response,
           200,
@@ -319,6 +382,7 @@ export function createApiServer(database: Db) {
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/availability") {
+        await hydratePublishedPlaceLabels(database);
         writeJson(response, 200, { rides: availableRides(database) }, cors);
         return;
       }
