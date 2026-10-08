@@ -23,6 +23,7 @@ type PreviewRide = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   status: "PUBLISHED" | "REQUESTED";
   departureLabel: string;
   destinationLabel: string;
@@ -193,7 +194,7 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
               </strong>
             </div>
-            <dl className={`ride-preview-fields${riderRoute?.directionFit ? " has-fit" : ""}`}>
+            <dl className="ride-preview-fields">
               <div>
                 <dt>Driver</dt>
                 <dd>{ride.driverAlias}</dd>
@@ -211,8 +212,8 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                 <dd>{ride.destinationLabel}</dd>
               </div>
               <div>
-                <dt>Price</dt>
-                <dd>A${ride.priceAud}</dd>
+                <dt>Expiry</dt>
+                <dd>{prettyTime(ride.expiresAt)}</dd>
               </div>
               {riderRoute?.directionFit ? (
                 <div>
@@ -222,6 +223,10 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
                   </dd>
                 </div>
               ) : null}
+              <div className="preview-field-price">
+                <dt>Price</dt>
+                <dd>A${ride.priceAud}</dd>
+              </div>
             </dl>
           </div>
           <JourneyMap

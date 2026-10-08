@@ -111,6 +111,7 @@ export type Candidate = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   directionFit: DirectionFit;
   redactedCorridor: [Pin, Pin];
   pickupDistanceMeters: number;
@@ -124,6 +125,7 @@ export type AvailabilityOffer = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   departureLabel: string | null;
   destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
@@ -133,6 +135,7 @@ export type PublicRidePreview = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   status: "PUBLISHED" | "REQUESTED";
   departureLabel: string;
   destinationLabel: string;
@@ -199,6 +202,8 @@ export type SearchInput = {
 };
 
 const iso = (value = new Date()) => value.toISOString();
+const offerExpiryAt = (scheduledDepartureAt: string) =>
+  iso(new Date(new Date(scheduledDepartureAt).getTime() + OFFER_STALE_MS));
 const uuid = () => {
   const bytes = randomBytes(16);
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -630,6 +635,7 @@ export function searchRides(
         driverAlias: row.driver_alias,
         priceAud: row.price_aud,
         scheduledDepartureAt: row.scheduled_departure_at,
+        expiresAt: offerExpiryAt(row.scheduled_departure_at),
         directionFit: fit.fit,
         redactedCorridor: corridor,
         pickupDistanceMeters: Math.round(fit.pickupDistanceMeters),
@@ -682,6 +688,7 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
+    expiresAt: offerExpiryAt(ride.scheduled_departure_at),
     departureLabel:
       ride.origin_label ??
       fallbackLocationLabel({
@@ -722,6 +729,7 @@ export function publicRidePreview(
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
+    expiresAt: offerExpiryAt(ride.scheduled_departure_at),
     status,
     departureLabel: ride.origin_label ?? fallbackLocationLabel(origin),
     destinationLabel:

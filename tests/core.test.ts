@@ -101,7 +101,12 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
     });
     assert.equal("origin" in candidates[0], false);
     assert.equal("payId" in candidates[0], false);
+    assert.equal(
+      candidates[0].expiresAt,
+      new Date(new Date(departure).getTime() + 30 * 60_000).toISOString(),
+    );
     const preview = publicRidePreview(h.db, published.ride.rideId, baseTime);
+    assert.equal(preview.expiresAt, candidates[0].expiresAt);
     assert.deepEqual(preview.plannedRoute, {
       origin: {
         latitude: driverInput.origin.latitude,

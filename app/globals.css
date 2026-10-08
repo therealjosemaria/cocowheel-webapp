@@ -1026,16 +1026,16 @@ p {
 .availability-heading,
 .availability-row {
   display: grid;
-  min-width: 650px;
-  grid-template-columns: 60px 58px 86px 86px 82px 48px 52px 46px 60px;
+  min-width: 690px;
+  grid-template-columns: 56px 56px 76px 76px 74px 68px 48px 52px 46px 60px;
   gap: 5px;
   align-items: center;
   padding: 11px 10px;
 }
 .matched-availability .availability-heading,
 .matched-availability .availability-row {
-  min-width: 650px;
-  grid-template-columns: 60px 58px 86px 86px 82px 48px 52px 46px 60px;
+  min-width: 690px;
+  grid-template-columns: 56px 56px 76px 76px 74px 68px 48px 52px 46px 60px;
 }
 .availability-heading {
   border-top: 1px solid var(--line);
@@ -1091,7 +1091,6 @@ p {
   border-color: #94a3b8;
   background: #f8fafc;
 }
-.availability-join,
 .availability-view {
   display: inline-flex;
   min-height: 34px;
@@ -1107,13 +1106,31 @@ p {
   background: #ffffff;
   box-shadow: 0 1px 0 #e2e8f0;
 }
-.availability-join:active:not(:disabled),
 .availability-view:active {
   transform: translateY(1px);
   box-shadow: 0 0 0 #e2e8f0;
 }
 .availability-view {
   text-decoration: none;
+}
+.availability-join {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 9px;
+  border: 1px solid var(--ink);
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: var(--ink);
+  box-shadow: 0 2px 0 #042b38;
+}
+.availability-join:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #042b38;
 }
 .availability-row strong:focus,
 .availability-row span:focus {
@@ -1188,14 +1205,9 @@ p {
 .ride-preview-fields > div:nth-child(odd) {
   border-right: 1px solid var(--line);
 }
-.ride-preview-fields > div:last-child {
-  border-bottom: 0;
-}
-.ride-preview-fields:not(.has-fit) > div:last-child {
+.ride-preview-fields .preview-field-price {
   grid-column: span 2;
   border-right: 0;
-}
-.ride-preview-fields.has-fit > div:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
 .ride-preview-fields dt {

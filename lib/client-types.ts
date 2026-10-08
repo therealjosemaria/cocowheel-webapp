@@ -28,6 +28,7 @@ export type Candidate = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   directionFit: "GOOD" | "POOR";
   redactedCorridor: [Pin, Pin];
   pickupDistanceMeters: number;

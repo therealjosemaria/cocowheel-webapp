@@ -31,6 +31,7 @@ type AvailabilityOffer = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   departureLabel: string | null;
   destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
@@ -1278,7 +1279,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1287,6 +1288,7 @@ function AvailabilityBoard({ rides, checking, onJoin }: { rides: AvailabilityOff
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
+          <span>{availabilityTime(ride.expiresAt)}</span>
           <b>A${ride.priceAud}</b>
           <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
           <span aria-label="Set a route to calculate direction fit"></span>
@@ -1325,7 +1327,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1338,6 +1340,7 @@ function Results({
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
                 <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
+                <span>{availabilityTime(candidate.expiresAt)}</span>
                 <b>A${candidate.priceAud}</b>
                 <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
                 <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
