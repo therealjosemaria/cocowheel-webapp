@@ -167,6 +167,20 @@ function validPlacePin(value: unknown) {
     throw new Error("INVALID_PLACE_PIN");
   return { latitude: place.latitude, longitude: place.longitude };
 }
+function coordinateLabel(pin: { latitude: number; longitude: number }) {
+  return `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`;
+}
+async function pinWithPublishedLabel(value: unknown) {
+  const place = pin(value);
+  if (place.label?.trim()) return place;
+  const coordinates = validPlacePin(value);
+  try {
+    const resolved = await reversePlaceDetails(coordinates);
+    return { ...place, label: resolved.label ?? coordinateLabel(coordinates) };
+  } catch {
+    return { ...place, label: coordinateLabel(coordinates) };
+  }
+}
 function placeLookupKey(request: IncomingMessage) {
   const forwarded = request.headers["x-forwarded-for"];
   if (typeof forwarded === "string" && forwarded.length > 0)
@@ -322,9 +336,13 @@ export function createApiServer(database: Db) {
       }
       if (request.method === "POST" && parts.join("/") === "api/rides") {
         const body = await readJson(request);
+        const [rideOrigin, rideDestination] = await Promise.all([
+          pinWithPublishedLabel(body.origin),
+          pinWithPublishedLabel(body.destination),
+        ]);
         const result = publishRide(database, token, {
-          origin: pin(body.origin),
-          destination: pin(body.destination),
+          origin: rideOrigin,
+          destination: rideDestination,
           scheduledDepartureAt: asString(body.scheduledDepartureAt),
           priceAud: asNumber(body.priceAud),
           payId: typeof body.payId === "string" ? body.payId : undefined,

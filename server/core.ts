@@ -313,6 +313,9 @@ function cleanOptional(
   if (cleaned.length > maximum) throw new Error(error);
   return cleaned;
 }
+function fallbackLocationLabel(pin: Pick<Pin, "latitude" | "longitude">) {
+  return `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`;
+}
 function rideRow(db: Db, rideId: string) {
   return db.prepare("SELECT * FROM rides WHERE public_id = ?").get(rideId) as
     RideRow | undefined;
@@ -562,10 +565,12 @@ export function publishRide(
       alias(),
       input.origin.latitude,
       input.origin.longitude,
-      cleanOptional(input.origin.label, 160, "INVALID_ORIGIN_LABEL"),
+      cleanOptional(input.origin.label, 160, "INVALID_ORIGIN_LABEL") ??
+        fallbackLocationLabel(input.origin),
       input.destination.latitude,
       input.destination.longitude,
-      cleanOptional(input.destination.label, 160, "INVALID_DESTINATION_LABEL"),
+      cleanOptional(input.destination.label, 160, "INVALID_DESTINATION_LABEL") ??
+        fallbackLocationLabel(input.destination),
       departure.toISOString(),
       input.priceAud,
       payId,
@@ -620,8 +625,18 @@ export function searchRides(
         pickupDistanceMeters: Math.round(fit.pickupDistanceMeters),
         destinationDistanceMeters: Math.round(fit.destinationDistanceMeters),
         isOwnOffer: row.driver_session_id === session?.id,
-        departureLabel: row.origin_label,
-        destinationLabel: row.destination_label,
+        departureLabel:
+          row.origin_label ??
+          fallbackLocationLabel({
+            latitude: row.origin_latitude,
+            longitude: row.origin_longitude,
+          }),
+        destinationLabel:
+          row.destination_label ??
+          fallbackLocationLabel({
+            latitude: row.destination_latitude,
+            longitude: row.destination_longitude,
+          }),
       };
     })
     .sort(
@@ -637,14 +652,18 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
   return (
     db
       .prepare(
-        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, origin_label, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
       )
       .all() as Array<{
       public_id: string;
       driver_alias: string;
       price_aud: number;
       scheduled_departure_at: string;
+      origin_latitude: number;
+      origin_longitude: number;
       origin_label: string | null;
+      destination_latitude: number;
+      destination_longitude: number;
       destination_label: string | null;
       status: "PUBLISHED" | "REQUESTED";
     }>
@@ -653,8 +672,18 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
-    departureLabel: ride.origin_label,
-    destinationLabel: ride.destination_label,
+    departureLabel:
+      ride.origin_label ??
+      fallbackLocationLabel({
+        latitude: ride.origin_latitude,
+        longitude: ride.origin_longitude,
+      }),
+    destinationLabel:
+      ride.destination_label ??
+      fallbackLocationLabel({
+        latitude: ride.destination_latitude,
+        longitude: ride.destination_longitude,
+      }),
     status: ride.status,
   }));
 }

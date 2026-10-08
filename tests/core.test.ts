@@ -123,6 +123,27 @@ test("publishes a fixed-price offer and returns only a redacted direction corrid
   }
 });
 
+test("published rides always expose a readable location detail to matching results", () => {
+  const h = harness();
+  try {
+    publishRide(
+      h.db,
+      null,
+      {
+        ...driverInput,
+        origin: { latitude: -33.8688, longitude: 151.2093 },
+        destination: { latitude: -33.81, longitude: 151.28 },
+      },
+      baseTime,
+    );
+    const [candidate] = searchRides(h.db, riderInput, baseTime);
+    assert.equal(candidate.departureLabel, "-33.86880, 151.20930");
+    assert.equal(candidate.destinationLabel, "-33.81000, 151.28000");
+  } finally {
+    h.close();
+  }
+});
+
 test("a guest may hold one driver offer and one unrelated rider request, but never match itself", () => {
   const h = harness();
   try {
