@@ -668,24 +668,21 @@ p {
   width: 32px;
   height: 32px;
   place-items: center;
-  border: 2px solid #111827;
-  box-shadow: 0 2px 8px rgb(15 23 42 / 20%);
+  border: 0;
+  background: transparent;
 }
 .journey-marker-departure {
-  border-radius: 50%;
-  color: #ffffff;
-  background: #111827;
+  color: #111827;
 }
 .journey-marker-driver {
-  border-radius: 9px;
-  color: #ffffff;
-  border-color: #1d4ed8;
-  background: #2563eb;
+  color: #2563eb;
 }
 .journey-marker-driver svg,
 .journey-marker-departure svg {
-  width: 21px;
-  height: 21px;
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+  filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 2px #ffffff);
 }
 .journey-marker-pair {
   position: relative;
@@ -695,7 +692,7 @@ p {
 }
 .journey-marker-pair .journey-marker {
   position: absolute;
-  top: 1px;
+  top: 0;
   width: 30px;
   height: 30px;
 }
@@ -706,8 +703,8 @@ p {
   right: 0;
 }
 .journey-marker-pair .journey-marker svg {
-  width: 19px;
-  height: 19px;
+  width: 25px;
+  height: 25px;
 }
 .journey-marker-destination {
   width: 34px;
