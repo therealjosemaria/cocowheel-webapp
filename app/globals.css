@@ -1086,23 +1086,18 @@ p {
   font-size: 0.72rem;
 }
 .availability-row .direction-fit {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 25px;
-  align-items: center;
-  padding: 4px 7px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
+  display: block;
+  padding: 0;
   font-size: 0.64rem;
   font-weight: 800;
+  text-align: center;
   white-space: nowrap;
-  background: #ffffff;
 }
 .availability-row .direction-fit-good {
-  color: var(--ink);
-  border-color: #94a3b8;
-  background: #f8fafc;
+  color: #15803d;
+}
+.availability-row .direction-fit-poor {
+  color: #b42318;
 }
 .availability-view {
   display: inline-flex;
@@ -1233,18 +1228,14 @@ p {
   overflow-wrap: anywhere;
 }
 .preview-fit {
-  width: fit-content;
-  padding: 2px 6px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
   font-size: 0.76rem;
   font-weight: 750;
 }
 .preview-fit-good {
-  color: #166534;
-  border-color: #86efac;
-  background: #f0fdf4;
+  color: #15803d;
+}
+.preview-fit-poor {
+  color: #b42318;
 }
 .route-key {
   display: flex;
