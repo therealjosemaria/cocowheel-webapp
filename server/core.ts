@@ -122,6 +122,8 @@ export type AvailabilityOffer = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  departureLabel: string | null;
+  destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
 };
 export type RideView = {
@@ -631,13 +633,15 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
   return (
     db
       .prepare(
-        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, origin_label, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
       )
       .all() as Array<{
       public_id: string;
       driver_alias: string;
       price_aud: number;
       scheduled_departure_at: string;
+      origin_label: string | null;
+      destination_label: string | null;
       status: "PUBLISHED" | "REQUESTED";
     }>
   ).map((ride) => ({
@@ -645,6 +649,8 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
+    departureLabel: ride.origin_label,
+    destinationLabel: ride.destination_label,
     status: ride.status,
   }));
 }

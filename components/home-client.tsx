@@ -19,6 +19,8 @@ type AvailabilityOffer = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  departureLabel: string | null;
+  destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
 };
 const prettyTime = (value: string) =>
@@ -787,7 +789,7 @@ function PinControls({
             : driver && !pins.origin
               ? "Select Departure to use your current location."
               : !driver && !pins.pickup
-                ? "Select Pickup or use your current location."
+                ? "Select Pickup to use your current location."
               : locationText(driver ? pins.origin : pins.pickup)}
         </p>
         <p>
@@ -930,9 +932,6 @@ function RiderForm(props: {
           props.setMapOpen(false);
         }}
       />
-      <button type="button" className="secondary" onClick={() => props.setMapOpen(!props.mapOpen)}>
-        {props.mapOpen ? "HIDE MAP" : "SHOW MAP"}
-      </button>
       {props.pins.pickup && props.pins.destination ? (
         <Results
           candidates={props.candidates}
@@ -973,13 +972,15 @@ function DestinationSearch({ choose }: { choose: (pin: Pin) => void }) {
 function AvailabilityBoard({ rides }: { rides: AvailabilityOffer[] }) {
   return (
     <section className="availability-board" aria-live="polite">
-      <h2>Rides available</h2>
+      <h2>Live availability</h2>
       <div className="availability-heading" aria-hidden="true">
-        <span>Driver</span><span>Depart</span><span>Price</span>
+        <span>Driver</span><span>Departure</span><span>Destination</span><span>Schedule</span><span>Price</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
-          <strong>{ride.driverAlias}</strong>
+          <strong tabIndex={0}>{ride.driverAlias}</strong>
+          <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
+          <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
           <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <b>A${ride.priceAud}</b>
         </div>
