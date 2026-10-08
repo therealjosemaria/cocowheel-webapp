@@ -188,8 +188,8 @@ export default function RidePreviewClient({ rideId }: { rideId: string }) {
           <div className="ride-preview-summary">
             <div className="ride-preview-header">
               <code>Route ID · {ride.rideId}</code>
-              <strong className={ride.status === "PUBLISHED" ? "route-status-active" : "route-status-requested"}>
-                {ride.status === "PUBLISHED" ? <><span>Route</span> active</> : "Route requested"}
+              <strong className="route-status">
+                {ride.status === "PUBLISHED" ? <>Route <span className="route-status-active">active</span></> : "Route requested"}
               </strong>
             </div>
             <dl className={`ride-preview-fields${riderRoute?.directionFit ? " has-fit" : ""}`}>

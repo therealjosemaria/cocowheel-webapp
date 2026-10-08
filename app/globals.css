@@ -1186,15 +1186,12 @@ p {
   font-size: 0.68rem;
   white-space: nowrap;
 }
+.route-status {
+  color: var(--muted);
+}
 .route-status-active {
   color: #15803d;
   animation: route-active-pulse 1.8s ease-in-out infinite;
-}
-.route-status-active span {
-  color: var(--muted);
-}
-.route-status-requested {
-  color: var(--muted);
 }
 @keyframes route-active-pulse {
   0%, 100% { color: #15803d; text-shadow: 0 0 0 rgb(34 197 94 / 0%); }
