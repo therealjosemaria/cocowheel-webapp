@@ -245,6 +245,42 @@ async function hydratePublishedPlaceLabels(database: Db) {
     }),
   );
 }
+
+async function hydrateRequestPlaceLabels(
+  database: Db,
+  requestView: {
+    requestId: string;
+    pickup: { latitude: number; longitude: number; label?: string };
+    destination: { latitude: number; longitude: number; label?: string };
+  },
+) {
+  const updates = [
+    {
+      column: "pickup_label",
+      pin: requestView.pickup,
+    },
+    {
+      column: "destination_label",
+      pin: requestView.destination,
+    },
+  ].filter(({ pin }) => !pin.label || isCoordinateLabel(pin.label));
+
+  await Promise.all(
+    updates.map(async ({ column, pin }) => {
+      try {
+        const place = await reversePlaceDetails(pin, undefined, fetch, database);
+        if (!place.label) return;
+        const statement =
+          column === "pickup_label"
+            ? "UPDATE ride_requests SET pickup_label = ? WHERE id = ?"
+            : "UPDATE ride_requests SET destination_label = ? WHERE id = ?";
+        database.prepare(statement).run(place.label, requestView.requestId);
+      } catch {
+        // Coordinates remain the final display fallback when lookup is unavailable.
+      }
+    }),
+  );
+}
 function placeLookupKey(request: IncomingMessage) {
   const forwarded = request.headers["x-forwarded-for"];
   if (typeof forwarded === "string" && forwarded.length > 0)
@@ -471,6 +507,20 @@ export function createApiServer(database: Db) {
       ) {
         const session = findSession(database, token);
         if (!session) throw new Error("GUEST_SESSION_REQUIRED");
+        const requestId =
+          new URL(request.url ?? "/", "http://api.local").searchParams.get(
+            "request",
+          ) ?? undefined;
+        const authorizedRide = getRide(
+          database,
+          parts[2],
+          session,
+          new Date(),
+          requestId,
+        );
+        if (authorizedRide.request) {
+          await hydrateRequestPlaceLabels(database, authorizedRide.request);
+        }
         writeJson(
           response,
           200,
@@ -480,9 +530,7 @@ export function createApiServer(database: Db) {
               parts[2],
               session,
               new Date(),
-              new URL(request.url ?? "/", "http://api.local").searchParams.get(
-                "request",
-              ) ?? undefined,
+              requestId,
             ),
           },
           cors,
@@ -496,11 +544,16 @@ export function createApiServer(database: Db) {
         parts[1] === "rides" &&
         parts[3] === "requests"
       ) {
+        const search = inputSearch(await readJson(request));
+        const [pickup, destination] = await Promise.all([
+          pinWithPublishedLabel(search.pickup, database),
+          pinWithPublishedLabel(search.destination, database),
+        ]);
         const result = requestRide(
           database,
           token,
           parts[2],
-          inputSearch(await readJson(request)),
+          { ...search, pickup, destination },
         );
         const headers = result.sessionToken
           ? {
