@@ -165,7 +165,6 @@ function ActivityCard({
     ride.request?.status === "DECLINED" ||
     ride.request?.status === "DISCARDED";
   const status =
-    role === "RIDER" &&
     ["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(ride.status)
       ? "Active"
       : rideCancelled
