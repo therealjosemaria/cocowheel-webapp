@@ -44,6 +44,7 @@ export type Ride = {
   priceAud: number;
   scheduledDepartureAt: string;
   expiresAt: string;
+  acceptedAt?: string | null;
   request?: {
     requestId: string;
     riderAlias: string;

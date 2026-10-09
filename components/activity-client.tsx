@@ -6,6 +6,7 @@ import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import CancelPrompt from "./cancel-prompt";
+import RideFieldLabel from "./ride-field-label";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
@@ -82,8 +83,20 @@ export default function ActivityClient() {
       ...history.rider.map((ride) => ({ ride, role: "RIDER" as const })),
     ].sort(
       (a, b) =>
-        new Date(b.ride.request?.decidedAt ?? b.ride.completedAt ?? b.ride.cancelledAt ?? b.ride.expiredAt ?? 0).getTime() -
-        new Date(a.ride.request?.decidedAt ?? a.ride.completedAt ?? a.ride.cancelledAt ?? a.ride.expiredAt ?? 0).getTime(),
+        new Date(
+          b.ride.request?.decidedAt ??
+            b.ride.completedAt ??
+            b.ride.cancelledAt ??
+            b.ride.expiredAt ??
+            0,
+        ).getTime() -
+        new Date(
+          a.ride.request?.decidedAt ??
+            a.ride.completedAt ??
+            a.ride.cancelledAt ??
+            a.ride.expiredAt ??
+            0,
+        ).getTime(),
     );
   }, [history]);
 
@@ -130,7 +143,9 @@ export default function ActivityClient() {
           ) : null}
           {activity.length === 0 ? (
             current.length ? null : (
-              <p className="intro">Completed, cancelled, and expired rides will appear here.</p>
+              <p className="intro">
+                Completed, cancelled, and expired rides will appear here.
+              </p>
             )
           ) : (
             <div className="activity-list">
@@ -162,29 +177,27 @@ function ActivityCard({
     ride.request?.status === "CANCELLED" && ride.status !== "CANCELLED";
   const rideCancelled = ride.status === "CANCELLED";
   const unavailableRequest =
-    ride.request?.status === "DECLINED" ||
-    ride.request?.status === "DISCARDED";
-  const status =
-    ["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(ride.status)
-      ? "Active"
-      : rideCancelled
-        ? "Cancelled"
-        : ({
-              PUBLISHED: "Active",
-              REQUESTED: "Requested",
-              ACCEPTED: "Accepted",
-              RIDE_ACTIVE: "Ride active",
-              CO_RIDE_ACTIVE: "Co-ride active",
-              COMPLETED: "Completed",
-              CANCELLED: "Cancelled",
-              EXPIRED: "Expired",
-            })[ride.status];
+    ride.request?.status === "DECLINED" || ride.request?.status === "DISCARDED";
+  const status = ["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(ride.status)
+    ? "Active"
+    : rideCancelled
+      ? "Cancelled"
+      : {
+          PUBLISHED: "Active",
+          REQUESTED: "Requested",
+          ACCEPTED: "Accepted",
+          RIDE_ACTIVE: "Ride active",
+          CO_RIDE_ACTIVE: "Co-ride active",
+          COMPLETED: "Completed",
+          CANCELLED: "Cancelled",
+          EXPIRED: "Expired",
+        }[ride.status];
   const statusClass = rideCancelled
     ? "activity-status cancelled"
-      : status === "Active"
-        ? "activity-status published"
-        : ride.status === "EXPIRED"
-          ? "activity-status expired"
+    : status === "Active"
+      ? "activity-status published"
+      : ride.status === "EXPIRED"
+        ? "activity-status expired"
         : "activity-status";
   const route =
     role === "DRIVER"
@@ -199,13 +212,13 @@ function ActivityCard({
       ? "?request=" + encodeURIComponent(ride.request.requestId)
       : "");
   const requestStatus = ride.request
-    ? ({
+    ? {
         PENDING: "Pending",
         ACCEPTED: "Accepted",
         DECLINED: "Declined",
         DISCARDED: "Unavailable",
         CANCELLED: "Withdrawn",
-      })[ride.request.status]
+      }[ride.request.status]
     : null;
   const canEndRequest =
     role === "RIDER" &&
@@ -273,82 +286,106 @@ function ActivityCard({
           {role === "DRIVER" ? "Driver" : "Rider"}
         </span>
         <dl className="activity-card-fields">
-        <div>
-          <dt>Route ID</dt>
-          <dd><code>{routeReference(ride.rideId)}</code></dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd className={statusClass}>{status}</dd>
-        </div>
-        <div>
-          <dt>Driver</dt>
-          <dd>{ride.driverAlias}</dd>
-        </div>
-        <div>
-          <dt>Departure</dt>
-          <dd>{departureTime(ride.scheduledDepartureAt)}</dd>
-        </div>
-        <div>
-          <dt>Where from?</dt>
-          <dd>{locationText(route?.origin)}</dd>
-        </div>
-        <div>
-          <dt>Where to?</dt>
-          <dd>{locationText(route?.destination)}</dd>
-        </div>
-        <div>
-          <dt>Price</dt>
-          <dd>A${ride.priceAud}</dd>
-        </div>
-        {role === "RIDER" && requestStatus ? (
           <div>
-            <dt>Request status</dt>
-            <dd
-              className={
-                unavailableRequest || withdrawn
-                  ? "activity-status cancelled"
-                  : ride.request?.status === "ACCEPTED"
-                    ? "activity-status published"
-                    : "activity-status"
-              }
-            >
-              {requestStatus}
-            </dd>
-          </div>
-        ) : null}
-        <div className="activity-card-action">
-          <dt>View</dt>
-          <dd>
-            <Link
-              className="activity-open"
-              href={href}
-              aria-label={`Open ride ${routeReference(ride.rideId)}`}
-            >
-              OPEN RIDE
-            </Link>
-          </dd>
-        </div>
-        {role === "RIDER" && requestStatus ? (
-          <div className="activity-card-action">
-            <dt>Action</dt>
+            <dt>
+              <RideFieldLabel icon="route">Route ID</RideFieldLabel>
+            </dt>
             <dd>
-              {canEndRequest ? (
-                <button
-                  type="button"
-                  className="activity-request-end"
-                  disabled={ending}
-                  onClick={() => setEndPromptOpen(true)}
-                >
-                  {ride.request?.status === "PENDING"
-                    ? "WITHDRAW"
-                    : "CANCEL RIDE"}
-                </button>
-              ) : null}
+              <code>{routeReference(ride.rideId)}</code>
             </dd>
           </div>
-        ) : null}
-      </dl>
+          <div>
+            <dt>
+              <RideFieldLabel icon="status">Status</RideFieldLabel>
+            </dt>
+            <dd className={statusClass}>{status}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="driver">Driver</RideFieldLabel>
+            </dt>
+            <dd>{ride.driverAlias}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="departure">Departure</RideFieldLabel>
+            </dt>
+            <dd>{departureTime(ride.scheduledDepartureAt)}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="from">Where from?</RideFieldLabel>
+            </dt>
+            <dd>{locationText(route?.origin)}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+            </dt>
+            <dd>{locationText(route?.destination)}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="price">Price</RideFieldLabel>
+            </dt>
+            <dd>A${ride.priceAud}</dd>
+          </div>
+          {role === "RIDER" && requestStatus ? (
+            <div>
+              <dt>
+                <RideFieldLabel icon="request-status">
+                  Request status
+                </RideFieldLabel>
+              </dt>
+              <dd
+                className={
+                  unavailableRequest || withdrawn
+                    ? "activity-status cancelled"
+                    : ride.request?.status === "ACCEPTED"
+                      ? "activity-status published"
+                      : "activity-status"
+                }
+              >
+                {requestStatus}
+              </dd>
+            </div>
+          ) : null}
+          <div className="activity-card-action">
+            <dt>
+              <RideFieldLabel icon="view">View</RideFieldLabel>
+            </dt>
+            <dd>
+              <Link
+                className="activity-open"
+                href={href}
+                aria-label={`Open ride ${routeReference(ride.rideId)}`}
+              >
+                OPEN RIDE
+              </Link>
+            </dd>
+          </div>
+          {role === "RIDER" && requestStatus ? (
+            <div className="activity-card-action">
+              <dt>
+                <RideFieldLabel icon="action">Action</RideFieldLabel>
+              </dt>
+              <dd>
+                {canEndRequest ? (
+                  <button
+                    type="button"
+                    className="activity-request-end"
+                    disabled={ending}
+                    onClick={() => setEndPromptOpen(true)}
+                  >
+                    {ride.request?.status === "PENDING"
+                      ? "WITHDRAW"
+                      : "CANCEL RIDE"}
+                  </button>
+                ) : null}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
       </article>
     </>
   );

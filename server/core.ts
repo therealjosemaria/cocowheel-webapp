@@ -148,6 +148,7 @@ export type RideView = {
   priceAud: number;
   scheduledDepartureAt: string;
   expiresAt: string;
+  acceptedAt?: string | null;
   request?: RiderRequestView;
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
@@ -235,9 +236,15 @@ export function initializeCoreSchema(db: Db) {
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
   const requestTable = db
-    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'")
+    .prepare(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'",
+    )
     .get() as { sql: string } | undefined;
-  if (!requestTable?.sql.match(/UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i))
+  if (
+    !requestTable?.sql.match(
+      /UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i,
+    )
+  )
     return;
 
   db.pragma("foreign_keys = OFF");
@@ -450,19 +457,19 @@ function publicId(db: Db) {
 function hasOpenDriverRide(db: Db, sessionId: string) {
   return Boolean(
     db
-    .prepare(
-      "SELECT 1 FROM rides WHERE driver_session_id = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
-    )
-    .get(sessionId),
+      .prepare(
+        "SELECT 1 FROM rides WHERE driver_session_id = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
+      )
+      .get(sessionId),
   );
 }
 function hasOpenRiderRequest(db: Db, sessionId: string) {
   return Boolean(
     db
-    .prepare(
-      "SELECT 1 FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
-    )
-    .get(sessionId),
+      .prepare(
+        "SELECT 1 FROM ride_requests q JOIN rides r ON r.id = q.ride_id WHERE q.rider_session_id = ? AND q.status IN ('PENDING', 'ACCEPTED') AND r.status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
+      )
+      .get(sessionId),
   );
 }
 
@@ -596,12 +603,12 @@ export function expireStaleRides(db: Db, now = new Date()) {
   const staleActive = iso(new Date(now.getTime() - ACTIVE_STALE_MS));
   const scheduled = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED') AND scheduled_departure_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('PUBLISHED', 'REQUESTED') AND scheduled_departure_at < ?",
     )
     .run(iso(now), iso(now), staleScheduled).changes;
   const active = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
     )
     .run(iso(now), iso(now), staleActive).changes;
   if (scheduled || active)
@@ -655,8 +662,11 @@ export function publishRide(
         fallbackLocationLabel(input.origin),
       input.destination.latitude,
       input.destination.longitude,
-      cleanOptional(input.destination.label, 160, "INVALID_DESTINATION_LABEL") ??
-        fallbackLocationLabel(input.destination),
+      cleanOptional(
+        input.destination.label,
+        160,
+        "INVALID_DESTINATION_LABEL",
+      ) ?? fallbackLocationLabel(input.destination),
       departure.toISOString(),
       input.priceAud,
       payId,
@@ -691,8 +701,11 @@ export function searchRides(
       "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND scheduled_departure_at <= ? ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
     .all(iso(new Date(requested.getTime() + 1))) as RideRow[];
-  const session = rawSessionToken ? findSession(db, rawSessionToken, now) : null;
-  return rows.map((row) => {
+  const session = rawSessionToken
+    ? findSession(db, rawSessionToken, now)
+    : null;
+  return rows
+    .map((row) => {
       const fit = directionFit(row, input);
       const corridor = redactedCorridor(
         { latitude: row.origin_latitude, longitude: row.origin_longitude },
@@ -1243,6 +1256,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
     expiresAt: offerExpiryAt(row.scheduled_departure_at),
+    acceptedAt: row.accepted_at,
     plannedRoute: {
       origin: {
         latitude: row.origin_latitude,
@@ -1327,6 +1341,7 @@ function riderView(
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
     expiresAt: offerExpiryAt(row.scheduled_departure_at),
+    acceptedAt: row.accepted_at,
     request: riderRequestView(row, request),
     driverLocation:
       row.status === "RIDE_ACTIVE" || row.status === "CO_RIDE_ACTIVE"

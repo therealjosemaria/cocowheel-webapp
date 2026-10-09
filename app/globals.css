@@ -262,6 +262,17 @@ button:disabled {
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
+.ride-field-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+}
+.ride-field-label svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
 .activity-card-fields dd {
   min-width: 0;
   margin: 0;
@@ -991,10 +1002,18 @@ p {
   text-align: left;
   background: #ffffff;
 }
-.place-results button:first-child { border-top: 0; }
-.results { margin-top: 28px; }
-.results > h2 { margin-bottom: 14px; }
-.matched-availability { margin-top: 0; }
+.place-results button:first-child {
+  border-top: 0;
+}
+.results {
+  margin-top: 28px;
+}
+.results > h2 {
+  margin-bottom: 14px;
+}
+.matched-availability {
+  margin-top: 0;
+}
 .availability-select {
   width: 100%;
   border-right: 0;
@@ -1004,7 +1023,10 @@ p {
   text-align: left;
   background: #ffffff;
 }
-.availability-select.selected { background: #f8fafc; box-shadow: inset 3px 0 0 var(--ink); }
+.availability-select.selected {
+  background: #f8fafc;
+  box-shadow: inset 3px 0 0 var(--ink);
+}
 .availability-board h2 {
   margin: 0;
   padding: 15px 14px 12px;
@@ -1171,11 +1193,20 @@ p {
   animation: route-active-pulse 1.8s ease-in-out infinite;
 }
 @keyframes route-active-pulse {
-  0%, 100% { color: #15803d; text-shadow: 0 0 0 rgb(34 197 94 / 0%); }
-  50% { color: #22a05a; text-shadow: 0 0 8px rgb(34 197 94 / 55%); }
+  0%,
+  100% {
+    color: #15803d;
+    text-shadow: 0 0 0 rgb(34 197 94 / 0%);
+  }
+  50% {
+    color: #22a05a;
+    text-shadow: 0 0 8px rgb(34 197 94 / 55%);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .route-status-active { animation: none; }
+  .route-status-active {
+    animation: none;
+  }
 }
 .ride-preview-fields {
   display: grid;
@@ -1193,6 +1224,11 @@ p {
   border-right: 1px solid var(--line);
 }
 .ride-preview-fields .preview-field-price {
+  grid-column: span 2;
+  border-right: 0;
+  border-bottom: 0;
+}
+.ride-preview-fields .preview-field-action-wide {
   grid-column: span 2;
   border-right: 0;
   border-bottom: 0;

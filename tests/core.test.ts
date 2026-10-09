@@ -39,7 +39,9 @@ function harness() {
 }
 
 test("schema initialization removes the legacy one-request-per-ride constraint", () => {
-  const directory = mkdtempSync(path.join(os.tmpdir(), "cocowheels-migration-"));
+  const directory = mkdtempSync(
+    path.join(os.tmpdir(), "cocowheels-migration-"),
+  );
   const db = openDatabase(path.join(directory, "test.db"));
   try {
     db.exec(`
@@ -63,17 +65,25 @@ test("schema initialization removes the legacy one-request-per-ride constraint",
     `);
     initializeCoreSchema(db);
     const definition = db
-      .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'")
+      .prepare(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'",
+      )
       .get() as { sql: string };
     assert.doesNotMatch(
       definition.sql,
       /UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i,
     );
     const indexes = db
-      .prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ride_requests'")
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ride_requests'",
+      )
       .all() as Array<{ name: string }>;
-    assert.ok(indexes.some((index) => index.name === "ride_requests_rider_index"));
-    assert.ok(indexes.some((index) => index.name === "ride_requests_ride_index"));
+    assert.ok(
+      indexes.some((index) => index.name === "ride_requests_rider_index"),
+    );
+    assert.ok(
+      indexes.some((index) => index.name === "ride_requests_ride_index"),
+    );
   } finally {
     db.close();
     rmSync(directory, { recursive: true, force: true });
@@ -244,9 +254,11 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
       new Date(baseTime.getTime() + 3_000),
     );
     assert.deepEqual(
-      currentOpenRides(h.db, ownOffer.sessionToken, new Date(baseTime.getTime() + 4_000)).map(
-        (item) => item.role,
-      ),
+      currentOpenRides(
+        h.db,
+        ownOffer.sessionToken,
+        new Date(baseTime.getTime() + 4_000),
+      ).map((item) => item.role),
       ["DRIVER", "RIDER"],
     );
     assert.throws(
@@ -330,6 +342,10 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
     );
     assert.equal(accepted.status, "ACCEPTED");
     assert.equal(
+      accepted.acceptedAt,
+      new Date(baseTime.getTime() + 3_000).toISOString(),
+    );
+    assert.equal(
       accepted.requests?.find(
         (request) => request.requestId === second.ride.request!.requestId,
       ),
@@ -346,6 +362,19 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
           new Date(baseTime.getTime() + 4_000),
         ),
       /REQUEST_UNAVAILABLE/,
+    );
+    const formerOfferExpiry = new Date(
+      new Date(departure).getTime() + 30 * 60_000 + 1,
+    );
+    assert.equal(expireStaleRides(h.db, formerOfferExpiry), 0);
+    assert.equal(
+      getRide(
+        h.db,
+        first.published.ride.rideId,
+        first.driver,
+        formerOfferExpiry,
+      ).status,
+      "ACCEPTED",
     );
   } finally {
     h.close();
@@ -558,7 +587,9 @@ test("requires fresh locations, confines live coordinates to the accepted pair, 
         ),
       /CO_RIDE_CODE_EXPIRED/,
     );
-    const expiryTime = new Date(baseTime.getTime() + 24 * 60 * 60 * 1_000 + 12_000);
+    const expiryTime = new Date(
+      baseTime.getTime() + 24 * 60 * 60 * 1_000 + 12_000,
+    );
     assert.equal(expireStaleRides(h.db, expiryTime), 1);
     const expired = getRide(
       h.db,

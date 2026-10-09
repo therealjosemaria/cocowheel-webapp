@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import ExpiryCountdown from "./expiry-countdown";
+import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -28,6 +29,7 @@ type PreviewRide = {
   priceAud: number;
   scheduledDepartureAt: string;
   expiresAt?: string;
+  acceptedAt?: string | null;
   status: Ride["status"];
   requestStatus?: NonNullable<Ride["request"]>["status"];
   departureLabel: string;
@@ -51,6 +53,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
     priceAud: ride.priceAud,
     scheduledDepartureAt: ride.scheduledDepartureAt,
     expiresAt: ride.expiresAt,
+    acceptedAt: ride.acceptedAt,
     status: ride.status,
     requestStatus: ride.request?.status,
     departureLabel: locationLabel(visibleRoute?.origin),
@@ -77,9 +80,7 @@ const rideStatusLabel = (status: Ride["status"]) =>
     CANCELLED: "Cancelled",
     EXPIRED: "Expired",
   })[status];
-const requestStatusLabel = (
-  status: NonNullable<Ride["request"]>["status"],
-) =>
+const requestStatusLabel = (status: NonNullable<Ride["request"]>["status"]) =>
   ({
     PENDING: "Pending",
     ACCEPTED: "Accepted",
@@ -125,7 +126,9 @@ export default function RidePreviewClient({
     participantRide?.request ?? pendingRequest ?? activityRide?.request;
   const pendingRiderRequests =
     driverOwned && participantRide?.requests
-      ? participantRide.requests.filter((request) => request.status === "PENDING")
+      ? participantRide.requests.filter(
+          (request) => request.status === "PENDING",
+        )
       : [];
   const acceptedDriverRequest = participantRide?.requests?.find(
     (request) => request.status === "ACCEPTED",
@@ -419,31 +422,66 @@ export default function RidePreviewClient({
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
       {routeRequiredPromptOpen ? (
         <div className="location-prompt-backdrop" role="presentation">
-          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="route-required-title">
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="route-required-title"
+          >
             <h2 id="route-required-title">Add your route first</h2>
             <p>Fill Where from and Where to to join.</p>
             <div className="location-prompt-actions">
-              <button type="button" className="primary" onClick={() => setRouteRequiredPromptOpen(false)}>OKAY</button>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setRouteRequiredPromptOpen(false)}
+              >
+                OKAY
+              </button>
             </div>
           </section>
         </div>
       ) : null}
       {selfJoinPromptOpen ? (
         <div className="location-prompt-backdrop" role="presentation">
-          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="self-join-title">
-            <h2 id="self-join-title">We apologise, drivers are not allowed to join their own rides.</h2>
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="self-join-title"
+          >
+            <h2 id="self-join-title">
+              We apologise, drivers are not allowed to join their own rides.
+            </h2>
             <div className="location-prompt-actions">
-              <button type="button" className="primary" onClick={() => setSelfJoinPromptOpen(false)}>OKAY</button>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setSelfJoinPromptOpen(false)}
+              >
+                OKAY
+              </button>
             </div>
           </section>
         </div>
       ) : null}
       {joinFailurePromptOpen ? (
         <div className="location-prompt-backdrop" role="presentation">
-          <section className="location-prompt" role="dialog" aria-modal="true" aria-labelledby="join-failure-title">
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="join-failure-title"
+          >
             <h2 id="join-failure-title">We couldn’t join this ride.</h2>
             <div className="location-prompt-actions">
-              <button type="button" className="primary" onClick={() => setJoinFailurePromptOpen(false)}>OKAY</button>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setJoinFailurePromptOpen(false)}
+              >
+                OKAY
+              </button>
             </div>
           </section>
         </div>
@@ -495,92 +533,138 @@ export default function RidePreviewClient({
           <div className="ride-preview-content">
             <div className="ride-preview-summary">
               <dl className="ride-preview-fields">
-              <div>
-                <dt>Route ID</dt>
-                <dd><code>{routeReference(ride.rideId)}</code></dd>
-              </div>
-              <div>
-                <dt>Status</dt>
-                <dd className="route-status">
-                  {["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(
-                    ride.status,
-                  ) ? (
-                    <span className="route-status-active">Active</span>
-                  ) : (
-                    rideStatusLabel(ride.status)
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>Driver</dt>
-                <dd>{ride.driverAlias}</dd>
-              </div>
-              <div>
-                <dt>Where from?</dt>
-                <dd>{ride.departureLabel}</dd>
-              </div>
-              <div>
-                <dt>Departure</dt>
-                <dd>{prettyTime(ride.scheduledDepartureAt)}</dd>
-              </div>
-              <div>
-                <dt>Where to?</dt>
-                <dd>{ride.destinationLabel}</dd>
-              </div>
-              <div>
-                <dt>Expiry</dt>
-                <dd>{serverNow && ride.expiresAt ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</dd>
-              </div>
-              <div>
-                <dt>Fit</dt>
-                <dd
-                  className={
-                    riderRoute?.directionFit
-                      ? `preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`
-                      : undefined
-                  }
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="route">Route ID</RideFieldLabel>
+                  </dt>
+                  <dd>
+                    <code>{routeReference(ride.rideId)}</code>
+                  </dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="status">Status</RideFieldLabel>
+                  </dt>
+                  <dd className="route-status">
+                    {["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(
+                      ride.status,
+                    ) ? (
+                      <span className="route-status-active">Active</span>
+                    ) : (
+                      rideStatusLabel(ride.status)
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="driver">Driver</RideFieldLabel>
+                  </dt>
+                  <dd>{ride.driverAlias}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="from">Where from?</RideFieldLabel>
+                  </dt>
+                  <dd>{ride.departureLabel}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="departure">Departure</RideFieldLabel>
+                  </dt>
+                  <dd>{prettyTime(ride.scheduledDepartureAt)}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+                  </dt>
+                  <dd>{ride.destinationLabel}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="expiry">Expiry</RideFieldLabel>
+                  </dt>
+                  <dd>
+                    {serverNow &&
+                    ride.expiresAt &&
+                    (ride.status === "PUBLISHED" ||
+                      ride.status === "REQUESTED") ? (
+                      <ExpiryCountdown
+                        key={serverNow}
+                        expiresAt={ride.expiresAt}
+                        serverNow={serverNow}
+                      />
+                    ) : null}
+                  </dd>
+                </div>
+                {ride.acceptedAt ? (
+                  <div>
+                    <dt>
+                      <RideFieldLabel icon="accepted">Accepted</RideFieldLabel>
+                    </dt>
+                    <dd>{prettyTime(ride.acceptedAt)}</dd>
+                  </div>
+                ) : null}
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="fit">Fit</RideFieldLabel>
+                  </dt>
+                  <dd
+                    className={
+                      riderRoute?.directionFit
+                        ? `preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`
+                        : undefined
+                    }
+                  >
+                    {riderRoute?.directionFit
+                      ? riderRoute.directionFit === "GOOD"
+                        ? "Good"
+                        : "Poor"
+                      : null}
+                  </dd>
+                </div>
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="price">Price</RideFieldLabel>
+                  </dt>
+                  <dd>A${ride.priceAud}</dd>
+                </div>
+                <div
+                  className={`preview-field-action${
+                    ride.acceptedAt ? " preview-field-action-wide" : ""
+                  }`}
                 >
-                  {riderRoute?.directionFit
-                    ? riderRoute.directionFit === "GOOD"
-                      ? "Good"
-                      : "Poor"
-                    : null}
-                </dd>
-              </div>
-              <div>
-                <dt>Price</dt>
-                <dd>A${ride.priceAud}</dd>
-              </div>
-              <div className="preview-field-action">
-                <dt>Action</dt>
-                <dd>
-                  {readOnly ? null : activityRequest || driverOwned ? (
-                    <button
-                      type="button"
-                      className="preview-end-action"
-                      disabled={ending}
-                      onClick={() => setEndPromptOpen(true)}
-                    >
-                      {ending
-                        ? driverOwned
-                          ? "CANCELLING…"
-                          : "WITHDRAWING…"
-                        : driverOwned || activityRequest?.status === "ACCEPTED"
-                          ? "CANCEL RIDE"
-                          : "WITHDRAW"}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="availability-join"
-                      disabled={joining}
-                      onClick={() => void joinRide()}
-                    >
-                      {joining ? "JOINING…" : "JOIN"}
-                    </button>
-                  )}
-                </dd>
-              </div>
+                  <dt>
+                    <RideFieldLabel icon="action">Action</RideFieldLabel>
+                  </dt>
+                  <dd>
+                    {readOnly ? null : activityRequest || driverOwned ? (
+                      <button
+                        type="button"
+                        className="preview-end-action"
+                        disabled={ending}
+                        onClick={() => setEndPromptOpen(true)}
+                      >
+                        {ending
+                          ? driverOwned
+                            ? "CANCELLING…"
+                            : "WITHDRAWING…"
+                          : driverOwned ||
+                              activityRequest?.status === "ACCEPTED"
+                            ? "CANCEL RIDE"
+                            : "WITHDRAW"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="availability-join"
+                        disabled={joining}
+                        onClick={() => void joinRide()}
+                      >
+                        {joining ? "JOINING…" : "JOIN"}
+                      </button>
+                    )}
+                  </dd>
+                </div>
               </dl>
             </div>
             {pendingRiderRequests.length ? (
@@ -593,11 +677,17 @@ export default function RidePreviewClient({
                   >
                     <dl className="driver-request-fields">
                       <div>
-                        <dt>Rider</dt>
+                        <dt>
+                          <RideFieldLabel icon="rider">Rider</RideFieldLabel>
+                        </dt>
                         <dd>{request.riderAlias}</dd>
                       </div>
                       <div>
-                        <dt>Requested</dt>
+                        <dt>
+                          <RideFieldLabel icon="requested">
+                            Requested
+                          </RideFieldLabel>
+                        </dt>
                         <dd>
                           {prettyTime(
                             request.createdAt ?? request.requestedDepartureAt,
@@ -605,15 +695,23 @@ export default function RidePreviewClient({
                         </dd>
                       </div>
                       <div>
-                        <dt>Where from?</dt>
+                        <dt>
+                          <RideFieldLabel icon="from">
+                            Where from?
+                          </RideFieldLabel>
+                        </dt>
                         <dd>{locationLabel(request.pickup)}</dd>
                       </div>
                       <div>
-                        <dt>Where to?</dt>
+                        <dt>
+                          <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+                        </dt>
                         <dd>{locationLabel(request.destination)}</dd>
                       </div>
                       <div>
-                        <dt>Fit</dt>
+                        <dt>
+                          <RideFieldLabel icon="fit">Fit</RideFieldLabel>
+                        </dt>
                         <dd
                           className={`preview-fit preview-fit-${request.directionFit.toLowerCase()}`}
                         >
@@ -621,11 +719,17 @@ export default function RidePreviewClient({
                         </dd>
                       </div>
                       <div>
-                        <dt>Request status</dt>
+                        <dt>
+                          <RideFieldLabel icon="request-status">
+                            Request status
+                          </RideFieldLabel>
+                        </dt>
                         <dd>{requestStatusLabel(request.status)}</dd>
                       </div>
                       <div className="driver-request-action">
-                        <dt>Action</dt>
+                        <dt>
+                          <RideFieldLabel icon="action">Action</RideFieldLabel>
+                        </dt>
                         <dd className="driver-request-buttons">
                           <button
                             type="button"
@@ -672,23 +776,35 @@ export default function RidePreviewClient({
                 <article className="driver-request-card">
                   <dl className="driver-request-fields">
                     <div>
-                      <dt>Rider</dt>
+                      <dt>
+                        <RideFieldLabel icon="rider">Rider</RideFieldLabel>
+                      </dt>
                       <dd>{riderDetail.alias}</dd>
                     </div>
                     <div>
-                      <dt>Requested</dt>
+                      <dt>
+                        <RideFieldLabel icon="requested">
+                          Requested
+                        </RideFieldLabel>
+                      </dt>
                       <dd>{prettyTime(riderDetail.requestedAt)}</dd>
                     </div>
                     <div>
-                      <dt>Where from?</dt>
+                      <dt>
+                        <RideFieldLabel icon="from">Where from?</RideFieldLabel>
+                      </dt>
                       <dd>{locationLabel(riderDetail.pickup)}</dd>
                     </div>
                     <div>
-                      <dt>Where to?</dt>
+                      <dt>
+                        <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+                      </dt>
                       <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
                     <div>
-                      <dt>Fit</dt>
+                      <dt>
+                        <RideFieldLabel icon="fit">Fit</RideFieldLabel>
+                      </dt>
                       <dd
                         className={`preview-fit preview-fit-${riderDetail.directionFit.toLowerCase()}`}
                       >
@@ -696,7 +812,11 @@ export default function RidePreviewClient({
                       </dd>
                     </div>
                     <div>
-                      <dt>Request status</dt>
+                      <dt>
+                        <RideFieldLabel icon="request-status">
+                          Request status
+                        </RideFieldLabel>
+                      </dt>
                       <dd>{requestStatusLabel(riderDetail.status)}</dd>
                     </div>
                   </dl>
@@ -708,7 +828,9 @@ export default function RidePreviewClient({
                 ...(ride.plannedRoute
                   ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
                   : []),
-                ...(riderRoute ? [riderRoute.pickup, riderRoute.destination] : []),
+                ...(riderRoute
+                  ? [riderRoute.pickup, riderRoute.destination]
+                  : []),
               ]}
               markerKinds={
                 ride.plannedRoute && riderRoute
@@ -726,10 +848,16 @@ export default function RidePreviewClient({
             />
             <div className="route-key">
               {ride.plannedRoute ? (
-                <span><i className="route-key-driver" />Driver route</span>
+                <span>
+                  <i className="route-key-driver" />
+                  Driver route
+                </span>
               ) : null}
               {riderRoute ? (
-                <span><i className="route-key-rider" />Your route</span>
+                <span>
+                  <i className="route-key-rider" />
+                  Your route
+                </span>
               ) : null}
             </div>
             {endError ? <p className="error">{endError}</p> : null}
