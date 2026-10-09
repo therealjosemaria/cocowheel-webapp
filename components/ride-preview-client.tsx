@@ -797,16 +797,22 @@ export default function RidePreviewClient({
             ) : null}
             {riderDetail ? (
               <section className="driver-request-stack">
-                <h2>Rider details</h2>
+                <h2>{driverOwned ? "Rider details" : "Request details"}</h2>
                 <article className="driver-request-card">
-                  <dl className="driver-request-fields">
-                    <div>
-                      <dt>
-                        <RideFieldLabel icon="rider">Rider</RideFieldLabel>
-                      </dt>
-                      <dd>{riderDetail.alias}</dd>
-                    </div>
-                    <div>
+                  <dl
+                    className={`driver-request-fields${
+                      driverOwned ? "" : " rider-request-detail-fields"
+                    }`}
+                  >
+                    {driverOwned ? (
+                      <div>
+                        <dt>
+                          <RideFieldLabel icon="rider">Rider</RideFieldLabel>
+                        </dt>
+                        <dd>{riderDetail.alias}</dd>
+                      </div>
+                    ) : null}
+                    <div className="request-detail-requested">
                       <dt>
                         <RideFieldLabel icon="requested">
                           Requested
@@ -814,19 +820,29 @@ export default function RidePreviewClient({
                       </dt>
                       <dd>{prettyTime(riderDetail.requestedAt)}</dd>
                     </div>
-                    <div>
+                    <div className="request-detail-from">
                       <dt>
                         <RideFieldLabel icon="from">Where from?</RideFieldLabel>
                       </dt>
                       <dd>{locationLabel(riderDetail.pickup)}</dd>
                     </div>
-                    <div>
+                    {!driverOwned ? (
+                      <div className="request-detail-status">
+                        <dt>
+                          <RideFieldLabel icon="request-status">
+                            Request status
+                          </RideFieldLabel>
+                        </dt>
+                        <dd>{requestStatusLabel(riderDetail.status)}</dd>
+                      </div>
+                    ) : null}
+                    <div className="request-detail-to">
                       <dt>
                         <RideFieldLabel icon="to">Where to?</RideFieldLabel>
                       </dt>
                       <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
-                    <div>
+                    <div className="request-detail-fit">
                       <dt>
                         <RideFieldLabel icon="fit">Fit</RideFieldLabel>
                       </dt>
@@ -836,14 +852,16 @@ export default function RidePreviewClient({
                         {riderDetail.directionFit === "GOOD" ? "Good" : "Poor"}
                       </dd>
                     </div>
-                    <div>
-                      <dt>
-                        <RideFieldLabel icon="request-status">
-                          Request status
-                        </RideFieldLabel>
-                      </dt>
-                      <dd>{requestStatusLabel(riderDetail.status)}</dd>
-                    </div>
+                    {driverOwned ? (
+                      <div className="request-detail-status">
+                        <dt>
+                          <RideFieldLabel icon="request-status">
+                            Request status
+                          </RideFieldLabel>
+                        </dt>
+                        <dd>{requestStatusLabel(riderDetail.status)}</dd>
+                      </div>
+                    ) : null}
                   </dl>
                 </article>
               </section>

@@ -1460,6 +1460,28 @@ p {
 .driver-request-fields .preview-fit-poor {
   color: #b42318;
 }
+.rider-request-detail-fields .request-detail-requested {
+  grid-column: 1;
+  grid-row: 1;
+}
+.rider-request-detail-fields .request-detail-from {
+  grid-column: 2;
+  grid-row: 1;
+}
+.rider-request-detail-fields .request-detail-status {
+  grid-column: 1;
+  grid-row: 2;
+}
+.rider-request-detail-fields .request-detail-to {
+  grid-column: 2;
+  grid-row: 2;
+}
+.rider-request-detail-fields .request-detail-fit {
+  grid-column: 2;
+  grid-row: 3;
+  border-right: 0;
+  border-bottom: 0;
+}
 .driver-request-action {
   grid-column: span 2;
   border-right: 0 !important;
