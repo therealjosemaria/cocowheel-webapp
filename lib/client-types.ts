@@ -64,6 +64,7 @@ export type Ride = {
     riderAlias: string;
     pickup: Pin;
     destination: Pin;
+    createdAt?: string;
     requestedDepartureAt: string;
     directionFit: "GOOD" | "POOR";
     status: RequestStatus;

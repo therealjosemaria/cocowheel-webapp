@@ -167,8 +167,17 @@ function RideView({ ride }: { ride: Ride }) {
       />
     );
   }
-  if (!riderView && ride.status === "PUBLISHED") {
-    return <RidePreviewClient rideId={ride.rideId} driverOwned />;
+  if (
+    !riderView &&
+    (ride.status === "PUBLISHED" || ride.status === "REQUESTED")
+  ) {
+    return (
+      <RidePreviewClient
+        rideId={ride.rideId}
+        driverOwned
+        driverRide={ride}
+      />
+    );
   }
   const historicalRequest =
     ride.request &&

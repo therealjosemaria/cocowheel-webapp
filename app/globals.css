@@ -1204,6 +1204,76 @@ p {
 .ride-preview-fields .preview-fit-poor {
   color: #b42318;
 }
+.driver-request-stack {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 14px;
+}
+.driver-request-stack > h2 {
+  margin: 0 2px;
+}
+.driver-request-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+}
+.driver-request-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+.driver-request-fields > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.driver-request-fields > div:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+.driver-request-fields dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+.driver-request-fields dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+.driver-request-fields .preview-fit-good {
+  color: #15803d;
+}
+.driver-request-fields .preview-fit-poor {
+  color: #b42318;
+}
+.driver-request-action {
+  grid-column: span 2;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+}
+.driver-request-buttons {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 8px;
+}
+.driver-request-buttons .secondary,
+.driver-request-buttons .primary {
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+}
+.driver-request-buttons .primary {
+  box-shadow: none;
+}
 .route-key {
   display: flex;
   flex-wrap: wrap;

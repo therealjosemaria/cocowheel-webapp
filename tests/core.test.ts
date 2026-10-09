@@ -297,6 +297,17 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
       { ...riderInput, pickup: { latitude: -33.852, longitude: 151.228 } },
       new Date(baseTime.getTime() + 2_000),
     );
+    const pending = getRide(
+      h.db,
+      first.published.ride.rideId,
+      first.driver,
+      new Date(baseTime.getTime() + 2_500),
+    );
+    assert.equal(pending.requests?.length, 2);
+    assert.equal(
+      pending.requests?.[0].createdAt,
+      new Date(baseTime.getTime() + 1_000).toISOString(),
+    );
     const accepted = decideRequest(
       h.db,
       first.published.sessionToken,

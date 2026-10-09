@@ -161,6 +161,7 @@ export type RideView = {
     riderAlias: string;
     pickup: Pin;
     destination: Pin;
+    createdAt: string;
     requestedDepartureAt: string;
     directionFit: DirectionFit;
     status: RequestStatus;
@@ -1273,6 +1274,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
         longitude: request.destination_longitude,
         label: request.destination_label ?? undefined,
       },
+      createdAt: request.created_at,
       requestedDepartureAt: request.requested_departure_at,
       directionFit: requestFitForRide(row, request),
       status: request.status,

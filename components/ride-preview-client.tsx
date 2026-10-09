@@ -81,12 +81,14 @@ export default function RidePreviewClient({
   rideId,
   pendingRequest,
   driverOwned = false,
+  driverRide,
   activityRide,
   readOnly = false,
 }: {
   rideId: string;
   pendingRequest?: NonNullable<Ride["request"]>;
   driverOwned?: boolean;
+  driverRide?: Ride;
   activityRide?: Ride;
   readOnly?: boolean;
 }) {
@@ -103,6 +105,11 @@ export default function RidePreviewClient({
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
+  const [requestDecision, setRequestDecision] = useState<{
+    requestId: string;
+    decision: "ACCEPT" | "DECLINE";
+  } | null>(null);
+  const [requestDecisionError, setRequestDecisionError] = useState(false);
   const activityRequest = pendingRequest ?? activityRide?.request;
   const [riderRoute] = useState<{
     pickup: Pin;
@@ -290,6 +297,26 @@ export default function RidePreviewClient({
     }
   }
 
+  async function decideRiderRequest(
+    requestId: string,
+    decision: "ACCEPT" | "DECLINE",
+  ) {
+    setRequestDecision({ requestId, decision });
+    try {
+      await cocowheelsApi(
+        `/api/rides/${encodeURIComponent(rideId)}/requests/${encodeURIComponent(requestId)}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ decision }),
+        },
+      );
+      window.location.reload();
+    } catch {
+      setRequestDecisionError(true);
+      setRequestDecision(null);
+    }
+  }
+
   const lines = useMemo(() => {
     if (!ride) return [];
     return [
@@ -349,6 +376,29 @@ export default function RidePreviewClient({
             <h2 id="join-failure-title">We couldn’t join this ride.</h2>
             <div className="location-prompt-actions">
               <button type="button" className="primary" onClick={() => setJoinFailurePromptOpen(false)}>OKAY</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {requestDecisionError ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="request-decision-error-title"
+          >
+            <h2 id="request-decision-error-title">
+              We couldn’t update this request.
+            </h2>
+            <div className="location-prompt-actions">
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setRequestDecisionError(false)}
+              >
+                OKAY
+              </button>
             </div>
           </section>
         </div>
@@ -467,6 +517,85 @@ export default function RidePreviewClient({
               </div>
               </dl>
             </div>
+            {driverOwned && driverRide?.requests?.length ? (
+              <section className="driver-request-stack">
+                <h2>Rider requests</h2>
+                {driverRide.requests.map((request) => (
+                  <article
+                    className="driver-request-card"
+                    key={request.requestId}
+                  >
+                    <dl className="driver-request-fields">
+                      <div>
+                        <dt>Rider</dt>
+                        <dd>{request.riderAlias}</dd>
+                      </div>
+                      <div>
+                        <dt>Requested</dt>
+                        <dd>
+                          {prettyTime(
+                            request.createdAt ?? request.requestedDepartureAt,
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Where from?</dt>
+                        <dd>{locationLabel(request.pickup)}</dd>
+                      </div>
+                      <div>
+                        <dt>Where to?</dt>
+                        <dd>{locationLabel(request.destination)}</dd>
+                      </div>
+                      <div>
+                        <dt>Fit</dt>
+                        <dd
+                          className={`preview-fit preview-fit-${request.directionFit.toLowerCase()}`}
+                        >
+                          {request.directionFit === "GOOD" ? "Good" : "Poor"}
+                        </dd>
+                      </div>
+                      <div className="driver-request-action">
+                        <dt>Action</dt>
+                        <dd className="driver-request-buttons">
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={requestDecision !== null}
+                            onClick={() =>
+                              void decideRiderRequest(
+                                request.requestId,
+                                "DECLINE",
+                              )
+                            }
+                          >
+                            {requestDecision?.requestId === request.requestId &&
+                            requestDecision.decision === "DECLINE"
+                              ? "DECLINING…"
+                              : "DECLINE"}
+                          </button>
+                          <button
+                            type="button"
+                            className="primary compact"
+                            disabled={requestDecision !== null}
+                            onClick={() =>
+                              void decideRiderRequest(
+                                request.requestId,
+                                "ACCEPT",
+                              )
+                            }
+                          >
+                            {requestDecision?.requestId === request.requestId &&
+                            requestDecision.decision === "ACCEPT"
+                              ? "ACCEPTING…"
+                              : "ACCEPT RIDER"}
+                          </button>
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </section>
+            ) : null}
             <JourneyMap
               pins={[
                 ...(ride.plannedRoute
