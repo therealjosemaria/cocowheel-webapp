@@ -962,81 +962,6 @@ p {
   background: #ffffff;
 }
 .place-results button:first-child { border-top: 0; }
-.rider-time-field {
-  display: block;
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.rider-time-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-top: 6px;
-  overflow: hidden;
-  border: 1px solid #b9c9cc;
-  border-radius: 11px;
-  color: var(--ink);
-  background: #ffffff;
-}
-.rider-time-input:focus-within {
-  border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgb(17 24 39 / 10%);
-}
-.rider-time-input svg {
-  position: absolute;
-  left: 14px;
-  z-index: 1;
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-  pointer-events: none;
-}
-.rider-time-input input {
-  width: 100%;
-  min-height: 52px;
-  padding: 10px 12px 10px 48px;
-  border: 0;
-  color: var(--ink);
-  background: transparent;
-}
-.rider-time-control {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  margin-top: 6px;
-}
-.rider-time-control button {
-  min-height: 44px;
-  padding: 0 11px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 800;
-  background: #ffffff;
-}
-.rider-time-control button.active {
-  color: #ffffff;
-  border-color: var(--ink);
-  background: var(--ink);
-}
-.rider-time-control input {
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 10px;
-  border: 1px solid #b9c9cc;
-  border-radius: 10px;
-  color: var(--ink);
-  background: #ffffff;
-}
 .results { margin-top: 28px; }
 .results > h2 { margin-bottom: 14px; }
 .matched-availability { margin-top: 0; }
@@ -1057,16 +982,16 @@ p {
 .availability-heading,
 .availability-row {
   display: grid;
-  min-width: 690px;
-  grid-template-columns: 56px 56px 76px 76px 74px 68px 48px 52px 46px 60px;
+  min-width: 610px;
+  grid-template-columns: 56px 56px 76px 76px 68px 48px 52px 46px 60px;
   gap: 5px;
   align-items: center;
   padding: 11px 10px;
 }
 .matched-availability .availability-heading,
 .matched-availability .availability-row {
-  min-width: 690px;
-  grid-template-columns: 56px 56px 76px 76px 74px 68px 48px 52px 46px 60px;
+  min-width: 610px;
+  grid-template-columns: 56px 56px 76px 76px 68px 48px 52px 46px 60px;
 }
 .availability-heading {
   border-top: 1px solid var(--line);

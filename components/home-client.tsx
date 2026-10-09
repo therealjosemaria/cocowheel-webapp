@@ -26,10 +26,6 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
-const localDateTime = (date: Date) =>
-  new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16);
 type AvailabilityOffer = {
   rideId: string;
   driverAlias: string;
@@ -48,14 +44,6 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
-const availabilityTime = (value: string) => {
-  const date = new Date(value);
-  const hours = (date.getTime() - Date.now()) / 3_600_000;
-  const time = new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(date);
-  if (date.toDateString() === new Date().toDateString()) return `Today ${time}`;
-  if (hours >= 0 && hours < 36) return `Tomorrow ${time}`;
-  return prettyTime(value);
-};
 const locationText = (pin?: Pin) =>
   pin
     ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
@@ -917,8 +905,6 @@ export default function HomeClient({
               candidate.directionFit,
             );
           }}
-          time={riderTime}
-          setTime={setRiderTime}
         />
       ) : null}
     </section>
@@ -1291,8 +1277,6 @@ function RiderForm(props: {
   candidateServerNow: string | null;
   onAvailabilityJoin: () => void;
   previewRoute: (candidate: Candidate) => void;
-  time: string | null;
-  setTime: (value: string | null) => void;
 }) {
   return (
     <div className="form-page">
@@ -1322,15 +1306,6 @@ function RiderForm(props: {
             props.setMapOpen(false);
           }}
         />
-        <label className="rider-time-field">
-          <span>Departure</span>
-          <span className="rider-time-input">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 3v3m10-3v3M4.5 9h15M6.5 5h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
-            </svg>
-            <input type="datetime-local" value={props.time ?? localDateTime(new Date())} onFocus={() => props.time === null && props.setTime(null)} onChange={(event) => props.setTime(event.target.value || null)} />
-          </span>
-        </label>
         {props.pins.pickup && props.pins.destination ? (
           <Results
             candidates={props.candidates}
@@ -1401,7 +1376,7 @@ function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: Avai
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
@@ -1409,7 +1384,6 @@ function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: Avai
           <strong tabIndex={0}>{ride.driverAlias}</strong>
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
           <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
-          <span>{prettyTime(ride.scheduledDepartureAt)}</span>
           <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
           <b>A${ride.priceAud}</b>
           <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
@@ -1451,7 +1425,7 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Departure</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1463,7 +1437,6 @@ function Results({
                 <strong>{candidate.driverAlias}</strong>
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
-                <span>{availabilityTime(candidate.scheduledDepartureAt)}</span>
                 <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
                 <b>A${candidate.priceAud}</b>
                 <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
