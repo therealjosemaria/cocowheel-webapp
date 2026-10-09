@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
+import CancelPrompt from "./cancel-prompt";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
@@ -32,6 +33,7 @@ export default function ActivityClient() {
   const [history, setHistory] = useState<History | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +73,7 @@ export default function ActivityClient() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [revision]);
 
   const activity = useMemo<ActivityItem[]>(() => {
     if (!history) return [];
@@ -121,6 +123,7 @@ export default function ActivityClient() {
                 <ActivityCard
                   key={`${item.role}-${item.ride.rideId}-${item.ride.request?.requestId ?? "driver"}`}
                   {...item}
+                  refresh={() => setRevision((current) => current + 1)}
                 />
               ))}
             </section>
@@ -136,6 +139,7 @@ export default function ActivityClient() {
                   key={`${role}-${ride.rideId}-${ride.request?.requestId ?? "driver"}`}
                   ride={ride}
                   role={role}
+                  refresh={() => setRevision((current) => current + 1)}
                 />
               ))}
             </div>
@@ -149,23 +153,24 @@ export default function ActivityClient() {
 function ActivityCard({
   ride,
   role,
-}: ActivityItem) {
+  refresh,
+}: ActivityItem & { refresh: () => void }) {
+  const [endPromptOpen, setEndPromptOpen] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [endError, setEndError] = useState(false);
   const withdrawn =
     ride.request?.status === "CANCELLED" && ride.status !== "CANCELLED";
-  const cancelled =
-    ride.status === "CANCELLED" || ride.request?.status === "CANCELLED";
+  const rideCancelled = ride.status === "CANCELLED";
   const unavailableRequest =
     ride.request?.status === "DECLINED" ||
     ride.request?.status === "DISCARDED";
-  const status = withdrawn
-    ? "Request withdrawn"
-    : ride.request?.status === "DECLINED"
-      ? "Request declined"
-      : ride.request?.status === "DISCARDED"
-        ? "Request unavailable"
-        : cancelled
-          ? "Cancelled"
-          : ({
+  const status =
+    role === "RIDER" &&
+    ["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(ride.status)
+      ? "Active"
+      : rideCancelled
+        ? "Cancelled"
+        : ({
               PUBLISHED: "Active",
               REQUESTED: "Requested",
               ACCEPTED: "Accepted",
@@ -175,9 +180,9 @@ function ActivityCard({
               CANCELLED: "Cancelled",
               EXPIRED: "Expired",
             })[ride.status];
-  const statusClass = cancelled || unavailableRequest
+  const statusClass = rideCancelled
     ? "activity-status cancelled"
-      : ride.status === "PUBLISHED" || ride.status === "REQUESTED"
+      : status === "Active"
         ? "activity-status published"
         : ride.status === "EXPIRED"
           ? "activity-status expired"
@@ -194,10 +199,78 @@ function ActivityCard({
     (role === "RIDER" && ride.request
       ? "?request=" + encodeURIComponent(ride.request.requestId)
       : "");
+  const requestStatus = ride.request
+    ? ({
+        PENDING: "Pending",
+        ACCEPTED: "Accepted",
+        DECLINED: "Declined",
+        DISCARDED: "Unavailable",
+        CANCELLED: "Withdrawn",
+      })[ride.request.status]
+    : null;
+  const canEndRequest =
+    role === "RIDER" &&
+    Boolean(ride.request) &&
+    (ride.request?.status === "PENDING" ||
+      ride.request?.status === "ACCEPTED") &&
+    !["CO_RIDE_ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED"].includes(
+      ride.status,
+    );
+  const endRequest = async () => {
+    if (!ride.request) return;
+    setEnding(true);
+    try {
+      await cocowheelsApi(
+        ride.request.status === "PENDING"
+          ? `/api/rides/${encodeURIComponent(ride.rideId)}/request/cancel`
+          : `/api/rides/${encodeURIComponent(ride.rideId)}/cancel`,
+        { method: "POST" },
+      );
+      setEndPromptOpen(false);
+      refresh();
+    } catch {
+      setEndPromptOpen(false);
+      setEndError(true);
+    } finally {
+      setEnding(false);
+    }
+  };
   return (
-    <article className="activity-card">
-      <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
-      <dl className="activity-card-fields">
+    <>
+      {endPromptOpen ? (
+        <CancelPrompt
+          busy={ending}
+          request={ride.request?.status === "PENDING"}
+          close={() => setEndPromptOpen(false)}
+          confirm={endRequest}
+        />
+      ) : null}
+      {endError ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="activity-action-error-title"
+          >
+            <h2 id="activity-action-error-title">
+              We couldn’t update this request.
+            </h2>
+            <div className="location-prompt-actions">
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setEndError(false)}
+              >
+                OKAY
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      <article className="activity-card">
+        <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
+        <dl className="activity-card-fields">
         <div>
           <dt>Route ID</dt>
           <dd><code>{routeReference(ride.rideId)}</code></dd>
@@ -226,8 +299,24 @@ function ActivityCard({
           <dt>Price</dt>
           <dd>A${ride.priceAud}</dd>
         </div>
+        {role === "RIDER" && requestStatus ? (
+          <div>
+            <dt>Request status</dt>
+            <dd
+              className={
+                unavailableRequest || withdrawn
+                  ? "activity-status cancelled"
+                  : ride.request?.status === "ACCEPTED"
+                    ? "activity-status published"
+                    : "activity-status"
+              }
+            >
+              {requestStatus}
+            </dd>
+          </div>
+        ) : null}
         <div className="activity-card-action">
-          <dt>Action</dt>
+          <dt>View</dt>
           <dd>
             <Link
               className="activity-open"
@@ -238,7 +327,27 @@ function ActivityCard({
             </Link>
           </dd>
         </div>
+        {role === "RIDER" && requestStatus ? (
+          <div className="activity-card-action">
+            <dt>Action</dt>
+            <dd>
+              {canEndRequest ? (
+                <button
+                  type="button"
+                  className="activity-request-end"
+                  disabled={ending}
+                  onClick={() => setEndPromptOpen(true)}
+                >
+                  {ride.request?.status === "PENDING"
+                    ? "WITHDRAW"
+                    : "CANCEL RIDE"}
+                </button>
+              ) : null}
+            </dd>
+          </div>
+        ) : null}
       </dl>
-    </article>
+      </article>
+    </>
   );
 }

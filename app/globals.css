@@ -302,6 +302,27 @@ button:disabled {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
+.activity-request-end {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 11px;
+  border: 1px solid #fecdca;
+  border-radius: 14px;
+  color: var(--danger);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  background: #fff5f4;
+}
+.activity-request-end:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.activity-request-end:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
 .activity-detail {
   padding: 4px 0 34px;
   animation: rise 0.22s ease-out;
@@ -1254,11 +1275,6 @@ p {
   color: #b42318;
 }
 .driver-request-action {
-  grid-column: span 2;
-  border-right: 0 !important;
-  border-bottom: 0 !important;
-}
-.driver-request-fit {
   grid-column: span 2;
   border-right: 0 !important;
   border-bottom: 0 !important;

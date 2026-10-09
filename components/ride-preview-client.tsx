@@ -77,6 +77,16 @@ const rideStatusLabel = (status: Ride["status"]) =>
     CANCELLED: "Cancelled",
     EXPIRED: "Expired",
   })[status];
+const requestStatusLabel = (
+  status: NonNullable<Ride["request"]>["status"],
+) =>
+  ({
+    PENDING: "Pending",
+    ACCEPTED: "Accepted",
+    DECLINED: "Declined",
+    DISCARDED: "Unavailable",
+    CANCELLED: "Withdrawn",
+  })[status];
 
 export default function RidePreviewClient({
   rideId,
@@ -130,6 +140,7 @@ export default function RidePreviewClient({
             acceptedDriverRequest?.createdAt ??
             participantRide.rider.requestedDepartureAt,
           directionFit: participantRide.rider.directionFit,
+          status: "ACCEPTED" as const,
         }
       : null
     : activityRequest
@@ -139,6 +150,7 @@ export default function RidePreviewClient({
           destination: activityRequest.destination,
           requestedAt: activityRequest.createdAt,
           directionFit: activityRequest.directionFit,
+          status: activityRequest.status,
         }
       : null;
   const riderRoute = useMemo<{
@@ -336,9 +348,9 @@ export default function RidePreviewClient({
     setEndError(null);
     try {
       await cocowheelsApi(
-        driverOwned
-          ? `/api/rides/${encodeURIComponent(rideId)}/cancel`
-          : `/api/rides/${encodeURIComponent(rideId)}/request/cancel`,
+        !driverOwned && activityRequest?.status === "PENDING"
+          ? `/api/rides/${encodeURIComponent(rideId)}/request/cancel`
+          : `/api/rides/${encodeURIComponent(rideId)}/cancel`,
         { method: "POST" },
       );
       router.push("/activity");
@@ -490,15 +502,13 @@ export default function RidePreviewClient({
               <div>
                 <dt>Status</dt>
                 <dd className="route-status">
-                  {ride.requestStatus === "CANCELLED"
-                    ? "Request withdrawn"
-                    : ride.requestStatus === "DECLINED"
-                      ? "Request declined"
-                      : ride.requestStatus === "DISCARDED"
-                        ? "Request unavailable"
-                        : ride.status === "PUBLISHED"
-                          ? <span className="route-status-active">Active</span>
-                          : rideStatusLabel(ride.status)}
+                  {["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(
+                    ride.status,
+                  ) ? (
+                    <span className="route-status-active">Active</span>
+                  ) : (
+                    rideStatusLabel(ride.status)
+                  )}
                 </dd>
               </div>
               <div>
@@ -610,6 +620,10 @@ export default function RidePreviewClient({
                           {request.directionFit === "GOOD" ? "Good" : "Poor"}
                         </dd>
                       </div>
+                      <div>
+                        <dt>Request status</dt>
+                        <dd>{requestStatusLabel(request.status)}</dd>
+                      </div>
                       <div className="driver-request-action">
                         <dt>Action</dt>
                         <dd className="driver-request-buttons">
@@ -673,13 +687,17 @@ export default function RidePreviewClient({
                       <dt>Where to?</dt>
                       <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
-                    <div className="driver-request-fit">
+                    <div>
                       <dt>Fit</dt>
                       <dd
                         className={`preview-fit preview-fit-${riderDetail.directionFit.toLowerCase()}`}
                       >
                         {riderDetail.directionFit === "GOOD" ? "Good" : "Poor"}
                       </dd>
+                    </div>
+                    <div>
+                      <dt>Request status</dt>
+                      <dd>{requestStatusLabel(riderDetail.status)}</dd>
                     </div>
                   </dl>
                 </article>
