@@ -65,8 +65,18 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       /HttpOnly/,
     );
     const driverToken = driverCreate.body.sessionToken as string;
-    const driverRide = driverCreate.body.ride as { rideId: string };
+    const driverRide = driverCreate.body.ride as {
+      rideId: string;
+      driverAlias: string;
+    };
     assert.match(driverToken, /[A-Za-z0-9_-]{30,}/);
+    const driverCurrent = await json(
+      `${base}/api/current`,
+      "GET",
+      undefined,
+      driverToken,
+    );
+    assert.equal(driverCurrent.body.guestAlias, driverRide.driverAlias);
     const riderSearch = await json(`${base}/api/search`, "POST", {
       pickup: { latitude: -33.855, longitude: 151.225 },
       destination: { latitude: -33.82, longitude: 151.265 },

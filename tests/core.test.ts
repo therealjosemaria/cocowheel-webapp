@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { openDatabase } from "../server/db";
 import {
+  availableRides,
   beginRide,
   cancelPendingRequest,
   cancelRide,
@@ -217,7 +218,7 @@ test("published rides always expose a readable location detail to matching resul
   }
 });
 
-test("a guest may hold one driver offer and one unrelated rider request, but never match itself", () => {
+test("a guest may browse every offer but must end one role before switching while keeping its alias", () => {
   const h = harness();
   try {
     const ownOffer = publishRide(h.db, null, driverInput, baseTime);
@@ -248,12 +249,30 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
         ?.isOwnOffer,
       false,
     );
-    requestRide(
+    const browse = availableRides(
       h.db,
+      new Date(baseTime.getTime() + 2_000),
       ownOffer.sessionToken,
-      otherOffer.ride.rideId,
-      riderInput,
-      new Date(baseTime.getTime() + 3_000),
+    );
+    assert.equal(
+      browse.find((offer) => offer.rideId === ownOffer.ride.rideId)?.isOwnOffer,
+      true,
+    );
+    assert.equal(
+      browse.find((offer) => offer.rideId === otherOffer.ride.rideId)
+        ?.isOwnOffer,
+      false,
+    );
+    assert.throws(
+      () =>
+        requestRide(
+          h.db,
+          ownOffer.sessionToken,
+          otherOffer.ride.rideId,
+          riderInput,
+          new Date(baseTime.getTime() + 3_000),
+        ),
+      /ROLE_CHANGE_REQUIRES_TERMINATION/,
     );
     assert.deepEqual(
       currentOpenRides(
@@ -261,7 +280,7 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
         ownOffer.sessionToken,
         new Date(baseTime.getTime() + 4_000),
       ).map((item) => item.role),
-      ["DRIVER", "RIDER"],
+      ["DRIVER"],
     );
     assert.throws(
       () =>
@@ -272,7 +291,29 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
           riderInput,
           new Date(baseTime.getTime() + 5_000),
         ),
-      /ROLE_CHANGE_REQUIRES_TERMINATION/,
+      /OWN_RIDE_JOIN_NOT_ALLOWED/,
+    );
+    cancelRide(
+      h.db,
+      ownOffer.sessionToken,
+      ownOffer.ride.rideId,
+      new Date(baseTime.getTime() + 6_000),
+    );
+    const switched = requestRide(
+      h.db,
+      ownOffer.sessionToken,
+      otherOffer.ride.rideId,
+      riderInput,
+      new Date(baseTime.getTime() + 7_000),
+    );
+    assert.equal(switched.ride.request?.riderAlias, ownOffer.ride.driverAlias);
+    assert.deepEqual(
+      currentOpenRides(
+        h.db,
+        ownOffer.sessionToken,
+        new Date(baseTime.getTime() + 8_000),
+      ).map((item) => item.role),
+      ["RIDER"],
     );
     assert.throws(
       () =>
@@ -280,9 +321,9 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
           h.db,
           ownOffer.sessionToken,
           driverInput,
-          new Date(baseTime.getTime() + 6_000),
+          new Date(baseTime.getTime() + 9_000),
         ),
-      /OPEN_ITEM_EXISTS/,
+      /ROLE_CHANGE_REQUIRES_TERMINATION/,
     );
     assert.throws(
       () =>
@@ -291,7 +332,7 @@ test("a guest may hold one driver offer and one unrelated rider request, but nev
           ownOffer.sessionToken,
           otherOffer.ride.rideId,
           riderInput,
-          new Date(baseTime.getTime() + 7_000),
+          new Date(baseTime.getTime() + 10_000),
         ),
       /OPEN_ITEM_EXISTS/,
     );

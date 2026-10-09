@@ -3,6 +3,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS guest_sessions (
   id TEXT PRIMARY KEY,
   token_hash TEXT NOT NULL UNIQUE,
+  anonymous_alias TEXT,
   created_at TEXT NOT NULL,
   last_seen_at TEXT NOT NULL,
   expires_at TEXT NOT NULL,

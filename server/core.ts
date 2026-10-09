@@ -23,7 +23,7 @@ export type RideStatus =
 export type RequestStatus =
   "PENDING" | "ACCEPTED" | "DECLINED" | "DISCARDED" | "CANCELLED";
 export type Participant = "DRIVER" | "RIDER";
-export type Session = { id: string };
+export type Session = { id: string; alias: string };
 export type Pin = { latitude: number; longitude: number; label?: string };
 export type DirectionFit = "GOOD" | "POOR";
 
@@ -131,6 +131,7 @@ export type AvailabilityOffer = {
   departureLabel: string | null;
   destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
+  isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
   rideId: string;
@@ -239,6 +240,47 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  const sessionColumns = db
+    .prepare("PRAGMA table_info(guest_sessions)")
+    .all() as Array<{ name: string }>;
+  if (!sessionColumns.some((column) => column.name === "anonymous_alias"))
+    db.exec("ALTER TABLE guest_sessions ADD COLUMN anonymous_alias TEXT");
+  const sessionsWithoutAlias = db
+    .prepare("SELECT id FROM guest_sessions WHERE anonymous_alias IS NULL")
+    .all() as Array<{ id: string }>;
+  const latestAlias = db.prepare(`
+    SELECT guest_alias
+    FROM (
+      SELECT driver_alias AS guest_alias, created_at
+      FROM rides
+      WHERE driver_session_id = ?
+      UNION ALL
+      SELECT rider_alias AS guest_alias, created_at
+      FROM ride_requests
+      WHERE rider_session_id = ?
+    )
+    ORDER BY created_at DESC
+    LIMIT 1
+  `);
+  const saveAlias = db.prepare(
+    "UPDATE guest_sessions SET anonymous_alias = ? WHERE id = ?",
+  );
+  const alignOpenDriverAlias = db.prepare(
+    "UPDATE rides SET driver_alias = ? WHERE driver_session_id = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE')",
+  );
+  const alignOpenRiderAlias = db.prepare(
+    "UPDATE ride_requests SET rider_alias = ? WHERE rider_session_id = ? AND status IN ('PENDING', 'ACCEPTED')",
+  );
+  db.transaction(() => {
+    for (const session of sessionsWithoutAlias) {
+      const historical = latestAlias.get(session.id, session.id) as
+        { guest_alias: string } | undefined;
+      const guestAlias = historical?.guest_alias ?? alias();
+      saveAlias.run(guestAlias, session.id);
+      alignOpenDriverAlias.run(guestAlias, session.id);
+      alignOpenRiderAlias.run(guestAlias, session.id);
+    }
+  })();
   const rideColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
   }>;
@@ -340,31 +382,47 @@ export function findSession(
   if (!token) return null;
   const row = db
     .prepare(
-      "SELECT id FROM guest_sessions WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?",
+      "SELECT id, anonymous_alias FROM guest_sessions WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?",
     )
-    .get(hash(token), iso(now)) as { id: string } | undefined;
+    .get(hash(token), iso(now)) as
+    { id: string; anonymous_alias: string | null } | undefined;
   if (!row) return null;
+  const guestAlias = row.anonymous_alias ?? alias();
+  if (!row.anonymous_alias)
+    db.prepare(
+      "UPDATE guest_sessions SET anonymous_alias = ? WHERE id = ?",
+    ).run(guestAlias, row.id);
   db.prepare("UPDATE guest_sessions SET last_seen_at = ? WHERE id = ?").run(
     iso(now),
     row.id,
   );
-  return row;
+  return { id: row.id, alias: guestAlias };
 }
 
 export function createGuestSession(db: Db, now = new Date()) {
   const token = opaqueToken();
   const id = uuid();
+  const guestAlias = alias();
   const createdAt = iso(now);
   db.prepare(
-    "INSERT INTO guest_sessions (id, token_hash, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?)",
+    "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
   ).run(
     id,
     hash(token),
+    guestAlias,
     createdAt,
     createdAt,
     iso(new Date(now.getTime() + SESSION_TTL_MS)),
   );
-  return { session: { id }, token };
+  return { session: { id, alias: guestAlias }, token };
+}
+
+export function guestAlias(
+  db: Db,
+  rawSessionToken: string | null,
+  now = new Date(),
+) {
+  return requireSession(db, rawSessionToken, now).alias;
 }
 
 function requireSession(db: Db, token: string | null, now?: Date) {
@@ -661,6 +719,8 @@ export function publishRide(
   const created = existing ? null : createGuestSession(db, now);
   const session = existing ?? created!.session;
   if (hasOpenDriverRide(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
+  if (hasOpenRiderRequest(db, session.id))
+    throw new Error("ROLE_CHANGE_REQUIRES_TERMINATION");
   const rideId = uuid();
   const publicIdValue = publicId(db);
   const timestamp = iso(now);
@@ -672,7 +732,7 @@ export function publishRide(
       rideId,
       publicIdValue,
       session.id,
-      alias(),
+      session.alias,
       input.origin.latitude,
       input.origin.longitude,
       cleanOptional(input.origin.label, 160, "INVALID_ORIGIN_LABEL") ??
@@ -765,15 +825,23 @@ export function searchRides(
     );
 }
 
-export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
+export function availableRides(
+  db: Db,
+  now = new Date(),
+  rawSessionToken: string | null = null,
+): AvailabilityOffer[] {
   expireStaleRides(db, now);
+  const session = rawSessionToken
+    ? findSession(db, rawSessionToken, now)
+    : null;
   return (
     db
       .prepare(
-        "SELECT public_id, driver_alias, price_aud, scheduled_departure_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+        "SELECT public_id, driver_session_id, driver_alias, price_aud, scheduled_departure_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
       )
       .all() as Array<{
       public_id: string;
+      driver_session_id: string;
       driver_alias: string;
       price_aud: number;
       scheduled_departure_at: string;
@@ -804,6 +872,7 @@ export function availableRides(db: Db, now = new Date()): AvailabilityOffer[] {
         longitude: ride.destination_longitude,
       }),
     status: ride.status,
+    isOwnOffer: ride.driver_session_id === session?.id,
   }));
 }
 
@@ -860,6 +929,8 @@ export function requestRide(
   const created = existing ? null : createGuestSession(db, now);
   const session = existing ?? created!.session;
   if (session.id === ride.driver_session_id)
+    throw new Error("OWN_RIDE_JOIN_NOT_ALLOWED");
+  if (hasOpenDriverRide(db, session.id))
     throw new Error("ROLE_CHANGE_REQUIRES_TERMINATION");
   if (hasOpenRiderRequest(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
   const requestId = uuid();
@@ -872,7 +943,7 @@ export function requestRide(
       requestId,
       ride.id,
       session.id,
-      alias(),
+      session.alias,
       input.pickup.latitude,
       input.pickup.longitude,
       cleanOptional(input.pickup.label, 160, "INVALID_PICKUP_LABEL"),

@@ -2,7 +2,7 @@
 
 ## Product invariant
 
-Cocowheels is a guest-first scheduled, one-driver/one-rider carpool. The server owns lifecycle state. A fixed whole-dollar AUD price is set at publishing and is never recalculated. This MVP has no accounts, profiles, negotiation, fares, navigation, payment processing, public activity, or public live location.
+Cocowheels is a guest-first scheduled, one-driver/one-rider carpool. The server owns lifecycle state. A fixed whole-dollar AUD price is set at publishing and is never recalculated. This MVP has no accounts, editable or public profiles, negotiation, fares, navigation, payment processing, public activity, or public live location.
 
 ## Initial architecture
 
@@ -28,6 +28,7 @@ Cocowheels is a guest-first scheduled, one-driver/one-rider carpool. The server 
 ## Completed initial vertical slice
 
 - Driver publishing, rider discovery/request, acceptance/decline, atomic discard of competing requests, fresh location checks, private live-location exchange, one-time four-digit co-ride confirmation, payment handoff, cancellation rules, expiry, private history, and guest-session recovery are implemented.
+- A guest session has one server-assigned anonymous alias and one open role at a time. Guests may browse every offer, but must end an active driver offer before requesting as a rider, or end an active rider request before publishing as a driver. The alias remains stable when switching roles.
 - Exact driver endpoints are excluded from rider and discovery responses. PayID is private to the driver until acceptance, then is returned only to that accepted rider. Current live points are deleted at cancellation, completion, and expiry; no GPS trail table exists.
 - Validated locally with unit and HTTP integration tests, lint, production build, a loopback same-origin proxy check, and the dedicated API health check.
 

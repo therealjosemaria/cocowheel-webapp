@@ -14,6 +14,8 @@ Run this on two independent phones/browsers. Do not reuse the same guest session
 - [ ] After acceptance, confirm PayID is visible only on the driver and accepted rider phones. At pickup, rider reads the four-digit code and driver enters it once.
 - [ ] Complete using `PayID` and repeat with `Cash`. Confirm the app records only the selected handoff preference and never says payment is verified.
 - [ ] Refresh both phones at each major state and verify the private guest session resumes the current item.
+- [ ] With an active driver offer, browse and view other offers. Confirm Join remains visible but creates no request and asks the guest to end the current activity before switching roles.
+- [ ] End the driver offer, request another driver’s ride, and confirm the anonymous name remains unchanged.
 
 ## Failure and privacy path
 

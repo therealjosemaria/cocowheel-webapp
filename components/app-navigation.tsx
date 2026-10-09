@@ -4,17 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
-import type { Ride } from "@/lib/client-types";
-
-type GuestIdentity = {
-  role: "Driver" | "Rider";
-  alias: string;
-};
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
-  const [identities, setIdentities] = useState<GuestIdentity[]>([]);
+  const [guestName, setGuestName] = useState<string | null>(null);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -61,25 +55,12 @@ export default function AppNavigation() {
   const loadIdentities = useCallback(async () => {
     try {
       const result = await cocowheelsApi<{
-        currents: Array<{
-          role: "DRIVER" | "RIDER";
-          ride: Ride;
-        }>;
+        guestAlias: string;
       }>("/api/current");
-      setIdentities(
-        result.currents.flatMap((item) => {
-          const alias =
-            item.role === "DRIVER"
-              ? item.ride.driverAlias
-              : item.ride.request?.riderAlias;
-          return alias
-            ? [{ role: item.role === "DRIVER" ? "Driver" : "Rider", alias }]
-            : [];
-        }),
-      );
+      setGuestName(result.guestAlias);
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
-        setIdentities([]);
+        setGuestName(null);
       }
     }
   }, []);
@@ -129,9 +110,7 @@ export default function AppNavigation() {
     };
   }, [open]);
 
-  const identityLabel = identities.length
-    ? identities.map((identity) => identity.alias).join(", ")
-    : "No active guest name";
+  const identityLabel = guestName ?? "No guest name yet";
 
   return (
     <div className="navigation-actions">
@@ -216,15 +195,13 @@ export default function AppNavigation() {
           aria-hidden={!identityOpen}
         >
           <strong>Profile</strong>
-          {identities.length ? (
-            identities.map((identity) => (
-              <div className="guest-identity-row" key={identity.role}>
-                <span>{identities.length === 1 ? "Name" : identity.role}</span>
-                <b>{identity.alias}</b>
-              </div>
-            ))
+          {guestName ? (
+            <div className="guest-identity-row">
+              <span>Name</span>
+              <b>{guestName}</b>
+            </div>
           ) : (
-            <p>No active guest name</p>
+            <p>No guest name yet</p>
           )}
         </div>
       </div>

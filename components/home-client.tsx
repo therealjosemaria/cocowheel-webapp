@@ -35,6 +35,7 @@ type AvailabilityOffer = {
   departureLabel: string | null;
   destinationLabel: string | null;
   status: "PUBLISHED" | "REQUESTED";
+  isOwnOffer: boolean;
 };
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
@@ -256,6 +257,7 @@ export default function HomeClient({
     "origin" | "pickup" | null
   >(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
+  const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
     useState(false);
@@ -665,6 +667,13 @@ export default function HomeClient({
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
       window.location.assign("/activity");
     } catch (reason) {
+      if (
+        reason instanceof ApiError &&
+        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+      ) {
+        setRoleChangePromptOpen(true);
+        return;
+      }
       setError(humanError(reason));
     } finally {
       setBusy(false);
@@ -799,9 +808,16 @@ export default function HomeClient({
     } catch (reason) {
       if (
         reason instanceof ApiError &&
-        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+        reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED"
       ) {
         setOwnOfferPromptOpen(true);
+        return;
+      }
+      if (
+        reason instanceof ApiError &&
+        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+      ) {
+        setRoleChangePromptOpen(true);
         return;
       }
       setError(humanError(reason));
@@ -885,6 +901,9 @@ export default function HomeClient({
       {ownOfferPromptOpen ? (
         <OwnOfferPrompt close={() => setOwnOfferPromptOpen(false)} />
       ) : null}
+      {roleChangePromptOpen ? (
+        <RoleChangePrompt close={() => setRoleChangePromptOpen(false)} />
+      ) : null}
       {routeRequiredPromptOpen ? (
         <RouteRequiredPrompt close={() => setRouteRequiredPromptOpen(false)} />
       ) : null}
@@ -945,7 +964,17 @@ export default function HomeClient({
           availabilityServerNow={availabilityServerNow}
           availabilityChecking={availabilityChecking}
           candidateServerNow={candidateServerNow}
-          onAvailabilityJoin={() => setRouteRequiredPromptOpen(true)}
+          onAvailabilityJoin={(offer) => {
+            if (offer.isOwnOffer) {
+              setOwnOfferPromptOpen(true);
+              return;
+            }
+            if (homeCurrent.some((item) => item.role === "DRIVER")) {
+              setRoleChangePromptOpen(true);
+              return;
+            }
+            setRouteRequiredPromptOpen(true);
+          }}
           previewRoute={(candidate) => {
             if (!riderPins.pickup || !riderPins.destination) return;
             saveRiderSearchDraft(
@@ -1056,6 +1085,27 @@ function OwnOfferPrompt({ close }: { close: () => void }) {
       >
         <h2 id="own-offer-title">
           We apologise, drivers are not allowed to join their own rides.
+        </h2>
+        <div className="location-prompt-actions">
+          <button type="button" className="primary" onClick={close}>
+            OKAY
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function RoleChangePrompt({ close }: { close: () => void }) {
+  return (
+    <div className="location-prompt-backdrop" role="presentation">
+      <section
+        className="location-prompt"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="role-change-title"
+      >
+        <h2 id="role-change-title">
+          End your current activity before switching roles.
         </h2>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
@@ -1428,7 +1478,7 @@ function RiderForm(props: {
   availabilityServerNow: string | null;
   availabilityChecking: boolean;
   candidateServerNow: string | null;
-  onAvailabilityJoin: () => void;
+  onAvailabilityJoin: (offer: AvailabilityOffer) => void;
   previewRoute: (candidate: Candidate) => void;
 }) {
   return (
@@ -1577,7 +1627,7 @@ function AvailabilityBoard({
   rides: AvailabilityOffer[];
   serverNow: string | null;
   checking: boolean;
-  onJoin: () => void;
+  onJoin: (offer: AvailabilityOffer) => void;
 }) {
   return (
     <section className="availability-board" aria-live="polite">
@@ -1619,7 +1669,11 @@ function AvailabilityBoard({
             OPEN
           </Link>
           <span aria-label="Set a route to calculate direction fit"></span>
-          <button type="button" className="availability-join" onClick={onJoin}>
+          <button
+            type="button"
+            className="availability-join"
+            onClick={() => onJoin(ride)}
+          >
             JOIN
           </button>
         </div>

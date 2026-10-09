@@ -116,6 +116,7 @@ export default function RidePreviewClient({
   const [error, setError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
+  const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
   const [endPromptOpen, setEndPromptOpen] = useState(false);
@@ -317,6 +318,22 @@ export default function RidePreviewClient({
 
   async function joinRide() {
     if (!ride) return;
+    try {
+      const currentState = await cocowheelsApi<{
+        current: { role: "DRIVER" | "RIDER"; ride: { rideId: string } } | null;
+      }>("/api/current");
+      if (currentState.current?.role === "DRIVER") {
+        if (currentState.current.ride.rideId === ride.rideId)
+          setSelfJoinPromptOpen(true);
+        else setRoleChangePromptOpen(true);
+        return;
+      }
+    } catch (reason) {
+      if (!(reason instanceof ApiError && reason.status === 401)) {
+        setJoinFailurePromptOpen(true);
+        return;
+      }
+    }
     if (!riderRoute) {
       setRouteRequiredPromptOpen(true);
       return;
@@ -341,9 +358,14 @@ export default function RidePreviewClient({
     } catch (reason) {
       if (
         reason instanceof ApiError &&
-        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+        reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED"
       )
         setSelfJoinPromptOpen(true);
+      else if (
+        reason instanceof ApiError &&
+        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+      )
+        setRoleChangePromptOpen(true);
       else setJoinFailurePromptOpen(true);
     } finally {
       setJoining(false);
@@ -462,6 +484,29 @@ export default function RidePreviewClient({
                 type="button"
                 className="primary"
                 onClick={() => setSelfJoinPromptOpen(false)}
+              >
+                OKAY
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {roleChangePromptOpen ? (
+        <div className="location-prompt-backdrop" role="presentation">
+          <section
+            className="location-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="role-change-title"
+          >
+            <h2 id="role-change-title">
+              End your current activity before switching roles.
+            </h2>
+            <div className="location-prompt-actions">
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setRoleChangePromptOpen(false)}
               >
                 OKAY
               </button>

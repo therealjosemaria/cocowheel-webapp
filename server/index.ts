@@ -11,12 +11,12 @@ import {
   cancelRide,
   completeCoRide,
   confirmCoRideCode,
-  currentOpenRide,
   currentOpenRides,
   decideRequest,
   expireStaleRides,
   findSession,
   getRide,
+  guestAlias,
   guestCookie,
   initializeCoreSchema,
   privateHistory,
@@ -116,6 +116,7 @@ function errorStatus(error: unknown) {
       "REQUEST_UNAVAILABLE",
       "OPEN_ITEM_EXISTS",
       "ROLE_CHANGE_REQUIRES_TERMINATION",
+      "OWN_RIDE_JOIN_NOT_ALLOWED",
       "RIDE_CANNOT_BEGIN",
       "CANCELLATION_NOT_ALLOWED",
       "CO_RIDE_NOT_ACTIVE",
@@ -468,7 +469,7 @@ export function createApiServer(database: Db) {
           response,
           200,
           {
-            rides: availableRides(database, now),
+            rides: availableRides(database, now, token),
             serverNow: now.toISOString(),
           },
           cors,
@@ -476,12 +477,14 @@ export function createApiServer(database: Db) {
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/current") {
+        const currents = currentOpenRides(database, token);
         writeJson(
           response,
           200,
           {
-            current: currentOpenRide(database, token),
-            currents: currentOpenRides(database, token),
+            current: currents[0] ?? null,
+            currents,
+            guestAlias: guestAlias(database, token),
           },
           cors,
         );
