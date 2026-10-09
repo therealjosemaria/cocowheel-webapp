@@ -662,6 +662,7 @@ export default function HomeClient({
           payIdType,
         }),
       });
+      window.dispatchEvent(new Event("cocowheels:identity-changed"));
       window.location.assign("/activity");
     } catch (reason) {
       setError(humanError(reason));
@@ -793,6 +794,7 @@ export default function HomeClient({
           }),
         },
       );
+      window.dispatchEvent(new Event("cocowheels:identity-changed"));
       router.push("/activity");
     } catch (reason) {
       if (
