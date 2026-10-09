@@ -38,6 +38,11 @@ type PreviewRide = {
   payId?: string | null;
   payIdType?: PayIdType | null;
 };
+type RoutePreviewResponse = {
+  points: Pin[];
+  distanceMeters: number | null;
+  durationSeconds: number | null;
+};
 const locationLabel = (pin?: Pin) =>
   pin?.label ??
   (pin ? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}` : "—");
@@ -189,6 +194,12 @@ export default function RidePreviewClient({
       ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
       : null,
   );
+  const [riderDurationSeconds, setRiderDurationSeconds] = useState<
+    number | null
+  >(null);
+  const [pickupDurationSeconds, setPickupDurationSeconds] = useState<
+    number | null
+  >(null);
   const [driverRoadPath, setDriverRoadPath] = useState<{
     coordinates: string;
     points: Pin[];
@@ -254,25 +265,48 @@ export default function RidePreviewClient({
     ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
     : "";
   useEffect(() => {
-    if (!riderRoute || roadPath?.length) return;
+    if (!riderRoute || (roadPath?.length && riderDurationSeconds !== null))
+      return;
     let cancelled = false;
-    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+    void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
       body: JSON.stringify({
         origin: riderRoute.pickup,
         destination: riderRoute.destination,
       }),
     })
-      .then(({ points }) => {
+      .then(({ points, durationSeconds }) => {
         if (cancelled || points.length < 2) return;
         cacheRiderRoadPath(riderRoute.pickup, riderRoute.destination, points);
         setRoadPath(points);
+        setRiderDurationSeconds(durationSeconds);
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [riderRoute, roadPath?.length, routeKey]);
+  }, [riderRoute, riderDurationSeconds, roadPath?.length, routeKey]);
+
+  useEffect(() => {
+    if (!ride?.plannedRoute || !riderRoute) return;
+    let cancelled = false;
+    void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
+      method: "POST",
+      body: JSON.stringify({
+        origin: ride.plannedRoute.origin,
+        destination: riderRoute.pickup,
+      }),
+    })
+      .then(({ durationSeconds }) => {
+        if (!cancelled) setPickupDurationSeconds(durationSeconds);
+      })
+      .catch(() => {
+        if (!cancelled) setPickupDurationSeconds(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ride?.plannedRoute, riderRoute]);
 
   useEffect(() => {
     if (!driverRouteInput) return;
@@ -292,7 +326,7 @@ export default function RidePreviewClient({
       return () => window.clearTimeout(timer);
     }
     let cancelled = false;
-    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+    void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
       body: JSON.stringify(driverRouteInput),
     })
@@ -314,6 +348,20 @@ export default function RidePreviewClient({
   const activeDriverRoadPath =
     driverRoadPath?.coordinates === driverRouteCoordinates
       ? driverRoadPath.points
+      : null;
+  const pickupMinutes =
+    pickupDurationSeconds === null
+      ? null
+      : Math.max(1, Math.round(pickupDurationSeconds / 60));
+  const estimatedArrival =
+    serverNow && pickupDurationSeconds !== null && riderDurationSeconds !== null
+      ? new Date(
+          Math.max(
+            new Date(serverNow).getTime(),
+            new Date(ride?.scheduledDepartureAt ?? serverNow).getTime(),
+          ) +
+            (pickupDurationSeconds + riderDurationSeconds) * 1_000,
+        )
       : null;
 
   async function joinRide() {
@@ -677,6 +725,31 @@ export default function RidePreviewClient({
                   </dt>
                   <dd>A${ride.priceAud}</dd>
                 </div>
+                {pickupMinutes !== null ? (
+                  <div>
+                    <dt>
+                      <RideFieldLabel icon="pickup-time">
+                        To pickup
+                      </RideFieldLabel>
+                    </dt>
+                    <dd>~{pickupMinutes} min</dd>
+                  </div>
+                ) : null}
+                {estimatedArrival ? (
+                  <div>
+                    <dt>
+                      <RideFieldLabel icon="arrival">
+                        Est. arrival
+                      </RideFieldLabel>
+                    </dt>
+                    <dd>
+                      {new Intl.DateTimeFormat("en-AU", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }).format(estimatedArrival)}
+                    </dd>
+                  </div>
+                ) : null}
                 {ride.payId ? (
                   <div>
                     <dt>
@@ -700,7 +773,9 @@ export default function RidePreviewClient({
                 ) : null}
                 <div
                   className={`preview-field-action${
-                    ride.acceptedAt ? " preview-field-action-wide" : ""
+                    ride.acceptedAt || (!activityRequest && !driverOwned)
+                      ? " preview-field-action-wide"
+                      : ""
                   }`}
                 >
                   <dt>
@@ -730,7 +805,7 @@ export default function RidePreviewClient({
                         disabled={joining}
                         onClick={() => void joinRide()}
                       >
-                        {joining ? "JOINING…" : "JOIN"}
+                        {joining ? "JOINING…" : "REQUEST TO JOIN"}
                       </button>
                     )}
                   </dd>

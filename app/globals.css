@@ -1370,6 +1370,9 @@ p {
   border-right: 0;
   border-bottom: 0;
 }
+.preview-field-action .availability-join {
+  width: 100%;
+}
 .ride-preview-fields dt {
   color: var(--muted);
 }

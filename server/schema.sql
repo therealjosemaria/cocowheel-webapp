@@ -82,6 +82,8 @@ CREATE INDEX IF NOT EXISTS place_lookup_cache_expiry_index ON place_lookup_cache
 CREATE TABLE IF NOT EXISTS route_preview_cache (
   cache_key TEXT PRIMARY KEY,
   points_json TEXT NOT NULL,
+  distance_meters REAL,
+  duration_seconds REAL,
   expires_at TEXT NOT NULL,
   created_at TEXT NOT NULL,
   last_used_at TEXT NOT NULL

@@ -11,6 +11,8 @@ export type RideFieldIconKind =
   | "expiry"
   | "accepted"
   | "requested"
+  | "pickup-time"
+  | "arrival"
   | "fit"
   | "price"
   | "payid"
@@ -108,6 +110,22 @@ function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
         <>
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v5l3 2" />
+        </>
+      );
+      break;
+    case "pickup-time":
+      content = (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2M5 5l-2 2M19 5l2 2" />
+        </>
+      );
+      break;
+    case "arrival":
+      content = (
+        <>
+          <path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z" />
+          <path d="M9 10.5h6M12 7.5v6" />
         </>
       );
       break;

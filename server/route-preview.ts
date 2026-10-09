@@ -3,8 +3,15 @@ import { cacheRoutePreview, cachedRoutePreview } from "./provider-cache";
 
 type GeoapifyGeometry = { type?: unknown; coordinates?: unknown };
 type GeoapifyRouteResponse = {
-  features?: Array<{ geometry?: GeoapifyGeometry }>;
+  features?: Array<{
+    geometry?: GeoapifyGeometry;
+    properties?: { distance?: unknown; time?: unknown };
+  }>;
 };
+const validMetric = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : null;
 function validPoint(value: unknown): value is [number, number] {
   return (
     Array.isArray(value) &&
@@ -51,6 +58,7 @@ export async function roadRoutePreview(
     `${origin.latitude},${origin.longitude}|${destination.latitude},${destination.longitude}`,
   );
   url.searchParams.set("mode", "drive");
+  url.searchParams.set("traffic", "approximated");
   url.searchParams.set("apiKey", apiKey);
   let response: Response;
   try {
@@ -63,8 +71,14 @@ export async function roadRoutePreview(
   }
   if (!response.ok) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
   const payload = (await response.json()) as GeoapifyRouteResponse;
-  const points = routePoints(payload.features?.[0]?.geometry);
+  const feature = payload.features?.[0];
+  const points = routePoints(feature?.geometry);
   if (points.length < 2) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
-  cacheRoutePreview(database, origin, destination, points);
-  return points;
+  const route = {
+    points,
+    distanceMeters: validMetric(feature?.properties?.distance),
+    durationSeconds: validMetric(feature?.properties?.time),
+  };
+  cacheRoutePreview(database, origin, destination, route);
+  return route;
 }

@@ -289,6 +289,13 @@ export function initializeCoreSchema(db: Db) {
       "ALTER TABLE rides ADD COLUMN driver_payid_type TEXT CHECK (driver_payid_type IN ('MOBILE', 'EMAIL', 'OTHER'))",
     );
   }
+  const routeCacheColumns = db
+    .prepare("PRAGMA table_info(route_preview_cache)")
+    .all() as Array<{ name: string }>;
+  if (!routeCacheColumns.some((column) => column.name === "distance_meters"))
+    db.exec("ALTER TABLE route_preview_cache ADD COLUMN distance_meters REAL");
+  if (!routeCacheColumns.some((column) => column.name === "duration_seconds"))
+    db.exec("ALTER TABLE route_preview_cache ADD COLUMN duration_seconds REAL");
   const requestTable = db
     .prepare(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'",

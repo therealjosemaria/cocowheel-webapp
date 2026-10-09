@@ -433,14 +433,14 @@ export function createApiServer(database: Db) {
         if (!allowRoutePreview(request))
           throw new Error("ROUTE_PREVIEW_RATE_LIMITED");
         const body = await readJson(request);
-        const points = await roadRoutePreview(
+        const route = await roadRoutePreview(
           validPlacePin(body.origin),
           validPlacePin(body.destination),
           undefined,
           fetch,
           database,
         );
-        writeJson(response, 200, { points }, cors);
+        writeJson(response, 200, route, cors);
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {

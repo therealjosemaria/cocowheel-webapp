@@ -6,6 +6,11 @@ const PLACE_CACHE_LIMIT = 2_000;
 const ROUTE_CACHE_LIMIT = 250;
 
 type CachedPlace = { label: string | null; countryCode: string | null };
+export type CachedRoutePreview = {
+  points: Pin[];
+  distanceMeters: number | null;
+  durationSeconds: number | null;
+};
 
 function now() {
   return new Date().toISOString();
@@ -126,19 +131,34 @@ export function cachedRoutePreview(
   const cacheKey = routeKey(origin, destination);
   const row = database
     .prepare(
-      "SELECT points_json FROM route_preview_cache WHERE cache_key = ? AND expires_at > ?",
+      "SELECT points_json, distance_meters, duration_seconds FROM route_preview_cache WHERE cache_key = ? AND expires_at > ?",
     )
-    .get(cacheKey, timestamp) as { points_json: string } | undefined;
+    .get(cacheKey, timestamp) as
+    | {
+        points_json: string;
+        distance_meters: number | null;
+        duration_seconds: number | null;
+      }
+    | undefined;
   if (!row) return null;
   try {
     const points: unknown = JSON.parse(row.points_json);
-    if (!validPoints(points)) return null;
+    if (
+      !validPoints(points) ||
+      row.distance_meters === null ||
+      row.duration_seconds === null
+    )
+      return null;
     database
       .prepare(
         "UPDATE route_preview_cache SET last_used_at = ? WHERE cache_key = ?",
       )
       .run(timestamp, cacheKey);
-    return points;
+    return {
+      points,
+      distanceMeters: row.distance_meters,
+      durationSeconds: row.duration_seconds,
+    } satisfies CachedRoutePreview;
   } catch {
     return null;
   }
@@ -148,22 +168,26 @@ export function cacheRoutePreview(
   database: Db | undefined,
   origin: Pin,
   destination: Pin,
-  points: Pin[],
+  route: CachedRoutePreview,
 ) {
   if (!database) return;
   const timestamp = now();
   database
     .prepare(
-      `INSERT INTO route_preview_cache (cache_key, points_json, expires_at, created_at, last_used_at)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO route_preview_cache (cache_key, points_json, distance_meters, duration_seconds, expires_at, created_at, last_used_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(cache_key) DO UPDATE SET
          points_json = excluded.points_json,
+         distance_meters = excluded.distance_meters,
+         duration_seconds = excluded.duration_seconds,
          expires_at = excluded.expires_at,
          last_used_at = excluded.last_used_at`,
     )
     .run(
       routeKey(origin, destination),
-      JSON.stringify(points),
+      JSON.stringify(route.points),
+      route.distanceMeters,
+      route.durationSeconds,
       expiresAt(),
       timestamp,
       timestamp,
