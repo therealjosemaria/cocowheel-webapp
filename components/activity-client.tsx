@@ -268,7 +268,10 @@ function ActivityCard({
         </div>
       ) : null}
       <article className="activity-card">
-        <span className="activity-role">{role === "DRIVER" ? "Driver" : "Rider"}</span>
+        <span className="activity-role">
+          <ActivityRoleIcon role={role} />
+          {role === "DRIVER" ? "Driver" : "Rider"}
+        </span>
         <dl className="activity-card-fields">
         <div>
           <dt>Route ID</dt>
@@ -348,5 +351,39 @@ function ActivityCard({
       </dl>
       </article>
     </>
+  );
+}
+
+function ActivityRoleIcon({ role }: { role: ActivityItem["role"] }) {
+  return role === "DRIVER" ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M5 14.5h14l-1.45-4.35a2 2 0 0 0-1.9-1.36H7.35a2 2 0 0 0-1.9 1.36L4 14.5v3.25c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V17h8v.75c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V14.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M7.2 14.5h.01M16.8 14.5h.01"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2.8"
+      />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="5" r="2.4" fill="currentColor" />
+      <path
+        d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
   );
 }

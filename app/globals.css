@@ -219,6 +219,9 @@ button:disabled {
   position: absolute;
   top: -11px;
   left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 9px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -229,6 +232,11 @@ button:disabled {
   text-transform: uppercase;
   background: #ffffff;
   box-shadow: 0 2px 5px rgb(15 23 42 / 8%);
+}
+.activity-role svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 .activity-card-fields {
   display: grid;
