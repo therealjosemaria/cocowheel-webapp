@@ -136,8 +136,7 @@ button:disabled {
   padding: 8px 0;
   border-top: 1px solid #f1f5f9;
 }
-.guest-identity-row span,
-.guest-identity-popover small {
+.guest-identity-row span {
   color: var(--muted);
   font-size: 0.72rem;
 }
@@ -150,10 +149,6 @@ button:disabled {
   margin: 8px 0;
   color: var(--muted);
   font-size: 0.8rem;
-}
-.guest-identity-popover small {
-  display: block;
-  margin-top: 8px;
 }
 .menu-toggle {
   position: relative;

@@ -215,20 +215,17 @@ export default function AppNavigation() {
           className="guest-identity-popover"
           aria-hidden={!identityOpen}
         >
-          <strong>
-            {identities.length > 1 ? "Current guests" : "Current guest"}
-          </strong>
+          <strong>Profile</strong>
           {identities.length ? (
             identities.map((identity) => (
               <div className="guest-identity-row" key={identity.role}>
-                <span>{identity.role}</span>
+                <span>{identities.length === 1 ? "Name" : identity.role}</span>
                 <b>{identity.alias}</b>
               </div>
             ))
           ) : (
             <p>No active guest name</p>
           )}
-          <small>Server assigned</small>
         </div>
       </div>
       <button
