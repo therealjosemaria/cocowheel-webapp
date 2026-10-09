@@ -50,6 +50,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
     driverAlias: ride.driverAlias,
     priceAud: ride.priceAud,
     scheduledDepartureAt: ride.scheduledDepartureAt,
+    expiresAt: ride.expiresAt,
     status: ride.status,
     requestStatus: ride.request?.status,
     departureLabel: locationLabel(visibleRoute?.origin),
@@ -81,22 +82,22 @@ export default function RidePreviewClient({
   rideId,
   pendingRequest,
   driverOwned = false,
-  driverRide,
+  participantRide,
   activityRide,
   readOnly = false,
 }: {
   rideId: string;
   pendingRequest?: NonNullable<Ride["request"]>;
   driverOwned?: boolean;
-  driverRide?: Ride;
+  participantRide?: Ride;
   activityRide?: Ride;
   readOnly?: boolean;
 }) {
   const router = useRouter();
-  const [ride, setRide] = useState<PreviewRide | null>(() =>
-    activityRide ? previewFromActivity(activityRide) : null,
+  const [publicRide, setPublicRide] = useState<PreviewRide | null>(null);
+  const [serverNow, setServerNow] = useState<string | null>(() =>
+    activityRide || participantRide ? new Date().toISOString() : null,
   );
-  const [serverNow, setServerNow] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
@@ -110,22 +111,59 @@ export default function RidePreviewClient({
     decision: "ACCEPT" | "DECLINE";
   } | null>(null);
   const [requestDecisionError, setRequestDecisionError] = useState(false);
-  const activityRequest = pendingRequest ?? activityRide?.request;
-  const [riderRoute] = useState<{
+  const activityRequest =
+    participantRide?.request ?? pendingRequest ?? activityRide?.request;
+  const pendingRiderRequests =
+    driverOwned && participantRide?.requests
+      ? participantRide.requests.filter((request) => request.status === "PENDING")
+      : [];
+  const acceptedDriverRequest = participantRide?.requests?.find(
+    (request) => request.status === "ACCEPTED",
+  );
+  const riderDetail = driverOwned
+    ? participantRide?.rider
+      ? {
+          alias: participantRide.rider.alias,
+          pickup: participantRide.rider.pickup,
+          destination: participantRide.rider.destination,
+          requestedAt:
+            acceptedDriverRequest?.createdAt ??
+            participantRide.rider.requestedDepartureAt,
+          directionFit: participantRide.rider.directionFit,
+        }
+      : null
+    : activityRequest
+      ? {
+          alias: activityRequest.riderAlias,
+          pickup: activityRequest.pickup,
+          destination: activityRequest.destination,
+          requestedAt: activityRequest.createdAt,
+          directionFit: activityRequest.directionFit,
+        }
+      : null;
+  const riderRoute = useMemo<{
     pickup: Pin;
     destination: Pin;
     directionFit?: "GOOD" | "POOR";
-  } | null>(() =>
-    driverOwned
-      ? null
-      : riderPreviewRoute(rideId) ??
-        (activityRequest
-          ? {
-              pickup: activityRequest.pickup,
-              destination: activityRequest.destination,
-            }
-          : null),
-  );
+  } | null>(() => {
+    if (driverOwned) {
+      return participantRide?.rider
+        ? {
+            pickup: participantRide.rider.pickup,
+            destination: participantRide.rider.destination,
+            directionFit: participantRide.rider.directionFit,
+          }
+        : null;
+    }
+    if (activityRequest) {
+      return {
+        pickup: activityRequest.pickup,
+        destination: activityRequest.destination,
+        directionFit: activityRequest.directionFit,
+      };
+    }
+    return riderPreviewRoute(rideId);
+  }, [activityRequest, driverOwned, participantRide, rideId]);
   const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
     riderRoute
       ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
@@ -136,15 +174,33 @@ export default function RidePreviewClient({
     points: Pin[];
   } | null>(null);
 
+  const privateRide = participantRide ?? activityRide;
+  const ride = useMemo<PreviewRide | null>(() => {
+    if (!privateRide) return publicRide;
+    const next = previewFromActivity(privateRide);
+    if (!publicRide || next.plannedRoute) return next;
+    return {
+      ...next,
+      plannedRoute: publicRide.plannedRoute,
+      departureLabel: publicRide.departureLabel,
+      destinationLabel: publicRide.destinationLabel,
+    };
+  }, [privateRide, publicRide]);
+
+  const participantStatus = participantRide?.status;
   useEffect(() => {
-    if (activityRide) return;
+    const shouldFetchPublicPreview =
+      !activityRide &&
+      (!participantStatus ||
+        (!driverOwned && participantStatus === "REQUESTED"));
+    if (!shouldFetchPublicPreview) return;
     let cancelled = false;
     void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
       `/api/rides/${encodeURIComponent(rideId)}/preview`,
     )
       .then((result) => {
         if (!cancelled) {
-          setRide(result.ride);
+          setPublicRide(result.ride);
           setServerNow(result.serverNow);
         }
       })
@@ -159,7 +215,7 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [activityRide, rideId]);
+  }, [activityRide, driverOwned, participantStatus, rideId]);
 
   const routeKey = riderRoute
     ? `${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
@@ -406,7 +462,7 @@ export default function RidePreviewClient({
       {endPromptOpen && !readOnly ? (
         <CancelPrompt
           busy={ending}
-          request={!driverOwned}
+          request={!driverOwned && activityRequest?.status === "PENDING"}
           close={() => setEndPromptOpen(false)}
           confirm={endOpenRide}
         />
@@ -488,7 +544,7 @@ export default function RidePreviewClient({
               <div className="preview-field-action">
                 <dt>Action</dt>
                 <dd>
-                  {readOnly ? null : pendingRequest || driverOwned ? (
+                  {readOnly ? null : activityRequest || driverOwned ? (
                     <button
                       type="button"
                       className="preview-end-action"
@@ -499,7 +555,7 @@ export default function RidePreviewClient({
                         ? driverOwned
                           ? "CANCELLING…"
                           : "WITHDRAWING…"
-                        : driverOwned
+                        : driverOwned || activityRequest?.status === "ACCEPTED"
                           ? "CANCEL RIDE"
                           : "WITHDRAW"}
                     </button>
@@ -517,10 +573,10 @@ export default function RidePreviewClient({
               </div>
               </dl>
             </div>
-            {driverOwned && driverRide?.requests?.length ? (
+            {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
                 <h2>Rider requests</h2>
-                {driverRide.requests.map((request) => (
+                {pendingRiderRequests.map((request) => (
                   <article
                     className="driver-request-card"
                     key={request.requestId}
@@ -594,6 +650,39 @@ export default function RidePreviewClient({
                     </dl>
                   </article>
                 ))}
+              </section>
+            ) : null}
+            {riderDetail ? (
+              <section className="driver-request-stack">
+                <h2>Rider details</h2>
+                <article className="driver-request-card">
+                  <dl className="driver-request-fields">
+                    <div>
+                      <dt>Rider</dt>
+                      <dd>{riderDetail.alias}</dd>
+                    </div>
+                    <div>
+                      <dt>Requested</dt>
+                      <dd>{prettyTime(riderDetail.requestedAt)}</dd>
+                    </div>
+                    <div>
+                      <dt>Where from?</dt>
+                      <dd>{locationLabel(riderDetail.pickup)}</dd>
+                    </div>
+                    <div>
+                      <dt>Where to?</dt>
+                      <dd>{locationLabel(riderDetail.destination)}</dd>
+                    </div>
+                    <div className="driver-request-fit">
+                      <dt>Fit</dt>
+                      <dd
+                        className={`preview-fit preview-fit-${riderDetail.directionFit.toLowerCase()}`}
+                      >
+                        {riderDetail.directionFit === "GOOD" ? "Good" : "Poor"}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
               </section>
             ) : null}
             <JourneyMap

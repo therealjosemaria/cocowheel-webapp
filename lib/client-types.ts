@@ -43,12 +43,16 @@ export type Ride = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   request?: {
     requestId: string;
+    riderAlias: string;
     status: RequestStatus;
     pickup: Pin;
     destination: Pin;
+    createdAt: string;
     requestedDepartureAt: string;
+    directionFit: "GOOD" | "POOR";
     decidedAt?: string | null;
   };
   plannedRoute?: { origin: Pin; destination: Pin };

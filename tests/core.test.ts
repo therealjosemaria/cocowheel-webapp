@@ -308,6 +308,18 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
       pending.requests?.[0].createdAt,
       new Date(baseTime.getTime() + 1_000).toISOString(),
     );
+    const riderPending = getRide(
+      h.db,
+      first.published.ride.rideId,
+      first.rider,
+      new Date(baseTime.getTime() + 2_500),
+    );
+    assert.match(riderPending.request?.riderAlias ?? "", /^Anonymous \S+/);
+    assert.equal(
+      riderPending.request?.createdAt,
+      new Date(baseTime.getTime() + 1_000).toISOString(),
+    );
+    assert.equal(riderPending.request?.directionFit, "GOOD");
     const accepted = decideRequest(
       h.db,
       first.published.sessionToken,

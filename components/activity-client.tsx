@@ -35,29 +35,41 @@ export default function ActivityClient() {
 
   useEffect(() => {
     let cancelled = false;
+    let requestInFlight = false;
     const load = async () => {
+      if (requestInFlight) return;
+      requestInFlight = true;
       try {
-        const current = await cocowheelsApi<{
-          current: { role: "DRIVER" | "RIDER"; ride: Ride } | null;
-          currents: ActivityItem[];
-        }>("/api/current");
-        if (!cancelled) setCurrent(current.currents);
-        const result = await cocowheelsApi<History>("/api/history");
-        if (!cancelled) setHistory(result);
+        const [openItems, result] = await Promise.all([
+          cocowheelsApi<{
+            current: { role: "DRIVER" | "RIDER"; ride: Ride } | null;
+            currents: ActivityItem[];
+          }>("/api/current"),
+          cocowheelsApi<History>("/api/history"),
+        ]);
+        if (!cancelled) {
+          setCurrent(openItems.currents);
+          setHistory(result);
+          setError(null);
+        }
       } catch (reason) {
         if (cancelled) return;
         if (reason instanceof ApiError && reason.status === 401) {
+          setCurrent([]);
           setHistory({ driver: [], rider: [] });
           return;
         }
         setError("Trying to reconnect. Please try again.");
       } finally {
+        requestInFlight = false;
         if (!cancelled) setLoading(false);
       }
     };
     void load();
+    const timer = window.setInterval(() => void load(), 8_000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 

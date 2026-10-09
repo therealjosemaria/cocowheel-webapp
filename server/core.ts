@@ -147,6 +147,7 @@ export type RideView = {
   driverAlias: string;
   priceAud: number;
   scheduledDepartureAt: string;
+  expiresAt: string;
   request?: RiderRequestView;
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
@@ -178,10 +179,13 @@ export type RideView = {
 };
 export type RiderRequestView = {
   requestId: string;
+  riderAlias: string;
   status: RequestStatus;
   pickup: Pin;
   destination: Pin;
+  createdAt: string;
   requestedDepartureAt: string;
+  directionFit: DirectionFit;
   decidedAt?: string | null;
 };
 export type PublicLocation = {
@@ -1201,9 +1205,13 @@ export function completeCoRide(
   return getRide(db, rideId, session, now);
 }
 
-function riderRequestView(request: RequestRow): RiderRequestView {
+function riderRequestView(
+  ride: RideRow,
+  request: RequestRow,
+): RiderRequestView {
   return {
     requestId: request.id,
+    riderAlias: request.rider_alias,
     status: request.status,
     pickup: {
       latitude: request.pickup_latitude,
@@ -1215,7 +1223,9 @@ function riderRequestView(request: RequestRow): RiderRequestView {
       longitude: request.destination_longitude,
       label: request.destination_label ?? undefined,
     },
+    createdAt: request.created_at,
     requestedDepartureAt: request.requested_departure_at,
+    directionFit: requestFitForRide(ride, request),
     decidedAt: request.decided_at,
   };
 }
@@ -1232,6 +1242,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
+    expiresAt: offerExpiryAt(row.scheduled_departure_at),
     plannedRoute: {
       origin: {
         latitude: row.origin_latitude,
@@ -1315,7 +1326,8 @@ function riderView(
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
-    request: riderRequestView(request),
+    expiresAt: offerExpiryAt(row.scheduled_departure_at),
+    request: riderRequestView(row, request),
     driverLocation:
       row.status === "RIDE_ACTIVE" || row.status === "CO_RIDE_ACTIVE"
         ? locationFor(db, row.id, "DRIVER", now)

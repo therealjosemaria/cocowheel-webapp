@@ -159,23 +159,29 @@ function RideView({ ride }: { ride: Ride }) {
         : location
           ? [{ latitude: location.latitude, longitude: location.longitude }]
           : [];
-  if (riderView && ride.status === "REQUESTED" && ride.request) {
+  if (
+    riderView &&
+    (ride.status === "REQUESTED" || ride.status === "ACCEPTED") &&
+    ride.request
+  ) {
     return (
       <RidePreviewClient
         rideId={ride.rideId}
-        pendingRequest={ride.request}
+        participantRide={ride}
       />
     );
   }
   if (
     !riderView &&
-    (ride.status === "PUBLISHED" || ride.status === "REQUESTED")
+    (ride.status === "PUBLISHED" ||
+      ride.status === "REQUESTED" ||
+      ride.status === "ACCEPTED")
   ) {
     return (
       <RidePreviewClient
         rideId={ride.rideId}
         driverOwned
-        driverRide={ride}
+        participantRide={ride}
       />
     );
   }
