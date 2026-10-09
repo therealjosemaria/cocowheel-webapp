@@ -362,14 +362,21 @@ export default function RidePreviewClient({
         />
       ) : null}
       {error ? (
-        <><h1>Not available</h1><p className="intro">{error}</p></>
+        <>
+          <h1 className="page-title">Ride preview</h1>
+          <div className="ride-preview-content">
+            <h2>Not available</h2>
+            <p className="intro">{error}</p>
+          </div>
+        </>
       ) : !ride ? (
         <div aria-busy="true" />
       ) : (
         <>
           <h1 className="page-title">Ride preview</h1>
-          <div className="ride-preview-summary">
-            <dl className="ride-preview-fields">
+          <div className="ride-preview-content">
+            <div className="ride-preview-summary">
+              <dl className="ride-preview-fields">
               <div>
                 <dt>Route ID</dt>
                 <dd><code>{routeReference(ride.rideId)}</code></dd>
@@ -458,38 +465,39 @@ export default function RidePreviewClient({
                   )}
                 </dd>
               </div>
-            </dl>
+              </dl>
+            </div>
+            <JourneyMap
+              pins={[
+                ...(ride.plannedRoute
+                  ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+                  : []),
+                ...(riderRoute ? [riderRoute.pickup, riderRoute.destination] : []),
+              ]}
+              markerKinds={
+                ride.plannedRoute && riderRoute
+                  ? ["driver", "destination", "pickup", "destination"]
+                  : ride.plannedRoute
+                    ? ["driver", "destination"]
+                    : riderRoute
+                      ? ["pickup", "destination"]
+                      : undefined
+              }
+              lines={lines}
+              roadPathAttribution={Boolean(
+                activeDriverRoadPath?.length || roadPath?.length,
+              )}
+            />
+            <div className="route-key">
+              {ride.plannedRoute ? (
+                <span><i className="route-key-driver" />Driver route</span>
+              ) : null}
+              {riderRoute ? (
+                <span><i className="route-key-rider" />Your route</span>
+              ) : null}
+            </div>
+            {endError ? <p className="error">{endError}</p> : null}
           </div>
-          <JourneyMap
-            pins={[
-              ...(ride.plannedRoute
-                ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
-                : []),
-              ...(riderRoute ? [riderRoute.pickup, riderRoute.destination] : []),
-            ]}
-            markerKinds={
-              ride.plannedRoute && riderRoute
-                ? ["driver", "destination", "pickup", "destination"]
-                : ride.plannedRoute
-                  ? ["driver", "destination"]
-                  : riderRoute
-                    ? ["pickup", "destination"]
-                    : undefined
-            }
-            lines={lines}
-            roadPathAttribution={Boolean(
-              activeDriverRoadPath?.length || roadPath?.length,
-            )}
-          />
-          <div className="route-key">
-            {ride.plannedRoute ? (
-              <span><i className="route-key-driver" />Driver route</span>
-            ) : null}
-            {riderRoute ? (
-              <span><i className="route-key-rider" />Your route</span>
-            ) : null}
-          </div>
-          {endError ? <p className="error">{endError}</p> : null}
         </>
       )}
     </section>

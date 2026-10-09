@@ -193,7 +193,8 @@ button:disabled {
   margin-bottom: 0;
 }
 .activity-panel > .page-title,
-.form-page > .page-title {
+.form-page > .page-title,
+.ride-preview > .page-title {
   font-size: clamp(1.9rem, 7.5vw, 2.75rem);
 }
 .activity-list {
@@ -1101,13 +1102,24 @@ p {
   font-size: 0.82rem;
 }
 .ride-preview {
-  padding-top: 20px;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+  animation: rise 0.22s ease-out;
 }
 .activity-detail > .ride-preview {
-  padding-top: 16px;
+  margin-top: 16px;
 }
 .ride-preview > .page-title {
-  margin: 0 0 20px;
+  max-width: none;
+  margin: 0;
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ride-preview-content {
+  padding: 18px 14px 14px;
 }
 .ride-preview-summary {
   margin-bottom: 14px;
