@@ -13,6 +13,7 @@ export type RideFieldIconKind =
   | "requested"
   | "fit"
   | "price"
+  | "payid"
   | "view"
   | "action"
   | "request-status";
@@ -123,6 +124,14 @@ function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
         <>
           <circle cx="12" cy="12" r="9" />
           <path d="M15 8.5c-.8-.7-1.8-1-3-1-1.7 0-3 .8-3 2s1 1.8 3 2.2 3 1 3 2.3-1.3 2.5-3 2.5c-1.2 0-2.4-.4-3.2-1.1M12 5.5v13" />
+        </>
+      );
+      break;
+    case "payid":
+      content = (
+        <>
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="M3 9h18M7 14h4" />
         </>
       );
       break;

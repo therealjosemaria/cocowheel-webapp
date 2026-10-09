@@ -869,6 +869,60 @@ p {
   margin: 20px 0;
   font-weight: 800;
 }
+.payid-field {
+  min-width: 0;
+  margin: 14px 0;
+  padding: 0;
+  border: 0;
+}
+.payid-field legend {
+  margin-bottom: 7px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.payid-field > input {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font: inherit;
+  background: #ffffff;
+}
+.payid-type-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.payid-type-options button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+  background: #ffffff;
+}
+.payid-type-options button.active {
+  border-color: var(--ink);
+  color: #ffffff;
+  background: var(--ink);
+}
+.preview-payid {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.preview-payid span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.preview-payid code {
+  overflow-wrap: anywhere;
+}
 .field span {
   display: block;
   margin: 4px 0 8px;

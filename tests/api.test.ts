@@ -54,6 +54,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
         scheduledDepartureAt: new Date(Date.now() + 5 * 60_000).toISOString(),
         priceAud: 10,
         payId: "driver@example.com",
+        payIdType: "EMAIL",
       },
       undefined,
       true,
@@ -108,6 +109,20 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       driverToken,
     );
     assert.equal(accepted.response.status, 200);
+    const acceptedRiderState = await json(
+      `${base}/api/rides/${driverRide.rideId}`,
+      "GET",
+      undefined,
+      riderToken,
+    );
+    assert.equal(
+      (acceptedRiderState.body.ride as Record<string, unknown>).payId,
+      "driver@example.com",
+    );
+    assert.equal(
+      (acceptedRiderState.body.ride as Record<string, unknown>).payIdType,
+      "EMAIL",
+    );
     const stale = new Date(Date.now() - 3 * 60_000).toISOString();
     const driverLocation = {
       latitude: -33.868,
@@ -179,7 +194,8 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.match(ride.coRideCode as string, /^\d{4}$/);
     assert.equal("origin" in ride, false);
     assert.equal("destination" in ride, false);
-    assert.equal(ride.payId, undefined);
+    assert.equal(ride.payId, "driver@example.com");
+    assert.equal(ride.payIdType, "EMAIL");
     assert.equal(
       (
         await json(

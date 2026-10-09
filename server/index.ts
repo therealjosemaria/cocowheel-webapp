@@ -177,7 +177,12 @@ async function pinWithPublishedLabel(value: unknown, database: Db) {
   if (place.label?.trim()) return place;
   const coordinates = validPlacePin(value);
   try {
-    const resolved = await reversePlaceDetails(coordinates, undefined, fetch, database);
+    const resolved = await reversePlaceDetails(
+      coordinates,
+      undefined,
+      fetch,
+      database,
+    );
     return { ...place, label: resolved.label ?? coordinateLabel(coordinates) };
   } catch {
     return { ...place, label: coordinateLabel(coordinates) };
@@ -210,39 +215,54 @@ async function hydratePublishedPlaceLabels(database: Db) {
           isCoordinateLabel(ride.destination_label),
       )
       .flatMap((ride) => {
-      const updates: Array<Promise<void>> = [];
-      if (ride.origin_label == null || isCoordinateLabel(ride.origin_label)) {
-        updates.push(
-          reversePlaceDetails({
-            latitude: ride.origin_latitude,
-            longitude: ride.origin_longitude,
-          }, undefined, fetch, database)
-            .then((place) => {
-              if (!place.label) return;
-              database
-                .prepare("UPDATE rides SET origin_label = ? WHERE id = ?")
-                .run(place.label, ride.id);
-            })
-            .catch(() => undefined),
-        );
-      }
-      if (ride.destination_label == null || isCoordinateLabel(ride.destination_label)) {
-        updates.push(
-          reversePlaceDetails({
-            latitude: ride.destination_latitude,
-            longitude: ride.destination_longitude,
-          }, undefined, fetch, database)
-            .then((place) => {
-              if (!place.label) return;
-              database
-                .prepare("UPDATE rides SET destination_label = ? WHERE id = ?")
-                .run(place.label, ride.id);
-            })
-            .catch(() => undefined),
-        );
-      }
-      return updates;
-    }),
+        const updates: Array<Promise<void>> = [];
+        if (ride.origin_label == null || isCoordinateLabel(ride.origin_label)) {
+          updates.push(
+            reversePlaceDetails(
+              {
+                latitude: ride.origin_latitude,
+                longitude: ride.origin_longitude,
+              },
+              undefined,
+              fetch,
+              database,
+            )
+              .then((place) => {
+                if (!place.label) return;
+                database
+                  .prepare("UPDATE rides SET origin_label = ? WHERE id = ?")
+                  .run(place.label, ride.id);
+              })
+              .catch(() => undefined),
+          );
+        }
+        if (
+          ride.destination_label == null ||
+          isCoordinateLabel(ride.destination_label)
+        ) {
+          updates.push(
+            reversePlaceDetails(
+              {
+                latitude: ride.destination_latitude,
+                longitude: ride.destination_longitude,
+              },
+              undefined,
+              fetch,
+              database,
+            )
+              .then((place) => {
+                if (!place.label) return;
+                database
+                  .prepare(
+                    "UPDATE rides SET destination_label = ? WHERE id = ?",
+                  )
+                  .run(place.label, ride.id);
+              })
+              .catch(() => undefined),
+          );
+        }
+        return updates;
+      }),
   );
 }
 
@@ -268,7 +288,12 @@ async function hydrateRequestPlaceLabels(
   await Promise.all(
     updates.map(async ({ column, pin }) => {
       try {
-        const place = await reversePlaceDetails(pin, undefined, fetch, database);
+        const place = await reversePlaceDetails(
+          pin,
+          undefined,
+          fetch,
+          database,
+        );
         if (!place.label) return;
         const statement =
           column === "pickup_label"
@@ -374,7 +399,12 @@ export function createApiServer(database: Db) {
         if (!allowPlaceLookup(request))
           throw new Error("PLACE_LOOKUP_RATE_LIMITED");
         const body = await readJson(request);
-        const place = await reversePlaceDetails(validPlacePin(body.pin), undefined, fetch, database);
+        const place = await reversePlaceDetails(
+          validPlacePin(body.pin),
+          undefined,
+          fetch,
+          database,
+        );
         writeJson(response, 200, place, cors);
         return;
       }
@@ -383,10 +413,16 @@ export function createApiServer(database: Db) {
         const text = typeof body.text === "string" ? body.text : "";
         const bias = body.bias ? validPlacePin(body.bias) : undefined;
         const countryCode =
-          typeof body.countryCode === "string" && /^[a-z]{2}$/i.test(body.countryCode)
+          typeof body.countryCode === "string" &&
+          /^[a-z]{2}$/i.test(body.countryCode)
             ? body.countryCode.toLowerCase()
             : undefined;
-        writeJson(response, 200, { places: await searchPlaces(text, bias, countryCode) }, cors);
+        writeJson(
+          response,
+          200,
+          { places: await searchPlaces(text, bias, countryCode) },
+          cors,
+        );
         return;
       }
       if (
@@ -431,7 +467,10 @@ export function createApiServer(database: Db) {
         writeJson(
           response,
           200,
-          { rides: availableRides(database, now), serverNow: now.toISOString() },
+          {
+            rides: availableRides(database, now),
+            serverNow: now.toISOString(),
+          },
           cors,
         );
         return;
@@ -460,6 +499,12 @@ export function createApiServer(database: Db) {
           scheduledDepartureAt: asString(body.scheduledDepartureAt),
           priceAud: asNumber(body.priceAud),
           payId: typeof body.payId === "string" ? body.payId : undefined,
+          payIdType:
+            body.payIdType === "MOBILE" ||
+            body.payIdType === "EMAIL" ||
+            body.payIdType === "OTHER"
+              ? body.payIdType
+              : undefined,
         });
         const headers = result.sessionToken
           ? {
@@ -494,7 +539,10 @@ export function createApiServer(database: Db) {
         writeJson(
           response,
           200,
-          { ride: publicRidePreview(database, parts[2], now), serverNow: now.toISOString() },
+          {
+            ride: publicRidePreview(database, parts[2], now),
+            serverNow: now.toISOString(),
+          },
           cors,
         );
         return;
@@ -525,13 +573,7 @@ export function createApiServer(database: Db) {
           response,
           200,
           {
-            ride: getRide(
-              database,
-              parts[2],
-              session,
-              new Date(),
-              requestId,
-            ),
+            ride: getRide(database, parts[2], session, new Date(), requestId),
           },
           cors,
         );
@@ -549,12 +591,11 @@ export function createApiServer(database: Db) {
           pinWithPublishedLabel(search.pickup, database),
           pinWithPublishedLabel(search.destination, database),
         ]);
-        const result = requestRide(
-          database,
-          token,
-          parts[2],
-          { ...search, pickup, destination },
-        );
+        const result = requestRide(database, token, parts[2], {
+          ...search,
+          pickup,
+          destination,
+        });
         const headers = result.sessionToken
           ? {
               ...cors,

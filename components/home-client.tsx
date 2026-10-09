@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import ExpiryCountdown from "./expiry-countdown";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
-import type { Candidate, Pin, Ride } from "@/lib/client-types";
+import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
   consumeRiderSearchReturn,
@@ -212,16 +212,20 @@ export default function HomeClient({
         : null,
   );
   const [ride, setRide] = useState<Ride | null>(null);
-  const [homeCurrent, setHomeCurrent] = useState<Array<{
-    role: Role;
-    ride: Ride;
-  }>>([]);
+  const [homeCurrent, setHomeCurrent] = useState<
+    Array<{
+      role: Role;
+      ride: Ride;
+    }>
+  >([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
     null,
   );
-  const [countryPreference, setCountryPreference] = useState<string | null>(null);
+  const [countryPreference, setCountryPreference] = useState<string | null>(
+    null,
+  );
   const [driverPins, setDriverPins] = useState<{
     origin?: Pin;
     destination?: Pin;
@@ -233,18 +237,24 @@ export default function HomeClient({
   const [pinTarget, setPinTarget] = useState<PinTarget>(null);
   const [price, setPrice] = useState("10");
   const [payId, setPayId] = useState("");
+  const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [riderTime, setRiderTime] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
-  const [availabilityServerNow, setAvailabilityServerNow] = useState<string | null>(null);
-  const [candidateServerNow, setCandidateServerNow] = useState<string | null>(null);
+  const [availabilityServerNow, setAvailabilityServerNow] = useState<
+    string | null
+  >(null);
+  const [candidateServerNow, setCandidateServerNow] = useState<string | null>(
+    null,
+  );
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
-  const [locationPromptTarget, setLocationPromptTarget] =
-    useState<"origin" | "pickup" | null>(null);
+  const [locationPromptTarget, setLocationPromptTarget] = useState<
+    "origin" | "pickup" | null
+  >(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
@@ -266,41 +276,44 @@ export default function HomeClient({
     [candidates, selected],
   );
 
-  const begin = useCallback((roleChoice: Role) => {
-    if (ride) return;
-    const recentLocation = recentDeviceLocation();
-    setRole(roleChoice);
-    setPinTarget(null);
-    if (roleChoice === "RIDER") {
-      setRiderMapOpen(false);
-      const draft = riderSearchDraft();
-      if (draft) {
-        setRiderPins((state) =>
-          state.pickup || state.destination
-            ? state
-            : { pickup: draft.pickup, destination: draft.destination },
-        );
-        setRiderTime(draft.departureAt);
-      } else {
-        setRiderPins(recentLocation ? { pickup: recentLocation } : {});
-        setRiderTime(null);
+  const begin = useCallback(
+    (roleChoice: Role) => {
+      if (ride) return;
+      const recentLocation = recentDeviceLocation();
+      setRole(roleChoice);
+      setPinTarget(null);
+      if (roleChoice === "RIDER") {
+        setRiderMapOpen(false);
+        const draft = riderSearchDraft();
+        if (draft) {
+          setRiderPins((state) =>
+            state.pickup || state.destination
+              ? state
+              : { pickup: draft.pickup, destination: draft.destination },
+          );
+          setRiderTime(draft.departureAt);
+        } else {
+          setRiderPins(recentLocation ? { pickup: recentLocation } : {});
+          setRiderTime(null);
+        }
       }
-    }
-    if (roleChoice === "DRIVER") {
-      setAllowManualDeparture(false);
-      if (recentLocation)
-        setDriverPins((state) =>
-          state.origin ? state : { ...state, origin: recentLocation },
-        );
-    }
-    setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
-    window.dispatchEvent(
-      new CustomEvent("cocowheels:ride-tab", {
-        detail: roleChoice === "DRIVER" ? "driver" : "rider",
-      }),
-    );
-    setError(null);
-  }, [ride]);
+      if (roleChoice === "DRIVER") {
+        setAllowManualDeparture(false);
+        if (recentLocation)
+          setDriverPins((state) =>
+            state.origin ? state : { ...state, origin: recentLocation },
+          );
+      }
+      setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:ride-tab", {
+          detail: roleChoice === "DRIVER" ? "driver" : "rider",
+        }),
+      );
+      setError(null);
+    },
+    [ride],
+  );
 
   async function refreshCurrent() {
     try {
@@ -329,14 +342,20 @@ export default function HomeClient({
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
       setScreen("RIDER");
-      window.dispatchEvent(new CustomEvent("cocowheels:ride-tab", { detail: "rider" }));
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:ride-tab", { detail: "rider" }),
+      );
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("start");
     if (requested !== "driver" && requested !== "rider") return;
-    window.history.replaceState(window.history.state, "", window.location.pathname);
+    window.history.replaceState(
+      window.history.state,
+      "",
+      window.location.pathname,
+    );
     const timer = window.setTimeout(() => {
       const recentLocation = recentDeviceLocation();
       const roleChoice: Role = requested === "driver" ? "DRIVER" : "RIDER";
@@ -344,12 +363,16 @@ export default function HomeClient({
       setPinTarget(null);
       if (roleChoice === "DRIVER") {
         setAllowManualDeparture(false);
-        if (recentLocation) setDriverPins((state) => ({ ...state, origin: recentLocation }));
+        if (recentLocation)
+          setDriverPins((state) => ({ ...state, origin: recentLocation }));
       } else {
         setRiderMapOpen(false);
         const draft = riderSearchDraft();
         if (draft) {
-          setRiderPins({ pickup: draft.pickup, destination: draft.destination });
+          setRiderPins({
+            pickup: draft.pickup,
+            destination: draft.destination,
+          });
           setRiderTime(draft.departureAt);
         } else if (recentLocation) {
           setRiderPins({ pickup: recentLocation });
@@ -480,14 +503,18 @@ export default function HomeClient({
         });
         continue;
       }
-      void cocowheelsApi<{ label: string | null; countryCode: string | null }>("/api/place-label", {
-        method: "POST",
-        body: JSON.stringify({ pin: canonicalPin(pin) }),
-      })
+      void cocowheelsApi<{ label: string | null; countryCode: string | null }>(
+        "/api/place-label",
+        {
+          method: "POST",
+          body: JSON.stringify({ pin: canonicalPin(pin) }),
+        },
+      )
         .then(({ label, countryCode }) => {
           if (placeLookupIds.current[target] !== requestId) return;
           if (!label && !countryCode) return;
-          if (label) cachePlace(pin, { label, ...(countryCode ? { countryCode } : {}) });
+          if (label)
+            cachePlace(pin, { label, ...(countryCode ? { countryCode } : {}) });
           if (countryCode) {
             storeCountryPreference(countryCode);
             setCountryPreference(countryCode);
@@ -542,7 +569,9 @@ export default function HomeClient({
       .catch(() => undefined);
   }, [riderRouteCoordinates, riderRouteInput]);
   const activeRiderRoute =
-    riderRoute?.coordinates === riderRouteCoordinates ? riderRoute.points : null;
+    riderRoute?.coordinates === riderRouteCoordinates
+      ? riderRoute.points
+      : null;
   function setPin(pin: Pin) {
     if (!pinTarget) {
       if (role === "RIDER") {
@@ -630,6 +659,7 @@ export default function HomeClient({
           scheduledDepartureAt: new Date().toISOString(),
           priceAud: Number(price),
           payId,
+          payIdType,
         }),
       });
       window.location.assign("/activity");
@@ -639,12 +669,12 @@ export default function HomeClient({
       setBusy(false);
     }
   }
-  const riderSearchKey = riderPins.pickup && riderPins.destination
-    ? `${riderPins.pickup.latitude}:${riderPins.pickup.longitude}|${riderPins.destination.latitude}:${riderPins.destination.longitude}`
-    : null;
+  const riderSearchKey =
+    riderPins.pickup && riderPins.destination
+      ? `${riderPins.pickup.latitude}:${riderPins.pickup.longitude}|${riderPins.destination.latitude}:${riderPins.destination.longitude}`
+      : null;
   useEffect(() => {
-    if (!riderSearchKey || !riderPins.pickup || !riderPins.destination)
-      return;
+    if (!riderSearchKey || !riderPins.pickup || !riderPins.destination) return;
     const draft = riderSearchDraft();
     const matchesDraft =
       draft?.pickup.latitude === riderPins.pickup.latitude &&
@@ -654,31 +684,44 @@ export default function HomeClient({
     const savedAt = matchesDraft ? draft.savedAt : Date.now();
     if (!matchesDraft)
       saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime);
-    const timer = window.setTimeout(() => {
-      clearRiderSearchDraft();
-      setRiderPins({});
-      setRiderTime(null);
-      setCandidates([]);
-      setSelected(null);
-      setRiderRoute(null);
-    }, Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()));
+    const timer = window.setTimeout(
+      () => {
+        clearRiderSearchDraft();
+        setRiderPins({});
+        setRiderTime(null);
+        setCandidates([]);
+        setSelected(null);
+        setRiderRoute(null);
+      },
+      Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()),
+    );
     return () => window.clearTimeout(timer);
   }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime]);
   useEffect(() => {
-    if (screen !== "RIDER" || !riderSearchKey || !riderPins.pickup || !riderPins.destination) {
+    if (
+      screen !== "RIDER" ||
+      !riderSearchKey ||
+      !riderPins.pickup ||
+      !riderPins.destination
+    ) {
       return;
     }
     let cancelled = false;
     const timer = window.setTimeout(() => {
       setSearching(true);
-      void cocowheelsApi<{ candidates: Candidate[]; serverNow: string }>("/api/search", {
-        method: "POST",
-        body: JSON.stringify({
-          pickup: canonicalPin(riderPins.pickup!),
-          destination: canonicalPin(riderPins.destination!),
-          requestedDepartureAt: riderTime ? new Date(riderTime).toISOString() : new Date().toISOString(),
-        }),
-      })
+      void cocowheelsApi<{ candidates: Candidate[]; serverNow: string }>(
+        "/api/search",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            pickup: canonicalPin(riderPins.pickup!),
+            destination: canonicalPin(riderPins.destination!),
+            requestedDepartureAt: riderTime
+              ? new Date(riderTime).toISOString()
+              : new Date().toISOString(),
+          }),
+        },
+      )
         .then((result) => {
           if (cancelled) return;
           setCandidates(result.candidates);
@@ -692,13 +735,21 @@ export default function HomeClient({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime, screen]);
+  }, [
+    riderPins.destination,
+    riderPins.pickup,
+    riderSearchKey,
+    riderTime,
+    screen,
+  ]);
   useEffect(() => {
     if (screen !== "RIDER") return;
     let cancelled = false;
     const load = () => {
       if (!cancelled) setAvailabilityChecking(true);
-      cocowheelsApi<{ rides: AvailabilityOffer[]; serverNow: string }>("/api/availability")
+      cocowheelsApi<{ rides: AvailabilityOffer[]; serverNow: string }>(
+        "/api/availability",
+      )
         .then((result) => {
           if (cancelled) return;
           setAvailability(result.rides);
@@ -715,8 +766,7 @@ export default function HomeClient({
     };
   }, [screen]);
   async function requestSelected(candidate = selectedCandidate) {
-    if (!candidate || !riderPins.pickup || !riderPins.destination)
-      return;
+    if (!candidate || !riderPins.pickup || !riderPins.destination) return;
     if (candidate.isOwnOffer) {
       setOwnOfferPromptOpen(true);
       return;
@@ -737,13 +787,18 @@ export default function HomeClient({
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup),
             destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: riderTime ? new Date(riderTime).toISOString() : new Date().toISOString(),
+            requestedDepartureAt: riderTime
+              ? new Date(riderTime).toISOString()
+              : new Date().toISOString(),
           }),
         },
       );
       router.push("/activity");
     } catch (reason) {
-      if (reason instanceof ApiError && reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION") {
+      if (
+        reason instanceof ApiError &&
+        reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
+      ) {
         setOwnOfferPromptOpen(true);
         return;
       }
@@ -844,10 +899,7 @@ export default function HomeClient({
       {ride ? (
         status
       ) : screen === "HOME" ? (
-        <Home
-          current={homeCurrent}
-          onBegin={begin}
-        />
+        <Home current={homeCurrent} onBegin={begin} />
       ) : screen === "DRIVER" ? (
         <DriverForm
           pins={driverPins}
@@ -864,6 +916,8 @@ export default function HomeClient({
           setPrice={setPrice}
           payId={payId}
           setPayId={setPayId}
+          payIdType={payIdType}
+          setPayIdType={setPayIdType}
           submit={publish}
           busy={busy}
         />
@@ -923,10 +977,7 @@ function Home({
       <h1 className="home-hero">
         <span>Going your way.</span>
       </h1>
-      <button
-        className="role-card"
-        onClick={() => onBegin("DRIVER")}
-      >
+      <button className="role-card" onClick={() => onBegin("DRIVER")}>
         OFFER A RIDE
       </button>
       <button
@@ -977,9 +1028,8 @@ function LocationPrompt({
         <p className="eyebrow">{departure ? "Departure" : "Pickup"}</p>
         <h2 id="location-prompt-title">Use your current location?</h2>
         <p>
-          Cocowheels will use your current location as the {departure
-            ? "default departure point"
-            : "pickup location"}.
+          Cocowheels will use your current location as the{" "}
+          {departure ? "default departure point" : "pickup location"}.
         </p>
         <div className="location-prompt-actions">
           <button type="button" className="secondary" onClick={close}>
@@ -1002,7 +1052,9 @@ function OwnOfferPrompt({ close }: { close: () => void }) {
         aria-modal="true"
         aria-labelledby="own-offer-title"
       >
-        <h2 id="own-offer-title">We apologise, drivers are not allowed to join their own rides.</h2>
+        <h2 id="own-offer-title">
+          We apologise, drivers are not allowed to join their own rides.
+        </h2>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
@@ -1100,24 +1152,46 @@ function PinControls({
   const startingPoint = driver ? pins.origin : pins.pickup;
   return (
     <>
-      {driver ? <div className="pin-tabs">
-        <button
-          className={target === first ? "active" : ""}
-          disabled={driver && locatingDeparture}
-          onClick={() =>
-            driver ? onDepartureRequest() : onPickupRequest?.()
-          }
-        >
-          {driver ? <><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>Departure</> : "Pickup"}
-        </button>
-        <button className={target === second ? "active" : ""} onClick={() => setTarget(second)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>Final destination
-        </button>
-      </div> : null}
-      <div className={`pin-summary ${driver ? "driver-location-summary" : "rider-location-summary"}`}>
+      {driver ? (
+        <div className="pin-tabs">
+          <button
+            className={target === first ? "active" : ""}
+            disabled={driver && locatingDeparture}
+            onClick={() =>
+              driver ? onDepartureRequest() : onPickupRequest?.()
+            }
+          >
+            {driver ? (
+              <>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="6.5" />
+                </svg>
+                Departure
+              </>
+            ) : (
+              "Pickup"
+            )}
+          </button>
+          <button
+            className={target === second ? "active" : ""}
+            onClick={() => setTarget(second)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
+              <circle cx="12" cy="10" r="2" />
+            </svg>
+            Final destination
+          </button>
+        </div>
+      ) : null}
+      <div
+        className={`pin-summary ${driver ? "driver-location-summary" : "rider-location-summary"}`}
+      >
         <p>
           <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="6.5" />
+            </svg>
             {driver ? "Departure" : "Where from?"}
           </strong>
           {driver && locatingDeparture
@@ -1126,50 +1200,64 @@ function PinControls({
               ? "Select Departure to use your current location."
               : !driver && !pins.pickup
                 ? null
-              : locationText(driver ? pins.origin : pins.pickup)}
-          {!driver ? <button type="button" className="pickup-location-button" onClick={() => onPickupRequest?.()}>{pins.pickup ? "Update location" : "Use current location"}</button> : null}
+                : locationText(driver ? pins.origin : pins.pickup)}
+          {!driver ? (
+            <button
+              type="button"
+              className="pickup-location-button"
+              onClick={() => onPickupRequest?.()}
+            >
+              {pins.pickup ? "Update location" : "Use current location"}
+            </button>
+          ) : null}
         </p>
         <p>
           <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
+              <circle cx="12" cy="10" r="2" />
+            </svg>
             {driver ? "Final destination" : "Where to?"}
           </strong>
           {pins.destination
             ? locationText(pins.destination)
-            : driver ? "Select Final destination." : null}
+            : driver
+              ? "Select Final destination."
+              : null}
         </p>
       </div>
-      {mapVisible ? <JourneyMap
-        pins={mapPins}
-        onPick={
-          !target
-            ? driver
-              ? () => onDepartureRequest()
-              : setPin
-            : driver &&
-                target === "origin" &&
-                !allowManualDeparture &&
-                !pins.origin
-              ? undefined
-              : setPin
-        }
-        markerKinds={markerKinds}
-        roadPathAttribution={Boolean(routePoints?.length)}
-        lines={
-          startingPoint && pins.destination
-            ? [
-                {
-                  points: routePoints?.length
-                    ? routePoints
-                    : [startingPoint, pins.destination],
-                  color: "#111827",
-                  muted: !routePoints?.length,
-                },
-              ]
-            : []
-        }
-      />
-      : null}
+      {mapVisible ? (
+        <JourneyMap
+          pins={mapPins}
+          onPick={
+            !target
+              ? driver
+                ? () => onDepartureRequest()
+                : setPin
+              : driver &&
+                  target === "origin" &&
+                  !allowManualDeparture &&
+                  !pins.origin
+                ? undefined
+                : setPin
+          }
+          markerKinds={markerKinds}
+          roadPathAttribution={Boolean(routePoints?.length)}
+          lines={
+            startingPoint && pins.destination
+              ? [
+                  {
+                    points: routePoints?.length
+                      ? routePoints
+                      : [startingPoint, pins.destination],
+                    color: "#111827",
+                    muted: !routePoints?.length,
+                  },
+                ]
+              : []
+          }
+        />
+      ) : null}
     </>
   );
 }
@@ -1185,6 +1273,8 @@ function DriverForm(props: {
   setPrice: (value: string) => void;
   payId: string;
   setPayId: (value: string) => void;
+  payIdType: PayIdType;
+  setPayIdType: (value: PayIdType) => void;
   submit: () => void;
   busy: boolean;
 }) {
@@ -1193,34 +1283,55 @@ function DriverForm(props: {
       <h1 className="page-title">Offer a ride</h1>
       <div className="form-panel-content">
         <div className="pin-summary driver-location-summary">
-        <p>
-          <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" /></svg>
-            Where from?
-          </strong>
-          {props.locatingDeparture
-            ? "Finding your current location…"
-            : props.pins.origin
-              ? locationText(props.pins.origin)
+          <p>
+            <strong className="location-heading">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="6.5" />
+              </svg>
+              Where from?
+            </strong>
+            {props.locatingDeparture
+              ? "Finding your current location…"
+              : props.pins.origin
+                ? locationText(props.pins.origin)
+                : null}
+            {!props.locatingDeparture ? (
+              <button
+                type="button"
+                className="pickup-location-button"
+                onClick={props.onDepartureRequest}
+              >
+                {props.pins.origin ? "Update location" : "Use current location"}
+              </button>
+            ) : null}
+          </p>
+          <p>
+            <strong className="location-heading">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
+                <circle cx="12" cy="10" r="2" />
+              </svg>
+              Where to?
+            </strong>
+            {props.pins.destination
+              ? locationText(props.pins.destination)
               : null}
-          {!props.locatingDeparture ? <button type="button" className="pickup-location-button" onClick={props.onDepartureRequest}>{props.pins.origin ? "Update location" : "Use current location"}</button> : null}
-        </p>
-        <p>
-          <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
-            Where to?
-          </strong>
-          {props.pins.destination ? locationText(props.pins.destination) : null}
-        </p>
+          </p>
         </div>
-        {props.allowManualDeparture && !props.pins.origin ? <PlaceSearch
-          placeholder="Search departure"
-          autoFocus
-          choose={props.setOrigin}
-        /> : null}
+        {props.allowManualDeparture && !props.pins.origin ? (
+          <PlaceSearch
+            placeholder="Search departure"
+            autoFocus
+            choose={props.setOrigin}
+          />
+        ) : null}
         <PlaceSearch
           bias={props.pins.origin}
-          countryCode={props.pins.origin?.countryCode ?? props.countryPreference ?? undefined}
+          countryCode={
+            props.pins.origin?.countryCode ??
+            props.countryPreference ??
+            undefined
+          }
           placeholder="Search destination"
           autoFocus={!props.allowManualDeparture}
           choose={props.setDestination}
@@ -1239,15 +1350,55 @@ function DriverForm(props: {
             />
           </div>
         </label>
-        <label className="field">
-          Your PayID
+        <fieldset className="payid-field">
+          <legend>Your PayID</legend>
+          <div
+            className="payid-type-options"
+            role="radiogroup"
+            aria-label="PayID type"
+          >
+            {(["MOBILE", "EMAIL", "OTHER"] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                role="radio"
+                aria-checked={props.payIdType === type}
+                className={props.payIdType === type ? "active" : undefined}
+                onClick={() => props.setPayIdType(type)}
+              >
+                {type === "MOBILE"
+                  ? "Mobile"
+                  : type === "EMAIL"
+                    ? "Email"
+                    : "Other"}
+              </button>
+            ))}
+          </div>
           <input
-            placeholder="Mobile, email, or other identifier"
+            aria-label={`Your PayID ${props.payIdType.toLowerCase()}`}
+            inputMode={
+              props.payIdType === "MOBILE"
+                ? "tel"
+                : props.payIdType === "EMAIL"
+                  ? "email"
+                  : "text"
+            }
+            placeholder={
+              props.payIdType === "MOBILE"
+                ? "04xx xxx xxx"
+                : props.payIdType === "EMAIL"
+                  ? "name@example.com"
+                  : "ABN or organisation identifier"
+            }
             value={props.payId}
             onChange={(event) => props.setPayId(event.target.value)}
           />
-        </label>
-        <button className="primary" disabled={props.busy} onClick={props.submit}>
+        </fieldset>
+        <button
+          className="primary"
+          disabled={props.busy}
+          onClick={props.submit}
+        >
           {props.busy ? "Publishing…" : "PUBLISH RIDE"}
         </button>
       </div>
@@ -1297,7 +1448,11 @@ function RiderForm(props: {
         />
         <PlaceSearch
           bias={props.pins.pickup}
-          countryCode={props.pins.pickup?.countryCode ?? props.countryPreference ?? undefined}
+          countryCode={
+            props.pins.pickup?.countryCode ??
+            props.countryPreference ??
+            undefined
+          }
           placeholder="Search destination"
           autoFocus={!props.pins.destination}
           choose={(pin) => {
@@ -1357,41 +1512,121 @@ function PlaceSearch({
     }
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
-      body: JSON.stringify({ text, ...(bias ? { bias: canonicalPin(bias) } : {}), ...(countryCode ? { countryCode } : {}) }),
-    }).then((result) => setPlaces(result.places)).catch(() => setPlaces([]));
+      body: JSON.stringify({
+        text,
+        ...(bias ? { bias: canonicalPin(bias) } : {}),
+        ...(countryCode ? { countryCode } : {}),
+      }),
+    })
+      .then((result) => setPlaces(result.places))
+      .catch(() => setPlaces([]));
   };
   return (
     <div className="place-search">
       <div className="place-search-input">
-        <input ref={inputRef} autoFocus={autoFocus} value={text} onChange={(event) => { setText(event.target.value); setPlaces([]); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); search(); } }} placeholder={placeholder} aria-label={placeholder} />
-        <button type="button" onClick={search}>Search</button>
+        <input
+          ref={inputRef}
+          autoFocus={autoFocus}
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+            setPlaces([]);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              search();
+            }
+          }}
+          placeholder={placeholder}
+          aria-label={placeholder}
+        />
+        <button type="button" onClick={search}>
+          Search
+        </button>
       </div>
-      {places.length ? <div className="place-results">
-        {places.map((place) => <button type="button" key={`${place.latitude}:${place.longitude}`} onClick={() => { choose(place); setText(place.label ?? ""); setPlaces([]); }}>{place.label ?? `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}</button>)}
-      </div> : null}
+      {places.length ? (
+        <div className="place-results">
+          {places.map((place) => (
+            <button
+              type="button"
+              key={`${place.latitude}:${place.longitude}`}
+              onClick={() => {
+                choose(place);
+                setText(place.label ?? "");
+                setPlaces([]);
+              }}
+            >
+              {place.label ??
+                `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
-function AvailabilityBoard({ rides, serverNow, checking, onJoin }: { rides: AvailabilityOffer[]; serverNow: string | null; checking: boolean; onJoin: () => void }) {
+function AvailabilityBoard({
+  rides,
+  serverNow,
+  checking,
+  onJoin,
+}: {
+  rides: AvailabilityOffer[];
+  serverNow: string | null;
+  checking: boolean;
+  onJoin: () => void;
+}) {
   return (
     <section className="availability-board" aria-live="polite">
       <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+        <span>Route ID</span>
+        <span>Driver</span>
+        <span>Where from?</span>
+        <span>Where to?</span>
+        <span>Expiry</span>
+        <span>Price</span>
+        <span>View</span>
+        <span>Fit</span>
+        <span>Action</span>
       </div>
       {rides.map((ride) => (
         <div className="availability-row" key={ride.rideId}>
           <code>{routeReference(ride.rideId)}</code>
           <strong tabIndex={0}>{ride.driverAlias}</strong>
           <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
-          <span tabIndex={0}>{ride.destinationLabel ?? "Location pending"}</span>
-          <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={ride.expiresAt} serverNow={serverNow} /> : "—"}</span>
+          <span tabIndex={0}>
+            {ride.destinationLabel ?? "Location pending"}
+          </span>
+          <span className="availability-expiry">
+            {serverNow ? (
+              <ExpiryCountdown
+                key={serverNow}
+                expiresAt={ride.expiresAt}
+                serverNow={serverNow}
+              />
+            ) : (
+              "—"
+            )}
+          </span>
           <b>A${ride.priceAud}</b>
-          <Link className="availability-view" href={`/rides/${encodeURIComponent(ride.rideId)}`}>OPEN</Link>
+          <Link
+            className="availability-view"
+            href={`/rides/${encodeURIComponent(ride.rideId)}`}
+          >
+            OPEN
+          </Link>
           <span aria-label="Set a route to calculate direction fit"></span>
-          <button type="button" className="availability-join" onClick={onJoin}>JOIN</button>
+          <button type="button" className="availability-join" onClick={onJoin}>
+            JOIN
+          </button>
         </div>
       ))}
-      {!rides.length ? <p className="availability-empty">{checking ? "Checking available rides…" : "0 available rides"}</p> : null}
+      {!rides.length ? (
+        <p className="availability-empty">
+          {checking ? "Checking available rides…" : "0 available rides"}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1425,7 +1660,15 @@ function Results({
         <>
           <div className="availability-board matched-availability">
             <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span><span>Driver</span><span>Where from?</span><span>Where to?</span><span>Expiry</span><span>Price</span><span>View</span><span>Fit</span><span>Action</span>
+              <span>Route ID</span>
+              <span>Driver</span>
+              <span>Where from?</span>
+              <span>Where to?</span>
+              <span>Expiry</span>
+              <span>Price</span>
+              <span>View</span>
+              <span>Fit</span>
+              <span>Action</span>
             </div>
             {candidates.map((candidate) => (
               <article
@@ -1437,13 +1680,42 @@ function Results({
                 <strong>{candidate.driverAlias}</strong>
                 <span>{candidate.departureLabel ?? "—"}</span>
                 <span>{candidate.destinationLabel ?? "—"}</span>
-                <span className="availability-expiry">{serverNow ? <ExpiryCountdown key={serverNow} expiresAt={candidate.expiresAt} serverNow={serverNow} /> : "—"}</span>
+                <span className="availability-expiry">
+                  {serverNow ? (
+                    <ExpiryCountdown
+                      key={serverNow}
+                      expiresAt={candidate.expiresAt}
+                      serverNow={serverNow}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </span>
                 <b>A${candidate.priceAud}</b>
-                <Link className="availability-view" href={`/rides/${encodeURIComponent(candidate.rideId)}`} onClick={() => previewRoute(candidate)}>OPEN</Link>
-                <span className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`} aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}>
+                <Link
+                  className="availability-view"
+                  href={`/rides/${encodeURIComponent(candidate.rideId)}`}
+                  onClick={() => previewRoute(candidate)}
+                >
+                  OPEN
+                </Link>
+                <span
+                  className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`}
+                  aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}
+                >
                   {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
                 </span>
-                <button type="button" className="availability-join" disabled={busy} onClick={(event) => { event.stopPropagation(); request(candidate); }}>JOIN</button>
+                <button
+                  type="button"
+                  className="availability-join"
+                  disabled={busy}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    request(candidate);
+                  }}
+                >
+                  JOIN
+                </button>
               </article>
             ))}
           </div>

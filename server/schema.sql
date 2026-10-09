@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS rides (
   scheduled_departure_at TEXT NOT NULL,
   price_aud INTEGER NOT NULL CHECK (price_aud >= 5),
   driver_payid TEXT,
+  driver_payid_type TEXT CHECK (driver_payid_type IN ('MOBILE', 'EMAIL', 'OTHER')),
   accepted_request_id TEXT UNIQUE,
   co_ride_code_hash TEXT,
   co_ride_code_ciphertext TEXT,

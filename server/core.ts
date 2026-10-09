@@ -48,6 +48,7 @@ const names = [
   "Wallaby",
 ];
 const publicAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+export type PayIdType = "MOBILE" | "EMAIL" | "OTHER";
 
 type RideRow = {
   id: string;
@@ -64,6 +65,7 @@ type RideRow = {
   scheduled_departure_at: string;
   price_aud: number;
   driver_payid: string | null;
+  driver_payid_type: PayIdType | null;
   accepted_request_id: string | null;
   co_ride_code_hash: string | null;
   co_ride_code_ciphertext: string | null;
@@ -172,6 +174,7 @@ export type RideView = {
   riderLocation?: PublicLocation;
   coRideCode?: string;
   payId?: string | null;
+  payIdType?: PayIdType | null;
   paymentHandoffMethod?: "PAYID" | "CASH" | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
@@ -202,6 +205,7 @@ export type CreateRideInput = {
   scheduledDepartureAt: string;
   priceAud: number;
   payId?: string;
+  payIdType?: PayIdType;
 };
 export type SearchInput = {
   pickup: Pin;
@@ -235,6 +239,14 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  const rideColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
+    name: string;
+  }>;
+  if (!rideColumns.some((column) => column.name === "driver_payid_type")) {
+    db.exec(
+      "ALTER TABLE rides ADD COLUMN driver_payid_type TEXT CHECK (driver_payid_type IN ('MOBILE', 'EMAIL', 'OTHER'))",
+    );
+  }
   const requestTable = db
     .prepare(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'ride_requests'",
@@ -640,6 +652,11 @@ export function publishRide(
   )
     throw new Error("INVALID_FIXED_PRICE");
   const payId = cleanOptional(input.payId, 160, "INVALID_PAYID");
+  const payIdType = payId
+    ? (input.payIdType ?? (payId.includes("@") ? "EMAIL" : "OTHER"))
+    : null;
+  if (payIdType && !["MOBILE", "EMAIL", "OTHER"].includes(payIdType))
+    throw new Error("INVALID_PAYID_TYPE");
   const existing = findSession(db, rawSessionToken, now);
   const created = existing ? null : createGuestSession(db, now);
   const session = existing ?? created!.session;
@@ -649,8 +666,8 @@ export function publishRide(
   const timestamp = iso(now);
   db.transaction(() => {
     db.prepare(
-      `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, price_aud, driver_payid, created_at, last_activity_at)
-      VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, price_aud, driver_payid, driver_payid_type, created_at, last_activity_at)
+      VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).run(
       rideId,
       publicIdValue,
@@ -670,6 +687,7 @@ export function publishRide(
       departure.toISOString(),
       input.priceAud,
       payId,
+      payIdType,
       timestamp,
       timestamp,
     );
@@ -1314,6 +1332,8 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     cancelledAt: row.cancelled_at,
     expiredAt: row.expired_at,
     cancellationReason: row.cancellation_reason,
+    payId: row.driver_payid,
+    payIdType: row.driver_payid_type,
   };
 }
 function riderView(
@@ -1351,9 +1371,8 @@ function riderView(
       ? locationFor(db, row.id, "RIDER", now)
       : undefined,
     coRideCode: code,
-    payId: ["CO_RIDE_ACTIVE", "COMPLETED"].includes(row.status)
-      ? row.driver_payid
-      : undefined,
+    payId: canSeePartner ? row.driver_payid : undefined,
+    payIdType: canSeePartner ? row.driver_payid_type : undefined,
     paymentHandoffMethod: row.payment_handoff_method,
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,

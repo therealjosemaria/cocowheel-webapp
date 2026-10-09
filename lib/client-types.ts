@@ -16,6 +16,7 @@ export type RideStatus =
   | "COMPLETED"
   | "CANCELLED"
   | "EXPIRED";
+export type PayIdType = "MOBILE" | "EMAIL" | "OTHER";
 export type Location = {
   latitude: number;
   longitude: number;
@@ -78,6 +79,7 @@ export type Ride = {
   riderLocation?: Location;
   coRideCode?: string;
   payId?: string | null;
+  payIdType?: PayIdType | null;
   paymentHandoffMethod?: "PAYID" | "CASH" | null;
   completedAt?: string | null;
   cancelledAt?: string | null;

@@ -105,6 +105,7 @@ const driverInput = {
   scheduledDepartureAt: departure,
   priceAud: 10,
   payId: "driver@example.com",
+  payIdType: "EMAIL" as const,
 };
 const riderInput = {
   pickup: { latitude: -33.855, longitude: 151.225, label: "Rider pickup" },
@@ -154,6 +155,7 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
     });
     assert.equal("origin" in candidates[0], false);
     assert.equal("payId" in candidates[0], false);
+    assert.equal("payIdType" in candidates[0], false);
     assert.equal(
       candidates[0].expiresAt,
       new Date(new Date(departure).getTime() + 30 * 60_000).toISOString(),
@@ -341,10 +343,34 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
       new Date(baseTime.getTime() + 3_000),
     );
     assert.equal(accepted.status, "ACCEPTED");
+    assert.equal(accepted.payId, "driver@example.com");
+    assert.equal(accepted.payIdType, "EMAIL");
     assert.equal(
       accepted.acceptedAt,
       new Date(baseTime.getTime() + 3_000).toISOString(),
     );
+    const acceptedRider = getRide(
+      h.db,
+      first.published.ride.rideId,
+      first.rider,
+      new Date(baseTime.getTime() + 3_100),
+    );
+    assert.equal(acceptedRider.payId, "driver@example.com");
+    assert.equal(acceptedRider.payIdType, "EMAIL");
+    const secondSession = findSession(
+      h.db,
+      second.sessionToken,
+      new Date(baseTime.getTime() + 3_100),
+    );
+    assert.ok(secondSession);
+    const discardedRider = getRide(
+      h.db,
+      first.published.ride.rideId,
+      secondSession,
+      new Date(baseTime.getTime() + 3_100),
+    );
+    assert.equal(discardedRider.payId, undefined);
+    assert.equal(discardedRider.payIdType, undefined);
     assert.equal(
       accepted.requests?.find(
         (request) => request.requestId === second.ride.request!.requestId,
@@ -575,7 +601,9 @@ test("requires fresh locations, confines live coordinates to the accepted pair, 
       new Date(baseTime.getTime() + 11_100),
     );
     assert.equal(riderActive.payId, "driver@example.com");
-    assert.equal(active.payId, undefined);
+    assert.equal(riderActive.payIdType, "EMAIL");
+    assert.equal(active.payId, "driver@example.com");
+    assert.equal(active.payIdType, "EMAIL");
     assert.throws(
       () =>
         confirmCoRideCode(

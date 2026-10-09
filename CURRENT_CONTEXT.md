@@ -28,7 +28,7 @@ Cocowheels is a guest-first scheduled, one-driver/one-rider carpool. The server 
 ## Completed initial vertical slice
 
 - Driver publishing, rider discovery/request, acceptance/decline, atomic discard of competing requests, fresh location checks, private live-location exchange, one-time four-digit co-ride confirmation, payment handoff, cancellation rules, expiry, private history, and guest-session recovery are implemented.
-- Exact driver endpoints are excluded from rider and discovery responses. PayID is excluded until co-ride confirmation. Current live points are deleted at cancellation, completion, and expiry; no GPS trail table exists.
+- Exact driver endpoints are excluded from rider and discovery responses. PayID is private to the driver until acceptance, then is returned only to that accepted rider. Current live points are deleted at cancellation, completion, and expiry; no GPS trail table exists.
 - Validated locally with unit and HTTP integration tests, lint, production build, a loopback same-origin proxy check, and the dedicated API health check.
 
 ## Future pilot checks

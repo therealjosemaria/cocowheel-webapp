@@ -7,7 +7,7 @@ import CancelPrompt from "./cancel-prompt";
 import ExpiryCountdown from "./expiry-countdown";
 import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
-import type { Pin, Ride } from "@/lib/client-types";
+import type { PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
   cacheRoadPath,
@@ -35,6 +35,8 @@ type PreviewRide = {
   departureLabel: string;
   destinationLabel: string;
   plannedRoute?: { origin: Pin; destination: Pin };
+  payId?: string | null;
+  payIdType?: PayIdType | null;
 };
 const locationLabel = (pin?: Pin) =>
   pin?.label ??
@@ -59,6 +61,8 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
     departureLabel: locationLabel(visibleRoute?.origin),
     destinationLabel: locationLabel(visibleRoute?.destination),
     ...(ride.plannedRoute ? { plannedRoute: ride.plannedRoute } : {}),
+    payId: ride.payId,
+    payIdType: ride.payIdType,
   };
 };
 const prettyTime = (value: string) =>
@@ -628,6 +632,27 @@ export default function RidePreviewClient({
                   </dt>
                   <dd>A${ride.priceAud}</dd>
                 </div>
+                {ride.payId ? (
+                  <div>
+                    <dt>
+                      <RideFieldLabel icon="payid">
+                        {driverOwned ? "Your PayID" : "Driver PayID"}
+                      </RideFieldLabel>
+                    </dt>
+                    <dd className="preview-payid">
+                      <span>
+                        {ride.payIdType === "MOBILE"
+                          ? "Mobile"
+                          : ride.payIdType === "EMAIL"
+                            ? "Email"
+                            : ride.payIdType === "OTHER"
+                              ? "Other"
+                              : "PayID"}
+                      </span>
+                      <code>{ride.payId}</code>
+                    </dd>
+                  </div>
+                ) : null}
                 <div
                   className={`preview-field-action${
                     ride.acceptedAt ? " preview-field-action-wide" : ""
