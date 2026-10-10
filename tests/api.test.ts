@@ -30,7 +30,7 @@ async function json(
 test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and completes the protected lifecycle", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "cocowheels-api-"));
   const database = openDatabase(path.join(directory, "test.db"));
-  const api = createApiServer(database);
+  const api = createApiServer(database, { sampleRides: false });
   api.listen(0, "127.0.0.1");
   await once(api, "listening");
   const address = api.address();

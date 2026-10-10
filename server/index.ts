@@ -14,6 +14,7 @@ import {
   currentOpenRides,
   decideRequest,
   expireStaleRides,
+  ensureSampleRides,
   findSession,
   getRide,
   guestAlias,
@@ -36,7 +37,7 @@ const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
 const MAX_PLACE_LOOKUPS_PER_WINDOW = 8;
 const ROUTE_PREVIEW_WINDOW_MS = 60_000;
-const MAX_ROUTE_PREVIEWS_PER_WINDOW = 6;
+const MAX_ROUTE_PREVIEWS_PER_WINDOW = 30;
 type Json = Record<string, unknown>;
 const placeLookupBuckets = new Map<
   string,
@@ -357,10 +358,14 @@ function pathParts(url: string | undefined) {
     .map(decodeURIComponent);
 }
 
-export function createApiServer(database: Db) {
+export function createApiServer(
+  database: Db,
+  options: { sampleRides?: boolean } = {},
+) {
   assertRuntimeConfiguration();
   initializeCoreSchema(database);
   pruneProviderCache(database);
+  const sampleRidesEnabled = options.sampleRides ?? true;
   return createServer(async (request, response) => {
     const origin = request.headers.origin;
     if (!originAllowed(origin)) {
@@ -386,7 +391,9 @@ export function createApiServer(database: Db) {
       return;
     }
     try {
-      expireStaleRides(database);
+      const now = new Date();
+      expireStaleRides(database, now);
+      if (sampleRidesEnabled) ensureSampleRides(database, now);
       const parts = pathParts(request.url);
       const token = requestToken(request);
       if (

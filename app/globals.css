@@ -1356,12 +1356,15 @@ p {
 .ride-options {
   flex: 1;
   min-height: 0;
-  padding: 16px 14px 8px;
+  padding: 0 14px 8px;
 }
 .ride-options > h1 {
-  margin: 0 0 12px;
-  font-size: 1.35rem;
-  letter-spacing: -0.025em;
+  margin: 0 -14px 12px;
+  padding: 13px 14px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+  text-align: center;
 }
 .ride-option-list {
   display: grid;
@@ -1374,7 +1377,7 @@ p {
 .ride-option {
   display: grid;
   width: 100%;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 12px 11px;

@@ -14,6 +14,7 @@ import {
   currentOpenRide,
   currentOpenRides,
   decideRequest,
+  ensureSampleRides,
   expireStaleRides,
   findSession,
   getRide,
@@ -159,7 +160,7 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
     assert.equal("payIdType" in candidates[0], false);
     assert.equal(
       candidates[0].expiresAt,
-      new Date(new Date(departure).getTime() + 30 * 60_000).toISOString(),
+      new Date(baseTime.getTime() + 60 * 60_000).toISOString(),
     );
     const preview = publicRidePreview(h.db, published.ride.rideId, baseTime);
     assert.equal(preview.expiresAt, candidates[0].expiresAt);
@@ -819,7 +820,7 @@ test("private history keeps expired rides visible to their driver and requester"
   const h = harness();
   try {
     const flow = sessions(h);
-    const expiredAt = new Date(new Date(departure).getTime() + 30 * 60_000 + 1);
+    const expiredAt = new Date(baseTime.getTime() + 60 * 60_000 + 1);
     const driverHistory = privateHistory(
       h.db,
       flow.published.sessionToken,
@@ -833,6 +834,49 @@ test("private history keeps expired rides visible to their driver and requester"
     assert.equal(driverHistory[0]?.status, "EXPIRED");
     assert.equal(riderHistory[0]?.status, "EXPIRED");
     assert.equal(driverHistory[0]?.expiredAt, expiredAt.toISOString());
+  } finally {
+    h.close();
+  }
+});
+
+test("keeps three renewable sample rides available in 24-hour windows", () => {
+  const h = harness();
+  try {
+    assert.equal(ensureSampleRides(h.db, baseTime), 3);
+    assert.equal(ensureSampleRides(h.db, baseTime), 0);
+    const samples = h.db
+      .prepare(
+        "SELECT status, sample_key, offer_expires_at FROM rides WHERE is_sample = 1 ORDER BY sample_key",
+      )
+      .all() as Array<{
+      status: string;
+      sample_key: string;
+      offer_expires_at: string;
+    }>;
+    assert.equal(samples.length, 3);
+    assert.deepEqual(
+      samples.map((sample) => sample.sample_key),
+      [
+        "airport-watsons-bay",
+        "newtown-bondi-icebergs",
+        "town-hall-south-coogee",
+      ],
+    );
+    assert.ok(
+      samples.every(
+        (sample) =>
+          sample.offer_expires_at ===
+          new Date(baseTime.getTime() + 24 * 60 * 60_000).toISOString(),
+      ),
+    );
+    const renewalTime = new Date(baseTime.getTime() + 24 * 60 * 60_000 + 1);
+    assert.equal(ensureSampleRides(h.db, renewalTime), 3);
+    const openSamples = h.db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM rides WHERE is_sample = 1 AND status IN ('PUBLISHED', 'REQUESTED')",
+      )
+      .get() as { count: number };
+    assert.equal(openSamples.count, 3);
   } finally {
     h.close();
   }

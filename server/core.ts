@@ -29,7 +29,8 @@ export type DirectionFit = "GOOD" | "POOR";
 
 const SESSION_COOKIE = "cocowheels_guest";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const OFFER_STALE_MS = 30 * 60 * 1000;
+const OFFER_STALE_MS = 60 * 60 * 1000;
+const SAMPLE_OFFER_STALE_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_STALE_MS = 24 * 60 * 60 * 1000;
 const LOCATION_FRESH_MS = 2 * 60 * 1000;
 const CODE_TTL_MS = 15 * 60 * 1000;
@@ -63,6 +64,9 @@ type RideRow = {
   destination_longitude: number;
   destination_label: string | null;
   scheduled_departure_at: string;
+  offer_expires_at: string | null;
+  is_sample: 0 | 1;
+  sample_key: string | null;
   price_aud: number;
   driver_payid: string | null;
   driver_payid_type: PayIdType | null;
@@ -217,6 +221,9 @@ export type SearchInput = {
 const iso = (value = new Date()) => value.toISOString();
 const offerExpiryAt = (scheduledDepartureAt: string) =>
   iso(new Date(new Date(scheduledDepartureAt).getTime() + OFFER_STALE_MS));
+const rideOfferExpiryAt = (
+  ride: Pick<RideRow, "offer_expires_at" | "scheduled_departure_at">,
+) => ride.offer_expires_at ?? offerExpiryAt(ride.scheduled_departure_at);
 const uuid = () => {
   const bytes = randomBytes(16);
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -289,6 +296,14 @@ export function initializeCoreSchema(db: Db) {
       "ALTER TABLE rides ADD COLUMN driver_payid_type TEXT CHECK (driver_payid_type IN ('MOBILE', 'EMAIL', 'OTHER'))",
     );
   }
+  if (!rideColumns.some((column) => column.name === "offer_expires_at"))
+    db.exec("ALTER TABLE rides ADD COLUMN offer_expires_at TEXT");
+  if (!rideColumns.some((column) => column.name === "is_sample"))
+    db.exec(
+      "ALTER TABLE rides ADD COLUMN is_sample INTEGER NOT NULL DEFAULT 0 CHECK (is_sample IN (0, 1))",
+    );
+  if (!rideColumns.some((column) => column.name === "sample_key"))
+    db.exec("ALTER TABLE rides ADD COLUMN sample_key TEXT");
   const routeCacheColumns = db
     .prepare("PRAGMA table_info(route_preview_cache)")
     .all() as Array<{ name: string }>;
@@ -680,9 +695,9 @@ export function expireStaleRides(db: Db, now = new Date()) {
   const staleActive = iso(new Date(now.getTime() - ACTIVE_STALE_MS));
   const scheduled = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('PUBLISHED', 'REQUESTED') AND scheduled_departure_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('PUBLISHED', 'REQUESTED') AND ((offer_expires_at IS NOT NULL AND offer_expires_at < ?) OR (offer_expires_at IS NULL AND scheduled_departure_at < ?))",
     )
-    .run(iso(now), iso(now), staleScheduled).changes;
+    .run(iso(now), iso(now), iso(now), staleScheduled).changes;
   const active = db
     .prepare(
       "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
@@ -693,6 +708,107 @@ export function expireStaleRides(db: Db, now = new Date()) {
       "DELETE FROM live_locations WHERE ride_id IN (SELECT id FROM rides WHERE status = 'EXPIRED')",
     ).run();
   return scheduled + active;
+}
+
+const sampleRides = [
+  {
+    key: "town-hall-south-coogee",
+    alias: "Anonymous Kookaburra",
+    origin: {
+      latitude: -33.8732,
+      longitude: 151.2065,
+      label: "Sydney Town Hall",
+    },
+    destination: {
+      latitude: -33.9315,
+      longitude: 151.2552,
+      label: "South Coogee",
+    },
+    priceAud: 12,
+  },
+  {
+    key: "airport-watsons-bay",
+    alias: "Anonymous Wallaby",
+    origin: {
+      latitude: -33.9399,
+      longitude: 151.1753,
+      label: "Sydney Airport",
+    },
+    destination: {
+      latitude: -33.8434,
+      longitude: 151.2829,
+      label: "Watsons Bay",
+    },
+    priceAud: 18,
+  },
+  {
+    key: "newtown-bondi-icebergs",
+    alias: "Anonymous Quokka",
+    origin: {
+      latitude: -33.8981,
+      longitude: 151.178,
+      label: "Newtown",
+    },
+    destination: {
+      latitude: -33.8915,
+      longitude: 151.2767,
+      label: "Bondi Icebergs",
+    },
+    priceAud: 14,
+  },
+] as const;
+
+export function ensureSampleRides(db: Db, now = new Date()) {
+  expireStaleRides(db, now);
+  const timestamp = iso(now);
+  const expiresAt = iso(new Date(now.getTime() + SAMPLE_OFFER_STALE_MS));
+  const hasOpenSample = db.prepare(
+    "SELECT 1 FROM rides WHERE sample_key = ? AND status IN ('PUBLISHED', 'REQUESTED') LIMIT 1",
+  );
+  const insertSession = db.prepare(
+    "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+  );
+  const insertRide = db.prepare(
+    `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, offer_expires_at, is_sample, sample_key, price_aud, created_at, last_activity_at)
+     VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`,
+  );
+  let created = 0;
+  db.transaction(() => {
+    for (const sample of sampleRides) {
+      if (hasOpenSample.get(sample.key)) continue;
+      const sessionId = uuid();
+      const rideId = uuid();
+      insertSession.run(
+        sessionId,
+        hash(opaqueToken()),
+        sample.alias,
+        timestamp,
+        timestamp,
+        iso(new Date(now.getTime() + SESSION_TTL_MS)),
+      );
+      insertRide.run(
+        rideId,
+        publicId(db),
+        sessionId,
+        sample.alias,
+        sample.origin.latitude,
+        sample.origin.longitude,
+        sample.origin.label,
+        sample.destination.latitude,
+        sample.destination.longitude,
+        sample.destination.label,
+        timestamp,
+        expiresAt,
+        sample.key,
+        sample.priceAud,
+        timestamp,
+        timestamp,
+      );
+      event(db, rideId, "RIDE_PUBLISHED", "SYSTEM", now);
+      created += 1;
+    }
+  })();
+  return created;
 }
 
 export function publishRide(
@@ -733,8 +849,8 @@ export function publishRide(
   const timestamp = iso(now);
   db.transaction(() => {
     db.prepare(
-      `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, price_aud, driver_payid, driver_payid_type, created_at, last_activity_at)
-      VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, offer_expires_at, price_aud, driver_payid, driver_payid_type, created_at, last_activity_at)
+      VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).run(
       rideId,
       publicIdValue,
@@ -752,6 +868,7 @@ export function publishRide(
         "INVALID_DESTINATION_LABEL",
       ) ?? fallbackLocationLabel(input.destination),
       departure.toISOString(),
+      iso(new Date(now.getTime() + OFFER_STALE_MS)),
       input.priceAud,
       payId,
       payIdType,
@@ -804,7 +921,7 @@ export function searchRides(
         driverAlias: row.driver_alias,
         priceAud: row.price_aud,
         scheduledDepartureAt: row.scheduled_departure_at,
-        expiresAt: offerExpiryAt(row.scheduled_departure_at),
+        expiresAt: rideOfferExpiryAt(row),
         directionFit: fit.fit,
         redactedCorridor: corridor,
         pickupDistanceMeters: Math.round(fit.pickupDistanceMeters),
@@ -844,7 +961,7 @@ export function availableRides(
   return (
     db
       .prepare(
-        "SELECT public_id, driver_session_id, driver_alias, price_aud, scheduled_departure_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+        "SELECT public_id, driver_session_id, driver_alias, price_aud, scheduled_departure_at, offer_expires_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
       )
       .all() as Array<{
       public_id: string;
@@ -852,6 +969,7 @@ export function availableRides(
       driver_alias: string;
       price_aud: number;
       scheduled_departure_at: string;
+      offer_expires_at: string | null;
       origin_latitude: number;
       origin_longitude: number;
       origin_label: string | null;
@@ -865,7 +983,7 @@ export function availableRides(
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
-    expiresAt: offerExpiryAt(ride.scheduled_departure_at),
+    expiresAt: rideOfferExpiryAt(ride),
     departureLabel:
       ride.origin_label ??
       fallbackLocationLabel({
@@ -907,7 +1025,7 @@ export function publicRidePreview(
     driverAlias: ride.driver_alias,
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
-    expiresAt: offerExpiryAt(ride.scheduled_departure_at),
+    expiresAt: rideOfferExpiryAt(ride),
     status,
     departureLabel: ride.origin_label ?? fallbackLocationLabel(origin),
     destinationLabel:
@@ -1351,7 +1469,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
-    expiresAt: offerExpiryAt(row.scheduled_departure_at),
+    expiresAt: rideOfferExpiryAt(row),
     acceptedAt: row.accepted_at,
     plannedRoute: {
       origin: {
@@ -1438,7 +1556,7 @@ function riderView(
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
-    expiresAt: offerExpiryAt(row.scheduled_departure_at),
+    expiresAt: rideOfferExpiryAt(row),
     acceptedAt: row.accepted_at,
     request: riderRequestView(row, request),
     driverLocation:

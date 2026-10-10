@@ -265,6 +265,7 @@ export default function HomeClient({
   const [riderRoute, setRiderRoute] = useState<{
     coordinates: string;
     points: Pin[];
+    durationSeconds: number | null;
   } | null>(null);
   const placeLookupIds = useRef<Record<FormPin, number>>({
     origin: 0,
@@ -566,19 +567,27 @@ export default function HomeClient({
     : "";
   useEffect(() => {
     if (!riderRouteInput) return;
-    void cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
+    void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
       body: JSON.stringify(riderRouteInput),
     })
-      .then(({ points }) => {
+      .then(({ points, durationSeconds }) => {
         if (points.length >= 2)
-          setRiderRoute({ coordinates: riderRouteCoordinates, points });
+          setRiderRoute({
+            coordinates: riderRouteCoordinates,
+            points,
+            durationSeconds,
+          });
       })
       .catch(() => undefined);
   }, [riderRouteCoordinates, riderRouteInput]);
   const activeRiderRoute =
     riderRoute?.coordinates === riderRouteCoordinates
       ? riderRoute.points
+      : null;
+  const activeRiderDurationSeconds =
+    riderRoute?.coordinates === riderRouteCoordinates
+      ? riderRoute.durationSeconds
       : null;
   function setPin(pin: Pin) {
     if (!pinTarget) {
@@ -962,6 +971,7 @@ export default function HomeClient({
             setPinForTarget("riderDestination", pin);
           }}
           routePoints={activeRiderRoute}
+          routeDurationSeconds={activeRiderDurationSeconds}
           mapOpen={riderMapOpen}
           setMapOpen={setRiderMapOpen}
           candidates={candidates}
@@ -1463,6 +1473,7 @@ function RiderForm(props: {
   onPickupRequest: () => void;
   setDestination: (pin: Pin) => void;
   routePoints?: Pin[] | null;
+  routeDurationSeconds?: number | null;
   mapOpen: boolean;
   setMapOpen: (open: boolean) => void;
   candidates: Candidate[];
@@ -1485,6 +1496,7 @@ function RiderForm(props: {
         pickup={props.pins.pickup}
         destination={props.pins.destination}
         riderRoute={props.routePoints}
+        riderDurationSeconds={props.routeDurationSeconds}
         candidates={props.candidates}
         selected={props.selected}
         setSelected={props.setSelected}
@@ -1554,6 +1566,7 @@ function RideSelection({
   pickup,
   destination,
   riderRoute,
+  riderDurationSeconds,
   candidates,
   selected,
   setSelected,
@@ -1565,6 +1578,7 @@ function RideSelection({
   pickup: Pin;
   destination: Pin;
   riderRoute?: Pin[] | null;
+  riderDurationSeconds?: number | null;
   candidates: Candidate[];
   selected: string | null;
   setSelected: (id: string) => void;
@@ -1575,6 +1589,10 @@ function RideSelection({
 }) {
   const selectedCandidate =
     candidates.find((candidate) => candidate.rideId === selected) ?? null;
+  const visibleCandidates = candidates.slice(0, 20);
+  const [estimates, setEstimates] = useState<
+    Record<string, { pickupSeconds: number; calculatedAt: number }>
+  >({});
   const [driverRoute, setDriverRoute] = useState<{
     rideId: string;
     origin: Pin;
@@ -1622,6 +1640,59 @@ function RideSelection({
     };
   }, [selectedCandidate]);
 
+  const estimateKey = visibleCandidates
+    .map((candidate) => candidate.rideId)
+    .join("|");
+  useEffect(() => {
+    if (!estimateKey) return;
+    let cancelled = false;
+    const calculatedAt = Date.now();
+    void Promise.allSettled(
+      visibleCandidates.map(async (candidate) => {
+        const { ride } = await cocowheelsApi<{ ride: PublicRideRoute }>(
+          `/api/rides/${encodeURIComponent(candidate.rideId)}/preview`,
+        );
+        const route = await cocowheelsApi<RoutePreviewResponse>(
+          "/api/route-preview",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              origin: ride.plannedRoute.origin,
+              destination: pickup,
+            }),
+          },
+        );
+        return {
+          rideId: candidate.rideId,
+          pickupSeconds: route.durationSeconds,
+        };
+      }),
+    ).then((results) => {
+      if (cancelled) return;
+      const next: Record<
+        string,
+        { pickupSeconds: number; calculatedAt: number }
+      > = {};
+      for (const result of results) {
+        if (
+          result.status !== "fulfilled" ||
+          result.value.pickupSeconds === null
+        )
+          continue;
+        next[result.value.rideId] = {
+          pickupSeconds: result.value.pickupSeconds,
+          calculatedAt,
+        };
+      }
+      setEstimates(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Candidate IDs and pickup coordinates are the meaningful estimate inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estimateKey, pickup.latitude, pickup.longitude]);
+
   const visibleDriverRoute =
     driverRoute?.rideId === selectedCandidate?.rideId
       ? driverRoute
@@ -1646,7 +1717,19 @@ function RideSelection({
     "destination",
   ] as Array<"driver" | "pickup" | "destination">;
   const markerLabels = [
-    ...(visibleDriverRoute ? [undefined, undefined] : []),
+    ...(visibleDriverRoute
+      ? [
+          selectedCandidate && estimates[selectedCandidate.rideId]
+            ? `~${Math.max(
+                1,
+                Math.round(
+                  estimates[selectedCandidate.rideId].pickupSeconds / 60,
+                ),
+              )} min away`
+            : undefined,
+          undefined,
+        ]
+      : []),
     locationText(pickup),
     locationText(destination),
   ];
@@ -1660,9 +1743,9 @@ function RideSelection({
           markerLabels={markerLabels}
           roadPathAttribution={Boolean(
             riderRoute?.length ||
-              (driverRoute &&
-                driverRoute.rideId === selectedCandidate?.rideId &&
-                driverRoute.points.length),
+            (driverRoute &&
+              driverRoute.rideId === selectedCandidate?.rideId &&
+              driverRoute.points.length),
           )}
           lines={[
             ...(visibleDriverRoute
@@ -1696,39 +1779,56 @@ function RideSelection({
       </div>
       <section className="ride-options" aria-live="polite">
         <h1>Choose a ride</h1>
-        {searching ? null : candidates.length ? (
+        {searching ? null : visibleCandidates.length ? (
           <div className="ride-option-list">
-            {candidates.map((candidate) => (
-              <button
-                type="button"
-                key={candidate.rideId}
-                className={`ride-option${
-                  candidate.rideId === selected ? " selected" : ""
-                }`}
-                aria-pressed={candidate.rideId === selected}
-                onClick={() => setSelected(candidate.rideId)}
-              >
-                <span className="ride-option-car" aria-hidden="true">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M5 14.5h14l-1.5-4.3a2 2 0 0 0-1.9-1.4H8.4a2 2 0 0 0-1.9 1.4L5 14.5v3h2v-1h10v1h2v-3Z" />
-                    <path d="M7.5 14.5h.01M16.5 14.5h.01" />
-                  </svg>
-                </span>
-                <span className="ride-option-main">
-                  <strong>{candidate.driverAlias}</strong>
-                  <small>
-                    {candidate.departureLabel ?? "Departure"} →{" "}
-                    {candidate.destinationLabel ?? "Destination"}
-                  </small>
-                </span>
-                <span
-                  className={`ride-option-fit direction-fit-${candidate.directionFit.toLowerCase()}`}
+            {visibleCandidates.map((candidate) => {
+              const estimate = estimates[candidate.rideId];
+              const pickupMinutes = estimate
+                ? Math.max(1, Math.round(estimate.pickupSeconds / 60))
+                : null;
+              const arrival =
+                estimate &&
+                riderDurationSeconds !== null &&
+                riderDurationSeconds !== undefined
+                  ? new Date(
+                      estimate.calculatedAt +
+                        (estimate.pickupSeconds + riderDurationSeconds) * 1_000,
+                    )
+                  : null;
+              return (
+                <button
+                  type="button"
+                  key={candidate.rideId}
+                  className={`ride-option${
+                    candidate.rideId === selected ? " selected" : ""
+                  }`}
+                  aria-pressed={candidate.rideId === selected}
+                  onClick={() => setSelected(candidate.rideId)}
                 >
-                  {candidate.directionFit === "GOOD" ? "Good fit" : "Poor fit"}
-                </span>
-                <b>A${candidate.priceAud}</b>
-              </button>
-            ))}
+                  <span className="ride-option-car" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M5 14.5h14l-1.5-4.3a2 2 0 0 0-1.9-1.4H8.4a2 2 0 0 0-1.9 1.4L5 14.5v3h2v-1h10v1h2v-3Z" />
+                      <path d="M7.5 14.5h.01M16.5 14.5h.01" />
+                    </svg>
+                  </span>
+                  <span className="ride-option-main">
+                    <strong>{candidate.driverAlias}</strong>
+                    <small>
+                      {pickupMinutes !== null
+                        ? `~${pickupMinutes} min away`
+                        : "Estimating pickup"}
+                      {arrival
+                        ? ` · ${new Intl.DateTimeFormat("en-AU", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          }).format(arrival)}`
+                        : ""}
+                    </small>
+                  </span>
+                  <b>A${candidate.priceAud}</b>
+                </button>
+              );
+            })}
           </div>
         ) : (
           <p className="ride-options-empty">No planned rides yet</p>
