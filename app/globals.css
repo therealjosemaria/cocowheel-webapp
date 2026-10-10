@@ -858,10 +858,10 @@ p {
   border-top-color: #ffffff !important;
 }
 .journey-location-label-combined {
-  display: flex !important;
-  flex-direction: row !important;
-  max-width: min(290px, 78vw);
-  align-items: stretch;
+  display: grid !important;
+  width: min(290px, 78vw);
+  max-width: none;
+  grid-template-columns: 44px minmax(0, 1fr);
   padding: 0 !important;
 }
 .journey-location-eta {

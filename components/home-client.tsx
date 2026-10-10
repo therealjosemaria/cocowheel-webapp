@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
-import ExpiryCountdown from "./expiry-countdown";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -27,17 +26,6 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
 type PinTarget = FormPin | null;
-type AvailabilityOffer = {
-  rideId: string;
-  driverAlias: string;
-  priceAud: number;
-  scheduledDepartureAt: string;
-  expiresAt: string;
-  departureLabel: string | null;
-  destinationLabel: string | null;
-  status: "PUBLISHED" | "REQUESTED";
-  isOwnOffer: boolean;
-};
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
     hour: "numeric",
@@ -248,18 +236,12 @@ export default function HomeClient({
   const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [riderSelectionOpen, setRiderSelectionOpen] = useState(false);
   const [riderTime, setRiderTime] = useState<string | null>(null);
-  const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
-  const [availabilityServerNow, setAvailabilityServerNow] = useState<
-    string | null
-  >(null);
-  const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] = useState<
     "origin" | "pickup" | null
   >(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
-  const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
     useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
@@ -769,29 +751,6 @@ export default function HomeClient({
     riderTime,
     screen,
   ]);
-  useEffect(() => {
-    if (screen !== "RIDER") return;
-    let cancelled = false;
-    const load = () => {
-      if (!cancelled) setAvailabilityChecking(true);
-      cocowheelsApi<{ rides: AvailabilityOffer[]; serverNow: string }>(
-        "/api/availability",
-      )
-        .then((result) => {
-          if (cancelled) return;
-          setAvailability(result.rides);
-          setAvailabilityServerNow(result.serverNow);
-        })
-        .catch(() => undefined)
-        .finally(() => !cancelled && setAvailabilityChecking(false));
-    };
-    load();
-    const timer = window.setInterval(load, 10_000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [screen]);
   async function requestSelected(candidate = selectedCandidate) {
     if (!candidate || !riderPins.pickup || !riderPins.destination) return;
     if (candidate.isOwnOffer) {
@@ -921,9 +880,6 @@ export default function HomeClient({
       {roleChangePromptOpen ? (
         <RoleChangePrompt close={() => setRoleChangePromptOpen(false)} />
       ) : null}
-      {routeRequiredPromptOpen ? (
-        <RouteRequiredPrompt close={() => setRouteRequiredPromptOpen(false)} />
-      ) : null}
       {publishRouteRequiredPromptOpen ? (
         <PublishRouteRequiredPrompt
           close={() => setPublishRouteRequiredPromptOpen(false)}
@@ -982,20 +938,6 @@ export default function HomeClient({
           request={requestSelected}
           busy={busy}
           searching={searching}
-          availability={availability}
-          availabilityServerNow={availabilityServerNow}
-          availabilityChecking={availabilityChecking}
-          onAvailabilityJoin={(offer) => {
-            if (offer.isOwnOffer) {
-              setOwnOfferPromptOpen(true);
-              return;
-            }
-            if (homeCurrent.some((item) => item.role === "DRIVER")) {
-              setRoleChangePromptOpen(true);
-              return;
-            }
-            setRouteRequiredPromptOpen(true);
-          }}
           selectionOpen={riderSelectionOpen}
           openSelection={() => setRiderSelectionOpen(true)}
           closeSelection={() => setRiderSelectionOpen(false)}
@@ -1116,26 +1058,6 @@ function RoleChangePrompt({ close }: { close: () => void }) {
         <h2 id="role-change-title">
           End your current activity before switching roles.
         </h2>
-        <div className="location-prompt-actions">
-          <button type="button" className="primary" onClick={close}>
-            OKAY
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-function RouteRequiredPrompt({ close }: { close: () => void }) {
-  return (
-    <div className="location-prompt-backdrop" role="presentation">
-      <section
-        className="location-prompt"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="route-required-title"
-      >
-        <h2 id="route-required-title">Add your route first</h2>
-        <p>Fill Where from? and Where to? to join.</p>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
@@ -1506,10 +1428,6 @@ function RiderForm(props: {
   request: () => void;
   busy: boolean;
   searching: boolean;
-  availability: AvailabilityOffer[];
-  availabilityServerNow: string | null;
-  availabilityChecking: boolean;
-  onAvailabilityJoin: (offer: AvailabilityOffer) => void;
   selectionOpen: boolean;
   openSelection: () => void;
   closeSelection: () => void;
@@ -1574,14 +1492,6 @@ function RiderForm(props: {
             props.openSelection();
           }}
         />
-        {props.pins.pickup && props.pins.destination ? null : (
-          <AvailabilityBoard
-            rides={props.availability}
-            serverNow={props.availabilityServerNow}
-            checking={props.availabilityChecking}
-            onJoin={props.onAvailabilityJoin}
-          />
-        )}
       </div>
     </div>
   );
@@ -1996,74 +1906,6 @@ function PlaceSearch({
         </div>
       ) : null}
     </div>
-  );
-}
-function AvailabilityBoard({
-  rides,
-  serverNow,
-  checking,
-  onJoin,
-}: {
-  rides: AvailabilityOffer[];
-  serverNow: string | null;
-  checking: boolean;
-  onJoin: (offer: AvailabilityOffer) => void;
-}) {
-  return (
-    <section className="availability-board" aria-live="polite">
-      <div className="availability-heading" aria-hidden="true">
-        <span>Route ID</span>
-        <span>Driver</span>
-        <span>Where from?</span>
-        <span>Where to?</span>
-        <span>Expiry</span>
-        <span>Price</span>
-        <span>View</span>
-        <span>Fit</span>
-        <span>Action</span>
-      </div>
-      {rides.map((ride) => (
-        <div className="availability-row" key={ride.rideId}>
-          <code>{routeReference(ride.rideId)}</code>
-          <strong tabIndex={0}>{ride.driverAlias}</strong>
-          <span tabIndex={0}>{ride.departureLabel ?? "Location pending"}</span>
-          <span tabIndex={0}>
-            {ride.destinationLabel ?? "Location pending"}
-          </span>
-          <span className="availability-expiry">
-            {serverNow ? (
-              <ExpiryCountdown
-                key={serverNow}
-                expiresAt={ride.expiresAt}
-                serverNow={serverNow}
-              />
-            ) : (
-              "—"
-            )}
-          </span>
-          <b>A${ride.priceAud}</b>
-          <Link
-            className="availability-view"
-            href={`/rides/${encodeURIComponent(ride.rideId)}`}
-          >
-            OPEN
-          </Link>
-          <span aria-label="Set a route to calculate direction fit"></span>
-          <button
-            type="button"
-            className="availability-join"
-            onClick={() => onJoin(ride)}
-          >
-            JOIN
-          </button>
-        </div>
-      ))}
-      {!rides.length ? (
-        <p className="availability-empty">
-          {checking ? "Checking available rides…" : "0 available rides"}
-        </p>
-      ) : null}
-    </section>
   );
 }
 function RideStatus({
