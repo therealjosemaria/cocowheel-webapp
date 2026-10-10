@@ -840,6 +840,14 @@ p {
   border: 0;
   background: transparent;
 }
+.leaflet-tooltip.journey-location-label,
+.journey-location-label-icon {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink);
+}
 .journey-location-label {
   max-width: min(220px, 58vw);
   overflow: hidden;
