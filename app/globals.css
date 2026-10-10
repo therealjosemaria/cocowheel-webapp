@@ -832,6 +832,12 @@ p {
   background: transparent;
   border: 0;
 }
+.driver-location-age {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
 .journey-marker {
   display: grid;
   width: 32px;

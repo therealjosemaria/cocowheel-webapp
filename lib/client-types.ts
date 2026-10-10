@@ -18,6 +18,7 @@ export type RideStatus =
   | "EXPIRED";
 export type PayIdType = "MOBILE" | "EMAIL" | "OTHER";
 export type Location = {
+  moving?: boolean;
   latitude: number;
   longitude: number;
   accuracyMeters: number;
@@ -25,6 +26,7 @@ export type Location = {
   stale: boolean;
 };
 export type Candidate = {
+  driverLocation?: Location;
   rideId: string;
   driverAlias: string;
   priceAud: number;

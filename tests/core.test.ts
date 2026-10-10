@@ -112,6 +112,115 @@ const driverInput = {
   payIdType: "EMAIL" as const,
 };
 
+test("published drivers can move while offers remain requestable and public locations age", () => {
+  const h = harness();
+  try {
+    const published = publishRide(h.db, null, driverInput, baseTime);
+    const later = new Date(baseTime.getTime() + 1000);
+    const fix = {
+      latitude: -33.85,
+      longitude: 151.25,
+      accuracyMeters: 10,
+      capturedAt: later.toISOString(),
+      moving: true,
+    };
+    submitLocation(
+      h.db,
+      published.sessionToken,
+      published.ride.rideId,
+      fix,
+      later,
+    );
+    const preview = publicRidePreview(h.db, published.ride.rideId, later);
+    assert.equal(preview.status, "PUBLISHED");
+    assert.equal(
+      preview.plannedRoute.origin.latitude,
+      driverInput.origin.latitude,
+    );
+    assert.equal(preview.driverLocation?.latitude, fix.latitude);
+    assert.equal(preview.driverLocation?.stale, false);
+    assert.equal(
+      publicRidePreview(
+        h.db,
+        published.ride.rideId,
+        new Date(later.getTime() + 31000),
+      ).driverLocation?.stale,
+      true,
+    );
+    const stranger = createGuestSession(h.db, later);
+    assert.throws(
+      () =>
+        submitLocation(h.db, stranger.token, published.ride.rideId, fix, later),
+      /RIDE_ACCESS_DENIED/,
+    );
+    const requested = requestRide(
+      h.db,
+      stranger.token,
+      published.ride.rideId,
+      { ...riderInput, pickup: { latitude: -34.1, longitude: 151.1 } },
+      later,
+    );
+    assert.equal(requested.ride.request?.status, "PENDING");
+    assert.equal(requested.ride.request?.directionFit, "POOR");
+    assert.throws(
+      () =>
+        submitLocation(h.db, stranger.token, published.ride.rideId, fix, later),
+      /RIDE_ACCESS_DENIED/,
+    );
+    // Late/out-of-order captures must not overwrite a newer position.
+    submitLocation(
+      h.db,
+      published.sessionToken,
+      published.ride.rideId,
+      { ...fix, latitude: -34, capturedAt: baseTime.toISOString() },
+      later,
+    );
+    assert.equal(
+      publicRidePreview(h.db, published.ride.rideId, later).driverLocation
+        ?.latitude,
+      fix.latitude,
+    );
+    const stationaryTime = new Date(later.getTime() + 2000);
+    submitLocation(
+      h.db,
+      published.sessionToken,
+      published.ride.rideId,
+      { ...fix, moving: false, capturedAt: stationaryTime.toISOString() },
+      stationaryTime,
+    );
+    assert.equal(
+      publicRidePreview(
+        h.db,
+        published.ride.rideId,
+        new Date(stationaryTime.getTime() + 31000),
+      ).driverLocation?.stale,
+      false,
+    );
+    assert.equal(
+      publicRidePreview(
+        h.db,
+        published.ride.rideId,
+        new Date(stationaryTime.getTime() + 61000),
+      ).driverLocation?.stale,
+      true,
+    );
+    const expiredTime = new Date(baseTime.getTime() + 3600001);
+    assert.throws(
+      () =>
+        submitLocation(
+          h.db,
+          published.sessionToken,
+          published.ride.rideId,
+          { ...fix, capturedAt: expiredTime.toISOString() },
+          expiredTime,
+        ),
+      /LOCATION_NOT_ALLOWED/,
+    );
+  } finally {
+    h.close();
+  }
+});
+
 test("rotates through 50 animal aliases without repeating the last ten", () => {
   const h = harness();
   try {

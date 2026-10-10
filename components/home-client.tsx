@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
+import PoorFitPrompt from "./poor-fit-prompt";
+import LocationAge from "./location-age";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -401,7 +403,9 @@ export default function HomeClient({
     return () => window.clearTimeout(timer);
   }, []);
   const activeRideId = ride?.rideId;
-  const activeRideStatus = ride?.status;
+  const [poorFitCandidate, setPoorFitCandidate] = useState<Candidate | null>(
+    null,
+  );
   useEffect(() => {
     if (!activeRideId) return;
     const timer = window.setInterval(() => {
@@ -418,42 +422,6 @@ export default function HomeClient({
     }, 8_000);
     return () => window.clearInterval(timer);
   }, [activeRideId]);
-  useEffect(() => {
-    if (
-      !activeRideId ||
-      !activeRideStatus ||
-      !["RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(activeRideStatus)
-    )
-      return;
-    const send = () => {
-      if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          void cocowheelsApi<{ ride: Ride }>(
-            `/api/rides/${encodeURIComponent(activeRideId)}/location`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracyMeters: position.coords.accuracy,
-                capturedAt: new Date(position.timestamp).toISOString(),
-              }),
-            },
-          )
-            .then((result) => {
-              setRide(result.ride);
-              setServiceAvailable(true);
-            })
-            .catch(() => setServiceAvailable(false));
-        },
-        () => undefined,
-        { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 },
-      );
-    };
-    const timer = window.setInterval(send, 20_000);
-    return () => window.clearInterval(timer);
-  }, [activeRideId, activeRideStatus]);
 
   function setPinForTarget(target: FormPin, pin: Pin) {
     if (target === "origin")
@@ -717,8 +685,7 @@ export default function HomeClient({
       return;
     }
     let cancelled = false;
-    const timer = window.setTimeout(() => {
-      setSearching(true);
+    const search = () => {
       void cocowheelsApi<{ candidates: Candidate[]; serverNow: string }>(
         "/api/search",
         {
@@ -735,14 +702,21 @@ export default function HomeClient({
         .then((result) => {
           if (cancelled) return;
           setCandidates(result.candidates);
-          setSelected(result.candidates[0]?.rideId ?? null);
+          setSelected((current) =>
+            result.candidates.some((candidate) => candidate.rideId === current)
+              ? current
+              : (result.candidates[0]?.rideId ?? null),
+          );
         })
         .catch((reason) => !cancelled && setError(humanError(reason)))
         .finally(() => !cancelled && setSearching(false));
-    }, 250);
+    };
+    const timer = window.setTimeout(search, 250);
+    const refresh = window.setInterval(search, 15000);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      window.clearInterval(refresh);
     };
   }, [
     riderPins.destination,
@@ -751,10 +725,17 @@ export default function HomeClient({
     riderTime,
     screen,
   ]);
-  async function requestSelected(candidate = selectedCandidate) {
+  async function requestSelected(
+    candidate = selectedCandidate,
+    confirmed = false,
+  ) {
     if (!candidate || !riderPins.pickup || !riderPins.destination) return;
     if (candidate.isOwnOffer) {
       setOwnOfferPromptOpen(true);
+      return;
+    }
+    if (candidate.directionFit === "POOR" && !confirmed) {
+      setPoorFitCandidate(candidate);
       return;
     }
     setBusy(true);
@@ -876,6 +857,16 @@ export default function HomeClient({
       ) : null}
       {ownOfferPromptOpen ? (
         <OwnOfferPrompt close={() => setOwnOfferPromptOpen(false)} />
+      ) : null}
+      {poorFitCandidate ? (
+        <PoorFitPrompt
+          close={() => setPoorFitCandidate(null)}
+          confirm={() => {
+            const candidate = poorFitCandidate;
+            setPoorFitCandidate(null);
+            void requestSelected(candidate, true);
+          }}
+        />
       ) : null}
       {roleChangePromptOpen ? (
         <RoleChangePrompt close={() => setRoleChangePromptOpen(false)} />
@@ -1585,7 +1576,10 @@ function RideSelection({
   }, [selectedCandidate]);
 
   const estimateKey = visibleCandidates
-    .map((candidate) => candidate.rideId)
+    .map(
+      (candidate) =>
+        `${candidate.rideId}:${candidate.driverLocation ? `${candidate.driverLocation.latitude.toFixed(3)}:${candidate.driverLocation.longitude.toFixed(3)}` : "origin"}`,
+    )
     .join("|");
   useEffect(() => {
     if (!estimateKey) return;
@@ -1601,7 +1595,7 @@ function RideSelection({
           {
             method: "POST",
             body: JSON.stringify({
-              origin: ride.plannedRoute.origin,
+              origin: candidate.driverLocation ?? ride.plannedRoute.origin,
               destination: pickup,
             }),
           },
@@ -1650,7 +1644,10 @@ function RideSelection({
         : null;
   const mapPins = [
     ...(visibleDriverRoute
-      ? [visibleDriverRoute.origin, visibleDriverRoute.destination]
+      ? [
+          selectedCandidate?.driverLocation ?? visibleDriverRoute.origin,
+          visibleDriverRoute.destination,
+        ]
       : []),
     pickup,
     destination,
@@ -1683,6 +1680,13 @@ function RideSelection({
       <div className="ride-selection-map">
         <JourneyMap
           pins={mapPins}
+          fitPins={[
+            ...(visibleDriverRoute
+              ? [visibleDriverRoute.origin, visibleDriverRoute.destination]
+              : []),
+            pickup,
+            destination,
+          ]}
           markerKinds={markerKinds}
           markerLabels={markerLabels}
           roadPathAttribution={Boolean(
@@ -1722,6 +1726,9 @@ function RideSelection({
         </button>
       </div>
       <div className="ride-selection-route-key" aria-label="Map route colours">
+        {selectedCandidate ? (
+          <LocationAge location={selectedCandidate.driverLocation} />
+        ) : null}
         <span>
           <i className="ride-selection-route-driver" aria-hidden="true" />
           Driver route

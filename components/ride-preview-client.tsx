@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
+import PoorFitPrompt from "./poor-fit-prompt";
+import LocationAge from "./location-age";
 import ExpiryCountdown from "./expiry-countdown";
 import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -24,6 +26,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  driverLocation?: Ride["driverLocation"];
   rideId: string;
   driverAlias: string;
   priceAud: number;
@@ -56,6 +59,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
   const visibleRoute = ride.plannedRoute ?? participantRoute;
   return {
     rideId: ride.rideId,
+    driverLocation: ride.driverLocation,
     driverAlias: ride.driverAlias,
     priceAud: ride.priceAud,
     scheduledDepartureAt: ride.scheduledDepartureAt,
@@ -121,6 +125,7 @@ export default function RidePreviewClient({
   const [error, setError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
+  const [poorFitPromptOpen, setPoorFitPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -226,25 +231,30 @@ export default function RidePreviewClient({
         (!driverOwned && participantStatus === "REQUESTED"));
     if (!shouldFetchPublicPreview) return;
     let cancelled = false;
-    void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
-      `/api/rides/${encodeURIComponent(rideId)}/preview`,
-    )
-      .then((result) => {
-        if (!cancelled) {
-          setPublicRide(result.ride);
-          setServerNow(result.serverNow);
-        }
-      })
-      .catch((reason) => {
-        if (cancelled) return;
-        setError(
-          reason instanceof ApiError && reason.status === 404
-            ? "This ride is no longer available."
-            : "Trying to reconnect. Please try again.",
-        );
-      });
+    const refresh = () => {
+      void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
+        `/api/rides/${encodeURIComponent(rideId)}/preview`,
+      )
+        .then((result) => {
+          if (!cancelled) {
+            setPublicRide(result.ride);
+            setServerNow(result.serverNow);
+          }
+        })
+        .catch((reason) => {
+          if (cancelled) return;
+          setError(
+            reason instanceof ApiError && reason.status === 404
+              ? "This ride is no longer available."
+              : "Trying to reconnect. Please try again.",
+          );
+        });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 15000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, [activityRide, driverOwned, participantStatus, rideId]);
 
@@ -293,7 +303,7 @@ export default function RidePreviewClient({
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
       body: JSON.stringify({
-        origin: ride.plannedRoute.origin,
+        origin: ride.driverLocation ?? ride.plannedRoute.origin,
         destination: riderRoute.pickup,
       }),
     })
@@ -306,7 +316,7 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [ride?.plannedRoute, riderRoute]);
+  }, [ride?.plannedRoute, ride?.driverLocation, riderRoute]);
 
   useEffect(() => {
     if (!driverRouteInput) return;
@@ -364,7 +374,7 @@ export default function RidePreviewClient({
         )
       : null;
 
-  async function joinRide() {
+  async function joinRide(confirmed = false) {
     if (!ride) return;
     try {
       const currentState = await cocowheelsApi<{
@@ -384,6 +394,10 @@ export default function RidePreviewClient({
     }
     if (!riderRoute) {
       setRouteRequiredPromptOpen(true);
+      return;
+    }
+    if (riderRoute.directionFit === "POOR" && !confirmed) {
+      setPoorFitPromptOpen(true);
       return;
     }
     setJoining(true);
@@ -986,10 +1000,31 @@ export default function RidePreviewClient({
                 </article>
               </section>
             ) : null}
+            {poorFitPromptOpen ? (
+              <PoorFitPrompt
+                close={() => setPoorFitPromptOpen(false)}
+                confirm={() => {
+                  setPoorFitPromptOpen(false);
+                  void joinRide(true);
+                }}
+              />
+            ) : null}
+            <LocationAge location={ride.driverLocation} />
             <JourneyMap
-              pins={[
+              fitPins={[
                 ...(ride.plannedRoute
                   ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+                  : []),
+                ...(riderRoute
+                  ? [riderRoute.pickup, riderRoute.destination]
+                  : []),
+              ]}
+              pins={[
+                ...(ride.plannedRoute
+                  ? [
+                      ride.driverLocation ?? ride.plannedRoute.origin,
+                      ride.plannedRoute.destination,
+                    ]
                   : []),
                 ...(riderRoute
                   ? [riderRoute.pickup, riderRoute.destination]

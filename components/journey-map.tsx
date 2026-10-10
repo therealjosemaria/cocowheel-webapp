@@ -210,6 +210,7 @@ function PinMarkers({
 }
 export default function JourneyMap({
   pins = [],
+  fitPins,
   lines = [],
   onPick,
   markerKinds,
@@ -217,6 +218,7 @@ export default function JourneyMap({
   roadPathAttribution = false,
 }: {
   pins?: Pin[];
+  fitPins?: Pin[];
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
@@ -254,7 +256,7 @@ export default function JourneyMap({
           markerLabels={markerLabels}
         />
         <MapClick onPick={onPick} />
-        <Fit pins={pins} lines={lines} />
+        <Fit pins={fitPins ?? pins} lines={lines} />
         <ZoomControl position="bottomright" />
       </MapContainer>
       <p className="map-attribution">

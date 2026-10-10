@@ -669,6 +669,7 @@ export function createApiServer(
               longitude: asNumber(body.longitude),
               accuracyMeters: asNumber(body.accuracyMeters),
               capturedAt: asString(body.capturedAt),
+              moving: body.moving === true,
             }),
           },
           cors,

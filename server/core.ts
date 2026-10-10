@@ -145,6 +145,7 @@ type RequestRow = {
   decided_at: string | null;
 };
 type LocationRow = {
+  moving: number;
   participant: Participant;
   latitude: number;
   longitude: number;
@@ -154,6 +155,7 @@ type LocationRow = {
 };
 
 export type Candidate = {
+  driverLocation?: PublicLocation;
   rideId: string;
   driverAlias: string;
   priceAud: number;
@@ -179,6 +181,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  driverLocation?: PublicLocation;
   rideId: string;
   driverAlias: string;
   priceAud: number;
@@ -239,6 +242,7 @@ export type RiderRequestView = {
   decidedAt?: string | null;
 };
 export type PublicLocation = {
+  moving: boolean;
   latitude: number;
   longitude: number;
   accuracyMeters: number;
@@ -304,6 +308,13 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  const locationColumns = db
+    .prepare("PRAGMA table_info(live_locations)")
+    .all() as Array<{ name: string }>;
+  if (!locationColumns.some((column) => column.name === "moving"))
+    db.exec(
+      "ALTER TABLE live_locations ADD COLUMN moving INTEGER NOT NULL DEFAULT 0",
+    );
   const sessionColumns = db
     .prepare("PRAGMA table_info(guest_sessions)")
     .all() as Array<{ name: string }>;
@@ -975,6 +986,7 @@ export function searchRides(
       );
       return {
         rideId: row.public_id,
+        driverLocation: locationFor(db, row.id, "DRIVER", now),
         driverAlias: row.driver_alias,
         priceAud: row.price_aud,
         scheduledDepartureAt: row.scheduled_departure_at,
@@ -1088,6 +1100,7 @@ export function publicRidePreview(
     destinationLabel:
       ride.destination_label ?? fallbackLocationLabel(destination),
     plannedRoute: { origin, destination },
+    driverLocation: locationFor(db, ride.id, "DRIVER", now),
   };
 }
 
@@ -1229,7 +1242,7 @@ function locationFor(
 ): PublicLocation | undefined {
   const row = db
     .prepare(
-      "SELECT participant, latitude, longitude, accuracy_meters, captured_at, received_at FROM live_locations WHERE ride_id = ? AND participant = ?",
+      "SELECT participant, latitude, longitude, accuracy_meters, captured_at, received_at, moving FROM live_locations WHERE ride_id = ? AND participant = ?",
     )
     .get(rideId, participant) as LocationRow | undefined;
   if (!row) return undefined;
@@ -1238,8 +1251,10 @@ function locationFor(
     longitude: row.longitude,
     accuracyMeters: row.accuracy_meters,
     capturedAt: row.captured_at,
+    moving: Boolean(row.moving),
     stale:
-      now.getTime() - new Date(row.received_at).getTime() > LOCATION_FRESH_MS,
+      now.getTime() - new Date(row.captured_at).getTime() >
+      (row.moving ? 30_000 : 60_000),
   };
 }
 function isAcceptedRider(db: Db, row: RideRow, session: Session) {
@@ -1252,6 +1267,7 @@ export function submitLocation(
   rawSessionToken: string | null,
   rideId: string,
   location: {
+    moving?: boolean;
     latitude: number;
     longitude: number;
     accuracyMeters: number;
@@ -1259,17 +1275,25 @@ export function submitLocation(
   },
   now = new Date(),
 ) {
+  expireStaleRides(db, now);
   const session = requireSession(db, rawSessionToken, now);
   const ride = rideRow(db, rideId);
   if (
     !ride ||
-    !["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status)
+    ![
+      "PUBLISHED",
+      "REQUESTED",
+      "ACCEPTED",
+      "RIDE_ACTIVE",
+      "CO_RIDE_ACTIVE",
+    ].includes(ride.status)
   )
     throw new Error("LOCATION_NOT_ALLOWED");
   const participant: Participant =
     ride.driver_session_id === session.id
       ? "DRIVER"
-      : isAcceptedRider(db, ride, session)
+      : ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status) &&
+          isAcceptedRider(db, ride, session)
         ? "RIDER"
         : (() => {
             throw new Error("RIDE_ACCESS_DENIED");
@@ -1288,6 +1312,12 @@ export function submitLocation(
   if (Math.abs(now.getTime() - captured.getTime()) > LOCATION_FRESH_MS)
     throw new Error("LOCATION_STALE");
   db.transaction(() => {
+    const previous = locationFor(db, ride.id, participant, now);
+    if (
+      previous &&
+      new Date(previous.capturedAt).getTime() >= captured.getTime()
+    )
+      return;
     db.prepare(
       `INSERT INTO live_locations (ride_id, participant, latitude, longitude, accuracy_meters, captured_at, received_at) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(ride_id, participant) DO UPDATE SET latitude = excluded.latitude, longitude = excluded.longitude, accuracy_meters = excluded.accuracy_meters, captured_at = excluded.captured_at, received_at = excluded.received_at`,
@@ -1300,6 +1330,9 @@ export function submitLocation(
       captured.toISOString(),
       iso(now),
     );
+    db.prepare(
+      "UPDATE live_locations SET moving = ? WHERE ride_id = ? AND participant = ?",
+    ).run(location.moving === true ? 1 : 0, ride.id, participant);
     db.prepare("UPDATE rides SET last_activity_at = ? WHERE id = ?").run(
       iso(now),
       ride.id,
@@ -1522,6 +1555,9 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     .all(row.id) as RequestRow[];
   return {
     rideId: row.public_id,
+    driverLocation: terminal(row.status)
+      ? undefined
+      : locationFor(db, row.id, "DRIVER", now),
     status: row.status,
     driverAlias: row.driver_alias,
     priceAud: row.price_aud,
@@ -1617,7 +1653,8 @@ function riderView(
     acceptedAt: row.accepted_at,
     request: riderRequestView(row, request),
     driverLocation:
-      row.status === "RIDE_ACTIVE" || row.status === "CO_RIDE_ACTIVE"
+      ["PUBLISHED", "REQUESTED"].includes(row.status) ||
+      (canSeePartner && !terminal(row.status))
         ? locationFor(db, row.id, "DRIVER", now)
         : undefined,
     riderLocation: canSeePartner
