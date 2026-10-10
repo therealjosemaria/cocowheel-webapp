@@ -182,7 +182,11 @@ export default function AppNavigation() {
           aria-label={`Guest identity: ${identityLabel}`}
           onClick={() => {
             setOpen(false);
-            setIdentityOpen((current) => !current);
+            // Hover opens this on desktop before click fires; don't immediately
+            // close it again when the user clicks to reach verification.
+            setIdentityOpen((current) =>
+              window.matchMedia("(hover: hover)").matches ? true : !current,
+            );
           }}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
