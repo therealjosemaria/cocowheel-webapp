@@ -5,12 +5,14 @@ import path from "node:path";
 import test from "node:test";
 import { openDatabase } from "../server/db";
 import {
+  ANONYMOUS_ANIMALS,
   availableRides,
   beginRide,
   cancelPendingRequest,
   cancelRide,
   completeCoRide,
   confirmCoRideCode,
+  createGuestSession,
   currentOpenRide,
   currentOpenRides,
   decideRequest,
@@ -109,6 +111,26 @@ const driverInput = {
   payId: "driver@example.com",
   payIdType: "EMAIL" as const,
 };
+
+test("rotates through 50 animal aliases without repeating the last ten", () => {
+  const h = harness();
+  try {
+    assert.equal(ANONYMOUS_ANIMALS.length, 50);
+    assert.equal(new Set(ANONYMOUS_ANIMALS).size, 50);
+    const aliases: string[] = [];
+    for (let index = 0; index < 75; index += 1) {
+      const created = createGuestSession(
+        h.db,
+        new Date(baseTime.getTime() + index),
+      );
+      const recent = aliases.slice(-10);
+      assert.equal(recent.includes(created.session.alias), false);
+      aliases.push(created.session.alias);
+    }
+  } finally {
+    h.close();
+  }
+});
 const riderInput = {
   pickup: { latitude: -33.855, longitude: 151.225, label: "Rider pickup" },
   destination: {

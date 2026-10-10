@@ -36,7 +36,7 @@ const LOCATION_FRESH_MS = 2 * 60 * 1000;
 const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
 const CODE_ATTEMPT_INTERVAL_MS = 2_000;
-const names = [
+export const ANONYMOUS_ANIMALS = [
   "Ibex",
   "Wombat",
   "Kookaburra",
@@ -47,7 +47,48 @@ const names = [
   "Dingo",
   "Numbat",
   "Wallaby",
-];
+  "Koala",
+  "Platypus",
+  "Kangaroo",
+  "Emu",
+  "Cockatoo",
+  "Possum",
+  "Bandicoot",
+  "Cassowary",
+  "Galah",
+  "Lorikeet",
+  "Dolphin",
+  "Otter",
+  "Penguin",
+  "Puffin",
+  "Badger",
+  "Fox",
+  "Lynx",
+  "Panda",
+  "Tiger",
+  "Leopard",
+  "Jaguar",
+  "Cheetah",
+  "Zebra",
+  "Giraffe",
+  "Elephant",
+  "Rhino",
+  "Hippo",
+  "Moose",
+  "Bison",
+  "Beaver",
+  "Falcon",
+  "Owl",
+  "Raven",
+  "Robin",
+  "Sparrow",
+  "Turtle",
+  "Gecko",
+  "Axolotl",
+  "Alpaca",
+  "Capybara",
+] as const;
+const ALIAS_COOLDOWN = 10;
 const publicAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export type PayIdType = "MOBILE" | "EMAIL" | "OTHER";
 
@@ -239,7 +280,23 @@ const sameSecret = (value: string, stored: string) => {
   const expected = Buffer.from(stored, "hex");
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 };
-const alias = () => `Anonymous ${names[randomInt(names.length)]}`;
+const alias = (db: Db) => {
+  const recent = new Set(
+    (
+      db
+        .prepare(
+          "SELECT anonymous_alias FROM guest_sessions WHERE anonymous_alias IS NOT NULL ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        )
+        .all(ALIAS_COOLDOWN) as Array<{ anonymous_alias: string }>
+    ).map((row) => row.anonymous_alias),
+  );
+  const available = ANONYMOUS_ANIMALS.filter(
+    (animal) => !recent.has(`Anonymous ${animal}`),
+  );
+  const pool = available.length > 0 ? available : ANONYMOUS_ANIMALS;
+  const animal = pool[randomInt(pool.length)];
+  return `Anonymous ${animal}`;
+};
 const terminal = (status: RideStatus) =>
   ["COMPLETED", "CANCELLED", "EXPIRED"].includes(status);
 
@@ -282,7 +339,7 @@ export function initializeCoreSchema(db: Db) {
     for (const session of sessionsWithoutAlias) {
       const historical = latestAlias.get(session.id, session.id) as
         { guest_alias: string } | undefined;
-      const guestAlias = historical?.guest_alias ?? alias();
+      const guestAlias = historical?.guest_alias ?? alias(db);
       saveAlias.run(guestAlias, session.id);
       alignOpenDriverAlias.run(guestAlias, session.id);
       alignOpenRiderAlias.run(guestAlias, session.id);
@@ -409,7 +466,7 @@ export function findSession(
     .get(hash(token), iso(now)) as
     { id: string; anonymous_alias: string | null } | undefined;
   if (!row) return null;
-  const guestAlias = row.anonymous_alias ?? alias();
+  const guestAlias = row.anonymous_alias ?? alias(db);
   if (!row.anonymous_alias)
     db.prepare(
       "UPDATE guest_sessions SET anonymous_alias = ? WHERE id = ?",
@@ -424,19 +481,21 @@ export function findSession(
 export function createGuestSession(db: Db, now = new Date()) {
   const token = opaqueToken();
   const id = uuid();
-  const guestAlias = alias();
   const createdAt = iso(now);
-  db.prepare(
-    "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
-  ).run(
-    id,
-    hash(token),
-    guestAlias,
-    createdAt,
-    createdAt,
-    iso(new Date(now.getTime() + SESSION_TTL_MS)),
-  );
-  return { session: { id, alias: guestAlias }, token };
+  return db.transaction(() => {
+    const guestAlias = alias(db);
+    db.prepare(
+      "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(
+      id,
+      hash(token),
+      guestAlias,
+      createdAt,
+      createdAt,
+      iso(new Date(now.getTime() + SESSION_TTL_MS)),
+    );
+    return { session: { id, alias: guestAlias }, token };
+  })();
 }
 
 export function guestAlias(
@@ -713,7 +772,6 @@ export function expireStaleRides(db: Db, now = new Date()) {
 const sampleRides = [
   {
     key: "town-hall-south-coogee",
-    alias: "Anonymous Kookaburra",
     origin: {
       latitude: -33.8732,
       longitude: 151.2065,
@@ -728,7 +786,6 @@ const sampleRides = [
   },
   {
     key: "airport-watsons-bay",
-    alias: "Anonymous Wallaby",
     origin: {
       latitude: -33.9399,
       longitude: 151.1753,
@@ -743,7 +800,6 @@ const sampleRides = [
   },
   {
     key: "newtown-bondi-icebergs",
-    alias: "Anonymous Quokka",
     origin: {
       latitude: -33.8981,
       longitude: 151.178,
@@ -778,10 +834,11 @@ export function ensureSampleRides(db: Db, now = new Date()) {
       if (hasOpenSample.get(sample.key)) continue;
       const sessionId = uuid();
       const rideId = uuid();
+      const sampleAlias = alias(db);
       insertSession.run(
         sessionId,
         hash(opaqueToken()),
-        sample.alias,
+        sampleAlias,
         timestamp,
         timestamp,
         iso(new Date(now.getTime() + SESSION_TTL_MS)),
@@ -790,7 +847,7 @@ export function ensureSampleRides(db: Db, now = new Date()) {
         rideId,
         publicId(db),
         sessionId,
-        sample.alias,
+        sampleAlias,
         sample.origin.latitude,
         sample.origin.longitude,
         sample.origin.label,
