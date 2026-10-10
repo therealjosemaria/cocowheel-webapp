@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { divIcon } from "leaflet";
 import {
   CircleMarker,
@@ -29,6 +29,27 @@ type MarkerLabel =
       etaMinutes: number;
       text: string;
     };
+
+const escapeHtml = (value: string) =>
+  value.replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[character]!,
+  );
+
+const locationLabelIcon = (markerLabel: Exclude<MarkerLabel, string>) =>
+  divIcon({
+    className: "journey-location-label-icon",
+    html: `<span class="journey-location-row"><span class="journey-location-eta"><strong>${markerLabel.etaMinutes}</strong><small>MIN</small></span><span class="journey-location-address">${escapeHtml(markerLabel.text)}</span></span>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 20],
+  });
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   driver: divIcon({
@@ -139,45 +160,40 @@ function PinMarkers({
       {pins.map((pin, index) => {
         const markerKind = markerKinds?.[index];
         const markerLabel = markerLabels?.[index];
+        const markerKey = `${pin.latitude}-${pin.longitude}-${index}`;
         return markerKind ? (
-          <Marker
-            key={`${pin.latitude}-${pin.longitude}-${index}`}
-            position={[pin.latitude, pin.longitude]}
-            icon={mapMarkerIcons[markerKind]}
-            opacity={overlapping.has(index) ? 0.52 : 1}
-            zIndexOffset={markerKind === "pickup" ? 2 : 1}
-          >
-            {markerLabel ? (
-              <Tooltip
-                className={`journey-location-label${
-                  typeof markerLabel === "string"
-                    ? ""
-                    : " journey-location-label-combined"
-                }`}
-                direction="top"
-                offset={[0, -16]}
-                opacity={1}
-                permanent
-              >
-                {typeof markerLabel === "string" ? (
-                  markerLabel
-                ) : (
-                  <span className="journey-location-row">
-                    <span className="journey-location-eta">
-                      <strong>{markerLabel.etaMinutes}</strong>
-                      <small>MIN</small>
-                    </span>
-                    <span className="journey-location-address">
-                      {markerLabel.text}
-                    </span>
-                  </span>
-                )}
-              </Tooltip>
+          <Fragment key={markerKey}>
+            <Marker
+              position={[pin.latitude, pin.longitude]}
+              icon={mapMarkerIcons[markerKind]}
+              opacity={overlapping.has(index) ? 0.52 : 1}
+              zIndexOffset={markerKind === "pickup" ? 2 : 1}
+            >
+              {typeof markerLabel === "string" ? (
+                <Tooltip
+                  className="journey-location-label"
+                  direction="top"
+                  offset={[0, -16]}
+                  opacity={1}
+                  permanent
+                >
+                  {markerLabel}
+                </Tooltip>
+              ) : null}
+            </Marker>
+            {markerLabel && typeof markerLabel !== "string" ? (
+              <Marker
+                position={[pin.latitude, pin.longitude]}
+                icon={locationLabelIcon(markerLabel)}
+                interactive={false}
+                keyboard={false}
+                zIndexOffset={1000}
+              />
             ) : null}
-          </Marker>
+          </Fragment>
         ) : (
           <CircleMarker
-            key={`${pin.latitude}-${pin.longitude}-${index}`}
+            key={markerKey}
             center={[pin.latitude, pin.longitude]}
             radius={8}
             pathOptions={{
