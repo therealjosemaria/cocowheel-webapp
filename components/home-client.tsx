@@ -7,6 +7,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
 import LocationAge from "./location-age";
+import {
+  PAYID_MAX_LENGTH,
+  SEARCH_MAX_LENGTH,
+  payIdInputError,
+  searchInputError,
+} from "@/lib/input-validation";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
@@ -181,6 +187,8 @@ const humanError = (error: unknown) => {
     CO_RIDE_CODE_RATE_LIMITED:
       "Please wait a moment before another code attempt.",
     PAYID_UNAVAILABLE: "This driver did not add PayID. Cash is available.",
+    INVALID_PAYID: "Check your PayID format and length.",
+    INVALID_FIXED_PRICE: "Enter a whole-dollar amount from A$5 to A$10,000.",
     REQUEST_TIME_INCOMPATIBLE:
       "That requested time is not compatible with the driver’s planned departure.",
   };
@@ -229,7 +237,7 @@ export default function HomeClient({
     destination?: Pin;
   }>({});
   const [pinTarget, setPinTarget] = useState<PinTarget>(null);
-  const [price, setPrice] = useState("10");
+  const [price, setPrice] = useState("5");
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -1274,6 +1282,19 @@ function DriverForm(props: {
   submit: () => void;
   busy: boolean;
 }) {
+  const payIdRef = useRef<HTMLInputElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+  const submit = () => {
+    payIdRef.current?.setCustomValidity(
+      payIdInputError(props.payId, props.payIdType) ?? "",
+    );
+    if (
+      !priceRef.current?.reportValidity() ||
+      !payIdRef.current?.reportValidity()
+    )
+      return;
+    props.submit();
+  };
   return (
     <div className="form-page">
       <h1 className="page-title">Offer a ride</h1>
@@ -1337,9 +1358,12 @@ function DriverForm(props: {
           <div className="money">
             <b>A$</b>
             <input
+              ref={priceRef}
+              required
               inputMode="numeric"
               type="number"
               min="5"
+              max="10000"
               step="1"
               value={props.price}
               onChange={(event) => props.setPrice(event.target.value)}
@@ -1371,6 +1395,15 @@ function DriverForm(props: {
             ))}
           </div>
           <input
+            ref={payIdRef}
+            type={
+              props.payIdType === "EMAIL"
+                ? "email"
+                : props.payIdType === "MOBILE"
+                  ? "tel"
+                  : "text"
+            }
+            maxLength={PAYID_MAX_LENGTH[props.payIdType]}
             aria-label={`Your PayID ${props.payIdType.toLowerCase()}`}
             inputMode={
               props.payIdType === "MOBILE"
@@ -1387,14 +1420,13 @@ function DriverForm(props: {
                   : "ABN or organisation identifier"
             }
             value={props.payId}
-            onChange={(event) => props.setPayId(event.target.value)}
+            onChange={(event) => {
+              event.target.setCustomValidity("");
+              props.setPayId(event.target.value);
+            }}
           />
         </fieldset>
-        <button
-          className="primary"
-          disabled={props.busy}
-          onClick={props.submit}
-        >
+        <button className="primary" disabled={props.busy} onClick={submit}>
           {props.busy ? "Publishing…" : "PUBLISH RIDE"}
         </button>
       </div>
@@ -1843,6 +1875,8 @@ function PlaceSearch({
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus, selectOnFocus]);
   const search = () => {
+    inputRef.current?.setCustomValidity(searchInputError(text) ?? "");
+    if (!inputRef.current?.reportValidity()) return;
     if (text.trim().length < 3) {
       inputRef.current?.focus();
       return;
@@ -1875,9 +1909,11 @@ function PlaceSearch({
         ) : null}
         <input
           ref={inputRef}
+          maxLength={SEARCH_MAX_LENGTH}
           autoFocus={autoFocus}
           value={text}
           onChange={(event) => {
+            event.target.setCustomValidity("");
             setText(event.target.value);
             setPlaces([]);
           }}

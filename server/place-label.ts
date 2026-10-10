@@ -1,4 +1,5 @@
 import type { Db, Pin } from "./core";
+import { searchInputError } from "../lib/input-validation";
 import { cachePlaceLookup, cachedPlaceLookup } from "./provider-cache";
 
 type GeoapifyFeature = {
@@ -83,9 +84,10 @@ export async function searchPlaces(
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
 ): Promise<Pin[]> {
+  if (searchInputError(text)) throw new Error("INVALID_SEARCH_TEXT");
   if (!apiKey || text.trim().length < 3) return [];
   const url = new URL("https://api.geoapify.com/v1/geocode/search");
-  url.searchParams.set("text", text.trim().slice(0, 160));
+  url.searchParams.set("text", text.trim());
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", "10");
   if (countryCode && /^[a-z]{2}$/i.test(countryCode))

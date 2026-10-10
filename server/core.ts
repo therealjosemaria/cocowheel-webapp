@@ -9,6 +9,7 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
+import { payIdInputError } from "../lib/input-validation";
 
 export type Db = Database.Database;
 export type RideStatus =
@@ -900,12 +901,14 @@ export function publishRide(
     input.priceAud > 10_000
   )
     throw new Error("INVALID_FIXED_PRICE");
-  const payId = cleanOptional(input.payId, 160, "INVALID_PAYID");
+  const payId = cleanOptional(input.payId, 254, "INVALID_PAYID");
   const payIdType = payId
     ? (input.payIdType ?? (payId.includes("@") ? "EMAIL" : "OTHER"))
     : null;
   if (payIdType && !["MOBILE", "EMAIL", "OTHER"].includes(payIdType))
     throw new Error("INVALID_PAYID_TYPE");
+  if (payId && payIdType && payIdInputError(input.payId ?? payId, payIdType))
+    throw new Error("INVALID_PAYID");
   const existing = findSession(db, rawSessionToken, now);
   const created = existing ? null : createGuestSession(db, now);
   const session = existing ?? created!.session;

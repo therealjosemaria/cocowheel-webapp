@@ -221,6 +221,55 @@ test("published drivers can move while offers remain requestable and public loca
   }
 });
 
+test("publishing rejects invalid payment inputs and treats SQL-like text as data", () => {
+  const h = harness();
+  try {
+    for (const priceAud of [4, 5.5, 10001, Infinity])
+      assert.throws(
+        () => publishRide(h.db, null, { ...driverInput, priceAud }, baseTime),
+        /INVALID_FIXED_PRICE/,
+      );
+    for (const [payIdType, payId] of [
+      ["MOBILE", "04123"],
+      ["EMAIL", "not-an-email"],
+      ["OTHER", "12345"],
+    ] as const)
+      assert.throws(
+        () =>
+          publishRide(
+            h.db,
+            null,
+            { ...driverInput, payIdType, payId },
+            baseTime,
+          ),
+        /INVALID_PAYID/,
+      );
+    const label = "Town Hall'); DROP TABLE rides; --";
+    const published = publishRide(
+      h.db,
+      null,
+      { ...driverInput, priceAud: 5, origin: { ...driverInput.origin, label } },
+      baseTime,
+    );
+    assert.equal(published.ride.plannedRoute?.origin.label, label);
+    assert.equal(
+      (
+        h.db.prepare("SELECT COUNT(*) AS count FROM rides").get() as {
+          count: number;
+        }
+      ).count,
+      1,
+    );
+    assert.equal(availableRides(h.db, baseTime).length, 1);
+    assert.throws(
+      () => publicRidePreview(h.db, "' OR 1=1 --", baseTime),
+      /RIDE_UNAVAILABLE/,
+    );
+  } finally {
+    h.close();
+  }
+});
+
 test("rotates through 50 animal aliases without repeating the last ten", () => {
   const h = harness();
   try {

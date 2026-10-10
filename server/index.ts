@@ -418,6 +418,8 @@ export function createApiServer(
       }
       if (request.method === "POST" && parts.join("/") === "api/place-search") {
         const body = await readJson(request);
+        if (typeof body.text !== "string")
+          throw new Error("INVALID_SEARCH_TEXT");
         const text = typeof body.text === "string" ? body.text : "";
         const bias = body.bias ? validPlacePin(body.bias) : undefined;
         const countryCode =
@@ -499,6 +501,13 @@ export function createApiServer(
       }
       if (request.method === "POST" && parts.join("/") === "api/rides") {
         const body = await readJson(request);
+        if (body.payId != null && typeof body.payId !== "string")
+          throw new Error("INVALID_PAYID");
+        if (
+          body.payIdType != null &&
+          !["MOBILE", "EMAIL", "OTHER"].includes(String(body.payIdType))
+        )
+          throw new Error("INVALID_PAYID_TYPE");
         const [rideOrigin, rideDestination] = await Promise.all([
           pinWithPublishedLabel(body.origin, database),
           pinWithPublishedLabel(body.destination, database),
