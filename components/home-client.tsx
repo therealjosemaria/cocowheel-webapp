@@ -1530,7 +1530,7 @@ function RiderForm(props: {
     );
   }
   return (
-    <div className="form-page">
+    <div className="form-page rider-form-page">
       <h1 className="page-title">Find a ride</h1>
       <div className="form-panel-content">
         <PinControls

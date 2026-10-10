@@ -1147,7 +1147,6 @@ p {
 }
 .place-search-input {
   display: flex;
-  align-items: center;
   overflow: hidden;
   border: 1px solid #b9c9cc;
   border-radius: 11px;
@@ -1157,6 +1156,7 @@ p {
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
+  align-self: center;
   margin-left: 12px;
   fill: none;
   stroke: var(--muted);
@@ -1212,6 +1212,12 @@ p {
   max-height: min(44svh, 420px);
   overflow-y: auto;
   scrollbar-width: thin;
+  box-shadow: none;
+}
+@media (max-width: 699px) {
+  .rider-form-page {
+    min-height: calc(100svh - 126px);
+  }
 }
 .results {
   margin-top: 28px;
