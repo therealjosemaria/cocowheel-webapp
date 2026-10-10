@@ -50,6 +50,8 @@ const locationText = (pin?: Pin) =>
   pin
     ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
     : "Place a pin on the map";
+const mapLocationText = (pin: Pin) =>
+  pin.label?.split(",", 1)[0]?.trim() || locationText(pin);
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
@@ -1760,10 +1762,10 @@ function RideSelection({
     selectedPickupMinutes !== null
       ? {
           etaMinutes: selectedPickupMinutes,
-          text: locationText(pickup),
+          text: mapLocationText(pickup),
         }
-      : locationText(pickup),
-    locationText(destination),
+      : mapLocationText(pickup),
+    mapLocationText(destination),
   ];
 
   return (

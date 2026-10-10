@@ -138,6 +138,7 @@ function PinMarkers({
     <>
       {pins.map((pin, index) => {
         const markerKind = markerKinds?.[index];
+        const markerLabel = markerLabels?.[index];
         return markerKind ? (
           <Marker
             key={`${pin.latitude}-${pin.longitude}-${index}`}
@@ -146,10 +147,10 @@ function PinMarkers({
             opacity={overlapping.has(index) ? 0.52 : 1}
             zIndexOffset={markerKind === "pickup" ? 2 : 1}
           >
-            {markerLabels?.[index] ? (
+            {markerLabel ? (
               <Tooltip
                 className={`journey-location-label${
-                  typeof markerLabels[index] === "string"
+                  typeof markerLabel === "string"
                     ? ""
                     : " journey-location-label-combined"
                 }`}
@@ -158,15 +159,16 @@ function PinMarkers({
                 opacity={1}
                 permanent
               >
-                {typeof markerLabels[index] === "string" ? (
-                  markerLabels[index]
+                {typeof markerLabel === "string" ? (
+                  markerLabel
                 ) : (
                   <>
                     <span className="journey-location-eta">
-                      {markerLabels[index]?.etaMinutes} min
+                      <strong>{markerLabel.etaMinutes}</strong>
+                      <small>MIN</small>
                     </span>
                     <span className="journey-location-address">
-                      {markerLabels[index]?.text}
+                      {markerLabel.text}
                     </span>
                   </>
                 )}
