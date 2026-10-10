@@ -95,16 +95,14 @@ export default function UniversityVerification() {
     <dialog
       ref={dialog}
       className="university-dialog"
-      aria-labelledby="university-title"
+      aria-label={challenge ? "Enter your code" : "UniKey verification"}
       onCancel={(event) => {
         event.preventDefault();
         if (!busy) close();
       }}
     >
       <form onSubmit={submit} className="university-form">
-        <h2 id="university-title">
-          {challenge ? "Enter your code" : "Verify your UniKey"}
-        </h2>
+        {challenge && <h2>Enter your code</h2>}
         {challenge ? (
           <>
             <p>Sent to {deliveryAddress}</p>
@@ -126,9 +124,10 @@ export default function UniversityVerification() {
         ) : (
           <>
             <label>
-              UniKey
               <input
                 key="unikey"
+                aria-label="UniKey"
+                placeholder="UniKey"
                 autoFocus
                 autoCapitalize="none"
                 autoComplete="username"
