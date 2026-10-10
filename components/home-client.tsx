@@ -1835,7 +1835,7 @@ function RideSelection({
           type="button"
           className="primary"
           disabled={busy || !selectedCandidate}
-          onClick={request}
+          onClick={() => request()}
         >
           {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
         </button>
