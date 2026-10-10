@@ -863,12 +863,16 @@ p {
   padding: 0 !important;
   border: 0 !important;
   border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 .journey-location-row {
   display: inline-flex;
   width: max-content;
   max-width: min(290px, 78vw);
   overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 14%);
 }
 .journey-location-eta {
   display: flex;
@@ -903,6 +907,7 @@ p {
   padding: 5px 6px 5px 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: rgb(255 255 255 / 94%);
 }
 .journey-marker-departure {
   border-radius: 50%;
