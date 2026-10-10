@@ -809,6 +809,16 @@ export function createApiServer(
       writeJson(response, 404, { error: "NOT_FOUND" }, cors);
     } catch (error) {
       const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+      if (
+        request.method === "POST" &&
+        /^\/api\/rides\/[^/?]+\/requests(?:\?|$)/.test(request.url ?? "")
+      ) {
+        // Log only a bounded error identifier, never request bodies or guest tokens.
+        console.warn("Ride join rejected", {
+          status: errorStatus(error),
+          code: /^[A-Z][A-Z0-9_]{0,79}$/.test(code) ? code : "INTERNAL_ERROR",
+        });
+      }
       writeJson(response, errorStatus(error), { error: code }, cors);
     }
   });
