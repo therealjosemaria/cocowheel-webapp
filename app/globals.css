@@ -858,11 +858,15 @@ p {
   border-top-color: #ffffff !important;
 }
 .journey-location-label-combined {
-  display: grid !important;
-  width: min(290px, 78vw);
+  width: auto;
   max-width: none;
-  grid-template-columns: 44px minmax(0, 1fr);
   padding: 0 !important;
+}
+.journey-location-row {
+  display: grid;
+  width: min(290px, 78vw);
+  grid-template-columns: 44px minmax(0, 1fr);
+  overflow: hidden;
 }
 .journey-location-eta {
   display: flex;

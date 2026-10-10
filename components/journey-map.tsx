@@ -162,7 +162,7 @@ function PinMarkers({
                 {typeof markerLabel === "string" ? (
                   markerLabel
                 ) : (
-                  <>
+                  <span className="journey-location-row">
                     <span className="journey-location-eta">
                       <strong>{markerLabel.etaMinutes}</strong>
                       <small>MIN</small>
@@ -170,7 +170,7 @@ function PinMarkers({
                     <span className="journey-location-address">
                       {markerLabel.text}
                     </span>
-                  </>
+                  </span>
                 )}
               </Tooltip>
             ) : null}
