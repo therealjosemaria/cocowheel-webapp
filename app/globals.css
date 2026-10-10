@@ -858,24 +858,30 @@ p {
   border-top-color: #ffffff !important;
 }
 .leaflet-tooltip.journey-location-label-combined {
-  width: max-content;
-  max-width: min(290px, 78vw);
+  width: 0 !important;
+  height: 0 !important;
+  max-width: none;
+  overflow: visible !important;
   padding: 0 !important;
   border: none !important;
   outline: none !important;
-  border-radius: 6px !important;
-  background: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
 }
 .leaflet-tooltip.journey-location-label-combined::before {
   display: none;
 }
 .journey-location-row {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
   display: inline-flex;
   width: max-content;
   max-width: min(290px, 78vw);
   overflow: hidden;
   border-radius: 6px;
+  transform: translateX(-50%);
 }
 .journey-location-eta {
   display: flex;
