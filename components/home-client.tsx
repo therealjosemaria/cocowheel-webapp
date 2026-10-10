@@ -10,9 +10,10 @@ import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
+  cacheRoadPath,
+  cachedRoadPath,
   consumeRiderSearchReturn,
   clearRiderSearchDraft,
-  markRiderSearchReturn,
   riderSearchDraft,
   riderSearchDraftTtlMs,
   saveRiderPreviewRoute,
@@ -243,14 +244,12 @@ export default function HomeClient({
   const [selected, setSelected] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [riderMapOpen, setRiderMapOpen] = useState(false);
+  const [riderSelectionOpen, setRiderSelectionOpen] = useState(false);
   const [riderTime, setRiderTime] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AvailabilityOffer[]>([]);
   const [availabilityServerNow, setAvailabilityServerNow] = useState<
     string | null
   >(null);
-  const [candidateServerNow, setCandidateServerNow] = useState<string | null>(
-    null,
-  );
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [code, setCode] = useState("");
   const [locationPromptTarget, setLocationPromptTarget] = useState<
@@ -288,6 +287,7 @@ export default function HomeClient({
         setRiderMapOpen(false);
         const draft = riderSearchDraft();
         if (draft) {
+          setRiderSelectionOpen(true);
           setRiderPins((state) =>
             state.pickup || state.destination
               ? state
@@ -295,6 +295,7 @@ export default function HomeClient({
           );
           setRiderTime(draft.departureAt);
         } else {
+          setRiderSelectionOpen(false);
           setRiderPins(recentLocation ? { pickup: recentLocation } : {});
           setRiderTime(null);
         }
@@ -341,6 +342,7 @@ export default function HomeClient({
       setRole("RIDER");
       setPinTarget(null);
       setRiderMapOpen(false);
+      setRiderSelectionOpen(true);
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
       setScreen("RIDER");
@@ -371,13 +373,17 @@ export default function HomeClient({
         setRiderMapOpen(false);
         const draft = riderSearchDraft();
         if (draft) {
+          setRiderSelectionOpen(true);
           setRiderPins({
             pickup: draft.pickup,
             destination: draft.destination,
           });
           setRiderTime(draft.departureAt);
         } else if (recentLocation) {
+          setRiderSelectionOpen(false);
           setRiderPins({ pickup: recentLocation });
+        } else {
+          setRiderSelectionOpen(false);
         }
       }
       setScreen(roleChoice);
@@ -702,6 +708,7 @@ export default function HomeClient({
         setCandidates([]);
         setSelected(null);
         setRiderRoute(null);
+        setRiderSelectionOpen(false);
       },
       Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()),
     );
@@ -735,7 +742,6 @@ export default function HomeClient({
         .then((result) => {
           if (cancelled) return;
           setCandidates(result.candidates);
-          setCandidateServerNow(result.serverNow);
           setSelected(result.candidates[0]?.rideId ?? null);
         })
         .catch((reason) => !cancelled && setError(humanError(reason)))
@@ -950,7 +956,11 @@ export default function HomeClient({
           setTarget={setPinTarget}
           setPin={setPin}
           onPickupRequest={() => setLocationPromptTarget("pickup")}
-          setDestination={(pin) => setPinForTarget("riderDestination", pin)}
+          setDestination={(pin) => {
+            setCandidates([]);
+            setSelected(null);
+            setPinForTarget("riderDestination", pin);
+          }}
           routePoints={activeRiderRoute}
           mapOpen={riderMapOpen}
           setMapOpen={setRiderMapOpen}
@@ -963,7 +973,6 @@ export default function HomeClient({
           availability={availability}
           availabilityServerNow={availabilityServerNow}
           availabilityChecking={availabilityChecking}
-          candidateServerNow={candidateServerNow}
           onAvailabilityJoin={(offer) => {
             if (offer.isOwnOffer) {
               setOwnOfferPromptOpen(true);
@@ -975,21 +984,9 @@ export default function HomeClient({
             }
             setRouteRequiredPromptOpen(true);
           }}
-          previewRoute={(candidate) => {
-            if (!riderPins.pickup || !riderPins.destination) return;
-            saveRiderSearchDraft(
-              riderPins.pickup,
-              riderPins.destination,
-              riderTime,
-            );
-            markRiderSearchReturn();
-            saveRiderPreviewRoute(
-              candidate.rideId,
-              riderPins.pickup,
-              riderPins.destination,
-              candidate.directionFit,
-            );
-          }}
+          selectionOpen={riderSelectionOpen}
+          openSelection={() => setRiderSelectionOpen(true)}
+          closeSelection={() => setRiderSelectionOpen(false)}
         />
       ) : null}
     </section>
@@ -1477,10 +1474,27 @@ function RiderForm(props: {
   availability: AvailabilityOffer[];
   availabilityServerNow: string | null;
   availabilityChecking: boolean;
-  candidateServerNow: string | null;
   onAvailabilityJoin: (offer: AvailabilityOffer) => void;
-  previewRoute: (candidate: Candidate) => void;
+  selectionOpen: boolean;
+  openSelection: () => void;
+  closeSelection: () => void;
 }) {
+  if (props.selectionOpen && props.pins.pickup && props.pins.destination) {
+    return (
+      <RideSelection
+        pickup={props.pins.pickup}
+        destination={props.pins.destination}
+        riderRoute={props.routePoints}
+        candidates={props.candidates}
+        selected={props.selected}
+        setSelected={props.setSelected}
+        request={props.request}
+        busy={props.busy}
+        searching={props.searching}
+        back={props.closeSelection}
+      />
+    );
+  }
   return (
     <div className="form-page">
       <h1 className="page-title">Find a ride</h1>
@@ -1511,20 +1525,10 @@ function RiderForm(props: {
             props.setDestination(pin);
             props.setTarget("riderDestination");
             props.setMapOpen(false);
+            props.openSelection();
           }}
         />
-        {props.pins.pickup && props.pins.destination ? (
-          <Results
-            candidates={props.candidates}
-            serverNow={props.candidateServerNow}
-            selected={props.selected}
-            setSelected={props.setSelected}
-            request={props.request}
-            previewRoute={props.previewRoute}
-            busy={props.busy}
-            searching={props.searching}
-          />
-        ) : (
+        {props.pins.pickup && props.pins.destination ? null : (
           <AvailabilityBoard
             rides={props.availability}
             serverNow={props.availabilityServerNow}
@@ -1532,6 +1536,213 @@ function RiderForm(props: {
             onJoin={props.onAvailabilityJoin}
           />
         )}
+      </div>
+    </div>
+  );
+}
+
+type PublicRideRoute = {
+  plannedRoute: { origin: Pin; destination: Pin };
+};
+type RoutePreviewResponse = {
+  points: Pin[];
+  distanceMeters: number | null;
+  durationSeconds: number | null;
+};
+
+function RideSelection({
+  pickup,
+  destination,
+  riderRoute,
+  candidates,
+  selected,
+  setSelected,
+  request,
+  busy,
+  searching,
+  back,
+}: {
+  pickup: Pin;
+  destination: Pin;
+  riderRoute?: Pin[] | null;
+  candidates: Candidate[];
+  selected: string | null;
+  setSelected: (id: string) => void;
+  request: () => void;
+  busy: boolean;
+  searching: boolean;
+  back: () => void;
+}) {
+  const selectedCandidate =
+    candidates.find((candidate) => candidate.rideId === selected) ?? null;
+  const [driverRoute, setDriverRoute] = useState<{
+    rideId: string;
+    origin: Pin;
+    destination: Pin;
+    points: Pin[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (!selectedCandidate) return;
+    let cancelled = false;
+    void cocowheelsApi<{ ride: PublicRideRoute }>(
+      `/api/rides/${encodeURIComponent(selectedCandidate.rideId)}/preview`,
+    )
+      .then(async ({ ride }) => {
+        const cached = cachedRoadPath(
+          ride.plannedRoute.origin,
+          ride.plannedRoute.destination,
+        );
+        const points =
+          cached ??
+          (
+            await cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
+              method: "POST",
+              body: JSON.stringify(ride.plannedRoute),
+            })
+          ).points;
+        if (cancelled) return;
+        if (!cached)
+          cacheRoadPath(
+            ride.plannedRoute.origin,
+            ride.plannedRoute.destination,
+            points,
+          );
+        setDriverRoute({
+          rideId: selectedCandidate.rideId,
+          ...ride.plannedRoute,
+          points,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setDriverRoute(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCandidate]);
+
+  const visibleDriverRoute =
+    driverRoute?.rideId === selectedCandidate?.rideId
+      ? driverRoute
+      : selectedCandidate
+        ? {
+            rideId: selectedCandidate.rideId,
+            origin: selectedCandidate.redactedCorridor[0],
+            destination: selectedCandidate.redactedCorridor[1],
+            points: selectedCandidate.redactedCorridor,
+          }
+        : null;
+  const mapPins = [
+    ...(visibleDriverRoute
+      ? [visibleDriverRoute.origin, visibleDriverRoute.destination]
+      : []),
+    pickup,
+    destination,
+  ];
+  const markerKinds = [
+    ...(visibleDriverRoute ? (["driver", "destination"] as const) : []),
+    "pickup",
+    "destination",
+  ] as Array<"driver" | "pickup" | "destination">;
+  const markerLabels = [
+    ...(visibleDriverRoute ? [undefined, undefined] : []),
+    locationText(pickup),
+    locationText(destination),
+  ];
+
+  return (
+    <div className="ride-selection-page">
+      <div className="ride-selection-map">
+        <JourneyMap
+          pins={mapPins}
+          markerKinds={markerKinds}
+          markerLabels={markerLabels}
+          roadPathAttribution={Boolean(
+            riderRoute?.length ||
+              (driverRoute &&
+                driverRoute.rideId === selectedCandidate?.rideId &&
+                driverRoute.points.length),
+          )}
+          lines={[
+            ...(visibleDriverRoute
+              ? [
+                  {
+                    points: visibleDriverRoute.points,
+                    color: "#2563eb",
+                    weight: 7,
+                    opacity: 0.82,
+                  },
+                ]
+              : []),
+            {
+              points: riderRoute?.length ? riderRoute : [pickup, destination],
+              color: "#f97316",
+              weight: 4,
+              opacity: 0.95,
+            },
+          ]}
+        />
+        <button
+          type="button"
+          className="ride-selection-back"
+          aria-label="Back to route search"
+          onClick={back}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+      </div>
+      <section className="ride-options" aria-live="polite">
+        <h1>Choose a ride</h1>
+        {searching ? null : candidates.length ? (
+          <div className="ride-option-list">
+            {candidates.map((candidate) => (
+              <button
+                type="button"
+                key={candidate.rideId}
+                className={`ride-option${
+                  candidate.rideId === selected ? " selected" : ""
+                }`}
+                aria-pressed={candidate.rideId === selected}
+                onClick={() => setSelected(candidate.rideId)}
+              >
+                <span className="ride-option-car" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M5 14.5h14l-1.5-4.3a2 2 0 0 0-1.9-1.4H8.4a2 2 0 0 0-1.9 1.4L5 14.5v3h2v-1h10v1h2v-3Z" />
+                    <path d="M7.5 14.5h.01M16.5 14.5h.01" />
+                  </svg>
+                </span>
+                <span className="ride-option-main">
+                  <strong>{candidate.driverAlias}</strong>
+                  <small>
+                    {candidate.departureLabel ?? "Departure"} →{" "}
+                    {candidate.destinationLabel ?? "Destination"}
+                  </small>
+                </span>
+                <span
+                  className={`ride-option-fit direction-fit-${candidate.directionFit.toLowerCase()}`}
+                >
+                  {candidate.directionFit === "GOOD" ? "Good fit" : "Poor fit"}
+                </span>
+                <b>A${candidate.priceAud}</b>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="ride-options-empty">No planned rides yet</p>
+        )}
+      </section>
+      <div className="ride-selection-action">
+        <button
+          type="button"
+          className="primary"
+          disabled={busy || !selectedCandidate}
+          onClick={request}
+        >
+          {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
+        </button>
       </div>
     </div>
   );
@@ -1684,100 +1895,6 @@ function AvailabilityBoard({
         </p>
       ) : null}
     </section>
-  );
-}
-function Results({
-  candidates,
-  serverNow,
-  selected,
-  setSelected,
-  request,
-  previewRoute,
-  busy,
-  searching,
-}: {
-  candidates: Candidate[];
-  serverNow: string | null;
-  selected: string | null;
-  setSelected: (id: string) => void;
-  request: (candidate?: Candidate) => void;
-  previewRoute: (candidate: Candidate) => void;
-  busy: boolean;
-  searching: boolean;
-}) {
-  return (
-    <div className="results">
-      <h2>Rides available</h2>
-      {searching ? null : candidates.length === 0 ? (
-        <div className="empty">
-          <h2>No planned rides yet</h2>
-        </div>
-      ) : (
-        <>
-          <div className="availability-board matched-availability">
-            <div className="availability-heading" aria-hidden="true">
-              <span>Route ID</span>
-              <span>Driver</span>
-              <span>Where from?</span>
-              <span>Where to?</span>
-              <span>Expiry</span>
-              <span>Price</span>
-              <span>View</span>
-              <span>Fit</span>
-              <span>Action</span>
-            </div>
-            {candidates.map((candidate) => (
-              <article
-                key={candidate.rideId}
-                className={`availability-row availability-select ${candidate.rideId === selected ? "selected" : ""}`}
-                onClick={() => setSelected(candidate.rideId)}
-              >
-                <code>{routeReference(candidate.rideId)}</code>
-                <strong>{candidate.driverAlias}</strong>
-                <span>{candidate.departureLabel ?? "—"}</span>
-                <span>{candidate.destinationLabel ?? "—"}</span>
-                <span className="availability-expiry">
-                  {serverNow ? (
-                    <ExpiryCountdown
-                      key={serverNow}
-                      expiresAt={candidate.expiresAt}
-                      serverNow={serverNow}
-                    />
-                  ) : (
-                    "—"
-                  )}
-                </span>
-                <b>A${candidate.priceAud}</b>
-                <Link
-                  className="availability-view"
-                  href={`/rides/${encodeURIComponent(candidate.rideId)}`}
-                  onClick={() => previewRoute(candidate)}
-                >
-                  OPEN
-                </Link>
-                <span
-                  className={`direction-fit direction-fit-${candidate.directionFit.toLowerCase()}`}
-                  aria-label={`Direction fit: ${candidate.directionFit === "GOOD" ? "Good" : "Poor"}`}
-                >
-                  {candidate.directionFit === "GOOD" ? "Good" : "Poor"}
-                </span>
-                <button
-                  type="button"
-                  className="availability-join"
-                  disabled={busy}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    request(candidate);
-                  }}
-                >
-                  JOIN
-                </button>
-              </article>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
   );
 }
 function RideStatus({

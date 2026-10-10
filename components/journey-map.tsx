@@ -8,6 +8,7 @@ import {
   Marker,
   Polyline,
   TileLayer,
+  Tooltip,
   useMap,
   useMapEvents,
   ZoomControl,
@@ -21,11 +22,7 @@ type Line = {
   weight?: number;
   opacity?: number;
 };
-type MarkerKind =
-  | "driver"
-  | "departure"
-  | "pickup"
-  | "destination";
+type MarkerKind = "driver" | "departure" | "pickup" | "destination";
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   driver: divIcon({
@@ -79,20 +76,24 @@ function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
       ),
       { padding: [28, 28], maxZoom: 16 },
     );
-  // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, pointKey]);
   return null;
 }
 function sameIndexes(left: Set<number>, right: Set<number>) {
-  return left.size === right.size && [...left].every((index) => right.has(index));
+  return (
+    left.size === right.size && [...left].every((index) => right.has(index))
+  );
 }
 function PinMarkers({
   pins,
   markerKinds,
+  markerLabels,
 }: {
   pins: Pin[];
   markerKinds?: MarkerKind[];
+  markerLabels?: Array<string | undefined>;
 }) {
   const map = useMap();
   const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
@@ -138,7 +139,19 @@ function PinMarkers({
             icon={mapMarkerIcons[markerKind]}
             opacity={overlapping.has(index) ? 0.52 : 1}
             zIndexOffset={markerKind === "pickup" ? 2 : 1}
-          />
+          >
+            {markerLabels?.[index] ? (
+              <Tooltip
+                className="journey-location-label"
+                direction="top"
+                offset={[0, -16]}
+                opacity={1}
+                permanent
+              >
+                {markerLabels[index]}
+              </Tooltip>
+            ) : null}
+          </Marker>
         ) : (
           <CircleMarker
             key={`${pin.latitude}-${pin.longitude}-${index}`}
@@ -161,12 +174,14 @@ export default function JourneyMap({
   lines = [],
   onPick,
   markerKinds,
+  markerLabels,
   roadPathAttribution = false,
 }: {
   pins?: Pin[];
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
+  markerLabels?: Array<string | undefined>;
   roadPathAttribution?: boolean;
 }) {
   return (
@@ -179,9 +194,7 @@ export default function JourneyMap({
         attributionControl={false}
         className="journey-map"
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {lines.map((line, index) => (
           <Polyline
             key={index}
@@ -196,23 +209,38 @@ export default function JourneyMap({
             }}
           />
         ))}
-        <PinMarkers pins={pins} markerKinds={markerKinds} />
+        <PinMarkers
+          pins={pins}
+          markerKinds={markerKinds}
+          markerLabels={markerLabels}
+        />
         <MapClick onPick={onPick} />
         <Fit pins={pins} lines={lines} />
         <ZoomControl position="bottomright" />
       </MapContainer>
       <p className="map-attribution">
-        {roadPathAttribution ? <>
-          Road path by{" "}
-          <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">
-            Geoapify
-          </a>
-          <span aria-hidden="true"> · </span>
-        </> : null}
-        <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
-        <span aria-hidden="true"> · </span>
-        ©{" "}
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+        {roadPathAttribution ? (
+          <>
+            Road path by{" "}
+            <a
+              href="https://www.geoapify.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Geoapify
+            </a>
+            <span aria-hidden="true"> · </span>
+          </>
+        ) : null}
+        <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">
+          Leaflet
+        </a>
+        <span aria-hidden="true"> · </span>©{" "}
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+        >
           OpenStreetMap contributors
         </a>
       </p>
