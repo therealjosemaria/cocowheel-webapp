@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { openDatabase } from "../server/db";
+import { adminInspector } from "../server/admin";
 import {
   ANONYMOUS_ANIMALS,
   advanceSampleRide,
@@ -205,7 +206,7 @@ test("published drivers can move while offers remain requestable and public loca
       ).driverLocation?.stale,
       true,
     );
-    const expiredTime = new Date(baseTime.getTime() + 3600001);
+    const expiredTime = new Date(baseTime.getTime() + 6 * 3600000 + 1);
     assert.throws(
       () =>
         submitLocation(
@@ -320,6 +321,32 @@ function sessions(h: ReturnType<typeof harness>) {
   return { published, requested, driver, rider };
 }
 
+test("six-hour offers retain expiry and request fit in admin", () => {
+  const h = harness();
+  try {
+    const published = publishRide(h.db, null, driverInput, baseTime);
+    requestRide(h.db, null, published.ride.rideId, riderInput, baseTime);
+    const report = adminInspector(h.db, published.ride.rideId);
+    assert.equal(
+      (report.ride as { offer_expires_at: string }).offer_expires_at,
+      new Date(baseTime.getTime() + 6 * 3600000).toISOString(),
+    );
+    assert.ok(["GOOD", "POOR"].includes(report.requests[0].fit));
+    assert.equal(report.requests[0].cached_pickup_minutes, null);
+    assert.equal(
+      availableRides(h.db, new Date(baseTime.getTime() + 2 * 3600000)).length,
+      1,
+    );
+    expireStaleRides(h.db, new Date(baseTime.getTime() + 6 * 3600000 + 1));
+    assert.equal(
+      availableRides(h.db, new Date(baseTime.getTime() + 6 * 3600000 + 1))
+        .length,
+      0,
+    );
+  } finally {
+    h.close();
+  }
+});
 test("publishes a fixed-price offer and keeps discovery redacted while allowing a full preview", () => {
   const h = harness();
   try {
@@ -341,7 +368,7 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
     assert.equal("payIdType" in candidates[0], false);
     assert.equal(
       candidates[0].expiresAt,
-      new Date(baseTime.getTime() + 60 * 60_000).toISOString(),
+      new Date(baseTime.getTime() + 6 * 60 * 60_000).toISOString(),
     );
     const preview = publicRidePreview(h.db, published.ride.rideId, baseTime);
     assert.equal(preview.expiresAt, candidates[0].expiresAt);
@@ -1001,7 +1028,7 @@ test("private history keeps expired rides visible to their driver and requester"
   const h = harness();
   try {
     const flow = sessions(h);
-    const expiredAt = new Date(baseTime.getTime() + 60 * 60_000 + 1);
+    const expiredAt = new Date(baseTime.getTime() + 6 * 60 * 60_000 + 1);
     const driverHistory = privateHistory(
       h.db,
       flow.published.sessionToken,

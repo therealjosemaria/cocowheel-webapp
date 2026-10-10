@@ -1,4 +1,5 @@
 "use client";
+import { mapLocationText } from "@/lib/map-label";
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -46,8 +47,6 @@ const locationText = (pin?: Pin) =>
   pin
     ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
     : "Place a pin on the map";
-const mapLocationText = (pin: Pin) =>
-  pin.label?.split(",", 1)[0]?.trim() || locationText(pin);
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,

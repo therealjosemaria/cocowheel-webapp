@@ -5,6 +5,8 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import type { Db } from "./core";
+import { requestFitForRide } from "./core";
+import { cachedRoutePreview } from "./provider-cache";
 
 export const ADMIN_IDLE_MS = 60 * 60 * 1000;
 export const ADMIN_MAX_MS = 8 * ADMIN_IDLE_MS;
@@ -160,19 +162,57 @@ export function adminDashboard(db: Db, url: URL) {
   };
 }
 export function adminInspector(db: Db, id: string) {
+  const fitRide = db
+    .prepare("SELECT * FROM rides WHERE public_id = ?")
+    .get(id) as Parameters<typeof requestFitForRide>[0] | undefined;
   const ride = db
     .prepare(
       `SELECT ${rideFields}, origin_latitude, origin_longitude, destination_latitude, destination_longitude FROM rides WHERE public_id = ?`,
     )
     .get(id);
-  if (!ride) throw new Error("RIDE_NOT_FOUND");
+  if (!ride || !fitRide) throw new Error("RIDE_NOT_FOUND");
+  const driverLocation = db
+    .prepare(
+      "SELECT latitude, longitude FROM live_locations WHERE ride_id = ? AND participant = 'DRIVER'",
+    )
+    .get(fitRide.id) as { latitude: number; longitude: number } | undefined;
   return {
     ride,
     requests: db
       .prepare(
-        `SELECT rider_alias, status, pickup_label, destination_label, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude, created_at, decided_at FROM ride_requests WHERE ride_id = (SELECT id FROM rides WHERE public_id = ?) ORDER BY created_at DESC LIMIT 200`,
+        `SELECT rider_alias, status, pickup_label, destination_label, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude, requested_departure_at, created_at, decided_at FROM ride_requests WHERE ride_id = (SELECT id FROM rides WHERE public_id = ?) ORDER BY created_at DESC LIMIT 200`,
       )
-      .all(id),
+      .all(id)
+      .map((request) => {
+        const row = request as Parameters<typeof requestFitForRide>[1];
+        const estimate = [
+          "PUBLISHED",
+          "REQUESTED",
+          "ACCEPTED",
+          "RIDE_ACTIVE",
+          "CO_RIDE_ACTIVE",
+        ].includes(fitRide.status)
+          ? cachedRoutePreview(
+              db,
+              driverLocation ?? {
+                latitude: fitRide.origin_latitude,
+                longitude: fitRide.origin_longitude,
+              },
+              {
+                latitude: row.pickup_latitude,
+                longitude: row.pickup_longitude,
+              },
+              false,
+            )
+          : null;
+        return {
+          ...(request as Record<string, unknown>),
+          fit: requestFitForRide(fitRide, row),
+          cached_pickup_minutes: estimate
+            ? Math.max(1, Math.round(estimate.durationSeconds / 60))
+            : null,
+        };
+      }),
     locations: db
       .prepare(
         `SELECT participant, latitude, longitude, accuracy_meters, captured_at, received_at FROM live_locations WHERE ride_id = (SELECT id FROM rides WHERE public_id = ?)`,

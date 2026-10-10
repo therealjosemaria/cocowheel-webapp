@@ -125,6 +125,7 @@ export function cachedRoutePreview(
   database: Db | undefined,
   origin: Pin,
   destination: Pin,
+  touch = true,
 ) {
   if (!database) return null;
   const timestamp = now();
@@ -149,11 +150,12 @@ export function cachedRoutePreview(
       row.duration_seconds === null
     )
       return null;
-    database
-      .prepare(
-        "UPDATE route_preview_cache SET last_used_at = ? WHERE cache_key = ?",
-      )
-      .run(timestamp, cacheKey);
+    if (touch)
+      database
+        .prepare(
+          "UPDATE route_preview_cache SET last_used_at = ? WHERE cache_key = ?",
+        )
+        .run(timestamp, cacheKey);
     return {
       points,
       distanceMeters: row.distance_meters,

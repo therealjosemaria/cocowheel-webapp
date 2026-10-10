@@ -30,7 +30,7 @@ export type DirectionFit = "GOOD" | "POOR";
 
 const SESSION_COOKIE = "cocowheels_guest";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const OFFER_STALE_MS = 60 * 60 * 1000;
+const OFFER_STALE_MS = 6 * 60 * 60 * 1000;
 const SAMPLE_OFFER_STALE_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_STALE_MS = 24 * 60 * 60 * 1000;
 const LOCATION_FRESH_MS = 2 * 60 * 1000;
@@ -1293,7 +1293,7 @@ function requireRider(db: Db, row: RideRow, session: Session) {
   if (!request) throw new Error("RIDE_ACCESS_DENIED");
   return request;
 }
-function requestFitForRide(row: RideRow, request: RequestRow) {
+export function requestFitForRide(row: RideRow, request: RequestRow) {
   return directionFit(row, {
     pickup: {
       latitude: request.pickup_latitude,

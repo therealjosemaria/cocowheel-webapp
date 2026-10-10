@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
 import LocationAge from "./location-age";
-import ExpiryCountdown from "./expiry-countdown";
+import { mapLocationText } from "@/lib/map-label";
 import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
@@ -300,7 +300,18 @@ export default function RidePreviewClient({
   }, [riderRoute, riderDurationSeconds, roadPath?.length, routeKey]);
 
   useEffect(() => {
-    if (!ride?.plannedRoute || !riderRoute) return;
+    if (
+      !ride?.plannedRoute ||
+      !riderRoute ||
+      ![
+        "PUBLISHED",
+        "REQUESTED",
+        "ACCEPTED",
+        "RIDE_ACTIVE",
+        "CO_RIDE_ACTIVE",
+      ].includes(ride.status)
+    )
+      return;
     let cancelled = false;
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
@@ -318,7 +329,7 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [ride?.plannedRoute, ride?.driverLocation, riderRoute]);
+  }, [ride?.plannedRoute, ride?.driverLocation, ride?.status, riderRoute]);
 
   useEffect(() => {
     if (!driverRouteInput) return;
@@ -361,12 +372,25 @@ export default function RidePreviewClient({
     driverRoadPath?.coordinates === driverRouteCoordinates
       ? driverRoadPath.points
       : null;
+  const rideIsActive = Boolean(
+    ride &&
+    [
+      "PUBLISHED",
+      "REQUESTED",
+      "ACCEPTED",
+      "RIDE_ACTIVE",
+      "CO_RIDE_ACTIVE",
+    ].includes(ride.status),
+  );
   const pickupMinutes =
-    pickupDurationSeconds === null
+    !rideIsActive || pickupDurationSeconds === null
       ? null
       : Math.max(1, Math.round(pickupDurationSeconds / 60));
   const estimatedArrival =
-    serverNow && pickupDurationSeconds !== null && riderDurationSeconds !== null
+    rideIsActive &&
+    serverNow &&
+    pickupDurationSeconds !== null &&
+    riderDurationSeconds !== null
       ? new Date(
           Math.max(
             new Date(serverNow).getTime(),
@@ -517,8 +541,8 @@ export default function RidePreviewClient({
                 ? activeDriverRoadPath
                 : [ride.plannedRoute.origin, ride.plannedRoute.destination],
               color: "#2563eb",
-              weight: 8,
-              opacity: 0.9,
+              weight: 7,
+              opacity: 0.82,
             },
           ]
         : []),
@@ -712,23 +736,6 @@ export default function RidePreviewClient({
                   </dt>
                   <dd>{ride.destinationLabel}</dd>
                 </div>
-                <div>
-                  <dt>
-                    <RideFieldLabel icon="expiry">Expiry</RideFieldLabel>
-                  </dt>
-                  <dd>
-                    {serverNow &&
-                    ride.expiresAt &&
-                    (ride.status === "PUBLISHED" ||
-                      ride.status === "REQUESTED") ? (
-                      <ExpiryCountdown
-                        key={serverNow}
-                        expiresAt={ride.expiresAt}
-                        serverNow={serverNow}
-                      />
-                    ) : null}
-                  </dd>
-                </div>
                 {ride.acceptedAt ? (
                   <div>
                     <dt>
@@ -739,38 +746,10 @@ export default function RidePreviewClient({
                 ) : null}
                 <div>
                   <dt>
-                    <RideFieldLabel icon="fit">Fit</RideFieldLabel>
-                  </dt>
-                  <dd
-                    className={
-                      riderRoute?.directionFit
-                        ? `preview-fit preview-fit-${riderRoute.directionFit.toLowerCase()}`
-                        : undefined
-                    }
-                  >
-                    {riderRoute?.directionFit
-                      ? riderRoute.directionFit === "GOOD"
-                        ? "Good"
-                        : "Poor"
-                      : null}
-                  </dd>
-                </div>
-                <div>
-                  <dt>
                     <RideFieldLabel icon="price">Price</RideFieldLabel>
                   </dt>
                   <dd>A${ride.priceAud}</dd>
                 </div>
-                {pickupMinutes !== null ? (
-                  <div>
-                    <dt>
-                      <RideFieldLabel icon="pickup-time">
-                        To pickup
-                      </RideFieldLabel>
-                    </dt>
-                    <dd>~{pickupMinutes} min</dd>
-                  </div>
-                ) : null}
                 {estimatedArrival ? (
                   <div>
                     <dt>
@@ -933,16 +912,6 @@ export default function RidePreviewClient({
                       </div>
                       <div>
                         <dt>
-                          <RideFieldLabel icon="fit">Fit</RideFieldLabel>
-                        </dt>
-                        <dd
-                          className={`preview-fit preview-fit-${request.directionFit.toLowerCase()}`}
-                        >
-                          {request.directionFit === "GOOD" ? "Good" : "Poor"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>
                           <RideFieldLabel icon="request-status">
                             Request status
                           </RideFieldLabel>
@@ -1040,16 +1009,6 @@ export default function RidePreviewClient({
                       </dt>
                       <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
-                    <div className="request-detail-fit">
-                      <dt>
-                        <RideFieldLabel icon="fit">Fit</RideFieldLabel>
-                      </dt>
-                      <dd
-                        className={`preview-fit preview-fit-${riderDetail.directionFit.toLowerCase()}`}
-                      >
-                        {riderDetail.directionFit === "GOOD" ? "Good" : "Poor"}
-                      </dd>
-                    </div>
                     {driverOwned ? (
                       <div className="request-detail-status">
                         <dt>
@@ -1073,7 +1032,6 @@ export default function RidePreviewClient({
                 }}
               />
             ) : null}
-            <LocationAge location={ride.driverLocation} />
             <JourneyMap
               fitPins={[
                 ...(ride.plannedRoute
@@ -1103,21 +1061,50 @@ export default function RidePreviewClient({
                       ? ["pickup", "destination"]
                       : undefined
               }
+              markerLabels={[
+                ...(ride.plannedRoute
+                  ? [
+                      riderRoute
+                        ? undefined
+                        : mapLocationText(ride.plannedRoute.origin),
+                      riderRoute
+                        ? undefined
+                        : mapLocationText(ride.plannedRoute.destination),
+                    ]
+                  : []),
+                ...(riderRoute
+                  ? [
+                      pickupMinutes !== null
+                        ? {
+                            etaMinutes: pickupMinutes,
+                            text: mapLocationText(riderRoute.pickup),
+                          }
+                        : mapLocationText(riderRoute.pickup),
+                      mapLocationText(riderRoute.destination),
+                    ]
+                  : []),
+              ]}
               lines={lines}
               roadPathAttribution={Boolean(
                 activeDriverRoadPath?.length || roadPath?.length,
               )}
             />
-            <div className="route-key">
+            <div
+              className="ride-selection-route-key"
+              aria-label="Map route colours"
+            >
+              {rideIsActive ? (
+                <LocationAge location={ride.driverLocation} />
+              ) : null}
               {ride.plannedRoute ? (
                 <span>
-                  <i className="route-key-driver" />
+                  <i className="ride-selection-route-driver" />
                   Driver route
                 </span>
               ) : null}
               {riderRoute ? (
                 <span>
-                  <i className="route-key-rider" />
+                  <i className="ride-selection-route-rider" />
                   Your route
                 </span>
               ) : null}
