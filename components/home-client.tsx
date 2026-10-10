@@ -1175,6 +1175,7 @@ function PinControls({
   driver,
   routePoints,
   mapVisible = true,
+  hideRiderDestination = false,
 }: {
   target: PinTarget;
   setTarget: (target: PinTarget) => void;
@@ -1187,6 +1188,7 @@ function PinControls({
   driver: boolean;
   routePoints?: Pin[] | null;
   mapVisible?: boolean;
+  hideRiderDestination?: boolean;
 }) {
   const first = driver ? "origin" : "pickup";
   const second = driver ? "destination" : "riderDestination";
@@ -1244,7 +1246,11 @@ function PinControls({
         </div>
       ) : null}
       <div
-        className={`pin-summary ${driver ? "driver-location-summary" : "rider-location-summary"}`}
+        className={`pin-summary ${
+          driver
+            ? "driver-location-summary"
+            : `rider-location-summary${hideRiderDestination ? " rider-location-origin-only" : ""}`
+        }`}
       >
         <p>
           <strong className="location-heading">
@@ -1270,20 +1276,22 @@ function PinControls({
             </button>
           ) : null}
         </p>
-        <p>
-          <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
-              <circle cx="12" cy="10" r="2" />
-            </svg>
-            {driver ? "Final destination" : "Where to?"}
-          </strong>
-          {pins.destination
-            ? locationText(pins.destination)
-            : driver
-              ? "Select Final destination."
-              : null}
-        </p>
+        {driver || !hideRiderDestination ? (
+          <p>
+            <strong className="location-heading">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
+                <circle cx="12" cy="10" r="2" />
+              </svg>
+              {driver ? "Final destination" : "Where to?"}
+            </strong>
+            {pins.destination
+              ? locationText(pins.destination)
+              : driver
+                ? "Select Final destination."
+                : null}
+          </p>
+        ) : null}
       </div>
       {mapVisible ? (
         <JourneyMap
@@ -1523,6 +1531,7 @@ function RiderForm(props: {
           pins={props.pins}
           driver={false}
           mapVisible={props.mapOpen}
+          hideRiderDestination
         />
         <PlaceSearch
           bias={props.pins.pickup}
@@ -1531,8 +1540,15 @@ function RiderForm(props: {
             props.countryPreference ??
             undefined
           }
-          placeholder="Search destination"
-          autoFocus={!props.pins.destination}
+          placeholder="Where to?"
+          ariaLabel="Search destination"
+          initialValue={
+            props.pins.destination
+              ? locationText(props.pins.destination)
+              : undefined
+          }
+          autoFocus
+          selectOnFocus={Boolean(props.pins.destination)}
           choose={(pin) => {
             props.setDestination(pin);
             props.setTarget("riderDestination");
@@ -1852,22 +1868,31 @@ function PlaceSearch({
   countryCode,
   choose,
   placeholder,
+  ariaLabel,
+  initialValue = "",
   autoFocus = false,
+  selectOnFocus = false,
 }: {
   bias?: Pin;
   countryCode?: string;
   choose: (pin: Pin) => void;
   placeholder: string;
+  ariaLabel?: string;
+  initialValue?: string;
   autoFocus?: boolean;
+  selectOnFocus?: boolean;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!autoFocus) return;
-    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
+    const frame = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      if (selectOnFocus) inputRef.current?.select();
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [autoFocus]);
+  }, [autoFocus, selectOnFocus]);
   const search = () => {
     if (text.trim().length < 3) {
       inputRef.current?.focus();
@@ -1902,7 +1927,7 @@ function PlaceSearch({
             }
           }}
           placeholder={placeholder}
-          aria-label={placeholder}
+          aria-label={ariaLabel ?? placeholder}
         />
         <button type="button" onClick={search}>
           Search

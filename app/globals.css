@@ -709,6 +709,9 @@ p {
   align-items: start;
   padding: 2px 14px;
 }
+.rider-location-summary.rider-location-origin-only {
+  grid-template-columns: minmax(0, 1fr);
+}
 .driver-location-summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
