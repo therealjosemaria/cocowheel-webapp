@@ -1805,7 +1805,10 @@ function RideSelection({
                     </svg>
                   </span>
                   <span className="ride-option-main">
-                    <strong>{candidate.driverAlias}</strong>
+                    <strong>
+                      {candidate.driverAlias}
+                      {candidate.isSample ? " · Sample" : ""}
+                    </strong>
                     <small>
                       {pickupMinutes !== null
                         ? `${pickupMinutes} min away`

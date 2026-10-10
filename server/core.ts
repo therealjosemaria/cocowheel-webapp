@@ -156,6 +156,7 @@ type LocationRow = {
 };
 
 export type Candidate = {
+  isSample?: boolean;
   driverLocation?: PublicLocation;
   rideId: string;
   driverAlias: string;
@@ -182,6 +183,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  isSample?: boolean;
   driverLocation?: PublicLocation;
   rideId: string;
   driverAlias: string;
@@ -194,6 +196,7 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  isSample?: boolean;
   rideId: string;
   status: RideStatus;
   driverAlias: string;
@@ -705,7 +708,8 @@ function directionFit(row: RideRow, input: SearchInput) {
   const scheduled = validDate(row.scheduled_departure_at).getTime();
   const requested = validDate(input.requestedDepartureAt).getTime();
   const timingCompatible =
-    requested >= scheduled && requested - scheduled <= 2 * 60 * 60 * 1000;
+    requested >= scheduled &&
+    requested <= new Date(rideOfferExpiryAt(row)).getTime();
   return {
     pickupDistanceMeters,
     destinationDistanceMeters,
@@ -831,7 +835,7 @@ export function ensureSampleRides(db: Db, now = new Date()) {
   const timestamp = iso(now);
   const expiresAt = iso(new Date(now.getTime() + SAMPLE_OFFER_STALE_MS));
   const hasOpenSample = db.prepare(
-    "SELECT 1 FROM rides WHERE sample_key = ? AND status IN ('PUBLISHED', 'REQUESTED') LIMIT 1",
+    "SELECT 1 FROM rides WHERE sample_key = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
   );
   const insertSession = db.prepare(
     "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
@@ -989,6 +993,7 @@ export function searchRides(
       );
       return {
         rideId: row.public_id,
+        isSample: Boolean(row.is_sample),
         driverLocation: locationFor(db, row.id, "DRIVER", now),
         driverAlias: row.driver_alias,
         priceAud: row.price_aud,
@@ -1103,6 +1108,7 @@ export function publicRidePreview(
     destinationLabel:
       ride.destination_label ?? fallbackLocationLabel(destination),
     plannedRoute: { origin, destination },
+    isSample: Boolean(ride.is_sample),
     driverLocation: locationFor(db, ride.id, "DRIVER", now),
   };
 }
@@ -1134,6 +1140,11 @@ export function requestRide(
   const requestId = uuid();
   const timestamp = iso(now);
   db.transaction(() => {
+    if (
+      ride.is_sample &&
+      !["PUBLISHED", "REQUESTED"].includes(rideRow(db, rideId)!.status)
+    )
+      throw new Error("RIDE_UNAVAILABLE");
     db.prepare(
       `INSERT INTO ride_requests (id, ride_id, rider_session_id, rider_alias, pickup_latitude, pickup_longitude, pickup_label, destination_latitude, destination_longitude, destination_label, requested_departure_at, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)`,
@@ -1155,6 +1166,10 @@ export function requestRide(
       "UPDATE rides SET status = 'REQUESTED', last_activity_at = ? WHERE id = ? AND status = 'PUBLISHED'",
     ).run(timestamp, ride.id);
     event(db, ride.id, "RIDER_REQUESTED", "RIDER", now);
+    if (ride.is_sample)
+      withSampleDriver(db, ride, (driverToken) =>
+        decideRequest(db, driverToken, rideId, requestId, "ACCEPT", now),
+      );
   })();
   return {
     sessionToken: created?.token ?? null,
@@ -1165,6 +1180,101 @@ export function requestRide(
 function requireDriver(row: RideRow, session: Session) {
   if (row.driver_session_id !== session.id)
     throw new Error("RIDE_ACCESS_DENIED");
+}
+
+// Only server-created samples may simulate driver actions. Never expose a driver token.
+function withSampleDriver<T>(
+  db: Db,
+  ride: RideRow,
+  action: (token: string) => T,
+): T {
+  if (!ride.is_sample) throw new Error("RIDE_ACCESS_DENIED");
+  return db.transaction(() => {
+    const original = db
+      .prepare("SELECT token_hash FROM guest_sessions WHERE id = ?")
+      .get(ride.driver_session_id) as { token_hash: string };
+    const token = opaqueToken();
+    db.prepare("UPDATE guest_sessions SET token_hash = ? WHERE id = ?").run(
+      hash(token),
+      ride.driver_session_id,
+    );
+    try {
+      return action(token);
+    } finally {
+      db.prepare("UPDATE guest_sessions SET token_hash = ? WHERE id = ?").run(
+        original.token_hash,
+        ride.driver_session_id,
+      );
+    }
+  })();
+}
+
+export function advanceSampleRide(
+  db: Db,
+  rawSessionToken: string | null,
+  rideId: string,
+  action: string,
+  now = new Date(),
+) {
+  expireStaleRides(db, now);
+  const session = requireSession(db, rawSessionToken, now);
+  const ride = rideRow(db, rideId);
+  if (!ride?.is_sample) throw new Error("RIDE_ACCESS_DENIED");
+  const request = requireRider(db, ride, session);
+  return db.transaction(() => {
+    withSampleDriver(db, ride, (driverToken) => {
+      if (
+        action === "ACCEPT" &&
+        request.status === "PENDING" &&
+        ["PUBLISHED", "REQUESTED"].includes(ride.status)
+      ) {
+        decideRequest(db, driverToken, rideId, request.id, "ACCEPT", now);
+      } else {
+        if (!isAcceptedRider(db, ride, session))
+          throw new Error("RIDE_ACCESS_DENIED");
+        if (action === "START" && ride.status === "ACCEPTED") {
+          // Explicit sample controls simulate both devices, using their saved endpoints.
+          const fix = { accuracyMeters: 0, capturedAt: iso(now) };
+          submitLocation(
+            db,
+            driverToken,
+            rideId,
+            {
+              ...fix,
+              latitude: ride.origin_latitude,
+              longitude: ride.origin_longitude,
+            },
+            now,
+          );
+          submitLocation(
+            db,
+            rawSessionToken,
+            rideId,
+            {
+              ...fix,
+              latitude: request.pickup_latitude,
+              longitude: request.pickup_longitude,
+            },
+            now,
+          );
+          beginRide(db, driverToken, rideId, now);
+        } else if (
+          action === "PICKUP" &&
+          ride.status === "RIDE_ACTIVE" &&
+          ride.co_ride_code_ciphertext
+        ) {
+          confirmCoRideCode(
+            db,
+            driverToken,
+            rideId,
+            decryptCode(ride.co_ride_code_ciphertext),
+            now,
+          );
+        } else throw new Error("INVALID_SAMPLE_ACTION");
+      }
+    });
+    return getRide(db, rideId, session, now);
+  })();
 }
 function requireRider(db: Db, row: RideRow, session: Session) {
   const request = requestForSession(db, row.id, session.id);
@@ -1558,6 +1668,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     .all(row.id) as RequestRow[];
   return {
     rideId: row.public_id,
+    isSample: Boolean(row.is_sample),
     driverLocation: terminal(row.status)
       ? undefined
       : locationFor(db, row.id, "DRIVER", now),
@@ -1655,6 +1766,23 @@ function riderView(
     expiresAt: rideOfferExpiryAt(row),
     acceptedAt: row.accepted_at,
     request: riderRequestView(row, request),
+    isSample: Boolean(row.is_sample),
+    ...(row.is_sample
+      ? {
+          plannedRoute: {
+            origin: {
+              latitude: row.origin_latitude,
+              longitude: row.origin_longitude,
+              label: row.origin_label ?? undefined,
+            },
+            destination: {
+              latitude: row.destination_latitude,
+              longitude: row.destination_longitude,
+              label: row.destination_label ?? undefined,
+            },
+          },
+        }
+      : {}),
     driverLocation:
       ["PUBLISHED", "REQUESTED"].includes(row.status) ||
       (canSeePartner && !terminal(row.status))

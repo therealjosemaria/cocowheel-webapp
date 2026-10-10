@@ -6,6 +6,7 @@ import {
 import type { Db } from "./core";
 import {
   beginRide,
+  advanceSampleRide,
   availableRides,
   cancelPendingRequest,
   cancelRide,
@@ -680,6 +681,29 @@ export function createApiServer(
               capturedAt: asString(body.capturedAt),
               moving: body.moving === true,
             }),
+          },
+          cors,
+        );
+        return;
+      }
+      if (
+        request.method === "POST" &&
+        parts.length === 4 &&
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "sample"
+      ) {
+        const body = await readJson(request);
+        writeJson(
+          response,
+          200,
+          {
+            ride: advanceSampleRide(
+              database,
+              token,
+              parts[2],
+              asString(body.action),
+            ),
           },
           cors,
         );

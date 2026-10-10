@@ -26,6 +26,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  isSample?: boolean;
   driverLocation?: Ride["driverLocation"];
   rideId: string;
   driverAlias: string;
@@ -59,6 +60,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
   const visibleRoute = ride.plannedRoute ?? participantRoute;
   return {
     rideId: ride.rideId,
+    isSample: ride.isSample,
     driverLocation: ride.driverLocation,
     driverAlias: ride.driverAlias,
     priceAud: ride.priceAud,
@@ -129,6 +131,7 @@ export default function RidePreviewClient({
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [sampleBusy, setSampleBusy] = useState(false);
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
@@ -456,6 +459,25 @@ export default function RidePreviewClient({
     }
   }
 
+  async function sampleAction(action: string) {
+    setSampleBusy(true);
+    try {
+      await cocowheelsApi(
+        `/api/rides/${encodeURIComponent(rideId)}/${action === "COMPLETE" ? "complete" : "sample"}`,
+        {
+          method: "POST",
+          body: JSON.stringify(
+            action === "COMPLETE" ? { method: "CASH" } : { action },
+          ),
+        },
+      );
+      window.location.reload();
+    } catch {
+      setJoinFailurePromptOpen(true);
+      setSampleBusy(false);
+    }
+  }
+
   async function decideRiderRequest(
     requestId: string,
     decision: "ACCEPT" | "DECLINE",
@@ -643,6 +665,11 @@ export default function RidePreviewClient({
           <h1 className="page-title">Ride preview</h1>
           <div className="ride-preview-content">
             <div className="ride-preview-summary">
+              {ride.isSample ? (
+                <p className="driver-location-age">
+                  Sample ride · Simulated driver
+                </p>
+              ) : null}
               <dl className="ride-preview-fields">
                 <div>
                   <dt>
@@ -796,7 +823,17 @@ export default function RidePreviewClient({
                     <RideFieldLabel icon="action">Action</RideFieldLabel>
                   </dt>
                   <dd>
-                    {readOnly ? null : activityRequest || driverOwned ? (
+                    {readOnly ? null : ride.isSample &&
+                      activityRequest?.status === "ACCEPTED" &&
+                      ride.status === "CO_RIDE_ACTIVE" ? (
+                      <button
+                        type="button"
+                        disabled={sampleBusy}
+                        onClick={() => void sampleAction("COMPLETE")}
+                      >
+                        COMPLETE SAMPLE
+                      </button>
+                    ) : activityRequest || driverOwned ? (
                       <button
                         type="button"
                         className="preview-end-action"
@@ -822,6 +859,38 @@ export default function RidePreviewClient({
                         {joining ? "JOINING…" : "REQUEST TO JOIN"}
                       </button>
                     )}
+                    {!readOnly &&
+                    ride.isSample &&
+                    activityRequest &&
+                    [
+                      "PUBLISHED",
+                      "REQUESTED",
+                      "ACCEPTED",
+                      "RIDE_ACTIVE",
+                    ].includes(ride.status) &&
+                    ["PENDING", "ACCEPTED"].includes(activityRequest.status) ? (
+                      <button
+                        type="button"
+                        disabled={sampleBusy}
+                        onClick={() =>
+                          void sampleAction(
+                            activityRequest.status === "PENDING"
+                              ? "ACCEPT"
+                              : ride.status === "ACCEPTED"
+                                ? "START"
+                                : "PICKUP",
+                          )
+                        }
+                      >
+                        {sampleBusy
+                          ? "UPDATING…"
+                          : activityRequest.status === "PENDING"
+                            ? "SIMULATE ACCEPTANCE"
+                            : ride.status === "ACCEPTED"
+                              ? "START SAMPLE"
+                              : "SIMULATE PICKUP"}
+                      </button>
+                    ) : null}
                   </dd>
                 </div>
               </dl>

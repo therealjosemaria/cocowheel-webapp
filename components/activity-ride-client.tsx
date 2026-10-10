@@ -77,7 +77,10 @@ export default function ActivityRideClient({
   }, [requestId, rideId]);
 
   return (
-    <section className="activity-detail" aria-live={ride ? undefined : "polite"}>
+    <section
+      className="activity-detail"
+      aria-live={ride ? undefined : "polite"}
+    >
       {error ? (
         <>
           <h1>Not available</h1>
@@ -129,12 +132,9 @@ function RideView({ ride }: { ride: Ride }) {
   }, [ride.plannedRoute, routeCoordinates]);
   const canCancel = riderView
     ? ride.request?.status === "PENDING" || ride.request?.status === "ACCEPTED"
-    : ![
-        "CO_RIDE_ACTIVE",
-        "COMPLETED",
-        "CANCELLED",
-        "EXPIRED",
-      ].includes(ride.status);
+    : !["CO_RIDE_ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED"].includes(
+        ride.status,
+      );
   const cancelPath =
     riderView && ride.request?.status === "PENDING"
       ? `/api/rides/${encodeURIComponent(ride.rideId)}/request/cancel`
@@ -160,14 +160,24 @@ function RideView({ ride }: { ride: Ride }) {
           ? [{ latitude: location.latitude, longitude: location.longitude }]
           : [];
   if (
-    riderView &&
-    (ride.status === "REQUESTED" || ride.status === "ACCEPTED") &&
-    ride.request
+    ride.isSample ||
+    (riderView &&
+      (ride.status === "REQUESTED" || ride.status === "ACCEPTED") &&
+      ride.request)
   ) {
     return (
       <RidePreviewClient
         rideId={ride.rideId}
         participantRide={ride}
+        readOnly={
+          ["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status) ||
+          Boolean(
+            ride.request &&
+            ["CANCELLED", "DECLINED", "DISCARDED"].includes(
+              ride.request.status,
+            ),
+          )
+        }
       />
     );
   }
@@ -204,7 +214,9 @@ function RideView({ ride }: { ride: Ride }) {
   return (
     <section className="activity-record">
       <div className="activity-record-header">
-        <strong>{riderView ? "Rider · ride request" : "Driver · published ride"}</strong>
+        <strong>
+          {riderView ? "Rider · ride request" : "Driver · published ride"}
+        </strong>
         <span>
           {ride.request?.status === "CANCELLED"
             ? "Withdrawn"
@@ -270,7 +282,8 @@ function RideView({ ride }: { ride: Ride }) {
       ) : null}
       {location ? (
         <p className="activity-note">
-          {riderView ? "Driver" : "Rider"} location: {location.stale ? "last known" : "latest shared"}
+          {riderView ? "Driver" : "Rider"} location:{" "}
+          {location.stale ? "last known" : "latest shared"}
         </p>
       ) : null}
       {cancelError ? <p className="error">{cancelError}</p> : null}

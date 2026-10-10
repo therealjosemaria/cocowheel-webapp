@@ -27,6 +27,94 @@ async function json(
   return { response, body: (await response.json()) as Record<string, unknown> };
 }
 
+test("sample HTTP flow accepts, reserves, simulates and releases a sample", async () => {
+  const directory = mkdtempSync(
+    path.join(os.tmpdir(), "cocowheels-sample-api-"),
+  );
+  const database = openDatabase(path.join(directory, "test.db"));
+  const api = createApiServer(database);
+  api.listen(0, "127.0.0.1");
+  await once(api, "listening");
+  const address = api.address();
+  assert.ok(address && typeof address !== "string");
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const list = await json(`${base}/api/availability`, "GET");
+    const id = (list.body.rides as Array<{ rideId: string }>)[0].rideId;
+    const preview = await json(`${base}/api/rides/${id}/preview`, "GET");
+    const route = (
+      preview.body.ride as {
+        plannedRoute: { origin: unknown; destination: unknown };
+      }
+    ).plannedRoute;
+    const joined = await json(
+      `${base}/api/rides/${id}/requests`,
+      "POST",
+      {
+        pickup: route.origin,
+        destination: route.destination,
+        requestedDepartureAt: new Date().toISOString(),
+      },
+      undefined,
+      true,
+    );
+    assert.equal(joined.response.status, 201);
+    assert.equal((joined.body.ride as { status: string }).status, "ACCEPTED");
+    const token = joined.body.sessionToken as string;
+    assert.equal(
+      ((await json(`${base}/api/availability`, "GET")).body.rides as unknown[])
+        .length,
+      2,
+    );
+    assert.equal(
+      (
+        await json(`${base}/api/rides/${id}/sample`, "POST", {
+          action: "START",
+        })
+      ).response.status,
+      401,
+    );
+    for (const [action, status] of [
+      ["START", "RIDE_ACTIVE"],
+      ["PICKUP", "CO_RIDE_ACTIVE"],
+    ]) {
+      const result = await json(
+        `${base}/api/rides/${id}/sample`,
+        "POST",
+        { action },
+        token,
+      );
+      assert.equal(result.response.status, 200);
+      assert.equal((result.body.ride as { status: string }).status, status);
+      assert.equal(
+        (
+          (await json(`${base}/api/availability`, "GET")).body
+            .rides as unknown[]
+        ).length,
+        2,
+      );
+    }
+    const completed = await json(
+      `${base}/api/rides/${id}/complete`,
+      "POST",
+      { method: "CASH" },
+      token,
+    );
+    assert.equal(completed.response.status, 200);
+    const renewed = (await json(`${base}/api/availability`, "GET")).body
+      .rides as Array<{ rideId: string }>;
+    assert.equal(renewed.length, 3);
+    assert.equal(
+      renewed.some((ride) => ride.rideId === id),
+      false,
+    );
+  } finally {
+    api.close();
+    database.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and completes the protected lifecycle", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "cocowheels-api-"));
   const database = openDatabase(path.join(directory, "test.db"));

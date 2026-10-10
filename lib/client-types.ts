@@ -26,6 +26,7 @@ export type Location = {
   stale: boolean;
 };
 export type Candidate = {
+  isSample?: boolean;
   driverLocation?: Location;
   rideId: string;
   driverAlias: string;
@@ -41,6 +42,7 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type Ride = {
+  isSample?: boolean;
   rideId: string;
   status: RideStatus;
   driverAlias: string;

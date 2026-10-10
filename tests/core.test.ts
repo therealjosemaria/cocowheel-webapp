@@ -6,6 +6,7 @@ import test from "node:test";
 import { openDatabase } from "../server/db";
 import {
   ANONYMOUS_ANIMALS,
+  advanceSampleRide,
   availableRides,
   beginRide,
   cancelPendingRequest,
@@ -1014,6 +1015,102 @@ test("private history keeps expired rides visible to their driver and requester"
     assert.equal(driverHistory[0]?.status, "EXPIRED");
     assert.equal(riderHistory[0]?.status, "EXPIRED");
     assert.equal(driverHistory[0]?.expiredAt, expiredAt.toISOString());
+  } finally {
+    h.close();
+  }
+});
+
+test("all three samples support late requests, exclusive use, completion and renewal", () => {
+  const h = harness();
+  try {
+    ensureSampleRides(h.db, baseTime);
+    const offers = availableRides(h.db, baseTime);
+    const later = new Date(baseTime.getTime() + 12 * 60 * 60_000);
+    for (const offer of offers) {
+      const route = publicRidePreview(h.db, offer.rideId, later).plannedRoute;
+      const input = {
+        pickup: route.origin,
+        destination: route.destination,
+        requestedDepartureAt: later.toISOString(),
+      };
+      const requested = requestRide(h.db, null, offer.rideId, input, later);
+      const token = requested.sessionToken!;
+      assert.equal(requested.ride.status, "ACCEPTED");
+      assert.equal(requested.ride.request?.status, "ACCEPTED");
+      assert.equal(requested.ride.isSample, true);
+      assert.equal(
+        availableRides(h.db, later).some((row) => row.rideId === offer.rideId),
+        false,
+      );
+      assert.equal(
+        ensureSampleRides(h.db, later),
+        0,
+        "no replacement while occupied",
+      );
+      assert.throws(
+        () => requestRide(h.db, null, offer.rideId, input, later),
+        /RIDE_UNAVAILABLE/,
+      );
+      const outsider = createGuestSession(h.db, later);
+      assert.throws(
+        () =>
+          advanceSampleRide(h.db, outsider.token, offer.rideId, "START", later),
+        /RIDE_ACCESS_DENIED/,
+      );
+      const started = advanceSampleRide(
+        h.db,
+        token,
+        offer.rideId,
+        "START",
+        later,
+      );
+      assert.equal(started.status, "RIDE_ACTIVE");
+      assert.match(started.coRideCode!, /^\d{4}$/);
+      assert.equal(ensureSampleRides(h.db, later), 0);
+      assert.equal(
+        advanceSampleRide(h.db, token, offer.rideId, "PICKUP", later).status,
+        "CO_RIDE_ACTIVE",
+      );
+      assert.equal(ensureSampleRides(h.db, later), 0);
+      assert.equal(
+        completeCoRide(h.db, token, offer.rideId, "CASH", later).status,
+        "COMPLETED",
+      );
+      assert.equal(ensureSampleRides(h.db, later), 1);
+      assert.equal(availableRides(h.db, later).length, 3);
+      assert.equal(
+        privateHistory(h.db, token, later).rider[0].status,
+        "COMPLETED",
+      );
+    }
+    const again = availableRides(h.db, later)[0];
+    const route = publicRidePreview(h.db, again.rideId, later).plannedRoute;
+    const request = requestRide(
+      h.db,
+      null,
+      again.rideId,
+      {
+        pickup: route.origin,
+        destination: route.destination,
+        requestedDepartureAt: later.toISOString(),
+      },
+      later,
+    );
+    cancelRide(h.db, request.sessionToken, again.rideId, later);
+    assert.equal(ensureSampleRides(h.db, later), 1);
+    assert.equal(availableRides(h.db, later).length, 3);
+    const real = publishRide(h.db, null, driverInput, baseTime);
+    assert.throws(
+      () =>
+        advanceSampleRide(
+          h.db,
+          real.sessionToken,
+          real.ride.rideId,
+          "START",
+          baseTime,
+        ),
+      /RIDE_ACCESS_DENIED/,
+    );
   } finally {
     h.close();
   }
