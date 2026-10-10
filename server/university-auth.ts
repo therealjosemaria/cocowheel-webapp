@@ -8,13 +8,15 @@ import {
 import { createGuestSession, findSession, type Db } from "./core";
 
 export const UNIVERSITY_DOMAIN = "uni.sydney.edu.au";
-export const TEST_UNIKEY = "jmos0905";
+const TEST_EMAIL = "mosciarobusiness@gmail.com";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 export function normalizeUniKey(value: unknown) {
-  if (typeof value !== "string" || !/^[a-z]{4}\d{4}$/i.test(value.trim()))
+  if (typeof value !== "string") throw new Error("INVALID_UNIKEY");
+  const normalized = value.trim().toLowerCase();
+  if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== TEST_EMAIL)
     throw new Error("INVALID_UNIKEY");
-  return value.trim().toLowerCase();
+  return normalized;
 }
 function codeHash(id: string, code: string) {
   const secret = process.env.COCOWHEELS_CODE_ENCRYPTION_KEY;
@@ -88,14 +90,16 @@ export async function requestUniversityCode(
       "INSERT INTO university_codes (id, unikey, code_hash, expires_at) VALUES (?, ?, ?, ?)",
     ).run(id, unikey, digest, now + 10 * 60000);
   })();
+  const deliveryAddress =
+    unikey === TEST_EMAIL ? unikey : `${unikey}@${UNIVERSITY_DOMAIN}`;
   try {
-    await send(`${unikey}@${UNIVERSITY_DOMAIN}`, code);
+    await send(deliveryAddress, code);
   } catch (error) {
     db.prepare("DELETE FROM university_codes WHERE id = ?").run(id);
     throw error;
   }
   db.prepare("UPDATE university_codes SET delivered = 1 WHERE id = ?").run(id);
-  return { challengeId: id, expiresAt: now + 10 * 60000 };
+  return { challengeId: id, expiresAt: now + 10 * 60000, deliveryAddress };
 }
 export function verifyUniversityCode(
   db: Db,
@@ -150,10 +154,7 @@ export function verifyUniversityCode(
     const account = db
       .prepare("SELECT principal_id FROM university_accounts WHERE unikey = ?")
       .get(unikey) as { principal_id: string } | undefined;
-    const previous = findSession(db, previousToken, now);
     let principal = account?.principal_id;
-    if (unikey === TEST_UNIKEY)
-      principal = previous?.unikey === unikey ? previous.id : undefined;
     if (!principal) {
       principal = createGuestSession(db, now).session.id;
       db.prepare(

@@ -13,10 +13,15 @@ eligibility. The UI tells participants their UniKey will be publicly visible.
   their previously created rides and inspect their own history.
 - Ordinary UniKeys share one principal across devices: one active role/item,
   the same private history, and no self-join, using the existing server rules.
-- Only `jmos0905`, after successful email verification, gets a separate test
-  principal per browser. It may test both roles across devices. The same browser
-  still has one active role. Signing out and re-verifying this test account on a
-  new browser creates a fresh test principal, not shared test history.
+- `jmos0905` follows exactly the same rules as all other UniKeys.
+- The sole non-university exception is `mosciarobusiness@gmail.com`, entered in
+  the same field and verified by a code sent directly to that inbox. It is a
+  separate account with the same restrictions, not a role or verification bypass.
+  Other email addresses (including Gmail aliases) are not accepted.
+- Multiple devices can stay signed in. All share the account's principal,
+  active role, and history. Switching accounts replaces only the current
+  browser's session. Taking the other role requires ending the existing activity;
+  the server never automatically cancels it.
 - New real participant names are the verified UniKey. Old records and synthetic
   sample rides retain their original labels.
 - Verified sessions are opaque HttpOnly cookies, expiring after 30 days. Signing
@@ -52,4 +57,4 @@ delivery; perform a real inbox test after sender configuration.
 
 Tests inject an in-memory mail sender, covering the HTTP verification flow,
 expiry, replay/guess limits, cookie transport, API gating, shared roles/history,
-and the explicitly authorized testing exception.
+and the allowlisted email with identical account-wide role restrictions.

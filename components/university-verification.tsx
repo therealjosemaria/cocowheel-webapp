@@ -7,6 +7,7 @@ export default function UniversityVerification() {
   const pending = useRef<Pending[]>([]);
   const [unikey, setUniKey] = useState("");
   const [challenge, setChallenge] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -69,6 +70,7 @@ export default function UniversityVerification() {
       }
       if (!challenge) {
         setChallenge(result.challengeId);
+        setDeliveryAddress(result.deliveryAddress);
         setCode("");
       } else {
         // Verified sessions use HttpOnly cookies, never browser-readable tokens.
@@ -105,7 +107,7 @@ export default function UniversityVerification() {
         </h2>
         {challenge ? (
           <>
-            <p>Sent to {unikey.trim().toLowerCase()}@uni.sydney.edu.au</p>
+            <p>Sent to {deliveryAddress}</p>
             <label>
               Verification code
               <input
@@ -131,8 +133,7 @@ export default function UniversityVerification() {
                 autoCapitalize="none"
                 autoComplete="username"
                 spellCheck={false}
-                pattern="[a-zA-Z]{4}[0-9]{4}"
-                maxLength={8}
+                maxLength={254}
                 value={unikey}
                 onChange={(e) => setUniKey(e.target.value.toLowerCase())}
                 required

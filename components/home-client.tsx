@@ -254,6 +254,9 @@ export default function HomeClient({
   >(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
+  const [roleChangeTarget, setRoleChangeTarget] = useState<"DRIVER" | "RIDER">(
+    "RIDER",
+  );
   const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
     useState(false);
   const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
@@ -648,6 +651,7 @@ export default function HomeClient({
         reason instanceof ApiError &&
         reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
       ) {
+        setRoleChangeTarget("DRIVER");
         setRoleChangePromptOpen(true);
         return;
       }
@@ -784,6 +788,7 @@ export default function HomeClient({
         reason instanceof ApiError &&
         reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
       ) {
+        setRoleChangeTarget("RIDER");
         setRoleChangePromptOpen(true);
         return;
       }
@@ -879,7 +884,10 @@ export default function HomeClient({
         />
       ) : null}
       {roleChangePromptOpen ? (
-        <RoleChangePrompt close={() => setRoleChangePromptOpen(false)} />
+        <RoleChangePrompt
+          target={roleChangeTarget}
+          close={() => setRoleChangePromptOpen(false)}
+        />
       ) : null}
       {publishRouteRequiredPromptOpen ? (
         <PublishRouteRequiredPrompt
@@ -1047,7 +1055,13 @@ function OwnOfferPrompt({ close }: { close: () => void }) {
     </div>
   );
 }
-function RoleChangePrompt({ close }: { close: () => void }) {
+function RoleChangePrompt({
+  close,
+  target,
+}: {
+  close: () => void;
+  target: "DRIVER" | "RIDER";
+}) {
   return (
     <div className="location-prompt-backdrop" role="presentation">
       <section
@@ -1057,7 +1071,9 @@ function RoleChangePrompt({ close }: { close: () => void }) {
         aria-labelledby="role-change-title"
       >
         <h2 id="role-change-title">
-          End your current activity before switching roles.
+          {target === "DRIVER"
+            ? "Withdraw your ride request before offering a ride."
+            : "Cancel your offered ride before requesting a ride."}
         </h2>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>

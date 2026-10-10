@@ -594,7 +594,7 @@ export default function RidePreviewClient({
             aria-labelledby="role-change-title"
           >
             <h2 id="role-change-title">
-              End your current activity before switching roles.
+              Cancel your offered ride before requesting a ride.
             </h2>
             <div className="location-prompt-actions">
               <button
