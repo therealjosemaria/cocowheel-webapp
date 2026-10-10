@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 import { movementTracker } from "@/lib/location-tracking";
 
 export default function LocationTracker() {
+  const adminPage = usePathname().startsWith("/admin");
   useEffect(() => {
+    if (adminPage) return;
     let stopped = false;
     let busy = false;
     let currentId = "";
@@ -97,6 +100,6 @@ export default function LocationTracker() {
       window.removeEventListener("online", resume);
       window.removeEventListener("cocowheels:identity-changed", resume);
     };
-  }, []);
+  }, [adminPage]);
   return null;
 }

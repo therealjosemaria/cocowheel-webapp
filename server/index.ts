@@ -30,6 +30,16 @@ import {
   submitLocation,
 } from "./core";
 import db from "./db";
+import {
+  initializeAdmin,
+  loginAdmin,
+  requireAdmin,
+  logoutAdmin,
+  adminCookie,
+  readAdminCookie,
+  adminDashboard,
+  adminInspector,
+} from "./admin";
 import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
@@ -109,6 +119,10 @@ async function readJson(request: IncomingMessage): Promise<Json> {
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (["ADMIN_SESSION_REQUIRED", "ADMIN_LOGIN_INVALID"].includes(code))
+    return 401;
+  if (code === "ADMIN_RATE_LIMITED") return 429;
+  if (code === "ADMIN_NOT_CONFIGURED") return 503;
   if (code === "GUEST_SESSION_REQUIRED") return 401;
   if (code === "RIDE_ACCESS_DENIED") return 403;
   if (code === "RIDE_NOT_FOUND") return 404;
@@ -365,6 +379,7 @@ export function createApiServer(
 ) {
   assertRuntimeConfiguration();
   initializeCoreSchema(database);
+  initializeAdmin(database);
   pruneProviderCache(database);
   const sampleRidesEnabled = options.sampleRides ?? true;
   return createServer(async (request, response) => {
@@ -392,6 +407,86 @@ export function createApiServer(
       return;
     }
     try {
+      const adminUrl = new URL(request.url ?? "/", "http://api.local");
+      if (adminUrl.pathname.startsWith("/api/admin/")) {
+        response.setHeader("Cache-Control", "private, no-store");
+        const adminToken = readAdminCookie(request.headers.cookie);
+        const secure = process.env.NODE_ENV === "production";
+        if (
+          request.method !== "GET" &&
+          (!origin || request.headers["x-admin-request"] !== "1")
+        ) {
+          writeJson(response, 403, { error: "ORIGIN_NOT_ALLOWED" }, cors);
+          return;
+        }
+        if (
+          adminUrl.pathname === "/api/admin/login" &&
+          request.method === "POST"
+        ) {
+          const body = await readJson(request);
+          const token = loginAdmin(database, body.username, body.password);
+          logoutAdmin(database, adminToken);
+          writeJson(
+            response,
+            200,
+            { ok: true },
+            { ...cors, "Set-Cookie": adminCookie(token, secure) },
+          );
+          return;
+        }
+        if (
+          adminUrl.pathname === "/api/admin/logout" &&
+          request.method === "POST"
+        ) {
+          logoutAdmin(database, adminToken);
+          writeJson(
+            response,
+            200,
+            { ok: true },
+            { ...cors, "Set-Cookie": adminCookie("", secure) },
+          );
+          return;
+        }
+        const session = requireAdmin(database, adminToken);
+        if (
+          adminUrl.pathname === "/api/admin/touch" &&
+          request.method === "POST"
+        ) {
+          writeJson(
+            response,
+            200,
+            requireAdmin(database, adminToken, true),
+            cors,
+          );
+        } else if (
+          adminUrl.pathname === "/api/admin/dashboard" &&
+          request.method === "GET"
+        ) {
+          writeJson(
+            response,
+            200,
+            { ...adminDashboard(database, adminUrl), ...session },
+            cors,
+          );
+        } else if (
+          /^\/api\/admin\/rides\/[^/]+$/.test(adminUrl.pathname) &&
+          request.method === "GET"
+        ) {
+          writeJson(
+            response,
+            200,
+            {
+              ...adminInspector(
+                database,
+                decodeURIComponent(adminUrl.pathname.split("/").pop()!),
+              ),
+              ...session,
+            },
+            cors,
+          );
+        } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
+      }
       const now = new Date();
       expireStaleRides(database, now);
       if (sampleRidesEnabled) ensureSampleRides(database, now);

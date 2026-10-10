@@ -53,6 +53,7 @@ export default function AppNavigation() {
       : pathname === "/activity" || pathname.startsWith("/activity/");
 
   const loadIdentities = useCallback(async () => {
+    if (pathname.startsWith("/admin")) return;
     try {
       const result = await cocowheelsApi<{
         guestAlias: string;
@@ -63,7 +64,7 @@ export default function AppNavigation() {
         setGuestName(null);
       }
     }
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     const refresh = () => void loadIdentities();
