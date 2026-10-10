@@ -4,21 +4,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
-import { routeReference } from "@/lib/route-id";
 import CancelPrompt from "./cancel-prompt";
 import RideFieldLabel from "./ride-field-label";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
 
-const departureTime = (value: string) =>
-  new Intl.DateTimeFormat("en-AU", {
-    hour: "numeric",
-    minute: "2-digit",
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(value));
 const locationText = (location?: {
   latitude: number;
   longitude: number;
@@ -288,35 +279,21 @@ function ActivityCard({
         <dl className="activity-card-fields">
           <div>
             <dt>
-              <RideFieldLabel icon="route">Route ID</RideFieldLabel>
-            </dt>
-            <dd>
-              <code>{routeReference(ride.rideId)}</code>
-            </dd>
-          </div>
-          <div>
-            <dt>
               <RideFieldLabel icon="status">Status</RideFieldLabel>
             </dt>
             <dd className={statusClass}>{status}</dd>
           </div>
           <div>
             <dt>
-              <RideFieldLabel icon="driver">Driver</RideFieldLabel>
-            </dt>
-            <dd>{ride.driverAlias}</dd>
-          </div>
-          <div>
-            <dt>
-              <RideFieldLabel icon="departure">Departure</RideFieldLabel>
-            </dt>
-            <dd>{departureTime(ride.scheduledDepartureAt)}</dd>
-          </div>
-          <div>
-            <dt>
               <RideFieldLabel icon="from">Where from?</RideFieldLabel>
             </dt>
             <dd>{locationText(route?.origin)}</dd>
+          </div>
+          <div>
+            <dt>
+              <RideFieldLabel icon="driver">Driver</RideFieldLabel>
+            </dt>
+            <dd>{ride.driverAlias}</dd>
           </div>
           <div>
             <dt>
@@ -358,7 +335,7 @@ function ActivityCard({
               <Link
                 className="activity-open"
                 href={href}
-                aria-label={`Open ride ${routeReference(ride.rideId)}`}
+                aria-label={`Open ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
               >
                 OPEN RIDE
               </Link>

@@ -10,7 +10,6 @@ import ExpiryCountdown from "./expiry-countdown";
 import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
-import { routeReference } from "@/lib/route-id";
 import {
   cacheRoadPath,
   cacheRiderRoadPath,
@@ -683,14 +682,6 @@ export default function RidePreviewClient({
               <dl className="ride-preview-fields">
                 <div>
                   <dt>
-                    <RideFieldLabel icon="route">Route ID</RideFieldLabel>
-                  </dt>
-                  <dd>
-                    <code>{routeReference(ride.rideId)}</code>
-                  </dd>
-                </div>
-                <div>
-                  <dt>
                     <RideFieldLabel icon="status">Status</RideFieldLabel>
                   </dt>
                   <dd className="route-status">
@@ -705,21 +696,15 @@ export default function RidePreviewClient({
                 </div>
                 <div>
                   <dt>
-                    <RideFieldLabel icon="driver">Driver</RideFieldLabel>
-                  </dt>
-                  <dd>{ride.driverAlias}</dd>
-                </div>
-                <div>
-                  <dt>
                     <RideFieldLabel icon="from">Where from?</RideFieldLabel>
                   </dt>
                   <dd>{ride.departureLabel}</dd>
                 </div>
                 <div>
                   <dt>
-                    <RideFieldLabel icon="departure">Departure</RideFieldLabel>
+                    <RideFieldLabel icon="driver">Driver</RideFieldLabel>
                   </dt>
-                  <dd>{prettyTime(ride.scheduledDepartureAt)}</dd>
+                  <dd>{ride.driverAlias}</dd>
                 </div>
                 <div>
                   <dt>
