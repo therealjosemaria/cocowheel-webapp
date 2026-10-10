@@ -27,7 +27,9 @@ eligibility. The UI tells participants their UniKey will be publicly visible.
 - Verified sessions are opaque HttpOnly cookies, expiring after 30 days. Signing
   out revokes only that browser session; it does not cancel an active ride or
   free an ordinary account's role restriction.
-- Admin authentication remains entirely separate.
+- Admin requires the verified `jmos0905` account plus the separate admin password
+  session. Only that account sees the Admin navigation link; the page and every
+  admin API endpoint enforce access too. The Gmail test account has no admin access.
 
 ## Email setup (required for real delivery)
 

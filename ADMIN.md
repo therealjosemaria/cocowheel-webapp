@@ -1,6 +1,8 @@
 # Read-only admin
 
-Open `/admin` or use the footer's Admin login link. Overview shows all-time ride
+Sign in with the verified `jmos0905` UniKey, then use the Admin menu link.
+The page and API reject all other accounts, including the Gmail testing account.
+The existing admin password is still required. Overview shows all-time ride
 counts (including samples); Trips provides status filters and 25-record pages;
 Trip inspector shows route details, up to 200 recent requests/events, and the
 latest retained GPS positions. It does not claim to retain a GPS history.

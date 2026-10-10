@@ -4,6 +4,11 @@ import Database from "better-sqlite3";
 import { once } from "node:events";
 import { createApiServer } from "../server/index";
 import {
+  requestUniversityCode,
+  verifyUniversityCode,
+  logoutUniversity,
+} from "../server/university-auth";
+import {
   initializeAdmin,
   provisionAdmin,
   loginAdmin,
@@ -73,8 +78,29 @@ test("admin login has persisted throttling and no default credentials", () => {
   db.close();
 });
 test("admin HTTP endpoints protect read-only reports with separate cookies and CSRF checks", async () => {
+  process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 9).toString(
+    "base64",
+  );
   const db = new Database(":memory:");
   const server = createApiServer(db, { sampleRides: false });
+  async function verifiedCookie(unikey: string) {
+    let code = "";
+    const challenge = await requestUniversityCode(
+      db,
+      unikey,
+      async (_email, value) => {
+        code = value;
+      },
+    );
+    const session = verifyUniversityCode(db, challenge.challengeId, code, null);
+    return {
+      cookie: `cocowheels_guest=${session.token}`,
+      token: session.token,
+    };
+  }
+  const owner = await verifiedCookie("jmos0905");
+  const student = await verifiedCookie("stud0001");
+  const gmail = await verifiedCookie("mosciarobusiness@gmail.com");
   provisionAdmin(db, "tester", "test-only-password");
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
@@ -97,13 +123,27 @@ test("admin HTTP endpoints protect read-only reports with separate cookies and C
     });
   try {
     const unauth = await fetch(base + "dashboard");
-    assert.equal(unauth.status, 401);
+    assert.equal(unauth.status, 403);
     assert.match(unauth.headers.get("cache-control")!, /no-store/);
     assert.equal((await fetch(base + "login", { method: "POST" })).status, 403);
-    const login = await post("login");
+    for (const cookie of ["", student.cookie, gmail.cookie]) {
+      assert.equal((await post("login", cookie)).status, 403);
+    }
+    const login = await post("login", owner.cookie);
     assert.equal(login.status, 200);
     assert.deepEqual(await login.json(), { ok: true });
-    const cookie = login.headers.get("set-cookie")!.split(";")[0];
+    const adminOnly = login.headers.get("set-cookie")!.split(";")[0];
+    const cookie = `${adminOnly}; ${owner.cookie}`;
+    for (const identity of ["", student.cookie, gmail.cookie]) {
+      assert.equal(
+        (
+          await fetch(base + "dashboard", {
+            headers: { Cookie: `${adminOnly}; ${identity}` },
+          })
+        ).status,
+        403,
+      );
+    }
     const reports = await fetch(base + "dashboard", {
       headers: { Cookie: cookie },
     });
@@ -115,6 +155,14 @@ test("admin HTTP endpoints protect read-only reports with separate cookies and C
     assert.equal(
       (await fetch(base + "dashboard", { headers: { Cookie: cookie } })).status,
       401,
+    );
+    const nextLogin = await post("login", owner.cookie);
+    const nextCookie = `${nextLogin.headers.get("set-cookie")!.split(";")[0]}; ${owner.cookie}`;
+    logoutUniversity(db, owner.token);
+    assert.equal(
+      (await fetch(base + "dashboard", { headers: { Cookie: nextCookie } }))
+        .status,
+      403,
     );
   } finally {
     server.closeAllConnections();

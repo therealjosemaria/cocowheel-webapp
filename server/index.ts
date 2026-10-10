@@ -32,6 +32,7 @@ import {
 import db from "./db";
 import {
   requestUniversityCode,
+  ADMIN_UNIKEY,
   verifyUniversityCode,
   requireUniversitySession,
   logoutUniversity,
@@ -423,6 +424,14 @@ export function createApiServer(
       const adminUrl = new URL(request.url ?? "/", "http://api.local");
       if (adminUrl.pathname.startsWith("/api/admin/")) {
         response.setHeader("Cache-Control", "private, no-store");
+        const universitySession = findSession(
+          database,
+          readGuestCookie(request.headers.cookie),
+        );
+        if (universitySession?.unikey !== ADMIN_UNIKEY) {
+          writeJson(response, 403, { error: "ADMIN_ACCESS_DENIED" }, cors);
+          return;
+        }
         const adminToken = readAdminCookie(request.headers.cookie);
         const secure = process.env.NODE_ENV === "production";
         if (
@@ -509,7 +518,15 @@ export function createApiServer(
         response.setHeader("Cache-Control", "private, no-store");
         if (request.method === "GET" && parts[2] === "session") {
           const session = requireUniversitySession(database, token);
-          writeJson(response, 200, { unikey: session.unikey }, cors);
+          writeJson(
+            response,
+            200,
+            {
+              unikey: session.unikey,
+              canAdmin: session.unikey === ADMIN_UNIKEY,
+            },
+            cors,
+          );
           return;
         }
         if (

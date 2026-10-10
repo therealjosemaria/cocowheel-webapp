@@ -9,6 +9,7 @@ export default function AppNavigation() {
   const [open, setOpen] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
+  const [canAdmin, setCanAdmin] = useState(false);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export default function AppNavigation() {
   const links = [
     { href: "/", label: "Home" },
     { href: "/activity", label: "Activity" },
+    ...(canAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
   const goHome = () => {
     setRideTab(null);
@@ -50,21 +52,23 @@ export default function AppNavigation() {
   const isLinkActive = (href: string) =>
     href === "/"
       ? pathname === "/" && rideTab === null
-      : pathname === "/activity" || pathname.startsWith("/activity/");
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   const loadIdentities = useCallback(async () => {
-    if (pathname.startsWith("/admin")) return;
     try {
       const result = await cocowheelsApi<{
         unikey: string;
+        canAdmin: boolean;
       }>("/api/university/session");
       setGuestName(result.unikey);
+      setCanAdmin(result.canAdmin === true);
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
+        setCanAdmin(false);
       }
     }
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     const refresh = () => void loadIdentities();
@@ -127,7 +131,7 @@ export default function AppNavigation() {
             }
             aria-current={isLinkActive(link.href) ? "page" : undefined}
             onClick={(event) => {
-              if (link.href === "/activity") setRideTab(null);
+              if (link.href !== "/") setRideTab(null);
               if (link.href === "/") {
                 event.preventDefault();
                 goHome();
@@ -282,7 +286,7 @@ export default function AppNavigation() {
                 aria-current={isLinkActive(link.href) ? "page" : undefined}
                 onClick={(event) => {
                   setOpen(false);
-                  if (link.href === "/activity") setRideTab(null);
+                  if (link.href !== "/") setRideTab(null);
                   if (link.href === "/") {
                     event.preventDefault();
                     goHome();

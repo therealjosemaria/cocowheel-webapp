@@ -8,6 +8,7 @@ import {
 import { createGuestSession, findSession, type Db } from "./core";
 
 export const UNIVERSITY_DOMAIN = "uni.sydney.edu.au";
+export const ADMIN_UNIKEY = "jmos0905";
 const TEST_EMAIL = "mosciarobusiness@gmail.com";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
