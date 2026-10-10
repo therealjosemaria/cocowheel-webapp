@@ -23,6 +23,12 @@ type Line = {
   opacity?: number;
 };
 type MarkerKind = "driver" | "departure" | "pickup" | "destination";
+type MarkerLabel =
+  | string
+  | {
+      etaMinutes: number;
+      text: string;
+    };
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   driver: divIcon({
@@ -93,7 +99,7 @@ function PinMarkers({
 }: {
   pins: Pin[];
   markerKinds?: MarkerKind[];
-  markerLabels?: Array<string | undefined>;
+  markerLabels?: Array<MarkerLabel | undefined>;
 }) {
   const map = useMap();
   const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
@@ -142,13 +148,28 @@ function PinMarkers({
           >
             {markerLabels?.[index] ? (
               <Tooltip
-                className="journey-location-label"
+                className={`journey-location-label${
+                  typeof markerLabels[index] === "string"
+                    ? ""
+                    : " journey-location-label-combined"
+                }`}
                 direction="top"
                 offset={[0, -16]}
                 opacity={1}
                 permanent
               >
-                {markerLabels[index]}
+                {typeof markerLabels[index] === "string" ? (
+                  markerLabels[index]
+                ) : (
+                  <>
+                    <span className="journey-location-eta">
+                      {markerLabels[index]?.etaMinutes} min
+                    </span>
+                    <span className="journey-location-address">
+                      {markerLabels[index]?.text}
+                    </span>
+                  </>
+                )}
               </Tooltip>
             ) : null}
           </Marker>
@@ -181,7 +202,7 @@ export default function JourneyMap({
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
-  markerLabels?: Array<string | undefined>;
+  markerLabels?: Array<MarkerLabel | undefined>;
   roadPathAttribution?: boolean;
 }) {
   return (

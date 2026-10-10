@@ -87,23 +87,42 @@ export async function searchPlaces(
   const url = new URL("https://api.geoapify.com/v1/geocode/search");
   url.searchParams.set("text", text.trim().slice(0, 160));
   url.searchParams.set("format", "json");
-  url.searchParams.set("limit", "5");
+  url.searchParams.set("limit", "10");
   if (countryCode && /^[a-z]{2}$/i.test(countryCode))
     url.searchParams.set("filter", `countrycode:${countryCode.toLowerCase()}`);
   if (bias)
-    url.searchParams.set("bias", `proximity:${bias.longitude},${bias.latitude}`);
+    url.searchParams.set(
+      "bias",
+      `proximity:${bias.longitude},${bias.latitude}`,
+    );
   url.searchParams.set("apiKey", apiKey);
   try {
-    const response = await fetcher(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(4_000) });
+    const response = await fetcher(url, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(4_000),
+    });
     if (!response.ok) return [];
-    const payload = (await response.json()) as { results?: Array<{ lat?: unknown; lon?: unknown; formatted?: unknown; address_line1?: unknown }> };
+    const payload = (await response.json()) as {
+      results?: Array<{
+        lat?: unknown;
+        lon?: unknown;
+        formatted?: unknown;
+        address_line1?: unknown;
+      }>;
+    };
     return (payload.results ?? []).flatMap((place) =>
       typeof place.lat === "number" && typeof place.lon === "number"
-        ? [{
-            latitude: place.lat,
-            longitude: place.lon,
-            label: typeof place.formatted === "string" ? place.formatted.slice(0, 96) : conciseLabel(place as GeoapifyFeature["properties"]) ?? undefined,
-          }]
+        ? [
+            {
+              latitude: place.lat,
+              longitude: place.lon,
+              label:
+                typeof place.formatted === "string"
+                  ? place.formatted.slice(0, 96)
+                  : (conciseLabel(place as GeoapifyFeature["properties"]) ??
+                    undefined),
+            },
+          ]
         : [],
     );
   } catch {

@@ -1252,30 +1252,44 @@ function PinControls({
             : `rider-location-summary${hideRiderDestination ? " rider-location-origin-only" : ""}`
         }`}
       >
-        <p>
-          <strong className="location-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="6.5" />
-            </svg>
-            {driver ? "Departure" : "Where from?"}
-          </strong>
-          {driver && locatingDeparture
-            ? "Finding your current location…"
-            : driver && !pins.origin
-              ? "Select Departure to use your current location."
-              : !driver && !pins.pickup
-                ? null
-                : locationText(driver ? pins.origin : pins.pickup)}
-          {!driver ? (
-            <button
-              type="button"
-              className="pickup-location-button"
-              onClick={() => onPickupRequest?.()}
-            >
-              {pins.pickup ? "Update location" : "Use current location"}
-            </button>
-          ) : null}
-        </p>
+        {driver ? (
+          <p>
+            <strong className="location-heading">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="6.5" />
+              </svg>
+              Departure
+            </strong>
+            {locatingDeparture
+              ? "Finding your current location…"
+              : !pins.origin
+                ? "Select Departure to use your current location."
+                : locationText(pins.origin)}
+          </p>
+        ) : (
+          <p className="rider-origin-field">
+            <span className="rider-origin-heading">
+              <strong className="location-heading">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="6.5" />
+                </svg>
+                Where from?
+              </strong>
+              <button
+                type="button"
+                className="pickup-location-button"
+                onClick={() => onPickupRequest?.()}
+              >
+                {pins.pickup ? "Update location" : "Use current location"}
+              </button>
+            </span>
+            {pins.pickup ? (
+              <span className="rider-origin-address">
+                {locationText(pins.pickup)}
+              </span>
+            ) : null}
+          </p>
+        )}
         {driver || !hideRiderDestination ? (
           <p>
             <strong className="location-heading">
@@ -1549,6 +1563,8 @@ function RiderForm(props: {
           }
           autoFocus
           selectOnFocus={Boolean(props.pins.destination)}
+          destinationIcon
+          inlineResults
           choose={(pin) => {
             props.setDestination(pin);
             props.setTarget("riderDestination");
@@ -1732,21 +1748,21 @@ function RideSelection({
     "pickup",
     "destination",
   ] as Array<"driver" | "pickup" | "destination">;
+  const selectedPickupMinutes =
+    selectedCandidate && estimates[selectedCandidate.rideId]
+      ? Math.max(
+          1,
+          Math.round(estimates[selectedCandidate.rideId].pickupSeconds / 60),
+        )
+      : null;
   const markerLabels = [
-    ...(visibleDriverRoute
-      ? [
-          selectedCandidate && estimates[selectedCandidate.rideId]
-            ? `~${Math.max(
-                1,
-                Math.round(
-                  estimates[selectedCandidate.rideId].pickupSeconds / 60,
-                ),
-              )} min away`
-            : undefined,
-          undefined,
-        ]
-      : []),
-    locationText(pickup),
+    ...(visibleDriverRoute ? [undefined, undefined] : []),
+    selectedPickupMinutes !== null
+      ? {
+          etaMinutes: selectedPickupMinutes,
+          text: locationText(pickup),
+        }
+      : locationText(pickup),
     locationText(destination),
   ];
 
@@ -1793,6 +1809,16 @@ function RideSelection({
           </svg>
         </button>
       </div>
+      <div className="ride-selection-route-key" aria-label="Map route colours">
+        <span>
+          <i className="ride-selection-route-driver" aria-hidden="true" />
+          Driver route
+        </span>
+        <span>
+          <i className="ride-selection-route-rider" aria-hidden="true" />
+          Your route
+        </span>
+      </div>
       <section className="ride-options" aria-live="polite">
         <h1>Choose a ride</h1>
         {searching ? null : visibleCandidates.length ? (
@@ -1831,7 +1857,7 @@ function RideSelection({
                     <strong>{candidate.driverAlias}</strong>
                     <small>
                       {pickupMinutes !== null
-                        ? `~${pickupMinutes} min away`
+                        ? `${pickupMinutes} min away`
                         : "Estimating pickup"}
                       {arrival
                         ? ` · ${new Intl.DateTimeFormat("en-AU", {
@@ -1872,6 +1898,8 @@ function PlaceSearch({
   initialValue = "",
   autoFocus = false,
   selectOnFocus = false,
+  destinationIcon = false,
+  inlineResults = false,
 }: {
   bias?: Pin;
   countryCode?: string;
@@ -1881,6 +1909,8 @@ function PlaceSearch({
   initialValue?: string;
   autoFocus?: boolean;
   selectOnFocus?: boolean;
+  destinationIcon?: boolean;
+  inlineResults?: boolean;
 }) {
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
@@ -1910,8 +1940,20 @@ function PlaceSearch({
       .catch(() => setPlaces([]));
   };
   return (
-    <div className="place-search">
+    <div
+      className={`place-search${inlineResults ? " place-search-inline-results" : ""}`}
+    >
       <div className="place-search-input">
+        {destinationIcon ? (
+          <svg
+            className="place-search-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
+            <circle cx="12" cy="10" r="2" />
+          </svg>
+        ) : null}
         <input
           ref={inputRef}
           autoFocus={autoFocus}
