@@ -1871,7 +1871,7 @@ function PlaceSearch({
   autoFocus = false,
   selectOnFocus = false,
   destinationIcon = false,
-  inlineResults = false,
+  inlineResults = true,
 }: {
   bias?: Pin;
   countryCode?: string;
@@ -1952,7 +1952,12 @@ function PlaceSearch({
         </button>
       </div>
       {places.length ? (
-        <div className="place-results">
+        <div
+          className="place-results"
+          role="region"
+          aria-label="Destination search results"
+          tabIndex={0}
+        >
           {places.map((place) => (
             <button
               type="button"
