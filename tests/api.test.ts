@@ -8,6 +8,28 @@ import { openDatabase } from "../server/db";
 import { createGuestSession } from "../server/core";
 import { createApiServer } from "../server/index";
 
+process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
+  "base64",
+);
+const inbox = new Map<string, string>();
+const sendUniversityCode = async (email: string, code: string) => {
+  inbox.set(email, code);
+};
+async function universityLogin(base: string, unikey: string) {
+  const start = await json(`${base}/api/university/code`, "POST", { unikey });
+  assert.equal(start.response.status, 200);
+  const result = await json(`${base}/api/university/verify`, "POST", {
+    challengeId: start.body.challengeId,
+    code: inbox.get(`${unikey}@uni.sydney.edu.au`),
+  });
+  assert.equal(result.response.status, 200);
+  assert.match(result.response.headers.get("set-cookie")!, /HttpOnly/);
+  assert.equal(result.body.sessionToken, undefined);
+  return decodeURIComponent(
+    result.response.headers.get("set-cookie")!.split(";")[0].split("=")[1],
+  );
+}
+
 async function json(
   url: string,
   method: string,
@@ -19,6 +41,8 @@ async function json(
     method,
     headers: {
       "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+      "X-Cocowheels-Auth": "1",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(fallback ? { "X-Cocowheels-Session-Fallback": "1" } : {}),
     },
@@ -32,7 +56,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
     path.join(os.tmpdir(), "cocowheels-sample-api-"),
   );
   const database = openDatabase(path.join(directory, "test.db"));
-  const api = createApiServer(database);
+  const api = createApiServer(database, { sendUniversityCode });
   api.listen(0, "127.0.0.1");
   await once(api, "listening");
   const address = api.address();
@@ -47,6 +71,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
         plannedRoute: { origin: unknown; destination: unknown };
       }
     ).plannedRoute;
+    const token = await universityLogin(base, "test0001");
     const joined = await json(
       `${base}/api/rides/${id}/requests`,
       "POST",
@@ -55,12 +80,11 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
         destination: route.destination,
         requestedDepartureAt: new Date().toISOString(),
       },
-      undefined,
+      token,
       true,
     );
     assert.equal(joined.response.status, 201);
     assert.equal((joined.body.ride as { status: string }).status, "ACCEPTED");
-    const token = joined.body.sessionToken as string;
     assert.equal(
       ((await json(`${base}/api/availability`, "GET")).body.rides as unknown[])
         .length,
@@ -118,13 +142,18 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
 test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and completes the protected lifecycle", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "cocowheels-api-"));
   const database = openDatabase(path.join(directory, "test.db"));
-  const api = createApiServer(database, { sampleRides: false });
+  const api = createApiServer(database, {
+    sampleRides: false,
+    sendUniversityCode,
+  });
   api.listen(0, "127.0.0.1");
   await once(api, "listening");
   const address = api.address();
   assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}`;
   try {
+    const driverToken = await universityLogin(base, "driv0001");
+    const riderToken = await universityLogin(base, "ride0001");
     const driverCreate = await json(
       `${base}/api/rides`,
       "POST",
@@ -144,15 +173,10 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
         payId: "driver@example.com",
         payIdType: "EMAIL",
       },
-      undefined,
+      driverToken,
       true,
     );
     assert.equal(driverCreate.response.status, 201);
-    assert.match(
-      driverCreate.response.headers.get("set-cookie") ?? "",
-      /HttpOnly/,
-    );
-    const driverToken = driverCreate.body.sessionToken as string;
     const driverRide = driverCreate.body.ride as {
       rideId: string;
       driverAlias: string;
@@ -184,11 +208,10 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
         destination: { latitude: -33.82, longitude: 151.265 },
         requestedDepartureAt: new Date(Date.now() + 5 * 60_000).toISOString(),
       },
-      undefined,
+      riderToken,
       true,
     );
     assert.equal(riderCreate.response.status, 201);
-    const riderToken = riderCreate.body.sessionToken as string;
     const riderRide = riderCreate.body.ride as {
       request: { requestId: string };
     };

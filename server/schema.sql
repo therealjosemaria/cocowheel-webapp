@@ -1,5 +1,30 @@
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS university_accounts (
+  unikey TEXT PRIMARY KEY,
+  principal_id TEXT NOT NULL,
+  verified_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS university_sessions (
+  token_hash TEXT PRIMARY KEY,
+  unikey TEXT NOT NULL REFERENCES university_accounts(unikey),
+  principal_id TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS university_codes (
+  id TEXT PRIMARY KEY,
+  unikey TEXT NOT NULL,
+  code_hash TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  delivered INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS university_limits (
+  bucket TEXT PRIMARY KEY,
+  count INTEGER NOT NULL,
+  reset_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS guest_sessions (
   id TEXT PRIMARY KEY,
   token_hash TEXT NOT NULL UNIQUE,

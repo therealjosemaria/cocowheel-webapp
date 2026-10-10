@@ -175,6 +175,8 @@ function storeRecentDeviceLocation(pin: Pin, capturedAt: number) {
 const humanError = (error: unknown) => {
   const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
   const messages: Record<string, string> = {
+    VERIFICATION_CANCELLED: "",
+    UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your UniKey to continue.",
     SERVICE_UNAVAILABLE:
       "Trying to reconnect. Your last known ride is still safe on the server.",
     OPEN_ITEM_EXISTS: "You already have an open item in this role.",

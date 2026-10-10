@@ -2105,3 +2105,10 @@ p {
 .admin-footer-link { display: block; margin-top: 8px; color: inherit; font-size: .75rem; }
 .admin-panel button:focus-visible { outline: 2px solid #111827; outline-offset: 3px; }
 @media (min-width: 800px) { .admin-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.university-dialog { border: 1px solid var(--line); border-radius: 20px; padding: 24px; width: min(420px, calc(100% - 32px)); max-height: 90svh; margin: auto; color: var(--ink); background: white; }
+.university-dialog::backdrop { background: rgb(17 24 39 / .4); }
+.university-form { display: grid; gap: 16px; }
+.university-form h2 { margin: 0; font-size: 1.2rem; }
+.university-form p { margin: 0; font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+.university-form label { display: grid; gap: 8px; }
+.university-form input { min-height: 48px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; width: 100%; }

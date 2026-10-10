@@ -390,6 +390,11 @@ export default function RidePreviewClient({
         return;
       }
     } catch (reason) {
+      if (
+        reason instanceof ApiError &&
+        reason.code === "VERIFICATION_CANCELLED"
+      )
+        return;
       if (!(reason instanceof ApiError && reason.status === 401)) {
         setJoinFailurePromptOpen(true);
         return;
@@ -421,6 +426,11 @@ export default function RidePreviewClient({
       );
       window.location.assign("/activity");
     } catch (reason) {
+      if (
+        reason instanceof ApiError &&
+        reason.code === "VERIFICATION_CANCELLED"
+      )
+        return;
       if (
         reason instanceof ApiError &&
         reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED"

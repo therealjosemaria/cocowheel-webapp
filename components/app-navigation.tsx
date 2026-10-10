@@ -56,9 +56,9 @@ export default function AppNavigation() {
     if (pathname.startsWith("/admin")) return;
     try {
       const result = await cocowheelsApi<{
-        guestAlias: string;
-      }>("/api/current");
-      setGuestName(result.guestAlias);
+        unikey: string;
+      }>("/api/university/session");
+      setGuestName(result.unikey);
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
@@ -198,11 +198,39 @@ export default function AppNavigation() {
           <strong>Profile</strong>
           {guestName ? (
             <div className="guest-identity-row">
-              <span>Name</span>
+              <span>UniKey</span>
               <b>{guestName}</b>
             </div>
           ) : (
-            <p>No guest name yet</p>
+            <button
+              className="secondary"
+              onClick={() => {
+                setIdentityOpen(false);
+                window.dispatchEvent(
+                  new CustomEvent("cocowheels:verify-university"),
+                );
+              }}
+            >
+              Verify UniKey
+            </button>
+          )}
+          {guestName && (
+            <button
+              className="secondary"
+              onClick={async () => {
+                const response = await fetch("/api/university/logout", {
+                  method: "POST",
+                  headers: { "X-Cocowheels-Auth": "1" },
+                  credentials: "same-origin",
+                });
+                if (response.ok) {
+                  sessionStorage.removeItem("cocowheels:guest-session");
+                  window.location.assign("/");
+                }
+              }}
+            >
+              Sign out
+            </button>
           )}
         </div>
       </div>

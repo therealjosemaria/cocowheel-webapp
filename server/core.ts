@@ -24,7 +24,7 @@ export type RideStatus =
 export type RequestStatus =
   "PENDING" | "ACCEPTED" | "DECLINED" | "DISCARDED" | "CANCELLED";
 export type Participant = "DRIVER" | "RIDER";
-export type Session = { id: string; alias: string };
+export type Session = { id: string; alias: string; unikey?: string };
 export type Pin = { latitude: number; longitude: number; label?: string };
 export type DirectionFit = "GOOD" | "POOR";
 
@@ -474,6 +474,18 @@ export function findSession(
   now = new Date(),
 ): Session | null {
   if (!token) return null;
+  const verified = db
+    .prepare(
+      "SELECT principal_id, unikey FROM university_sessions WHERE token_hash = ? AND expires_at > ?",
+    )
+    .get(hash(token), iso(now)) as
+    { principal_id: string; unikey: string } | undefined;
+  if (verified)
+    return {
+      id: verified.principal_id,
+      alias: verified.unikey,
+      unikey: verified.unikey,
+    };
   const row = db
     .prepare(
       "SELECT id, anonymous_alias FROM guest_sessions WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?",

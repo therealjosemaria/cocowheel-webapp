@@ -17,6 +17,7 @@ function fallbackToken() {
 export async function cocowheelsApi<T>(
   path: string,
   init: RequestInit = {},
+  verifiedRetry = false,
 ): Promise<T> {
   const token = fallbackToken();
   const headers = new Headers(init.headers);
@@ -36,6 +37,25 @@ export async function cocowheelsApi<T>(
   };
   if (payload.sessionToken && typeof window !== "undefined")
     window.sessionStorage.setItem(storageKey, payload.sessionToken);
+  if (
+    !response.ok &&
+    payload.error === "UNIVERSITY_VERIFICATION_REQUIRED" &&
+    !verifiedRetry &&
+    typeof window !== "undefined" &&
+    init.method === "POST"
+  ) {
+    await new Promise<void>((resolve, reject) => {
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:verify-university", {
+          detail: {
+            resolve,
+            reject: () => reject(new ApiError("VERIFICATION_CANCELLED", 401)),
+          },
+        }),
+      );
+    });
+    return cocowheelsApi<T>(path, init, true);
+  }
   if (!response.ok)
     throw new ApiError(payload.error ?? "REQUEST_FAILED", response.status);
   return payload;

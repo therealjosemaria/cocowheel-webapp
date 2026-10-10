@@ -31,6 +31,13 @@ import {
 } from "./core";
 import db from "./db";
 import {
+  requestUniversityCode,
+  verifyUniversityCode,
+  requireUniversitySession,
+  logoutUniversity,
+  type CodeSender,
+} from "./university-auth";
+import {
   initializeAdmin,
   loginAdmin,
   requireAdmin,
@@ -119,6 +126,12 @@ async function readJson(request: IncomingMessage): Promise<Json> {
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (
+    ["UNIVERSITY_VERIFICATION_REQUIRED", "VERIFICATION_INVALID"].includes(code)
+  )
+    return 401;
+  if (code === "VERIFICATION_RATE_LIMITED") return 429;
+  if (["EMAIL_NOT_CONFIGURED", "EMAIL_SEND_FAILED"].includes(code)) return 503;
   if (["ADMIN_SESSION_REQUIRED", "ADMIN_LOGIN_INVALID"].includes(code))
     return 401;
   if (code === "ADMIN_RATE_LIMITED") return 429;
@@ -375,7 +388,7 @@ function pathParts(url: string | undefined) {
 
 export function createApiServer(
   database: Db,
-  options: { sampleRides?: boolean } = {},
+  options: { sampleRides?: boolean; sendUniversityCode?: CodeSender } = {},
 ) {
   assertRuntimeConfiguration();
   initializeCoreSchema(database);
@@ -492,6 +505,70 @@ export function createApiServer(
       if (sampleRidesEnabled) ensureSampleRides(database, now);
       const parts = pathParts(request.url);
       const token = requestToken(request);
+      if (parts[0] === "api" && parts[1] === "university") {
+        response.setHeader("Cache-Control", "private, no-store");
+        if (request.method === "GET" && parts[2] === "session") {
+          const session = requireUniversitySession(database, token);
+          writeJson(response, 200, { unikey: session.unikey }, cors);
+          return;
+        }
+        if (
+          request.method !== "POST" ||
+          !origin ||
+          request.headers["x-cocowheels-auth"] !== "1"
+        ) {
+          writeJson(response, 403, { error: "ORIGIN_NOT_ALLOWED" }, cors);
+          return;
+        }
+        if (parts[2] === "code") {
+          const body = await readJson(request);
+          writeJson(
+            response,
+            200,
+            await requestUniversityCode(
+              database,
+              body.unikey,
+              options.sendUniversityCode,
+            ),
+            cors,
+          );
+        } else if (parts[2] === "verify") {
+          const body = await readJson(request);
+          const result = verifyUniversityCode(
+            database,
+            body.challengeId,
+            body.code,
+            token,
+          );
+          writeJson(
+            response,
+            200,
+            { unikey: result.unikey },
+            {
+              ...cors,
+              "Set-Cookie": guestCookie(
+                result.token,
+                process.env.NODE_ENV === "production",
+              ).replace("SameSite=Lax", "SameSite=Strict"),
+            },
+          );
+        } else if (parts[2] === "logout") {
+          logoutUniversity(database, token);
+          writeJson(
+            response,
+            200,
+            { ok: true },
+            {
+              ...cors,
+              "Set-Cookie": guestCookie(
+                "",
+                process.env.NODE_ENV === "production",
+              ).replace(/Max-Age=\d+/, "Max-Age=0"),
+            },
+          );
+        } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
+      }
       if (
         request.method === "GET" &&
         (parts.join("/") === "health" || parts.join("/") === "api/health")
@@ -596,6 +673,7 @@ export function createApiServer(
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/rides") {
+        requireUniversitySession(database, token);
         const body = await readJson(request);
         if (body.payId != null && typeof body.payId !== "string")
           throw new Error("INVALID_PAYID");
@@ -701,6 +779,7 @@ export function createApiServer(
         parts[1] === "rides" &&
         parts[3] === "requests"
       ) {
+        requireUniversitySession(database, token);
         const search = inputSearch(await readJson(request));
         const [pickup, destination] = await Promise.all([
           pinWithPublishedLabel(search.pickup, database),
