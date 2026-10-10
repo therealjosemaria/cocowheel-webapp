@@ -858,19 +858,22 @@ p {
   border-top-color: #ffffff !important;
 }
 .journey-location-label-combined {
-  width: auto;
-  max-width: none;
+  width: max-content;
+  max-width: min(290px, 78vw);
   padding: 0 !important;
+  border: 0 !important;
+  border-radius: 6px !important;
 }
 .journey-location-row {
-  display: grid;
-  width: min(290px, 78vw);
-  grid-template-columns: 44px minmax(0, 1fr);
+  display: inline-flex;
+  width: max-content;
+  max-width: min(290px, 78vw);
   overflow: hidden;
 }
 .journey-location-eta {
   display: flex;
-  min-width: 44px;
+  width: 44px;
+  flex: 0 0 44px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -891,10 +894,13 @@ p {
 }
 .journey-location-address {
   display: flex;
+  width: max-content;
+  max-width: calc(min(290px, 78vw) - 44px);
   min-width: 0;
+  flex: 0 1 auto;
   align-items: center;
   overflow: hidden;
-  padding: 6px 8px;
+  padding: 5px 6px 5px 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
