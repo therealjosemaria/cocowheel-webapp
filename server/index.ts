@@ -38,16 +38,7 @@ import {
   logoutUniversity,
   type CodeSender,
 } from "./university-auth";
-import {
-  initializeAdmin,
-  loginAdmin,
-  requireAdmin,
-  logoutAdmin,
-  adminCookie,
-  readAdminCookie,
-  adminDashboard,
-  adminInspector,
-} from "./admin";
+import { initializeAdmin, adminDashboard, adminInspector } from "./admin";
 import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
@@ -432,8 +423,6 @@ export function createApiServer(
           writeJson(response, 403, { error: "ADMIN_ACCESS_DENIED" }, cors);
           return;
         }
-        const adminToken = readAdminCookie(request.headers.cookie);
-        const secure = process.env.NODE_ENV === "production";
         if (
           request.method !== "GET" &&
           (!origin || request.headers["x-admin-request"] !== "1")
@@ -442,54 +431,10 @@ export function createApiServer(
           return;
         }
         if (
-          adminUrl.pathname === "/api/admin/login" &&
-          request.method === "POST"
-        ) {
-          const body = await readJson(request);
-          const token = loginAdmin(database, body.username, body.password);
-          logoutAdmin(database, adminToken);
-          writeJson(
-            response,
-            200,
-            { ok: true },
-            { ...cors, "Set-Cookie": adminCookie(token, secure) },
-          );
-          return;
-        }
-        if (
-          adminUrl.pathname === "/api/admin/logout" &&
-          request.method === "POST"
-        ) {
-          logoutAdmin(database, adminToken);
-          writeJson(
-            response,
-            200,
-            { ok: true },
-            { ...cors, "Set-Cookie": adminCookie("", secure) },
-          );
-          return;
-        }
-        const session = requireAdmin(database, adminToken);
-        if (
-          adminUrl.pathname === "/api/admin/touch" &&
-          request.method === "POST"
-        ) {
-          writeJson(
-            response,
-            200,
-            requireAdmin(database, adminToken, true),
-            cors,
-          );
-        } else if (
           adminUrl.pathname === "/api/admin/dashboard" &&
           request.method === "GET"
         ) {
-          writeJson(
-            response,
-            200,
-            { ...adminDashboard(database, adminUrl), ...session },
-            cors,
-          );
+          writeJson(response, 200, adminDashboard(database, adminUrl), cors);
         } else if (
           /^\/api\/admin\/rides\/[^/]+$/.test(adminUrl.pathname) &&
           request.method === "GET"
@@ -502,7 +447,6 @@ export function createApiServer(
                 database,
                 decodeURIComponent(adminUrl.pathname.split("/").pop()!),
               ),
-              ...session,
             },
             cors,
           );

@@ -2,23 +2,23 @@
 
 Sign in with the verified `jmos0905` UniKey, then use the Admin menu link.
 The page and API reject all other accounts, including the Gmail testing account.
-The existing admin password is still required. Overview shows all-time ride
+No separate admin password is required. Overview shows all-time ride
 counts (including samples); Trips provides status filters and 25-record pages;
 Trip inspector shows route details, up to 200 recent requests/events, and the
 latest retained GPS positions. It does not claim to retain a GPS history.
 No ride edits, cancellation, deletion, payment identifiers, pickup codes, or
 guest-session credentials are exposed by the admin API.
 
-Admin sessions are independent of guest identities. They expire after one hour
-without an interaction or after eight hours regardless of activity. Report
-polling does not extend the session. The browser receives only an HttpOnly,
-SameSite=Strict cookie (Secure in production); the database stores its hash.
-Ten login attempts per 15 minutes are allowed across the single admin account.
-This account-wide throttle intentionally does not trust forwarded IP headers.
+Admin access uses the verified owner's university session (30-day absolute TTL).
+Every API request checks that session; signing out or expiry removes access.
+Report polling does not extend it. Sign out through the profile menu. The browser
+receives only an HttpOnly cookie, and the database stores its hash.
 
-## Provision or rotate the account on the API host
+## Retired password setup
 
-Run from the project directory against the API's configured database path:
+The old provisioning utility remains for historical compatibility only. Its
+credentials and admin cookies no longer authorize the API. Do not run it for
+normal setup; access is granted solely by verified UniKey. Legacy utility:
 
 ```bash
 read -r -p 'Admin username: ' admin_username

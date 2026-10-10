@@ -1,20 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Row = Record<string, string | number | null>;
 type Dashboard = {
   counts: { status: string; count: number }[];
   rides: Row[];
   total: number;
-  expiresAt: number;
 };
 type Inspector = {
   ride: Row;
   requests: Row[];
   locations: Row[];
   events: Row[];
-  expiresAt: number;
 };
 const statuses = [
   "PUBLISHED",
@@ -94,28 +92,23 @@ export default function AdminPanel() {
   const [inspector, setInspector] = useState<Inspector | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [ready, setReady] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState("Overview");
   const [selected, setSelected] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
-  const deadline = useRef(0);
   const clear = useCallback(() => {
     setAuthenticated(false);
     setDashboard(null);
     setInspector(null);
     setSelected("");
-    deadline.current = 0;
   }, []);
   const failure = useCallback(
     (reason: unknown) => {
       if (reason instanceof Error && reason.name === "AbortError") return;
-      if (reason instanceof Error && reason.message === "401") {
+      if (reason instanceof Error && ["401", "403"].includes(reason.message)) {
         clear();
-        setError("Please sign in again.");
+        window.location.replace("/");
       } else setError("Unable to load. Please try again.");
     },
     [clear],
@@ -126,10 +119,9 @@ export default function AdminPanel() {
       .then((data) => {
         setDashboard(data);
         setAuthenticated(true);
-        deadline.current = data.expiresAt;
       })
       .catch((reason) => {
-        if (reason.message !== "401") failure(reason);
+        failure(reason);
       })
       .finally(() => setReady(true));
     return () => controller.abort();
@@ -149,7 +141,6 @@ export default function AdminPanel() {
             controller.signal,
           );
           setInspector(data);
-          deadline.current = data.expiresAt;
         } else {
           const data = await api<Dashboard>(
             `dashboard?page=${page}&status=${encodeURIComponent(status)}`,
@@ -157,7 +148,6 @@ export default function AdminPanel() {
             controller.signal,
           );
           setDashboard(data);
-          deadline.current = data.expiresAt;
         }
       } catch (reason) {
         failure(reason);
@@ -174,56 +164,6 @@ export default function AdminPanel() {
       document.removeEventListener("visibilitychange", load);
     };
   }, [authenticated, tab, selected, page, status, failure]);
-  useEffect(() => {
-    if (!authenticated) return;
-    let lastTouch = 0;
-    const touch = () => {
-      if (Date.now() - lastTouch < 60000) return;
-      lastTouch = Date.now();
-      void api<{ expiresAt: number }>("touch", {})
-        .then((data) => {
-          deadline.current = data.expiresAt;
-        })
-        .catch(failure);
-    };
-    const timer = setInterval(() => {
-      if (deadline.current && Date.now() >= deadline.current) {
-        clear();
-        setError("Session expired. Please sign in again.");
-      }
-    }, 1000);
-    window.addEventListener("pointerdown", touch);
-    window.addEventListener("keydown", touch);
-    window.addEventListener("scroll", touch, true);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener("pointerdown", touch);
-      window.removeEventListener("keydown", touch);
-      window.removeEventListener("scroll", touch, true);
-    };
-  }, [authenticated, clear, failure]);
-  async function login(event: React.FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await api("login", { username, password });
-      setPassword("");
-      const data = await api<Dashboard>("dashboard");
-      setDashboard(data);
-      deadline.current = data.expiresAt;
-      setAuthenticated(true);
-    } catch (reason) {
-      setPassword("");
-      setError(
-        reason instanceof Error && reason.message === "429"
-          ? "Too many attempts. Try again in 15 minutes."
-          : "Unable to sign in. Check your credentials and try again.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
   const inspect = (id: string) => {
     setInspector(null);
     setSelected(id);
@@ -233,58 +173,11 @@ export default function AdminPanel() {
     <section className="page-content">
       <div className="admin-panel">
         <header className="admin-heading">
-          <h1>{authenticated ? "Admin" : "Admin login"}</h1>
-          {authenticated && (
-            <button
-              className="secondary"
-              onClick={async () => {
-                try {
-                  await api("logout", {});
-                  clear();
-                  setError("");
-                } catch (reason) {
-                  failure(reason);
-                }
-              }}
-            >
-              Log out
-            </button>
-          )}
+          <h1>Admin</h1>
         </header>
-        {!ready ? null : !authenticated ? (
-          <form className="admin-login" onSubmit={login} autoComplete="off">
-            <label>
-              Username
-              <input
-                required
-                maxLength={80}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="off"
-                autoCapitalize="none"
-                spellCheck={false}
-              />
-            </label>
-            <label>
-              Password
-              <input
-                required
-                type="password"
-                maxLength={256}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="off"
-              />
-            </label>
-            <button className="primary" disabled={busy}>
-              {busy ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
-        ) : (
+        {!ready || !authenticated ? null : (
           <>
-            <p className="admin-muted">
-              Read-only · 1-hour idle / 8-hour maximum session
-            </p>
+            <p className="admin-muted">Read-only</p>
             <nav className="admin-tabs" aria-label="Admin sections">
               {["Overview", "Trips", "Trip inspector"].map((item) => (
                 <button

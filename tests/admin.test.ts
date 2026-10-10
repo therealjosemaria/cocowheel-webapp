@@ -77,7 +77,7 @@ test("admin login has persisted throttling and no default credentials", () => {
   assert.ok(loginAdmin(db, "tester", "test-only-password", 15 * 60_000));
   db.close();
 });
-test("admin HTTP endpoints protect read-only reports with separate cookies and CSRF checks", async () => {
+test("admin HTTP endpoints require only the verified owner, reject other accounts and retired password endpoints", async () => {
   process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 9).toString(
     "base64",
   );
@@ -129,11 +129,14 @@ test("admin HTTP endpoints protect read-only reports with separate cookies and C
     for (const cookie of ["", student.cookie, gmail.cookie]) {
       assert.equal((await post("login", cookie)).status, 403);
     }
-    const login = await post("login", owner.cookie);
-    assert.equal(login.status, 200);
-    assert.deepEqual(await login.json(), { ok: true });
-    const adminOnly = login.headers.get("set-cookie")!.split(";")[0];
-    const cookie = `${adminOnly}; ${owner.cookie}`;
+    for (const route of ["login", "logout", "touch"]) {
+      assert.equal((await post(route, owner.cookie)).status, 404);
+    }
+    const adminOnly = adminCookie(
+      loginAdmin(db, "tester", "test-only-password"),
+      false,
+    ).split(";")[0];
+    const cookie = owner.cookie;
     for (const identity of ["", student.cookie, gmail.cookie]) {
       assert.equal(
         (
@@ -151,17 +154,14 @@ test("admin HTTP endpoints protect read-only reports with separate cookies and C
     const body = await reports.json();
     assert.deepEqual(body.rides, []);
     assert.equal((await post("rides/anything/cancel", cookie)).status, 404);
-    assert.equal((await post("logout", cookie)).status, 200);
-    assert.equal(
-      (await fetch(base + "dashboard", { headers: { Cookie: cookie } })).status,
-      401,
-    );
-    const nextLogin = await post("login", owner.cookie);
-    const nextCookie = `${nextLogin.headers.get("set-cookie")!.split(";")[0]}; ${owner.cookie}`;
+    const inspector = await fetch(base + "rides/nonexistent", {
+      headers: { Cookie: cookie },
+    });
+    assert.notEqual(inspector.status, 401);
+    assert.notEqual(inspector.status, 403);
     logoutUniversity(db, owner.token);
     assert.equal(
-      (await fetch(base + "dashboard", { headers: { Cookie: nextCookie } }))
-        .status,
+      (await fetch(base + "dashboard", { headers: { Cookie: cookie } })).status,
       403,
     );
   } finally {
