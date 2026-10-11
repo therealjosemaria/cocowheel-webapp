@@ -1670,12 +1670,25 @@ p {
   margin: 0;
 }
 .ride-directions {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   width: fit-content;
   margin-top: 4px;
+  margin-left: auto;
   padding: 5px 0;
   font-size: 0.78rem;
   text-underline-offset: 3px;
+}
+.ride-directions svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .driver-payment-details {
   margin: 0;

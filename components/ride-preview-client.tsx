@@ -707,7 +707,10 @@ export default function RidePreviewClient({
                         rel="noopener noreferrer"
                         aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
                       >
-                        Directions
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="m21 3-6 18-4-8-8-4 18-6Z" />
+                        </svg>
+                        Google Maps
                       </a>
                     ) : null}
                   </dd>
@@ -742,7 +745,10 @@ export default function RidePreviewClient({
                         rel="noopener noreferrer"
                         aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
                       >
-                        Directions
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="m21 3-6 18-4-8-8-4 18-6Z" />
+                        </svg>
+                        Google Maps
                       </a>
                     ) : null}
                   </dd>
