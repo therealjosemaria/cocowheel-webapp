@@ -4,8 +4,25 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import PoorFitPrompt from "../components/poor-fit-prompt";
 import CancelPrompt from "../components/cancel-prompt";
+import CopyPayId from "../components/copy-payid";
 import { CompleteRide } from "../components/ride-journey-controls";
 import type { Ride } from "../lib/client-types";
+
+test("all PayID forms retain their value and an accessible copy button", () => {
+  for (const value of [
+    "0491 570 006",
+    "driver@example.com",
+    "00 000 000 000",
+  ]) {
+    const html = renderToStaticMarkup(createElement(CopyPayId, { value }));
+    assert.ok(html.includes(value));
+    assert.match(
+      html,
+      /type="button"[^>]*class="secondary"[^>]*aria-label="Copy PayID"/,
+    );
+    assert.doesNotMatch(html, /PayID copied/);
+  }
+});
 
 test("Complete is visible only for a verified pickup in progress", () => {
   for (const status of [

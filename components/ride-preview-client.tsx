@@ -11,6 +11,7 @@ import { mapLocationText } from "@/lib/map-label";
 import { directionsUrl } from "@/lib/directions";
 import RideFieldLabel from "./ride-field-label";
 import { CompleteRide, PickupConfirmation } from "./ride-journey-controls";
+import CopyPayId from "./copy-payid";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
 import {
@@ -793,7 +794,7 @@ export default function RidePreviewClient({
                                   : "Other"
                                 : "PayID"}
                       </span>
-                      {ride.payId ? <code>{ride.payId}</code> : null}
+                      {ride.payId ? <CopyPayId value={ride.payId} /> : null}
                     </dd>
                   </div>
                 ) : null}
@@ -857,7 +858,7 @@ export default function RidePreviewClient({
                           ? "Email"
                           : "Other"}
                     </span>
-                    <code>{ride.payId}</code>
+                    <CopyPayId value={ride.payId} />
                   </dd>
                 </dl>
               ) : null}
@@ -997,6 +998,12 @@ export default function RidePreviewClient({
               />
             ) : null}
             <JourneyMap
+              recenterPin={
+                privateRide?.pickupEstablished &&
+                ride.status === "CO_RIDE_ACTIVE"
+                  ? ride.driverLocation
+                  : undefined
+              }
               followPins={
                 ride.driverLocation &&
                 riderRoute &&

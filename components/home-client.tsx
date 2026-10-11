@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
+import CopyPayId from "./copy-payid";
 import LocationAge from "./location-age";
 import {
   PAYID_MAX_LENGTH,
@@ -2165,15 +2166,7 @@ function RideStatus({
           {ride.payId ? (
             <>
               <p>PayID is now visible only to you.</p>
-              <code>{ride.payId}</code>
-              <button
-                className="secondary"
-                onClick={() =>
-                  void navigator.clipboard?.writeText(ride.payId ?? "")
-                }
-              >
-                COPY PAYID
-              </button>
+              <CopyPayId value={ride.payId} />
               <button
                 className="primary"
                 disabled={busy}

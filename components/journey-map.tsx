@@ -1,6 +1,13 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { divIcon } from "leaflet";
 import {
   CircleMarker,
@@ -89,13 +96,26 @@ function Fit({
   pins,
   lines,
   followPins,
+  recenterPin,
 }: {
   pins: Pin[];
   lines: Line[];
   followPins?: Pin[];
+  recenterPin?: Pin;
 }) {
   const map = useMap();
   const manualView = useRef(false);
+  const lastInteraction = useRef(0);
+  const recenterEnabled = Boolean(recenterPin);
+  const recenter = useEffectEvent(() => {
+    if (!recenterPin || Date.now() - lastInteraction.current < 1000) return;
+    map.panTo([recenterPin.latitude, recenterPin.longitude], { animate: true });
+  });
+  useEffect(() => {
+    if (!recenterEnabled) return;
+    const timer = setInterval(() => recenter(), 10_000);
+    return () => clearInterval(timer);
+  }, [recenterEnabled]);
   const points = followPins?.length
     ? followPins
     : [...pins, ...lines.flatMap((line) => line.points)];
@@ -105,6 +125,7 @@ function Fit({
   useEffect(() => {
     const container = map.getContainer();
     const takeControl = () => {
+      lastInteraction.current = Date.now();
       manualView.current = true;
       map.stop();
     };
@@ -134,7 +155,7 @@ function Fit({
     };
   }, [map]);
   useEffect(() => {
-    if (manualView.current || points.length === 0) return;
+    if (recenterEnabled || manualView.current || points.length === 0) return;
     if (points.length === 1) {
       map.setView([points[0].latitude, points[0].longitude], 16, {
         animate: true,
@@ -149,7 +170,7 @@ function Fit({
     );
     // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, pointKey]);
+  }, [map, pointKey, recenterEnabled]);
   return null;
 }
 function sameIndexes(left: Set<number>, right: Set<number>) {
@@ -256,6 +277,7 @@ export default function JourneyMap({
   pins = [],
   fitPins,
   followPins,
+  recenterPin,
   lines = [],
   onPick,
   markerKinds,
@@ -265,6 +287,7 @@ export default function JourneyMap({
   pins?: Pin[];
   fitPins?: Pin[];
   followPins?: Pin[];
+  recenterPin?: Pin;
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
@@ -302,7 +325,12 @@ export default function JourneyMap({
           markerLabels={markerLabels}
         />
         <MapClick onPick={onPick} />
-        <Fit pins={fitPins ?? pins} lines={lines} followPins={followPins} />
+        <Fit
+          pins={fitPins ?? pins}
+          lines={lines}
+          followPins={followPins}
+          recenterPin={recenterPin}
+        />
         <ZoomControl position="bottomright" />
       </MapContainer>
       <p className="map-attribution">
