@@ -46,7 +46,7 @@ const prettyTime = (value: string) =>
 const locationText = (pin?: Pin) =>
   pin
     ? (pin.label ?? `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`)
-    : "Place a pin on the map";
+    : "Select a location";
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
@@ -178,10 +178,10 @@ const humanError = (error: unknown) => {
     UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your UniKey to continue.",
     SERVICE_UNAVAILABLE:
       "Trying to reconnect. Your last known ride is still safe on the server.",
-    OPEN_ITEM_EXISTS: "You already have an open item in this role.",
+    OPEN_ITEM_EXISTS: "You already have an active ride or request.",
     FRESH_LOCATIONS_REQUIRED:
-      "Both phones need a fresh location before the driver can begin.",
-    LOCATION_STALE: "That location is no longer fresh. Try again now.",
+      "Both people need to update their location before the driver can start.",
+    LOCATION_STALE: "Your location is out of date. Update it to continue.",
     LOCATION_ACCURACY_REJECTED:
       "Location accuracy is too low. Move somewhere with a clearer signal and try again.",
     CO_RIDE_CODE_INVALID: "That code doesn’t match. Check it and try again.",
@@ -594,7 +594,7 @@ export default function HomeClient({
       if (target === "origin") setAllowManualDeparture(true);
       setError(
         target === "origin"
-          ? "Location wasn’t available. Search for your departure instead."
+          ? "Location wasn’t available. Search for your starting point instead."
           : "Location wasn’t available. Search for your pickup instead.",
       );
       return;
@@ -624,7 +624,7 @@ export default function HomeClient({
         setBusy(false);
         setError(
           target === "origin"
-            ? "Location wasn’t available. Search for your departure instead."
+            ? "Location wasn’t available. Search for your starting point instead."
             : "Location wasn’t available. Search for your pickup instead.",
         );
       },
@@ -837,7 +837,7 @@ export default function HomeClient({
       () => {
         if (!silent)
           setError(
-            "We couldn’t get a fresh location. Check location permission or place yourself where GPS can see the sky.",
+            "We couldn’t update your location. Check location permissions and try somewhere with a clearer GPS signal.",
           );
       },
       { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 },
@@ -1008,11 +1008,11 @@ function LocationPrompt({
         aria-modal="true"
         aria-labelledby="location-prompt-title"
       >
-        <p className="eyebrow">{departure ? "Departure" : "Pickup"}</p>
+        <p className="eyebrow">{departure ? "Starting point" : "Pickup"}</p>
         <h2 id="location-prompt-title">Use your current location?</h2>
         <p>
           Cocowheels will use your current location as the{" "}
-          {departure ? "default departure point" : "pickup location"}.
+          {departure ? "starting point" : "pickup location"}.
         </p>
         <div className="location-prompt-actions">
           <button type="button" className="secondary" onClick={close}>
@@ -1086,7 +1086,7 @@ function PublishRouteRequiredPrompt({ close }: { close: () => void }) {
         aria-labelledby="publish-route-required-title"
       >
         <h2 id="publish-route-required-title">Add your route first</h2>
-        <p>Fill Where from? and Where to? to publish.</p>
+        <p>Add your starting point and destination to offer a ride.</p>
         <div className="location-prompt-actions">
           <button type="button" className="primary" onClick={close}>
             OKAY
@@ -1160,7 +1160,7 @@ function PinControls({
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="12" cy="12" r="6.5" />
                 </svg>
-                Departure
+                Where from?
               </>
             ) : (
               "Pickup"
@@ -1174,7 +1174,7 @@ function PinControls({
               <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
               <circle cx="12" cy="10" r="2" />
             </svg>
-            Final destination
+            Where to?
           </button>
         </div>
       ) : null}
@@ -1191,12 +1191,12 @@ function PinControls({
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="6.5" />
               </svg>
-              Departure
+              Where from?
             </strong>
             {locatingDeparture
               ? "Finding your current location…"
               : !pins.origin
-                ? "Select Departure to use your current location."
+                ? "Select Where from? to use your current location."
                 : locationText(pins.origin)}
           </p>
         ) : (
@@ -1230,12 +1230,12 @@ function PinControls({
                 <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
                 <circle cx="12" cy="10" r="2" />
               </svg>
-              {driver ? "Final destination" : "Where to?"}
+              Where to?
             </strong>
             {pins.destination
               ? locationText(pins.destination)
               : driver
-                ? "Select Final destination."
+                ? "Select a destination."
                 : null}
           </p>
         ) : null}
@@ -1347,7 +1347,7 @@ function DriverForm(props: {
         </div>
         {props.allowManualDeparture && !props.pins.origin ? (
           <PlaceSearch
-            placeholder="Search departure"
+            placeholder="Search starting point"
             autoFocus
             choose={props.setOrigin}
           />
@@ -1837,7 +1837,7 @@ function RideSelection({
             })}
           </div>
         ) : (
-          <p className="ride-options-empty">No planned rides yet</p>
+          <p className="ride-options-empty">No rides available</p>
         )}
       </section>
       <div className="ride-selection-action">
@@ -2004,9 +2004,9 @@ function RideStatus({
         : ride.status === "RIDE_ACTIVE"
           ? "Heading to pickup"
           : ride.status === "CO_RIDE_ACTIVE"
-            ? "Co-ride in progress"
+            ? "Ride in progress"
             : ride.status === "COMPLETED"
-              ? "Co-ride complete"
+              ? "Ride completed"
               : ride.status === "EXPIRED"
                 ? "Ride expired"
                 : null;
@@ -2107,14 +2107,14 @@ function RideStatus({
           ) : (
             <p>
               {driver
-                ? "Ask the rider to share a fresh location."
+                ? "Ask the rider to update their location."
                 : ride.status === "ACCEPTED"
                   ? "The driver will become visible after they begin the ride."
-                  : "Waiting for a fresh location."}
+                  : "Waiting for a location update."}
             </p>
           )}
           <button className="secondary" disabled={busy} onClick={onLocation}>
-            SHARE FRESH LOCATION
+            UPDATE LOCATION
           </button>
         </section>
       ) : null}
@@ -2156,13 +2156,13 @@ function RideStatus({
               onAction(`/api/rides/${ride.rideId}/co-ride/confirm`, { code })
             }
           >
-            BEGIN CO-RIDE
+            START RIDE
           </button>
         </section>
       ) : null}
       {ride.status === "CO_RIDE_ACTIVE" && !driver ? (
         <section className="payment-card">
-          <h2>Payment handoff</h2>
+          <h2>Payment</h2>
           {ride.payId ? (
             <>
               <p>PayID is now visible only to you.</p>
@@ -2201,7 +2201,7 @@ function RideStatus({
               className="secondary"
               onClick={() =>
                 void navigator.clipboard?.writeText(
-                  `Cocowheels co-ride ${routeReference(ride.rideId)}`,
+                  `Cocowheels ride ${routeReference(ride.rideId)}`,
                 )
               }
             >
@@ -2224,8 +2224,8 @@ function RideStatus({
             COMPLETE · CASH
           </button>
           <small>
-            Cocowheels records your chosen handoff only. It never verifies a
-            bank payment.
+            Cocowheels records your selected payment method only. It never
+            verifies a bank payment.
           </small>
         </section>
       ) : null}
@@ -2234,8 +2234,8 @@ function RideStatus({
           <p>Private completed record</p>
           <strong>
             {ride.paymentHandoffMethod === "PAYID"
-              ? "PayID handoff selected"
-              : "Cash handoff selected"}
+              ? "Payment method: PayID"
+              : "Payment method: Cash"}
           </strong>
           <small>Ride reference: {routeReference(ride.rideId)}</small>
         </section>

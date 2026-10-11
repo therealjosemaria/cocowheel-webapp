@@ -88,7 +88,7 @@ const rideStatusLabel = (status: Ride["status"]) =>
     REQUESTED: "Requested",
     ACCEPTED: "Accepted",
     RIDE_ACTIVE: "Ride active",
-    CO_RIDE_ACTIVE: "Co-ride active",
+    CO_RIDE_ACTIVE: "Ride in progress",
     COMPLETED: "Completed",
     CANCELLED: "Cancelled",
     EXPIRED: "Expired",
@@ -550,7 +550,7 @@ export default function RidePreviewClient({
             aria-labelledby="route-required-title"
           >
             <h2 id="route-required-title">Add your route first</h2>
-            <p>Fill Where from and Where to to join.</p>
+            <p>Add your pickup and destination to request a ride.</p>
             <div className="location-prompt-actions">
               <button
                 type="button"
@@ -617,7 +617,7 @@ export default function RidePreviewClient({
             aria-modal="true"
             aria-labelledby="join-failure-title"
           >
-            <h2 id="join-failure-title">We couldn’t join this ride.</h2>
+            <h2 id="join-failure-title">We couldn’t send your request.</h2>
             <div className="location-prompt-actions">
               <button
                 type="button"
@@ -663,7 +663,7 @@ export default function RidePreviewClient({
       ) : null}
       {error ? (
         <>
-          <h1 className="page-title">Ride preview</h1>
+          <h1 className="page-title">Ride details</h1>
           <div className="ride-preview-content">
             <h2>Not available</h2>
             <p className="intro">{error}</p>
@@ -673,7 +673,7 @@ export default function RidePreviewClient({
         <div aria-busy="true" />
       ) : (
         <>
-          <h1 className="page-title">Ride preview</h1>
+          <h1 className="page-title">Ride details</h1>
           <div className="ride-preview-content">
             <div className="ride-preview-summary">
               {ride.isSample ? (
@@ -736,7 +736,7 @@ export default function RidePreviewClient({
                 ) : null}
                 <div>
                   <dt>
-                    <RideFieldLabel icon="price">Price</RideFieldLabel>
+                    <RideFieldLabel icon="price">Fare</RideFieldLabel>
                   </dt>
                   <dd>A${ride.priceAud}</dd>
                 </div>
@@ -806,7 +806,7 @@ export default function RidePreviewClient({
                           : driverOwned ||
                               activityRequest?.status === "ACCEPTED"
                             ? "CANCEL RIDE"
-                            : "WITHDRAW"}
+                            : "WITHDRAW REQUEST"}
                       </button>
                     ) : (
                       <button
@@ -815,7 +815,7 @@ export default function RidePreviewClient({
                         disabled={joining}
                         onClick={() => void joinRide()}
                       >
-                        {joining ? "JOINING…" : "REQUEST TO JOIN"}
+                        {joining ? "REQUESTING…" : "REQUEST TO JOIN"}
                       </button>
                     )}
                     {!readOnly &&

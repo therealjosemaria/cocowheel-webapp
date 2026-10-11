@@ -208,7 +208,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Guest identity: ${identityLabel}`}
+          aria-label={`Profile: ${identityLabel}`}
           onClick={() => {
             setOpen(false);
             // Hover opens this on desktop before click fires; don't immediately

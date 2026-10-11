@@ -178,7 +178,7 @@ function ActivityCard({
           REQUESTED: "Requested",
           ACCEPTED: "Accepted",
           RIDE_ACTIVE: "Ride active",
-          CO_RIDE_ACTIVE: "Co-ride active",
+          CO_RIDE_ACTIVE: "Ride in progress",
           COMPLETED: "Completed",
           CANCELLED: "Cancelled",
           EXPIRED: "Expired",
@@ -303,7 +303,7 @@ function ActivityCard({
           </div>
           <div>
             <dt>
-              <RideFieldLabel icon="price">Price</RideFieldLabel>
+              <RideFieldLabel icon="price">Fare</RideFieldLabel>
             </dt>
             <dd>A${ride.priceAud}</dd>
           </div>
@@ -335,9 +335,9 @@ function ActivityCard({
               <Link
                 className="activity-open"
                 href={href}
-                aria-label={`Open ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
+                aria-label={`View ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
               >
-                OPEN RIDE
+                VIEW RIDE
               </Link>
             </dd>
           </div>
@@ -355,7 +355,7 @@ function ActivityCard({
                     onClick={() => setEndPromptOpen(true)}
                   >
                     {ride.request?.status === "PENDING"
-                      ? "WITHDRAW"
+                      ? "WITHDRAW REQUEST"
                       : "CANCEL RIDE"}
                   </button>
                 ) : null}
