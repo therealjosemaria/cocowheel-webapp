@@ -8,7 +8,7 @@ Before verification riders receive only the payment method (PayID or Cash), neve
 
 Accepted journeys use server-aligned 20-second GPS slots per device, offset by 10 seconds; a missing/stale peer uses a 10-second fallback. After pickup, the freshest reliable participant fix represents the shared journey, with source/agreement and actual capture time preserved. Foreground browser access and permission are necessary; background tracking is not guaranteed. Published-only offers retain 60-second stationary/15-second moving updates.
 
-Either participant can cancel or complete. A fix from either device within 30 seconds, accuracy at most 100m, and distance plus accuracy within 150m of the rider's drop-off avoids the completion warning. Missing/stale/far fixes or unconfirmed pickup require an explicit non-blocking confirmation. Completion records no payment unless explicitly supplied and never verifies settlement. Terminal rides preserve history and clear live fixes. Ordinary offers remain six hours; samples renew on 24-hour cycles.
+Either participant can cancel. Complete is hidden and server-blocked until the driver verifies pickup; confirmation overrides cannot bypass pickup. After verification either participant can complete. A fix from either device within 30 seconds, accuracy at most 100m, and distance plus accuracy within 150m of the rider's drop-off avoids the completion warning. Missing/stale/far fixes require an explicit non-blocking confirmation. Completion records no payment unless explicitly supplied and never verifies settlement. Terminal rides preserve history and clear live fixes. Ordinary offers remain six hours; samples renew on 24-hour cycles.
 
 ## Product invariant
 

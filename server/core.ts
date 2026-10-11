@@ -1683,6 +1683,8 @@ export function completeCoRide(
   if (ride.status === "COMPLETED") return getRide(db, rideId, session, now);
   if (!["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status))
     throw new Error("CO_RIDE_NOT_ACTIVE");
+  if (ride.status !== "CO_RIDE_ACTIVE" || !ride.co_ride_started_at)
+    throw new Error("COMPLETION_PICKUP_UNCONFIRMED");
   if (method !== null && method !== "PAYID" && method !== "CASH")
     throw new Error("INVALID_PAYMENT_HANDOFF");
   if (method === "PAYID" && !ride.driver_payid)
@@ -1697,8 +1699,6 @@ export function completeCoRide(
     locationFor(db, ride.id, "RIDER", now),
   ];
   if (!confirmAnyway) {
-    if (!ride.co_ride_started_at)
-      throw new Error("COMPLETION_PICKUP_UNCONFIRMED");
     if (!fixes.some((fix) => atDropoff(fix, destination, now.getTime()))) {
       throw new Error(
         fixes.some((fix) => reliableFix(fix, now.getTime()))

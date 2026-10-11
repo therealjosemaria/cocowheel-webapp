@@ -154,17 +154,22 @@ export function CompleteRide({ ride }: { ride: Ride }) {
           "You don’t appear to be at the drop-off yet. Complete the ride anyway?",
         COMPLETION_LOCATION_UNAVAILABLE:
           "We can’t confirm your current location. Complete the ride anyway?",
-        COMPLETION_PICKUP_UNCONFIRMED:
-          "Pickup hasn’t been confirmed. Complete the ride anyway?",
       };
       const message =
         reason instanceof ApiError ? messages[reason.code] : undefined;
       if (message) setWarning(message);
-      else setError("We couldn’t complete the ride. Please try again.");
+      else
+        setError(
+          reason instanceof ApiError &&
+            reason.code === "COMPLETION_PICKUP_UNCONFIRMED"
+            ? "The driver must confirm pickup before completing the ride."
+            : "We couldn’t complete the ride. Please try again.",
+        );
     } finally {
       setBusy(false);
     }
   }
+  if (ride.status !== "CO_RIDE_ACTIVE" || !ride.pickupEstablished) return null;
   return (
     <>
       <button

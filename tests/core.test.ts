@@ -534,6 +534,15 @@ test("completion warnings allow explicit override but never authorize outsiders"
       /COMPLETION_PICKUP_UNCONFIRMED/,
     );
     const outsider = createGuestSession(h.db, baseTime);
+    for (const token of [
+      flow.published.sessionToken,
+      flow.requested.sessionToken,
+    ]) {
+      assert.throws(
+        () => completeCoRide(h.db, token, id, null, baseTime, true),
+        /COMPLETION_PICKUP_UNCONFIRMED/,
+      );
+    }
     assert.throws(
       () => completeCoRide(h.db, outsider.token, id, null, baseTime, true),
       /RIDE_ACCESS_DENIED/,

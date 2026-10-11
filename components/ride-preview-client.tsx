@@ -823,9 +823,8 @@ export default function RidePreviewClient({
                     {!readOnly &&
                     privateRide &&
                     (driverOwned || activityRequest?.status === "ACCEPTED") &&
-                    ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
-                      ride.status,
-                    ) ? (
+                    ride.status === "CO_RIDE_ACTIVE" &&
+                    privateRide.pickupEstablished ? (
                       <CompleteRide ride={privateRide} />
                     ) : null}
                     {readOnly ? null : activityRequest || driverOwned ? (
