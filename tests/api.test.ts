@@ -121,7 +121,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
     const completed = await json(
       `${base}/api/rides/${id}/complete`,
       "POST",
-      { method: "CASH" },
+      { method: "CASH", confirmAnyway: true },
       token,
     );
     assert.equal(completed.response.status, 200);
@@ -230,6 +230,20 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       driverToken,
     );
     assert.equal(accepted.response.status, 200);
+    const driverRenewal = await json(
+      `${base}/api/rides/${driverRide.rideId}/pickup-code`,
+      "POST",
+      {},
+      driverToken,
+    );
+    assert.equal(driverRenewal.response.status, 403);
+    const prematureRenewal = await json(
+      `${base}/api/rides/${driverRide.rideId}/pickup-code`,
+      "POST",
+      {},
+      riderToken,
+    );
+    assert.equal(prematureRenewal.body.error, "CO_RIDE_CODE_RATE_LIMITED");
     const acceptedRiderState = await json(
       `${base}/api/rides/${driverRide.rideId}`,
       "GET",
@@ -238,11 +252,11 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     );
     assert.equal(
       (acceptedRiderState.body.ride as Record<string, unknown>).payId,
-      "driver@example.com",
+      undefined,
     );
     assert.equal(
       (acceptedRiderState.body.ride as Record<string, unknown>).payIdType,
-      "EMAIL",
+      undefined,
     );
     const stale = new Date(Date.now() - 3 * 60_000).toISOString();
     const driverLocation = {
@@ -315,8 +329,9 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.match(ride.coRideCode as string, /^\d{4}$/);
     assert.equal("origin" in ride, false);
     assert.equal("destination" in ride, false);
-    assert.equal(ride.payId, "driver@example.com");
-    assert.equal(ride.payIdType, "EMAIL");
+    assert.equal(ride.payId, undefined);
+    assert.equal(ride.payIdType, undefined);
+    assert.equal(ride.paymentMethod, "PAYID");
     assert.equal(
       (
         await json(
@@ -343,7 +358,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
         await json(
           `${base}/api/rides/${driverRide.rideId}/complete`,
           "POST",
-          { method: "PAYID" },
+          { method: "PAYID", confirmAnyway: true },
           riderToken,
         )
       ).response.status,

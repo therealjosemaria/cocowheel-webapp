@@ -59,9 +59,11 @@ export default function ActivityRideClient({
       }
     };
     void load();
+    window.addEventListener("cocowheels:ride-updated", load);
     const timer = window.setInterval(() => void load(), 8_000);
     return () => {
       cancelled = true;
+      window.removeEventListener("cocowheels:ride-updated", load);
       window.clearInterval(timer);
     };
   }, [requestId, rideId]);
@@ -152,7 +154,9 @@ function RideView({ ride }: { ride: Ride }) {
   if (
     ride.isSample ||
     (riderView &&
-      (ride.status === "REQUESTED" || ride.status === "ACCEPTED") &&
+      ["REQUESTED", "ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
+        ride.status,
+      ) &&
       ride.request)
   ) {
     return (
@@ -175,7 +179,9 @@ function RideView({ ride }: { ride: Ride }) {
     !riderView &&
     (ride.status === "PUBLISHED" ||
       ride.status === "REQUESTED" ||
-      ride.status === "ACCEPTED")
+      ride.status === "ACCEPTED" ||
+      ride.status === "RIDE_ACTIVE" ||
+      ride.status === "CO_RIDE_ACTIVE")
   ) {
     return (
       <RidePreviewClient

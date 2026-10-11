@@ -10,6 +10,12 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
 import { payIdInputError } from "../lib/input-validation";
+import {
+  atDropoff,
+  journeyEvidence,
+  nextCaptureAt,
+  reliableFix,
+} from "../lib/journey-location";
 
 export type Db = Database.Database;
 export type RideStatus =
@@ -183,6 +189,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  paymentMethod?: "PAYID" | "CASH";
   isSample?: boolean;
   driverLocation?: PublicLocation;
   rideId: string;
@@ -196,6 +203,15 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  paymentMethod?: "PAYID" | "CASH";
+  pickupEstablished?: boolean;
+  tracking?: {
+    serverNow: string;
+    nextCaptureAt: string;
+    source?: "DRIVER" | "RIDER";
+    location?: PublicLocation;
+    agreement?: string;
+  };
   isSample?: boolean;
   rideId: string;
   status: RideStatus;
@@ -1120,6 +1136,7 @@ export function publicRidePreview(
     destinationLabel:
       ride.destination_label ?? fallbackLocationLabel(destination),
     plannedRoute: { origin, destination },
+    paymentMethod: ride.driver_payid ? "PAYID" : "CASH",
     isSample: Boolean(ride.is_sample),
     driverLocation: locationFor(db, ride.id, "DRIVER", now),
   };
@@ -1307,6 +1324,42 @@ export function requestFitForRide(row: RideRow, request: RequestRow) {
   }).fit;
 }
 
+function issuePickupCode(db: Db, rideId: string, now: Date) {
+  const code = randomInt(1000, 10_000).toString();
+  db.prepare(
+    "UPDATE rides SET co_ride_code_hash = ?, co_ride_code_ciphertext = ?, co_ride_code_expires_at = ?, co_ride_code_attempts = 0, co_ride_code_last_attempt_at = NULL WHERE id = ?",
+  ).run(
+    hash(code),
+    encryptCode(code),
+    iso(new Date(now.getTime() + CODE_TTL_MS)),
+    rideId,
+  );
+}
+
+export function renewPickupCode(
+  db: Db,
+  token: string | null,
+  rideId: string,
+  now = new Date(),
+) {
+  const session = requireSession(db, token, now);
+  const ride = rideRow(db, rideId);
+  if (!ride) throw new Error("RIDE_NOT_FOUND");
+  if (!isAcceptedRider(db, ride, session))
+    throw new Error("RIDE_ACCESS_DENIED");
+  if (!["ACCEPTED", "RIDE_ACTIVE"].includes(ride.status))
+    throw new Error("CO_RIDE_NOT_ACTIVE");
+  if (
+    ride.co_ride_code_expires_at &&
+    now.getTime() - (Date.parse(ride.co_ride_code_expires_at) - CODE_TTL_MS) <
+      60_000
+  )
+    throw new Error("CO_RIDE_CODE_RATE_LIMITED");
+  issuePickupCode(db, ride.id, now);
+  event(db, ride.id, "PICKUP_CODE_RENEWED", "RIDER", now);
+  return getRide(db, rideId, session, now);
+}
+
 export function decideRequest(
   db: Db,
   rawSessionToken: string | null,
@@ -1353,6 +1406,7 @@ export function decideRequest(
       db.prepare(
         "UPDATE rides SET status = 'ACCEPTED', accepted_request_id = ?, accepted_at = ?, last_activity_at = ? WHERE id = ?",
       ).run(request.id, timestamp, timestamp, ride.id);
+      issuePickupCode(db, ride.id, now);
       event(db, ride.id, "RIDER_ACCEPTED", "DRIVER", now);
     })();
   }
@@ -1499,19 +1553,12 @@ export function beginRide(
     !freshLocation(db, ride.id, "RIDER", now)
   )
     throw new Error("FRESH_LOCATIONS_REQUIRED");
-  const code = randomInt(1000, 10_000).toString();
   const timestamp = iso(now);
   db.transaction(() => {
     db.prepare(
-      "UPDATE rides SET status = 'RIDE_ACTIVE', ride_started_at = ?, co_ride_code_hash = ?, co_ride_code_ciphertext = ?, co_ride_code_expires_at = ?, co_ride_code_attempts = 0, co_ride_code_last_attempt_at = NULL, last_activity_at = ? WHERE id = ?",
-    ).run(
-      timestamp,
-      hash(code),
-      encryptCode(code),
-      iso(new Date(now.getTime() + CODE_TTL_MS)),
-      timestamp,
-      ride.id,
-    );
+      "UPDATE rides SET status = 'RIDE_ACTIVE', ride_started_at = ?, last_activity_at = ? WHERE id = ?",
+    ).run(timestamp, timestamp, ride.id);
+    if (!ride.co_ride_code_hash) issuePickupCode(db, ride.id, now);
     event(db, ride.id, "RIDE_BEGUN", "DRIVER", now);
   })();
   return getRide(db, rideId, session, now);
@@ -1529,7 +1576,7 @@ export function confirmCoRideCode(
   if (!ride) throw new Error("RIDE_NOT_FOUND");
   requireDriver(ride, session);
   if (
-    ride.status !== "RIDE_ACTIVE" ||
+    !["ACCEPTED", "RIDE_ACTIVE"].includes(ride.status) ||
     !ride.co_ride_code_hash ||
     !ride.co_ride_code_expires_at ||
     new Date(ride.co_ride_code_expires_at).getTime() <= now.getTime()
@@ -1552,7 +1599,7 @@ export function confirmCoRideCode(
   }
   db.transaction(() => {
     db.prepare(
-      "UPDATE rides SET status = 'CO_RIDE_ACTIVE', co_ride_started_at = ?, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL, last_activity_at = ? WHERE id = ?",
+      "UPDATE rides SET status = 'CO_RIDE_ACTIVE', co_ride_started_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL, last_activity_at = ? WHERE id = ?",
     ).run(iso(now), iso(now), ride.id);
     event(db, ride.id, "CO_RIDE_BEGUN", "DRIVER", now);
   })();
@@ -1571,8 +1618,7 @@ export function cancelRide(
   const driver = ride.driver_session_id === session.id;
   const rider = isAcceptedRider(db, ride, session);
   if (!driver && !rider) throw new Error("RIDE_ACCESS_DENIED");
-  if (terminal(ride.status) || ride.status === "CO_RIDE_ACTIVE")
-    throw new Error("CANCELLATION_NOT_ALLOWED");
+  if (terminal(ride.status)) throw new Error("CANCELLATION_NOT_ALLOWED");
   const actor: Participant = driver ? "DRIVER" : "RIDER";
   db.transaction(() => {
     db.prepare(
@@ -1624,25 +1670,55 @@ export function completeCoRide(
   db: Db,
   rawSessionToken: string | null,
   rideId: string,
-  method: "PAYID" | "CASH",
+  method: "PAYID" | "CASH" | null,
   now = new Date(),
+  confirmAnyway = false,
 ) {
   const session = requireSession(db, rawSessionToken, now);
   const ride = rideRow(db, rideId);
   if (!ride) throw new Error("RIDE_NOT_FOUND");
-  if (!isAcceptedRider(db, ride, session))
+  const driver = ride.driver_session_id === session.id;
+  if (!driver && !isAcceptedRider(db, ride, session))
     throw new Error("RIDE_ACCESS_DENIED");
-  if (ride.status !== "CO_RIDE_ACTIVE") throw new Error("CO_RIDE_NOT_ACTIVE");
-  if (method !== "PAYID" && method !== "CASH")
+  if (ride.status === "COMPLETED") return getRide(db, rideId, session, now);
+  if (!["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status))
+    throw new Error("CO_RIDE_NOT_ACTIVE");
+  if (method !== null && method !== "PAYID" && method !== "CASH")
     throw new Error("INVALID_PAYMENT_HANDOFF");
   if (method === "PAYID" && !ride.driver_payid)
     throw new Error("PAYID_UNAVAILABLE");
+  const request = acceptedRequest(db, ride)!;
+  const destination = {
+    latitude: request.destination_latitude,
+    longitude: request.destination_longitude,
+  };
+  const fixes = [
+    locationFor(db, ride.id, "DRIVER", now),
+    locationFor(db, ride.id, "RIDER", now),
+  ];
+  if (!confirmAnyway) {
+    if (!ride.co_ride_started_at)
+      throw new Error("COMPLETION_PICKUP_UNCONFIRMED");
+    if (!fixes.some((fix) => atDropoff(fix, destination, now.getTime()))) {
+      throw new Error(
+        fixes.some((fix) => reliableFix(fix, now.getTime()))
+          ? "COMPLETION_NOT_AT_DROPOFF"
+          : "COMPLETION_LOCATION_UNAVAILABLE",
+      );
+    }
+  }
   db.transaction(() => {
     db.prepare(
       "UPDATE rides SET status = 'COMPLETED', completed_at = ?, payment_handoff_method = ?, last_activity_at = ? WHERE id = ?",
     ).run(iso(now), method, iso(now), ride.id);
     db.prepare("DELETE FROM live_locations WHERE ride_id = ?").run(ride.id);
-    event(db, ride.id, "CO_RIDE_COMPLETED", "RIDER", now);
+    event(
+      db,
+      ride.id,
+      confirmAnyway ? "RIDE_COMPLETED_OVERRIDE" : "CO_RIDE_COMPLETED",
+      driver ? "DRIVER" : "RIDER",
+      now,
+    );
   })();
   return getRide(db, rideId, session, now);
 }
@@ -1763,7 +1839,9 @@ function riderView(
       row.status,
     );
   const code =
-    row.status === "RIDE_ACTIVE" &&
+    request.id === row.accepted_request_id &&
+    request.status === "ACCEPTED" &&
+    ["ACCEPTED", "RIDE_ACTIVE"].includes(row.status) &&
     row.co_ride_code_ciphertext &&
     row.co_ride_code_expires_at &&
     new Date(row.co_ride_code_expires_at).getTime() > now.getTime()
@@ -1800,8 +1878,16 @@ function riderView(
       ? locationFor(db, row.id, "RIDER", now)
       : undefined,
     coRideCode: code,
-    payId: canSeePartner ? row.driver_payid : undefined,
-    payIdType: canSeePartner ? row.driver_payid_type : undefined,
+    paymentMethod: row.driver_payid ? "PAYID" : "CASH",
+    pickupEstablished: Boolean(row.co_ride_started_at),
+    payId:
+      request.id === row.accepted_request_id && row.co_ride_started_at
+        ? row.driver_payid
+        : undefined,
+    payIdType:
+      request.id === row.accepted_request_id && row.co_ride_started_at
+        ? row.driver_payid_type
+        : undefined,
     paymentHandoffMethod: row.payment_handoff_method,
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,
@@ -1820,10 +1906,48 @@ export function getRide(
   expireStaleRides(db, now);
   const row = rideRow(db, rideId);
   if (!row) throw new Error("RIDE_NOT_FOUND");
-  if (row.driver_session_id === session.id) return driverView(db, row, now);
+  if (row.driver_session_id === session.id)
+    return withTracking(db, row, driverView(db, row, now), "DRIVER", now);
   const request = requestForSession(db, row.id, session.id, requestId);
   if (!request) throw new Error("RIDE_ACCESS_DENIED");
-  return riderView(db, row, request, now);
+  const view = riderView(db, row, request, now);
+  return request.id === row.accepted_request_id && request.status === "ACCEPTED"
+    ? withTracking(db, row, view, "RIDER", now)
+    : view;
+}
+
+function withTracking(
+  db: Db,
+  row: RideRow,
+  view: RideView,
+  role: Participant,
+  now: Date,
+): RideView {
+  view.paymentMethod = row.driver_payid ? "PAYID" : "CASH";
+  view.pickupEstablished = Boolean(row.co_ride_started_at);
+  if (!["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(row.status))
+    return view;
+  const driver = locationFor(db, row.id, "DRIVER", now);
+  const rider = locationFor(db, row.id, "RIDER", now);
+  const peer = role === "DRIVER" ? rider : driver;
+  const evidence = row.co_ride_started_at
+    ? journeyEvidence(driver, rider, now.getTime())
+    : {};
+  view.tracking = {
+    serverNow: iso(now),
+    nextCaptureAt: iso(
+      new Date(
+        nextCaptureAt(
+          now.getTime(),
+          Date.parse(row.accepted_at ?? iso(now)),
+          role,
+          reliableFix(peer, now.getTime()),
+        ),
+      ),
+    ),
+    ...evidence,
+  };
+  return view;
 }
 
 export function privateHistory(

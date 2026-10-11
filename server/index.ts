@@ -6,6 +6,7 @@ import {
 import type { Db } from "./core";
 import {
   beginRide,
+  renewPickupCode,
   advanceSampleRide,
   availableRides,
   cancelPendingRequest,
@@ -143,6 +144,9 @@ function errorStatus(error: unknown) {
       "CO_RIDE_NOT_ACTIVE",
       "REQUEST_CANCELLATION_NOT_ALLOWED",
       "LOCATION_NOT_ALLOWED",
+      "COMPLETION_PICKUP_UNCONFIRMED",
+      "COMPLETION_NOT_AT_DROPOFF",
+      "COMPLETION_LOCATION_UNAVAILABLE",
     ].includes(code)
   )
     return 409;
@@ -571,6 +575,21 @@ export function createApiServer(
       }
       if (
         request.method === "POST" &&
+        parts.length === 4 &&
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "pickup-code"
+      ) {
+        writeJson(
+          response,
+          200,
+          { ride: renewPickupCode(database, token, parts[2]) },
+          cors,
+        );
+        return;
+      }
+      if (
+        request.method === "POST" &&
         parts.join("/") === "api/route-preview"
       ) {
         if (!allowRoutePreview(request))
@@ -930,7 +949,13 @@ export function createApiServer(
               database,
               token,
               parts[2],
-              body.method === "PAYID" ? "PAYID" : "CASH",
+              body.method === "PAYID"
+                ? "PAYID"
+                : body.method === "CASH"
+                  ? "CASH"
+                  : null,
+              new Date(),
+              body.confirmAnyway === true,
             ),
           },
           cors,

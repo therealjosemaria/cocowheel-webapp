@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import type { Location } from "@/lib/client-types";
 
-export default function LocationAge({ location }: { location?: Location }) {
+export default function LocationAge({
+  location,
+  label = "Driver",
+}: {
+  location?: Location;
+  label?: string;
+}) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -16,7 +22,9 @@ export default function LocationAge({ location }: { location?: Location }) {
   }, []);
   if (!location)
     return (
-      <small className="driver-location-age">Driver · Published location</small>
+      <small className="driver-location-age">
+        {label} · Published location
+      </small>
     );
   const seconds = Math.max(
     0,
@@ -38,7 +46,7 @@ export default function LocationAge({ location }: { location?: Location }) {
       className="driver-location-age"
       title={new Date(location.capturedAt).toLocaleString()}
     >
-      Driver · {stale ? "Last updated" : "Updated"} {age} ago
+      {label} · {stale ? "Last updated" : "Updated"} {age} ago
     </small>
   );
 }

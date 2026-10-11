@@ -42,6 +42,15 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type Ride = {
+  paymentMethod?: "PAYID" | "CASH";
+  pickupEstablished?: boolean;
+  tracking?: {
+    serverNow: string;
+    nextCaptureAt: string;
+    source?: "DRIVER" | "RIDER";
+    location?: Location;
+    agreement?: string;
+  };
   isSample?: boolean;
   rideId: string;
   status: RideStatus;

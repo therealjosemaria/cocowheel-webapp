@@ -27,6 +27,7 @@ import {
   publicRidePreview,
   publishRide,
   requestRide,
+  renewPickupCode,
   searchRides,
   submitLocation,
 } from "../server/core";
@@ -321,6 +322,296 @@ function sessions(h: ReturnType<typeof harness>) {
   return { published, requested, driver, rider };
 }
 
+test("pickup code is rider-only at acceptance and gates PayID for every other request", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    const id = flow.published.ride.rideId;
+    const other = requestRide(h.db, null, id, riderInput, baseTime);
+    const otherSession = findSession(h.db, other.sessionToken, baseTime)!;
+    decideRequest(
+      h.db,
+      flow.published.sessionToken,
+      id,
+      flow.requested.ride.request!.requestId,
+      "ACCEPT",
+      baseTime,
+    );
+    const rider = getRide(h.db, id, flow.rider, baseTime);
+    assert.match(rider.coRideCode!, /^\d{4}$/);
+    assert.equal(rider.payId, undefined);
+    assert.equal(rider.paymentMethod, "PAYID");
+    assert.equal(
+      getRide(h.db, id, flow.driver, baseTime).coRideCode,
+      undefined,
+    );
+    assert.equal(
+      getRide(h.db, id, otherSession, baseTime).coRideCode,
+      undefined,
+    );
+    assert.throws(
+      () =>
+        confirmCoRideCode(
+          h.db,
+          flow.requested.sessionToken,
+          id,
+          rider.coRideCode!,
+          baseTime,
+        ),
+      /RIDE_ACCESS_DENIED/,
+    );
+    confirmCoRideCode(
+      h.db,
+      flow.published.sessionToken,
+      id,
+      rider.coRideCode!,
+      baseTime,
+    );
+    const verified = getRide(h.db, id, flow.rider, baseTime);
+    assert.equal(verified.payId, "driver@example.com");
+    assert.equal(verified.pickupEstablished, true);
+    assert.equal(verified.coRideCode, undefined);
+    assert.equal(getRide(h.db, id, otherSession, baseTime).payId, undefined);
+    assert.throws(
+      () =>
+        confirmCoRideCode(
+          h.db,
+          flow.published.sessionToken,
+          id,
+          rider.coRideCode!,
+          baseTime,
+        ),
+      /CO_RIDE_CODE_EXPIRED/,
+    );
+  } finally {
+    h.close();
+  }
+});
+
+test("pickup code renewal is rider-only, throttled, invalidates old code and recovers lockout", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    const id = flow.published.ride.rideId;
+    decideRequest(
+      h.db,
+      flow.published.sessionToken,
+      id,
+      flow.requested.ride.request!.requestId,
+      "ACCEPT",
+      baseTime,
+    );
+    assert.throws(
+      () => renewPickupCode(h.db, flow.published.sessionToken, id, baseTime),
+      /RIDE_ACCESS_DENIED/,
+    );
+    assert.throws(
+      () => renewPickupCode(h.db, flow.requested.sessionToken, id, baseTime),
+      /CO_RIDE_CODE_RATE_LIMITED/,
+    );
+    for (let i = 0; i < 5; i++)
+      assert.throws(
+        () =>
+          confirmCoRideCode(
+            h.db,
+            flow.published.sessionToken,
+            id,
+            "0000",
+            new Date(+baseTime + i * 3000),
+          ),
+        /CO_RIDE_CODE_INVALID/,
+      );
+    const lockedCode = getRide(h.db, id, flow.rider, baseTime).coRideCode!;
+    assert.throws(
+      () =>
+        confirmCoRideCode(
+          h.db,
+          flow.published.sessionToken,
+          id,
+          lockedCode,
+          new Date(+baseTime + 20000),
+        ),
+      /CO_RIDE_CODE_LOCKED/,
+    );
+    const later = new Date(+baseTime + 16 * 60000);
+    assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, undefined);
+    const renewed = renewPickupCode(
+      h.db,
+      flow.requested.sessionToken,
+      id,
+      later,
+    );
+    assert.match(renewed.coRideCode!, /^\d{4}$/);
+    assert.equal(
+      confirmCoRideCode(
+        h.db,
+        flow.published.sessionToken,
+        id,
+        renewed.coRideCode!,
+        later,
+      ).status,
+      "CO_RIDE_ACTIVE",
+    );
+  } finally {
+    h.close();
+  }
+});
+
+test("either device at drop-off permits either participant to complete without recording payment", () => {
+  for (const reporter of ["DRIVER", "RIDER"])
+    for (const finisher of ["DRIVER", "RIDER"]) {
+      const h = harness();
+      try {
+        const flow = sessions(h);
+        const id = flow.published.ride.rideId;
+        decideRequest(
+          h.db,
+          flow.published.sessionToken,
+          id,
+          flow.requested.ride.request!.requestId,
+          "ACCEPT",
+          baseTime,
+        );
+        confirmCoRideCode(
+          h.db,
+          flow.published.sessionToken,
+          id,
+          getRide(h.db, id, flow.rider, baseTime).coRideCode!,
+          baseTime,
+        );
+        const tokens = {
+          DRIVER: flow.published.sessionToken,
+          RIDER: flow.requested.sessionToken,
+        };
+        const now = new Date(+baseTime + 5000);
+        submitLocation(
+          h.db,
+          tokens[reporter as keyof typeof tokens],
+          id,
+          {
+            ...riderInput.destination,
+            accuracyMeters: 10,
+            capturedAt: now.toISOString(),
+          },
+          now,
+        );
+        const tracking = getRide(h.db, id, flow.driver, now).tracking!;
+        assert.equal(tracking.source, reporter);
+        assert.equal(tracking.agreement, "SINGLE_DEVICE");
+        const result = completeCoRide(
+          h.db,
+          tokens[finisher as keyof typeof tokens],
+          id,
+          null,
+          now,
+        );
+        assert.equal(result.status, "COMPLETED");
+        assert.equal(result.paymentHandoffMethod, null);
+        assert.equal(getRide(h.db, id, flow.rider, now).status, "COMPLETED");
+        assert.equal(getRide(h.db, id, flow.driver, now).status, "COMPLETED");
+      } finally {
+        h.close();
+      }
+    }
+});
+
+test("completion warnings allow explicit override but never authorize outsiders", () => {
+  const h = harness();
+  try {
+    const flow = sessions(h);
+    const id = flow.published.ride.rideId;
+    decideRequest(
+      h.db,
+      flow.published.sessionToken,
+      id,
+      flow.requested.ride.request!.requestId,
+      "ACCEPT",
+      baseTime,
+    );
+    assert.throws(
+      () =>
+        completeCoRide(h.db, flow.published.sessionToken, id, null, baseTime),
+      /COMPLETION_PICKUP_UNCONFIRMED/,
+    );
+    const outsider = createGuestSession(h.db, baseTime);
+    assert.throws(
+      () => completeCoRide(h.db, outsider.token, id, null, baseTime, true),
+      /RIDE_ACCESS_DENIED/,
+    );
+    confirmCoRideCode(
+      h.db,
+      flow.published.sessionToken,
+      id,
+      getRide(h.db, id, flow.rider, baseTime).coRideCode!,
+      baseTime,
+    );
+    assert.throws(
+      () =>
+        completeCoRide(h.db, flow.published.sessionToken, id, null, baseTime),
+      /COMPLETION_LOCATION_UNAVAILABLE/,
+    );
+    submitLocation(
+      h.db,
+      flow.requested.sessionToken,
+      id,
+      {
+        ...riderInput.destination,
+        accuracyMeters: 5,
+        capturedAt: baseTime.toISOString(),
+      },
+      baseTime,
+    );
+    const later = new Date(+baseTime + 31_000);
+    assert.throws(
+      () => completeCoRide(h.db, flow.published.sessionToken, id, null, later),
+      /COMPLETION_LOCATION_UNAVAILABLE/,
+    );
+    assert.equal(
+      completeCoRide(h.db, flow.published.sessionToken, id, null, later, true)
+        .status,
+      "COMPLETED",
+    );
+  } finally {
+    h.close();
+  }
+});
+
+test("either participant may cancel after pickup", () => {
+  for (const driver of [true, false]) {
+    const h = harness();
+    try {
+      const flow = sessions(h);
+      const id = flow.published.ride.rideId;
+      decideRequest(
+        h.db,
+        flow.published.sessionToken,
+        id,
+        flow.requested.ride.request!.requestId,
+        "ACCEPT",
+        baseTime,
+      );
+      confirmCoRideCode(
+        h.db,
+        flow.published.sessionToken,
+        id,
+        getRide(h.db, id, flow.rider, baseTime).coRideCode!,
+        baseTime,
+      );
+      assert.equal(
+        cancelRide(
+          h.db,
+          driver ? flow.published.sessionToken : flow.requested.sessionToken,
+          id,
+          baseTime,
+        ).status,
+        "CANCELLED",
+      );
+    } finally {
+      h.close();
+    }
+  }
+});
+
 test("six-hour offers retain expiry and request fit in admin", () => {
   const h = harness();
   try {
@@ -607,8 +898,10 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
       first.rider,
       new Date(baseTime.getTime() + 3_100),
     );
-    assert.equal(acceptedRider.payId, "driver@example.com");
-    assert.equal(acceptedRider.payIdType, "EMAIL");
+    assert.equal(acceptedRider.payId, undefined);
+    assert.equal(acceptedRider.payIdType, undefined);
+    assert.equal(acceptedRider.paymentMethod, "PAYID");
+    assert.match(acceptedRider.coRideCode!, /^\d{4}$/);
     assert.deepEqual(acceptedRider.plannedRoute, accepted.plannedRoute);
     const secondSession = findSession(
       h.db,
@@ -735,6 +1028,7 @@ test("guest recovery returns only the current item, and completion frees the gue
       flow.published.ride.rideId,
       "CASH",
       new Date(baseTime.getTime() + 10_000),
+      true,
     );
     assert.equal(
       currentOpenRide(
@@ -946,13 +1240,14 @@ test("cancellation ends a pre-co-ride pair, while completion removes live points
     );
     assert.throws(
       () =>
-        cancelRide(
+        completeCoRide(
           h.db,
           flow.requested.sessionToken,
           flow.published.ride.rideId,
+          null,
           new Date(baseTime.getTime() + 9_000),
         ),
-      /CANCELLATION_NOT_ALLOWED/,
+      /COMPLETION_NOT_AT_DROPOFF/,
     );
     const complete = completeCoRide(
       h.db,
@@ -960,6 +1255,7 @@ test("cancellation ends a pre-co-ride pair, while completion removes live points
       flow.published.ride.rideId,
       "PAYID",
       new Date(baseTime.getTime() + 10_000),
+      true,
     );
     assert.equal(complete.status, "COMPLETED");
     assert.deepEqual(
@@ -1103,7 +1399,7 @@ test("all three samples support late requests, exclusive use, completion and ren
       );
       assert.equal(ensureSampleRides(h.db, later), 0);
       assert.equal(
-        completeCoRide(h.db, token, offer.rideId, "CASH", later).status,
+        completeCoRide(h.db, token, offer.rideId, "CASH", later, true).status,
         "COMPLETED",
       );
       assert.equal(ensureSampleRides(h.db, later), 1);

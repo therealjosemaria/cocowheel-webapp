@@ -1,5 +1,15 @@
 # Cocowheels current context
 
+## Pickup and completion update — 11 October 2026
+
+These decisions supersede older lifecycle/payment notes below. Acceptance creates a four-digit pickup code visible only to the accepted rider; the driver verifies it. Codes expire after 15 minutes, allow five wrong attempts with a two-second attempt interval, and may be renewed by the rider no more than once per minute. Verification consumes the code and records pickup internally; the public status remains Ride in progress.
+
+Before verification riders receive only the payment method (PayID or Cash), never the driver's PayID value/type. The driver retains access to their own details. Verified accepted riders can see PayID. All disclosure rules are enforced server-side.
+
+Accepted journeys use server-aligned 20-second GPS slots per device, offset by 10 seconds; a missing/stale peer uses a 10-second fallback. After pickup, the freshest reliable participant fix represents the shared journey, with source/agreement and actual capture time preserved. Foreground browser access and permission are necessary; background tracking is not guaranteed. Published-only offers retain 60-second stationary/15-second moving updates.
+
+Either participant can cancel or complete. A fix from either device within 30 seconds, accuracy at most 100m, and distance plus accuracy within 150m of the rider's drop-off avoids the completion warning. Missing/stale/far fixes or unconfirmed pickup require an explicit non-blocking confirmation. Completion records no payment unless explicitly supplied and never verifies settlement. Terminal rides preserve history and clear live fixes. Ordinary offers remain six hours; samples renew on 24-hour cycles.
+
 ## Product invariant
 
 Cocowheels is a guest-first scheduled, one-driver/one-rider carpool. The server owns lifecycle state. A fixed whole-dollar AUD price is set at publishing and is never recalculated. This MVP has no accounts, editable or public profiles, negotiation, fares, navigation, payment processing, or public activity.

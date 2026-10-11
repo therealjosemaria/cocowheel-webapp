@@ -197,9 +197,7 @@ function ActivityCard({
     Boolean(ride.request) &&
     (ride.request?.status === "PENDING" ||
       ride.request?.status === "ACCEPTED") &&
-    !["CO_RIDE_ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED"].includes(
-      ride.status,
-    );
+    !["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status);
   const endRequest = async () => {
     if (!ride.request) return;
     setEnding(true);

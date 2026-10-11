@@ -10,6 +10,7 @@ import LocationAge from "./location-age";
 import { mapLocationText } from "@/lib/map-label";
 import { directionsUrl } from "@/lib/directions";
 import RideFieldLabel from "./ride-field-label";
+import { CompleteRide, PickupConfirmation } from "./ride-journey-controls";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
 import {
@@ -41,6 +42,7 @@ type PreviewRide = {
   plannedRoute?: { origin: Pin; destination: Pin };
   payId?: string | null;
   payIdType?: PayIdType | null;
+  paymentMethod?: "PAYID" | "CASH";
 };
 type RoutePreviewResponse = {
   points: Pin[];
@@ -74,6 +76,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
     ...(ride.plannedRoute ? { plannedRoute: ride.plannedRoute } : {}),
     payId: ride.payId,
     payIdType: ride.payIdType,
+    paymentMethod: ride.paymentMethod,
   };
 };
 const prettyTime = (value: string) =>
@@ -207,6 +210,8 @@ export default function RidePreviewClient({
   const ride = useMemo<PreviewRide | null>(() => {
     if (!privateRide) return publicRide;
     const next = previewFromActivity(privateRide);
+    if (privateRide.pickupEstablished && privateRide.tracking?.location)
+      next.driverLocation = privateRide.tracking.location;
     if (!publicRide || next.plannedRoute) return next;
     return {
       ...next,
@@ -359,7 +364,9 @@ export default function RidePreviewClient({
     ].includes(ride.status),
   );
   const pickupMinutes =
-    !rideIsActive || pickupDurationSeconds === null
+    !rideIsActive ||
+    privateRide?.pickupEstablished ||
+    pickupDurationSeconds === null
       ? null
       : Math.max(1, Math.round(pickupDurationSeconds / 60));
   const durationSeconds = driverOwned
@@ -707,7 +714,11 @@ export default function RidePreviewClient({
                         rel="noopener noreferrer"
                         aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
                       >
-                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
                           <path d="m21 3-6 18-4-8-8-4 18-6Z" />
                         </svg>
                         Google Maps
@@ -745,7 +756,11 @@ export default function RidePreviewClient({
                         rel="noopener noreferrer"
                         aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
                       >
-                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
                           <path d="m21 3-6 18-4-8-8-4 18-6Z" />
                         </svg>
                         Google Maps
@@ -769,24 +784,28 @@ export default function RidePreviewClient({
                     <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
-                {ride.payId && !driverOwned ? (
+                {!driverOwned && (ride.payId || ride.paymentMethod) ? (
                   <div>
                     <dt>
                       <RideFieldLabel icon="payid">
-                        {driverOwned ? "Your PayID" : "Driver PayID"}
+                        {ride.payId ? "Driver PayID" : "Payment"}
                       </RideFieldLabel>
                     </dt>
                     <dd className="preview-payid">
                       <span>
-                        {ride.payIdType === "MOBILE"
-                          ? "Mobile"
-                          : ride.payIdType === "EMAIL"
-                            ? "Email"
-                            : ride.payIdType === "OTHER"
-                              ? "Other"
-                              : "PayID"}
+                        {!ride.payId
+                          ? ride.paymentMethod === "PAYID"
+                            ? "PayID"
+                            : "Cash"
+                          : ride.payIdType === "MOBILE"
+                            ? "Mobile"
+                            : ride.payIdType === "EMAIL"
+                              ? "Email"
+                              : ride.payIdType === "OTHER"
+                                ? "Other"
+                                : "PayID"}
                       </span>
-                      <code>{ride.payId}</code>
+                      {ride.payId ? <code>{ride.payId}</code> : null}
                     </dd>
                   </div>
                 ) : null}
@@ -800,18 +819,16 @@ export default function RidePreviewClient({
                   <dt>
                     <RideFieldLabel icon="action">Action</RideFieldLabel>
                   </dt>
-                  <dd>
-                    {readOnly ? null : ride.isSample &&
-                      activityRequest?.status === "ACCEPTED" &&
-                      ride.status === "CO_RIDE_ACTIVE" ? (
-                      <button
-                        type="button"
-                        disabled={sampleBusy}
-                        onClick={() => void sampleAction("COMPLETE")}
-                      >
-                        COMPLETE SAMPLE
-                      </button>
-                    ) : activityRequest || driverOwned ? (
+                  <dd className="ride-action-buttons">
+                    {!readOnly &&
+                    privateRide &&
+                    (driverOwned || activityRequest?.status === "ACCEPTED") &&
+                    ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
+                      ride.status,
+                    ) ? (
+                      <CompleteRide ride={privateRide} />
+                    ) : null}
+                    {readOnly ? null : activityRequest || driverOwned ? (
                       <button
                         type="button"
                         className="preview-end-action"
@@ -890,6 +907,9 @@ export default function RidePreviewClient({
                 </dl>
               ) : null}
             </div>
+            {!readOnly && privateRide ? (
+              <PickupConfirmation ride={privateRide} driver={driverOwned} />
+            ) : null}
             {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
                 <h2>Rider requests</h2>
@@ -1039,7 +1059,13 @@ export default function RidePreviewClient({
                     ]
                   : []),
                 ...(riderRoute
-                  ? [riderRoute.pickup, riderRoute.destination]
+                  ? [
+                      privateRide?.pickupEstablished &&
+                      privateRide.tracking?.location
+                        ? privateRide.tracking.location
+                        : riderRoute.pickup,
+                      riderRoute.destination,
+                    ]
                   : []),
               ]}
               markerKinds={
@@ -1084,7 +1110,10 @@ export default function RidePreviewClient({
               aria-label="Map route colours"
             >
               {rideIsActive ? (
-                <LocationAge location={ride.driverLocation} />
+                <LocationAge
+                  location={ride.driverLocation}
+                  label={privateRide?.pickupEstablished ? "Trip" : "Driver"}
+                />
               ) : null}
               {ride.plannedRoute ? (
                 <span>

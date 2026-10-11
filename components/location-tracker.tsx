@@ -15,6 +15,11 @@ export default function LocationTracker() {
     let currentId = "";
     let lastSent = 0;
     let detectMovement = movementTracker();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = (delay: number) => {
+      clearTimeout(timer);
+      if (!stopped) timer = setTimeout(() => void tick(), delay);
+    };
     async function tick(force = false) {
       if (
         stopped ||
@@ -24,6 +29,7 @@ export default function LocationTracker() {
       )
         return;
       busy = true;
+      let nextDelay = 15000;
       const tickStartedAt = Date.now();
       try {
         const { currents } = await cocowheelsApi<{
@@ -44,6 +50,16 @@ export default function LocationTracker() {
           detectMovement = movementTracker();
         }
         const rideId = currentId;
+        const tracking = current.ride.tracking;
+        if (tracking)
+          nextDelay = Math.max(
+            1000,
+            Math.min(
+              20000,
+              Date.parse(tracking.nextCaptureAt) -
+                Date.parse(tracking.serverNow),
+            ),
+          );
         const position = await new Promise<GeolocationPosition>(
           (resolve, reject) =>
             navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -64,8 +80,13 @@ export default function LocationTracker() {
           accuracyMeters: position.coords.accuracy,
         };
         const moving = detectMovement(fix);
-        if (!force && Date.now() - lastSent < (moving ? 15000 : 60000)) return;
-        await cocowheelsApi(
+        if (
+          !tracking &&
+          !force &&
+          Date.now() - lastSent < (moving ? 15000 : 60000)
+        )
+          return;
+        const result = await cocowheelsApi<{ ride: Ride }>(
           `/api/rides/${encodeURIComponent(rideId)}/location`,
           {
             method: "POST",
@@ -76,25 +97,34 @@ export default function LocationTracker() {
             }),
           },
         );
+        if (result.ride.tracking)
+          nextDelay = Math.max(
+            1000,
+            Math.min(
+              20000,
+              Date.parse(result.ride.tracking.nextCaptureAt) -
+                Date.parse(result.ride.tracking.serverNow),
+            ),
+          );
         lastSent = tickStartedAt;
       } catch {
         // Keep the previous capture timestamp when GPS or the network is unavailable.
       } finally {
         busy = false;
+        schedule(nextDelay);
       }
     }
     const resume = () => {
       void tick(true);
     };
     void tick(true);
-    const timer = window.setInterval(() => void tick(), 15000);
     document.addEventListener("visibilitychange", resume);
     window.addEventListener("pageshow", resume);
     window.addEventListener("online", resume);
     window.addEventListener("cocowheels:identity-changed", resume);
     return () => {
       stopped = true;
-      clearInterval(timer);
+      clearTimeout(timer);
       document.removeEventListener("visibilitychange", resume);
       window.removeEventListener("pageshow", resume);
       window.removeEventListener("online", resume);
