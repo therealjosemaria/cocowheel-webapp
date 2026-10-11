@@ -84,7 +84,15 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
       true,
     );
     assert.equal(joined.response.status, 201);
-    assert.equal((joined.body.ride as { status: string }).status, "ACCEPTED");
+    assert.equal((joined.body.ride as { status: string }).status, "REQUESTED");
+    await new Promise((resolve) => setTimeout(resolve, 5_100));
+    assert.equal(
+      (
+        (await json(`${base}/api/rides/${id}`, "GET", undefined, token)).body
+          .ride as { status: string }
+      ).status,
+      "ACCEPTED",
+    );
     assert.equal(
       ((await json(`${base}/api/availability`, "GET")).body.rides as unknown[])
         .length,

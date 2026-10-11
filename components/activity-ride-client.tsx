@@ -38,6 +38,8 @@ export default function ActivityRideClient({
 
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    let refreshMs = 8_000;
     const load = async () => {
       try {
         const result = await cocowheelsApi<{ ride: Ride }>(
@@ -46,6 +48,7 @@ export default function ActivityRideClient({
           }`,
         );
         if (!cancelled) {
+          refreshMs = result.ride.isSample ? 2_000 : 8_000;
           setRide(result.ride);
           setError(null);
         }
@@ -56,15 +59,19 @@ export default function ActivityRideClient({
             ? "This ride is not available."
             : "Trying to reconnect. Please try again.",
         );
+      } finally {
+        if (!cancelled) {
+          clearTimeout(timer);
+          timer = setTimeout(() => void load(), refreshMs);
+        }
       }
     };
     void load();
     window.addEventListener("cocowheels:ride-updated", load);
-    const timer = window.setInterval(() => void load(), 8_000);
     return () => {
       cancelled = true;
       window.removeEventListener("cocowheels:ride-updated", load);
-      window.clearInterval(timer);
+      clearTimeout(timer);
     };
   }, [requestId, rideId]);
 

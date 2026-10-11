@@ -8,6 +8,7 @@ import { adminInspector } from "../server/admin";
 import {
   ANONYMOUS_ANIMALS,
   advanceSampleRide,
+  advanceSampleSimulations,
   availableRides,
   beginRide,
   cancelPendingRequest,
@@ -1360,7 +1361,7 @@ test("all three samples support late requests, exclusive use, completion and ren
   try {
     ensureSampleRides(h.db, baseTime);
     const offers = availableRides(h.db, baseTime);
-    const later = new Date(baseTime.getTime() + 12 * 60 * 60_000);
+    let later = new Date(baseTime.getTime() + 12 * 60 * 60_000);
     for (const offer of offers) {
       const route = publicRidePreview(h.db, offer.rideId, later).plannedRoute;
       const input = {
@@ -1370,8 +1371,10 @@ test("all three samples support late requests, exclusive use, completion and ren
       };
       const requested = requestRide(h.db, null, offer.rideId, input, later);
       const token = requested.sessionToken!;
-      assert.equal(requested.ride.status, "ACCEPTED");
-      assert.equal(requested.ride.request?.status, "ACCEPTED");
+      assert.equal(requested.ride.status, "REQUESTED");
+      assert.equal(requested.ride.request?.status, "PENDING");
+      later = new Date(+later + 5_000);
+      advanceSampleSimulations(h.db, later);
       assert.equal(requested.ride.isSample, true);
       assert.equal(
         availableRides(h.db, later).some((row) => row.rideId === offer.rideId),
@@ -1431,7 +1434,10 @@ test("all three samples support late requests, exclusive use, completion and ren
       },
       later,
     );
+    later = new Date(+later + 5_000);
+    advanceSampleSimulations(h.db, later);
     cancelRide(h.db, request.sessionToken, again.rideId, later);
+    advanceSampleSimulations(h.db, new Date(+later + 100_000));
     assert.equal(ensureSampleRides(h.db, later), 1);
     assert.equal(availableRides(h.db, later).length, 3);
     const real = publishRide(h.db, null, driverInput, baseTime);
@@ -1446,6 +1452,123 @@ test("all three samples support late requests, exclusive use, completion and ren
         ),
       /RIDE_ACCESS_DENIED/,
     );
+  } finally {
+    h.close();
+  }
+});
+
+test("samples automatically accept at five seconds, approach, verify pickup and finish without rider GPS", () => {
+  const h = harness();
+  try {
+    ensureSampleRides(h.db, baseTime);
+    for (const offer of availableRides(h.db, baseTime)) {
+      const route = publicRidePreview(
+        h.db,
+        offer.rideId,
+        baseTime,
+      ).plannedRoute;
+      const pickup = {
+        latitude: route.origin.latitude + 0.01,
+        longitude: route.origin.longitude + 0.01,
+      };
+      const requested = requestRide(
+        h.db,
+        null,
+        offer.rideId,
+        {
+          pickup,
+          destination: route.destination,
+          requestedDepartureAt: baseTime.toISOString(),
+        },
+        baseTime,
+      );
+      const rider = findSession(h.db, requested.sessionToken, baseTime)!;
+      const at = (seconds: number) => new Date(+baseTime + seconds * 1000);
+      const tick = (seconds: number) => {
+        advanceSampleSimulations(h.db, at(seconds));
+        return getRide(h.db, offer.rideId, rider, at(seconds));
+      };
+      assert.equal(tick(4.999).request?.status, "PENDING");
+      const accepted = tick(5);
+      assert.equal(accepted.status, "ACCEPTED");
+      assert.match(accepted.coRideCode!, /^\d{4}$/);
+      const halfway = tick(15);
+      assert.ok(
+        Math.abs(
+          halfway.driverLocation!.latitude -
+            (route.origin.latitude + pickup.latitude) / 2,
+        ) < 0.000001,
+      );
+      const pickedUp = tick(25);
+      assert.equal(pickedUp.status, "CO_RIDE_ACTIVE");
+      assert.equal(pickedUp.pickupEstablished, true);
+      assert.equal(pickedUp.coRideCode, undefined);
+      assert.equal(pickedUp.driverLocation!.latitude, pickup.latitude);
+      const travelling = tick(45);
+      assert.equal(travelling.tracking?.source, "DRIVER");
+      assert.ok(
+        Math.abs(
+          travelling.driverLocation!.latitude -
+            (pickup.latitude + route.destination.latitude) / 2,
+        ) < 0.000001,
+      );
+      assert.equal(tick(65).status, "COMPLETED");
+      assert.equal(ensureSampleRides(h.db, at(65)), 1);
+      assert.equal(tick(66).status, "COMPLETED");
+    }
+    const real = publishRide(h.db, null, driverInput, baseTime);
+    const request = requestRide(
+      h.db,
+      null,
+      real.ride.rideId,
+      riderInput,
+      baseTime,
+    );
+    advanceSampleSimulations(h.db, new Date(+baseTime + 60_000));
+    assert.equal(
+      getRide(
+        h.db,
+        real.ride.rideId,
+        findSession(h.db, request.sessionToken, baseTime)!,
+        baseTime,
+      ).request?.status,
+      "PENDING",
+    );
+  } finally {
+    h.close();
+  }
+});
+
+test("withdrawn sample requests are never automatically accepted", () => {
+  const h = harness();
+  try {
+    ensureSampleRides(h.db, baseTime);
+    const offer = availableRides(h.db, baseTime)[0];
+    const route = publicRidePreview(h.db, offer.rideId, baseTime).plannedRoute;
+    const request = requestRide(
+      h.db,
+      null,
+      offer.rideId,
+      {
+        pickup: route.origin,
+        destination: route.destination,
+        requestedDepartureAt: baseTime.toISOString(),
+      },
+      baseTime,
+    );
+    cancelPendingRequest(
+      h.db,
+      request.sessionToken,
+      offer.rideId,
+      new Date(+baseTime + 1_000),
+    );
+    advanceSampleSimulations(h.db, new Date(+baseTime + 100_000));
+    assert.equal(
+      privateHistory(h.db, request.sessionToken, new Date(+baseTime + 100_000))
+        .rider[0].request?.status,
+      "CANCELLED",
+    );
+    assert.equal(availableRides(h.db, new Date(+baseTime + 100_000)).length, 3);
   } finally {
     h.close();
   }

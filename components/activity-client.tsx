@@ -31,6 +31,8 @@ export default function ActivityClient() {
   useEffect(() => {
     let cancelled = false;
     let requestInFlight = false;
+    let refreshMs = 8_000;
+    let timer: ReturnType<typeof setTimeout>;
     const load = async () => {
       if (requestInFlight) return;
       requestInFlight = true;
@@ -43,6 +45,9 @@ export default function ActivityClient() {
           cocowheelsApi<History>("/api/history"),
         ]);
         if (!cancelled) {
+          refreshMs = openItems.currents.some((item) => item.ride.isSample)
+            ? 2_000
+            : 8_000;
           setCurrent(openItems.currents);
           setHistory(result);
           setError(null);
@@ -58,13 +63,13 @@ export default function ActivityClient() {
       } finally {
         requestInFlight = false;
         if (!cancelled) setLoading(false);
+        if (!cancelled) timer = setTimeout(() => void load(), refreshMs);
       }
     };
     void load();
-    const timer = window.setInterval(() => void load(), 8_000);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      clearTimeout(timer);
     };
   }, [revision]);
 

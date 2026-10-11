@@ -8,6 +8,7 @@ import {
   beginRide,
   renewPickupCode,
   advanceSampleRide,
+  advanceSampleSimulations,
   availableRides,
   cancelPendingRequest,
   cancelRide,
@@ -391,7 +392,7 @@ export function createApiServer(
   initializeAdmin(database);
   pruneProviderCache(database);
   const sampleRidesEnabled = options.sampleRides ?? true;
-  return createServer(async (request, response) => {
+  const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     if (!originAllowed(origin)) {
       writeJson(response, 403, { error: "ORIGIN_NOT_ALLOWED" });
@@ -459,7 +460,10 @@ export function createApiServer(
       }
       const now = new Date();
       expireStaleRides(database, now);
-      if (sampleRidesEnabled) ensureSampleRides(database, now);
+      if (sampleRidesEnabled) {
+        advanceSampleSimulations(database, now);
+        ensureSampleRides(database, now);
+      }
       const parts = pathParts(request.url);
       const token = requestToken(request);
       if (parts[0] === "api" && parts[1] === "university") {
@@ -982,6 +986,23 @@ export function createApiServer(
       writeJson(response, errorStatus(error), { error: code }, cors);
     }
   });
+  let sampleTimer: ReturnType<typeof setInterval> | undefined;
+  server.on("listening", () => {
+    if (!sampleRidesEnabled) return;
+    sampleTimer = setInterval(() => {
+      try {
+        const now = new Date();
+        expireStaleRides(database, now);
+        advanceSampleSimulations(database, now);
+        ensureSampleRides(database, now);
+      } catch {
+        console.error("Sample simulation tick failed");
+      }
+    }, 1_000);
+    sampleTimer.unref();
+  });
+  server.on("close", () => clearInterval(sampleTimer));
+  return server;
 }
 
 if (process.argv[1]?.endsWith("server/index.ts")) {

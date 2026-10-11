@@ -123,7 +123,6 @@ export default function RidePreviewClient({
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [sampleBusy, setSampleBusy] = useState(false);
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
@@ -296,6 +295,7 @@ export default function RidePreviewClient({
 
   useEffect(() => {
     if (
+      ride?.isSample ||
       !ride?.plannedRoute ||
       !riderRoute ||
       ![
@@ -324,10 +324,20 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [ride?.plannedRoute, ride?.driverLocation, ride?.status, riderRoute]);
+  }, [
+    ride?.isSample,
+    ride?.plannedRoute,
+    ride?.driverLocation,
+    ride?.status,
+    riderRoute,
+  ]);
 
   useEffect(() => {
-    if (!driverRouteInput) return;
+    if (
+      !driverRouteInput ||
+      driverRoadPath?.coordinates === driverRouteCoordinates
+    )
+      return;
     let cancelled = false;
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
@@ -347,7 +357,7 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [driverRouteCoordinates, driverRouteInput]);
+  }, [driverRouteCoordinates, driverRouteInput, driverRoadPath?.coordinates]);
 
   const activeDriverRoadPath =
     driverRoadPath?.coordinates === driverRouteCoordinates
@@ -466,25 +476,6 @@ export default function RidePreviewClient({
       );
       setEnding(false);
       setEndPromptOpen(false);
-    }
-  }
-
-  async function sampleAction(action: string) {
-    setSampleBusy(true);
-    try {
-      await cocowheelsApi(
-        `/api/rides/${encodeURIComponent(rideId)}/${action === "COMPLETE" ? "complete" : "sample"}`,
-        {
-          method: "POST",
-          body: JSON.stringify(
-            action === "COMPLETE" ? { method: "CASH" } : { action },
-          ),
-        },
-      );
-      window.location.reload();
-    } catch {
-      setJoinFailurePromptOpen(true);
-      setSampleBusy(false);
     }
   }
 
@@ -853,38 +844,6 @@ export default function RidePreviewClient({
                         {joining ? "REQUESTING…" : "REQUEST TO JOIN"}
                       </button>
                     )}
-                    {!readOnly &&
-                    ride.isSample &&
-                    activityRequest &&
-                    [
-                      "PUBLISHED",
-                      "REQUESTED",
-                      "ACCEPTED",
-                      "RIDE_ACTIVE",
-                    ].includes(ride.status) &&
-                    ["PENDING", "ACCEPTED"].includes(activityRequest.status) ? (
-                      <button
-                        type="button"
-                        disabled={sampleBusy}
-                        onClick={() =>
-                          void sampleAction(
-                            activityRequest.status === "PENDING"
-                              ? "ACCEPT"
-                              : ride.status === "ACCEPTED"
-                                ? "START"
-                                : "PICKUP",
-                          )
-                        }
-                      >
-                        {sampleBusy
-                          ? "UPDATING…"
-                          : activityRequest.status === "PENDING"
-                            ? "SIMULATE ACCEPTANCE"
-                            : ride.status === "ACCEPTED"
-                              ? "START SAMPLE"
-                              : "SIMULATE PICKUP"}
-                      </button>
-                    ) : null}
                   </dd>
                 </div>
               </dl>

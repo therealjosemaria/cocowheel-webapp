@@ -1003,7 +1003,7 @@ export function searchRides(
     throw new Error("INVALID_REQUEST_TIME");
   const rows = db
     .prepare(
-      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND scheduled_departure_at <= ? ORDER BY scheduled_departure_at ASC LIMIT 50",
+      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED') AND scheduled_departure_at <= ? ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
     .all(iso(new Date(requested.getTime() + 1))) as RideRow[];
   const session = rawSessionToken
@@ -1066,7 +1066,7 @@ export function availableRides(
   return (
     db
       .prepare(
-        "SELECT public_id, driver_session_id, driver_alias, price_aud, scheduled_departure_at, offer_expires_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
+        "SELECT public_id, driver_session_id, driver_alias, price_aud, scheduled_departure_at, offer_expires_at, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, status FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 20",
       )
       .all() as Array<{
       public_id: string;
@@ -1156,6 +1156,8 @@ export function requestRide(
   const ride = rideRow(db, rideId);
   if (!ride || !["PUBLISHED", "REQUESTED"].includes(ride.status))
     throw new Error("RIDE_UNAVAILABLE");
+  if (ride.is_sample && ride.status === "REQUESTED")
+    throw new Error("RIDE_UNAVAILABLE");
   const fit = directionFit(ride, input);
   if (!fit.timingCompatible) throw new Error("REQUEST_TIME_INCOMPATIBLE");
   const existing = findSession(db, rawSessionToken, now);
@@ -1195,15 +1197,108 @@ export function requestRide(
       "UPDATE rides SET status = 'REQUESTED', last_activity_at = ? WHERE id = ? AND status = 'PUBLISHED'",
     ).run(timestamp, ride.id);
     event(db, ride.id, "RIDER_REQUESTED", "RIDER", now);
-    if (ride.is_sample)
-      withSampleDriver(db, ride, (driverToken) =>
-        decideRequest(db, driverToken, rideId, requestId, "ACCEPT", now),
-      );
   })();
   return {
     sessionToken: created?.token ?? null,
     ride: getRide(db, rideId, session, now),
   };
+}
+
+// Persistent timestamps let the sample resume after a server restart or closed browser.
+// These synthetic positions are only used for server-created, visibly labelled samples.
+export function advanceSampleSimulations(db: Db, now = new Date()) {
+  const rows = db
+    .prepare(
+      "SELECT * FROM rides WHERE is_sample = 1 AND status IN ('REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE')",
+    )
+    .all() as RideRow[];
+  for (const initial of rows) {
+    db.transaction(() => {
+      let ride = rideRow(db, initial.public_id)!;
+      if (ride.status === "REQUESTED") {
+        const pending = db
+          .prepare(
+            "SELECT * FROM ride_requests WHERE ride_id = ? AND status = 'PENDING' ORDER BY created_at, id LIMIT 1",
+          )
+          .get(ride.id) as RequestRow | undefined;
+        if (!pending || +now < Date.parse(pending.created_at) + 5_000) return;
+        withSampleDriver(db, ride, (token) =>
+          decideRequest(
+            db,
+            token,
+            ride.public_id,
+            pending.id,
+            "ACCEPT",
+            new Date(Date.parse(pending.created_at) + 5_000),
+          ),
+        );
+        ride = rideRow(db, ride.public_id)!;
+      }
+      const request = acceptedRequest(db, ride);
+      if (!request) return;
+      const pickup = {
+        latitude: request.pickup_latitude,
+        longitude: request.pickup_longitude,
+      };
+      const destination = {
+        latitude: request.destination_latitude,
+        longitude: request.destination_longitude,
+      };
+      const pickupAt = Date.parse(ride.accepted_at!) + 20_000;
+      withSampleDriver(db, ride, (token) => {
+        if (!ride.co_ride_started_at && +now >= pickupAt) {
+          // Refresh expired codes only for the automatic sample driver, never real rides.
+          if (
+            !ride.co_ride_code_ciphertext ||
+            Date.parse(ride.co_ride_code_expires_at!) <= +now
+          ) {
+            issuePickupCode(db, ride.id, now);
+            ride = rideRow(db, ride.public_id)!;
+          }
+          confirmCoRideCode(
+            db,
+            token,
+            ride.public_id,
+            decryptCode(ride.co_ride_code_ciphertext!),
+            now,
+          );
+          ride = rideRow(db, ride.public_id)!;
+        }
+        const travelling = Boolean(ride.co_ride_started_at);
+        const elapsed = travelling
+          ? +now - Date.parse(ride.co_ride_started_at!)
+          : +now - Date.parse(ride.accepted_at!);
+        const fraction = Math.max(
+          0,
+          Math.min(1, elapsed / (travelling ? 40_000 : 20_000)),
+        );
+        const point = interpolate(
+          travelling
+            ? pickup
+            : {
+                latitude: ride.origin_latitude,
+                longitude: ride.origin_longitude,
+              },
+          travelling ? destination : pickup,
+          fraction,
+        );
+        submitLocation(
+          db,
+          token,
+          ride.public_id,
+          {
+            ...point,
+            accuracyMeters: 0,
+            capturedAt: iso(now),
+            moving: fraction < 1,
+          },
+          now,
+        );
+        if (travelling && fraction >= 1)
+          completeCoRide(db, token, ride.public_id, null, now);
+      });
+    })();
+  }
 }
 
 function requireDriver(row: RideRow, session: Session) {
@@ -1931,7 +2026,7 @@ function withTracking(
   const rider = locationFor(db, row.id, "RIDER", now);
   const peer = role === "DRIVER" ? rider : driver;
   const evidence = row.co_ride_started_at
-    ? journeyEvidence(driver, rider, now.getTime())
+    ? journeyEvidence(driver, row.is_sample ? undefined : rider, now.getTime())
     : {};
   view.tracking = {
     serverNow: iso(now),

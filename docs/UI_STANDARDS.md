@@ -58,6 +58,12 @@ Otherwise it assigns POOR. This is a coarse geometric/time heuristic. It does **
 
 ## Verification and maintenance
 
+### Automatic test samples (12 October 2026)
+
+The three server-created samples remain explicitly labelled simulated. A request stays pending for five seconds, then the simulated driver accepts. The driver moves in a straight line to the saved rider pickup over 20 seconds, verifies the code automatically, then moves to the saved rider destination over 40 seconds and completes. These timings are demonstrations, not real driving estimates. The browser does not collect GPS for sample journeys, and shared sample tracking uses only the simulated driver. The server timer continues without an open browser; persisted timestamps preserve progress after restart. Cancel/withdraw stops the sequence, terminal records remain in history, and a new sample becomes available. Real drivers never auto-accept, auto-verify or auto-complete. No Start sample button is needed.
+
+Samples reserve their offer immediately while pending. Faster sample polling does not request new road routes for each moving position.
+
 - Test both roles, mobile and desktop, pending/accepted/picked-up/terminal states and missing/stale data for relevant changes.
 - Keep status wording in `lib/ride-status.ts`; reuse `PoorFitPrompt`, `CancelPrompt` and journey controls.
 - Run relevant tests, lint and build. Commit and push requested changes, and report actual deployment status rather than assuming a successful push means deployment completed.
