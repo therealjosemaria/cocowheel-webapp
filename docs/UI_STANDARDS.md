@@ -4,6 +4,7 @@ Current decisions, 11 October 2026. Read this before changing the UI. Keep this 
 
 ## Principles
 
+- Successful rider requests open that ride's details directly, not Activity. Details reuse the ride-selection map-first layout and route legend, with details and controls underneath and no redundant Ride Details heading. Activity opens this same shared view.
 - Mobile first, desktop equally functional. Verify both layouts.
 - Consistency: reuse shared screens, labels, icons, buttons and dialogs rather than building separate versions for each role.
 - Non-blocking exploration: users can browse any offer, including their own. Poor fit is advice, not a prohibition. Server-enforced identity, permissions, one active role and one accepted rider remain mandatory.

@@ -1626,7 +1626,13 @@ p {
   border-bottom: 1px solid var(--line);
 }
 .ride-preview-content {
-  padding: 18px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 14px;
+}
+.ride-preview-content > :not(.ride-selection-map):not(.ride-selection-route-key) {
+  margin-left: 14px;
+  margin-right: 14px;
 }
 .ride-preview-summary {
   margin-bottom: 14px;

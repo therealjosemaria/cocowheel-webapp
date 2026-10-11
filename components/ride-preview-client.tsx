@@ -435,7 +435,7 @@ export default function RidePreviewClient({
           }),
         },
       );
-      window.location.assign("/activity");
+      window.location.assign(`/activity/${encodeURIComponent(ride.rideId)}`);
     } catch (reason) {
       if (
         reason instanceof ApiError &&
@@ -654,7 +654,6 @@ export default function RidePreviewClient({
       ) : null}
       {error ? (
         <>
-          <h1 className="page-title">Ride details</h1>
           <div className="ride-preview-content">
             <h2>Not available</h2>
             <p className="intro">{error}</p>
@@ -664,8 +663,114 @@ export default function RidePreviewClient({
         <div aria-busy="true" />
       ) : (
         <>
-          <h1 className="page-title">Ride details</h1>
           <div className="ride-preview-content">
+            <div className="ride-selection-map">
+              <JourneyMap
+                followZoom={ride.isSample ? 14 : 16}
+                recenterPin={
+                  privateRide?.pickupEstablished &&
+                  ride.status === "CO_RIDE_ACTIVE"
+                    ? ride.driverLocation
+                    : undefined
+                }
+                followPins={
+                  ride.driverLocation &&
+                  riderRoute &&
+                  ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
+                    ride.status,
+                  )
+                    ? privateRide?.pickupEstablished
+                      ? [ride.driverLocation]
+                      : [ride.driverLocation, riderRoute.pickup]
+                    : undefined
+                }
+                fitPins={[
+                  ...(ride.driverLocation ? [ride.driverLocation] : []),
+                  ...(ride.plannedRoute
+                    ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+                    : []),
+                  ...(riderRoute
+                    ? [riderRoute.pickup, riderRoute.destination]
+                    : []),
+                ]}
+                pins={[
+                  ...(ride.plannedRoute
+                    ? [
+                        ride.driverLocation ?? ride.plannedRoute.origin,
+                        ride.plannedRoute.destination,
+                      ]
+                    : []),
+                  ...(riderRoute
+                    ? [
+                        privateRide?.pickupEstablished &&
+                        privateRide.tracking?.location
+                          ? privateRide.tracking.location
+                          : riderRoute.pickup,
+                        riderRoute.destination,
+                      ]
+                    : []),
+                ]}
+                markerKinds={
+                  ride.plannedRoute && riderRoute
+                    ? ["driver", "destination", "pickup", "destination"]
+                    : ride.plannedRoute
+                      ? ["driver", "destination"]
+                      : riderRoute
+                        ? ["pickup", "destination"]
+                        : undefined
+                }
+                markerLabels={[
+                  ...(ride.plannedRoute
+                    ? [
+                        riderRoute
+                          ? undefined
+                          : mapLocationText(ride.plannedRoute.origin),
+                        riderRoute
+                          ? undefined
+                          : mapLocationText(ride.plannedRoute.destination),
+                      ]
+                    : []),
+                  ...(riderRoute
+                    ? [
+                        pickupMinutes !== null
+                          ? {
+                              etaMinutes: pickupMinutes,
+                              text: mapLocationText(riderRoute.pickup),
+                            }
+                          : mapLocationText(riderRoute.pickup),
+                        mapLocationText(riderRoute.destination),
+                      ]
+                    : []),
+                ]}
+                lines={lines}
+                roadPathAttribution={Boolean(
+                  activeDriverRoadPath?.length || roadPath?.length,
+                )}
+              />
+            </div>
+            <div
+              className="ride-selection-route-key"
+              aria-label="Map route colours"
+            >
+              {rideIsActive ? (
+                <LocationAge
+                  location={ride.driverLocation}
+                  label={privateRide?.pickupEstablished ? "Trip" : "Driver"}
+                />
+              ) : null}
+              {ride.plannedRoute ? (
+                <span>
+                  <i className="ride-selection-route-driver" />
+                  Driver route
+                </span>
+              ) : null}
+              {riderRoute ? (
+                <span>
+                  <i className="ride-selection-route-rider" />
+                  Your route
+                </span>
+              ) : null}
+            </div>
             <div className="ride-preview-summary">
               <dl className="ride-preview-fields">
                 <div>
@@ -997,111 +1102,6 @@ export default function RidePreviewClient({
                 }}
               />
             ) : null}
-            <JourneyMap
-              followZoom={ride.isSample ? 14 : 16}
-              recenterPin={
-                privateRide?.pickupEstablished &&
-                ride.status === "CO_RIDE_ACTIVE"
-                  ? ride.driverLocation
-                  : undefined
-              }
-              followPins={
-                ride.driverLocation &&
-                riderRoute &&
-                ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
-                  ride.status,
-                )
-                  ? privateRide?.pickupEstablished
-                    ? [ride.driverLocation]
-                    : [ride.driverLocation, riderRoute.pickup]
-                  : undefined
-              }
-              fitPins={[
-                ...(ride.driverLocation ? [ride.driverLocation] : []),
-                ...(ride.plannedRoute
-                  ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
-                  : []),
-                ...(riderRoute
-                  ? [riderRoute.pickup, riderRoute.destination]
-                  : []),
-              ]}
-              pins={[
-                ...(ride.plannedRoute
-                  ? [
-                      ride.driverLocation ?? ride.plannedRoute.origin,
-                      ride.plannedRoute.destination,
-                    ]
-                  : []),
-                ...(riderRoute
-                  ? [
-                      privateRide?.pickupEstablished &&
-                      privateRide.tracking?.location
-                        ? privateRide.tracking.location
-                        : riderRoute.pickup,
-                      riderRoute.destination,
-                    ]
-                  : []),
-              ]}
-              markerKinds={
-                ride.plannedRoute && riderRoute
-                  ? ["driver", "destination", "pickup", "destination"]
-                  : ride.plannedRoute
-                    ? ["driver", "destination"]
-                    : riderRoute
-                      ? ["pickup", "destination"]
-                      : undefined
-              }
-              markerLabels={[
-                ...(ride.plannedRoute
-                  ? [
-                      riderRoute
-                        ? undefined
-                        : mapLocationText(ride.plannedRoute.origin),
-                      riderRoute
-                        ? undefined
-                        : mapLocationText(ride.plannedRoute.destination),
-                    ]
-                  : []),
-                ...(riderRoute
-                  ? [
-                      pickupMinutes !== null
-                        ? {
-                            etaMinutes: pickupMinutes,
-                            text: mapLocationText(riderRoute.pickup),
-                          }
-                        : mapLocationText(riderRoute.pickup),
-                      mapLocationText(riderRoute.destination),
-                    ]
-                  : []),
-              ]}
-              lines={lines}
-              roadPathAttribution={Boolean(
-                activeDriverRoadPath?.length || roadPath?.length,
-              )}
-            />
-            <div
-              className="ride-selection-route-key"
-              aria-label="Map route colours"
-            >
-              {rideIsActive ? (
-                <LocationAge
-                  location={ride.driverLocation}
-                  label={privateRide?.pickupEstablished ? "Trip" : "Driver"}
-                />
-              ) : null}
-              {ride.plannedRoute ? (
-                <span>
-                  <i className="ride-selection-route-driver" />
-                  Driver route
-                </span>
-              ) : null}
-              {riderRoute ? (
-                <span>
-                  <i className="ride-selection-route-rider" />
-                  Your route
-                </span>
-              ) : null}
-            </div>
             {endError ? <p className="error">{endError}</p> : null}
           </div>
         </>

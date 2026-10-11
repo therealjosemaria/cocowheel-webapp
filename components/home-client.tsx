@@ -784,7 +784,7 @@ export default function HomeClient({
         },
       );
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
-      router.push("/activity");
+      router.push(`/activity/${encodeURIComponent(candidate.rideId)}`);
     } catch (reason) {
       if (
         reason instanceof ApiError &&
