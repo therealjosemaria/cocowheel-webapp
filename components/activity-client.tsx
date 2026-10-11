@@ -297,20 +297,6 @@ function ActivityCard({
               <dd>A${ride.priceAud}</dd>
             </div>
           ) : null}
-          <div className="activity-card-action">
-            <dt>
-              <RideFieldLabel icon="view">View</RideFieldLabel>
-            </dt>
-            <dd>
-              <Link
-                className="activity-open"
-                href={href}
-                aria-label={`Details for ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
-              >
-                DETAILS
-              </Link>
-            </dd>
-          </div>
           {canEndRequest ? (
             <div className="activity-card-action">
               <dt>
@@ -333,6 +319,13 @@ function ActivityCard({
             </div>
           ) : null}
         </dl>
+        <Link
+          className="activity-details-link"
+          href={href}
+          aria-label={`Details for ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
+        >
+          Details <span aria-hidden="true">›</span>
+        </Link>
       </article>
     </>
   );

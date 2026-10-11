@@ -328,6 +328,41 @@ button:disabled {
   border-radius: 0 0 12px 12px;
   overflow: hidden;
 }
+.activity-card {
+  position: relative;
+  transition: background-color 150ms ease;
+}
+.activity-details-link {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.activity-details-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+.activity-details-link:focus-visible { outline: none; }
+.activity-details-link:focus-visible::after {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.activity-card .activity-request-end {
+  position: relative;
+  z-index: 2;
+}
+@media (hover: hover) {
+  .activity-card:has(.activity-details-link:hover) { background: #f5f6f7; }
+}
+.activity-card:has(.activity-details-link:active) { background: #e9ecef; }
 .activity-card-fields > div {
   display: grid;
   gap: 4px;
