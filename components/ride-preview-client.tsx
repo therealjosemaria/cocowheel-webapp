@@ -666,11 +666,6 @@ export default function RidePreviewClient({
           <h1 className="page-title">Ride details</h1>
           <div className="ride-preview-content">
             <div className="ride-preview-summary">
-              {ride.isSample ? (
-                <p className="driver-location-age">
-                  Sample ride · Simulated driver
-                </p>
-              ) : null}
               <dl className="ride-preview-fields">
                 <div>
                   <dt>
@@ -793,7 +788,9 @@ export default function RidePreviewClient({
                             : ride.payIdType === "EMAIL"
                               ? "Email"
                               : ride.payIdType === "OTHER"
-                                ? "Other"
+                                ? ride.isSample
+                                  ? "ABN"
+                                  : "Other"
                                 : "PayID"}
                       </span>
                       {ride.payId ? <code>{ride.payId}</code> : null}

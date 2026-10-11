@@ -148,6 +148,8 @@ test("every account shares history and one role across signed-in devices", async
     destination: { latitude: -33.92, longitude: 151.26 },
     scheduledDepartureAt: new Date(now).toISOString(),
     priceAud: 5,
+    payId: "driver@example.com",
+    payIdType: "EMAIL" as const,
   };
   const ride = publishRide(db, first.token, offer, new Date(now)).ride;
   assert.equal(ride.driverAlias, "stud0001");

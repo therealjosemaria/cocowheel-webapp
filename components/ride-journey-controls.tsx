@@ -103,11 +103,7 @@ export function PickupConfirmation({
         </form>
       ) : (
         <>
-          <p>
-            {ride.isSample
-              ? "The simulated driver verifies this code automatically at pickup."
-              : "Share this code with your driver at pickup."}
-          </p>
+          <p>Share this code with your driver at pickup.</p>
           {ride.coRideCode ? (
             <strong
               className="pickup-code-display"

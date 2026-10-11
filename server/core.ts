@@ -827,6 +827,8 @@ const sampleRides = [
       label: "South Coogee",
     },
     priceAud: 12,
+    payId: "0491 570 006", // ACMA fictional-use number, not a payment destination.
+    payIdType: "MOBILE",
   },
   {
     key: "airport-watsons-bay",
@@ -841,6 +843,8 @@ const sampleRides = [
       label: "Watsons Bay",
     },
     priceAud: 18,
+    payId: "driver@example.com",
+    payIdType: "EMAIL",
   },
   {
     key: "newtown-bondi-icebergs",
@@ -855,6 +859,8 @@ const sampleRides = [
       label: "Bondi Icebergs",
     },
     priceAud: 14,
+    payId: "00 000 000 000", // Deliberately invalid ABN: display testing only.
+    payIdType: "OTHER",
   },
 ] as const;
 
@@ -869,12 +875,22 @@ export function ensureSampleRides(db: Db, now = new Date()) {
     "INSERT INTO guest_sessions (id, token_hash, anonymous_alias, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
   );
   const insertRide = db.prepare(
-    `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, offer_expires_at, is_sample, sample_key, price_aud, created_at, last_activity_at)
-     VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`,
+    `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, offer_expires_at, is_sample, sample_key, price_aud, created_at, last_activity_at, driver_payid, driver_payid_type)
+     VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`,
   );
   let created = 0;
   db.transaction(() => {
     for (const sample of sampleRides) {
+      // Update existing live fixtures too; preserve terminal history and real offers.
+      db.prepare(
+        "UPDATE rides SET driver_payid = ?, driver_payid_type = ? WHERE is_sample = 1 AND sample_key = ? AND status IN ('PUBLISHED', 'REQUESTED', 'ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND (COALESCE(driver_payid, '') != ? OR COALESCE(driver_payid_type, '') != ?)",
+      ).run(
+        sample.payId,
+        sample.payIdType,
+        sample.key,
+        sample.payId,
+        sample.payIdType,
+      );
       if (hasOpenSample.get(sample.key)) continue;
       const sessionId = uuid();
       const rideId = uuid();
@@ -904,6 +920,8 @@ export function ensureSampleRides(db: Db, now = new Date()) {
         sample.priceAud,
         timestamp,
         timestamp,
+        sample.payId,
+        sample.payIdType,
       );
       event(db, rideId, "RIDE_PUBLISHED", "SYSTEM", now);
       created += 1;
@@ -934,6 +952,7 @@ export function publishRide(
   )
     throw new Error("INVALID_FIXED_PRICE");
   const payId = cleanOptional(input.payId, 254, "INVALID_PAYID");
+  if (!payId) throw new Error("PAYID_REQUIRED");
   const payIdType = payId
     ? (input.payIdType ?? (payId.includes("@") ? "EMAIL" : "OTHER"))
     : null;

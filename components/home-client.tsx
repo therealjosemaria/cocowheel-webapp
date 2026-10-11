@@ -187,7 +187,8 @@ const humanError = (error: unknown) => {
     CO_RIDE_CODE_INVALID: "That code doesn’t match. Check it and try again.",
     CO_RIDE_CODE_RATE_LIMITED:
       "Please wait a moment before another code attempt.",
-    PAYID_UNAVAILABLE: "This driver did not add PayID. Cash is available.",
+    PAYID_UNAVAILABLE: "PayID details are not available.",
+    PAYID_REQUIRED: "Enter your PayID before publishing.",
     INVALID_PAYID: "Check your PayID format and length.",
     INVALID_FIXED_PRICE: "Enter a whole-dollar amount from A$5 to A$10,000.",
     REQUEST_TIME_INCOMPATIBLE:
@@ -1406,6 +1407,7 @@ function DriverForm(props: {
           </div>
           <input
             ref={payIdRef}
+            required
             type={
               props.payIdType === "EMAIL"
                 ? "email"
@@ -1815,10 +1817,7 @@ function RideSelection({
                     </svg>
                   </span>
                   <span className="ride-option-main">
-                    <strong>
-                      {candidate.driverAlias}
-                      {candidate.isSample ? " · Sample" : ""}
-                    </strong>
+                    <strong>{candidate.driverAlias}</strong>
                     <small>
                       {pickupMinutes !== null
                         ? `${pickupMinutes} min away`
@@ -2214,15 +2213,6 @@ function RideStatus({
               COPY RIDE REFERENCE
             </button>
           </div>
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() =>
-              onAction(`/api/rides/${ride.rideId}/complete`, { method: "CASH" })
-            }
-          >
-            COMPLETE · CASH
-          </button>
           <small>
             Cocowheels records your selected payment method only. It never
             verifies a bank payment.

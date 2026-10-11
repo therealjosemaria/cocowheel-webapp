@@ -1574,6 +1574,65 @@ test("withdrawn sample requests are never automatically accepted", () => {
   }
 });
 
+test("cashless publishing rejects an empty PayID", () => {
+  const h = harness();
+  try {
+    for (const payId of [undefined, "", "   "]) {
+      assert.throws(
+        () => publishRide(h.db, null, { ...driverInput, payId }, baseTime),
+        /PAYID_REQUIRED/,
+      );
+    }
+  } finally {
+    h.close();
+  }
+});
+
+test("sample payment fixtures cover mobile, email and ABN without leaking before pickup", () => {
+  const h = harness();
+  try {
+    ensureSampleRides(h.db, baseTime);
+    const types = new Set<string>();
+    for (const offer of availableRides(h.db, baseTime)) {
+      const route = publicRidePreview(h.db, offer.rideId, baseTime);
+      assert.equal(route.paymentMethod, "PAYID");
+      assert.equal("payId" in route, false);
+      const requested = requestRide(
+        h.db,
+        null,
+        offer.rideId,
+        {
+          pickup: route.plannedRoute.origin,
+          destination: route.plannedRoute.destination,
+          requestedDepartureAt: baseTime.toISOString(),
+        },
+        baseTime,
+      );
+      const rider = findSession(h.db, requested.sessionToken, baseTime)!;
+      const acceptedAt = new Date(+baseTime + 5000);
+      advanceSampleSimulations(h.db, acceptedAt);
+      const accepted = getRide(h.db, offer.rideId, rider, acceptedAt);
+      assert.equal(accepted.payId, undefined);
+      assert.equal(accepted.payIdType, undefined);
+      const pickedUpAt = new Date(+baseTime + 25000);
+      advanceSampleSimulations(h.db, pickedUpAt);
+      const pickedUp = getRide(h.db, offer.rideId, rider, pickedUpAt);
+      types.add(pickedUp.payIdType!);
+      assert.equal(
+        pickedUp.payId,
+        {
+          MOBILE: "0491 570 006",
+          EMAIL: "driver@example.com",
+          OTHER: "00 000 000 000",
+        }[pickedUp.payIdType!],
+      );
+    }
+    assert.deepEqual([...types].sort(), ["EMAIL", "MOBILE", "OTHER"]);
+  } finally {
+    h.close();
+  }
+});
+
 test("keeps three renewable sample rides available in 24-hour windows", () => {
   const h = harness();
   try {
