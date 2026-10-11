@@ -8,6 +8,7 @@ import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
 import LocationAge from "./location-age";
 import { mapLocationText } from "@/lib/map-label";
+import { directionsUrl } from "@/lib/directions";
 import RideFieldLabel from "./ride-field-label";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
@@ -139,16 +140,17 @@ export default function RidePreviewClient({
   const acceptedDriverRequest = participantRide?.requests?.find(
     (request) => request.status === "ACCEPTED",
   );
+  const driverRide = participantRide ?? activityRide;
   const riderDetail = driverOwned
-    ? participantRide?.rider
+    ? driverRide?.rider
       ? {
-          alias: participantRide.rider.alias,
-          pickup: participantRide.rider.pickup,
-          destination: participantRide.rider.destination,
+          alias: driverRide.rider.alias,
+          pickup: driverRide.rider.pickup,
+          destination: driverRide.rider.destination,
           requestedAt:
             acceptedDriverRequest?.createdAt ??
-            participantRide.rider.requestedDepartureAt,
-          directionFit: participantRide.rider.directionFit,
+            driverRide.rider.requestedDepartureAt,
+          directionFit: driverRide.rider.directionFit,
           status: "ACCEPTED" as const,
         }
       : null
@@ -685,12 +687,29 @@ export default function RidePreviewClient({
                 </div>
                 <div>
                   <dt>
-                    <RideFieldLabel icon="from">Where from?</RideFieldLabel>
+                    <RideFieldLabel icon="from">
+                      {driverOwned && riderDetail
+                        ? "Rider pickup"
+                        : "Where from?"}
+                    </RideFieldLabel>
                   </dt>
                   <dd>
-                    {!driverOwned && activityRequest
-                      ? locationLabel(activityRequest.pickup)
-                      : ride.departureLabel}
+                    {driverOwned && riderDetail
+                      ? locationLabel(riderDetail.pickup)
+                      : !driverOwned && activityRequest
+                        ? locationLabel(activityRequest.pickup)
+                        : ride.departureLabel}
+                    {driverOwned && riderDetail && rideIsActive ? (
+                      <a
+                        className="ride-directions"
+                        href={directionsUrl(riderDetail.pickup)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
+                      >
+                        Directions
+                      </a>
+                    ) : null}
                   </dd>
                 </div>
                 <div>
@@ -703,12 +722,29 @@ export default function RidePreviewClient({
                 </div>
                 <div>
                   <dt>
-                    <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+                    <RideFieldLabel icon="to">
+                      {driverOwned && riderDetail
+                        ? "Rider drop-off"
+                        : "Where to?"}
+                    </RideFieldLabel>
                   </dt>
                   <dd>
-                    {!driverOwned && activityRequest
-                      ? locationLabel(activityRequest.destination)
-                      : ride.destinationLabel}
+                    {driverOwned && riderDetail
+                      ? locationLabel(riderDetail.destination)
+                      : !driverOwned && activityRequest
+                        ? locationLabel(activityRequest.destination)
+                        : ride.destinationLabel}
+                    {driverOwned && riderDetail && rideIsActive ? (
+                      <a
+                        className="ride-directions"
+                        href={directionsUrl(riderDetail.destination)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
+                      >
+                        Directions
+                      </a>
+                    ) : null}
                   </dd>
                 </div>
                 <div>
@@ -727,7 +763,7 @@ export default function RidePreviewClient({
                     <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
-                {ride.payId ? (
+                {ride.payId && !driverOwned ? (
                   <div>
                     <dt>
                       <RideFieldLabel icon="payid">
@@ -750,7 +786,7 @@ export default function RidePreviewClient({
                 ) : null}
                 <div
                   className={`preview-field-action${
-                    ride.acceptedAt || (!activityRequest && !driverOwned)
+                    !driverOwned && (ride.acceptedAt || !activityRequest)
                       ? " preview-field-action-wide"
                       : ""
                   }`}
@@ -830,6 +866,23 @@ export default function RidePreviewClient({
                   </dd>
                 </div>
               </dl>
+              {driverOwned && ride.payId ? (
+                <dl className="driver-payment-details">
+                  <dt>
+                    <RideFieldLabel icon="payid">Your PayID</RideFieldLabel>
+                  </dt>
+                  <dd className="preview-payid">
+                    <span>
+                      {ride.payIdType === "MOBILE"
+                        ? "Mobile"
+                        : ride.payIdType === "EMAIL"
+                          ? "Email"
+                          : "Other"}
+                    </span>
+                    <code>{ride.payId}</code>
+                  </dd>
+                </dl>
+              ) : null}
             </div>
             {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
@@ -948,19 +1001,6 @@ export default function RidePreviewClient({
                         </RideFieldLabel>
                       </dt>
                       <dd>{prettyTime(riderDetail.requestedAt)}</dd>
-                    </div>
-                    <div className="request-detail-from">
-                      <dt>
-                        <RideFieldLabel icon="from">Where from?</RideFieldLabel>
-                      </dt>
-                      <dd>{locationLabel(riderDetail.pickup)}</dd>
-                    </div>
-
-                    <div className="request-detail-to">
-                      <dt>
-                        <RideFieldLabel icon="to">Where to?</RideFieldLabel>
-                      </dt>
-                      <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
                   </dl>
                 </article>

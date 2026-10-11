@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import AppNavigation from "@/components/app-navigation";
 import SiteFooter from "@/components/site-footer";
 import LocationTracker from "@/components/location-tracker";
@@ -21,9 +20,9 @@ export default function RootLayout({
         <UniversityVerification />
         <main className="app-shell">
           <header className="topbar">
-            <Link href="/" className="brand">
+            <span className="brand">
               COCOWHEELS
-            </Link>
+            </span>
             <AppNavigation />
           </header>
           <div className="app-content">{children}</div>

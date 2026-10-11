@@ -1669,6 +1669,21 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
 }
+.ride-directions {
+  display: block;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 5px 0;
+  font-size: 0.78rem;
+  text-underline-offset: 3px;
+}
+.driver-payment-details {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+.driver-payment-details dt { color: var(--muted); }
+.driver-payment-details dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .home-current-ride {
   grid-template-columns: minmax(0, 1fr) auto;
 }
