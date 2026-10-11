@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import ActiveRideLink, { type ActiveRide } from "./active-ride-link";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
   const [canAdmin, setCanAdmin] = useState(false);
+  const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -17,7 +19,6 @@ export default function AppNavigation() {
   const links = [
     { href: "/", label: "Home" },
     { href: "/activity", label: "Activity" },
-    ...(canAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
   const goHome = () => {
     setRideTab(null);
@@ -62,10 +63,24 @@ export default function AppNavigation() {
       }>("/api/university/session");
       setGuestName(result.unikey);
       setCanAdmin(result.canAdmin === true);
+      const activity = await cocowheelsApi<{
+        current: ActiveRide | null;
+        currents: ActiveRide[];
+      }>("/api/current");
+      setActiveRide(activity.current);
+      window.dispatchEvent(
+        new CustomEvent("cocowheels:current-updated", {
+          detail: activity.currents,
+        }),
+      );
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
         setCanAdmin(false);
+        setActiveRide(null);
+        window.dispatchEvent(
+          new CustomEvent("cocowheels:current-updated", { detail: [] }),
+        );
       }
     }
   }, []);
@@ -165,6 +180,16 @@ export default function AppNavigation() {
         >
           Find a ride
         </button>
+        {canAdmin && (
+          <Link
+            href="/admin"
+            className={`desktop-navigation-link${isLinkActive("/admin") ? " active" : ""}`}
+            aria-current={isLinkActive("/admin") ? "page" : undefined}
+            onClick={() => setRideTab(null)}
+          >
+            Admin
+          </Link>
+        )}
       </nav>
       <div
         className={`guest-identity${identityOpen ? " open" : ""}`}
@@ -221,6 +246,13 @@ export default function AppNavigation() {
             >
               Verify UniKey
             </button>
+          )}
+          {guestName && activeRide && (
+            <ActiveRideLink
+              item={activeRide}
+              compact
+              onClick={() => setIdentityOpen(false)}
+            />
           )}
           {guestName && (
             <button
@@ -323,6 +355,20 @@ export default function AppNavigation() {
             >
               Find a ride
             </button>
+            {canAdmin && (
+              <Link
+                href="/admin"
+                className={`mobile-navigation-link${isLinkActive("/admin") ? " active" : ""}`}
+                aria-current={isLinkActive("/admin") ? "page" : undefined}
+                tabIndex={open ? undefined : -1}
+                onClick={() => {
+                  setOpen(false);
+                  setRideTab(null);
+                }}
+              >
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
       </div>

@@ -567,9 +567,20 @@ p {
 .home-current-ride strong {
   font-size: 0.94rem;
 }
-.home-current-ride code {
+.active-ride-status {
   color: var(--muted);
   font-size: 0.7rem;
+}
+.active-ride-route {
+  min-width: 0;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.profile-active-ride {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 .role-card {
   display: flex;

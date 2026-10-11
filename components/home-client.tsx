@@ -1,8 +1,8 @@
 "use client";
+import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
@@ -405,7 +405,15 @@ export default function HomeClient({
   }, [begin]);
   useEffect(() => {
     const timer = window.setTimeout(() => void refreshCurrent(), 0);
-    return () => window.clearTimeout(timer);
+    const sync = (event: Event) =>
+      setHomeCurrent(
+        (event as CustomEvent<Array<{ role: Role; ride: Ride }>>).detail,
+      );
+    window.addEventListener("cocowheels:current-updated", sync);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("cocowheels:current-updated", sync);
+    };
   }, []);
   useEffect(() => {
     const timer = window.setTimeout(
@@ -977,22 +985,7 @@ function Home({
         FIND A RIDE
       </button>
       {current.map((item) => (
-        <Link
-          key={`${item.role}-${item.ride.rideId}`}
-          className="home-current-ride"
-          href={`/activity/${encodeURIComponent(item.ride.rideId)}${
-            item.role === "RIDER" && item.ride.request
-              ? `?request=${encodeURIComponent(item.ride.request.requestId)}`
-              : ""
-          }`}
-        >
-          <strong>
-            {item.role === "DRIVER"
-              ? "View your offered ride"
-              : "Continue ride request"}
-          </strong>
-          <code>Ride ID · {routeReference(item.ride.rideId)}</code>
-        </Link>
+        <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />
       ))}
     </div>
   );
