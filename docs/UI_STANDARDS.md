@@ -36,6 +36,7 @@ Current decisions, 11 October 2026. Read this before changing the UI. Keep this 
 - Ordinary views hide administrative route ID, departure, expiry, fit and acceptance/request timestamps where previously agreed; retain the underlying records/admin information. Do not restore the old discovery matrix: ride selection uses the map and compact selectable ride cards.
 - Keep summaries succinct: driver, pickup estimate, arrival estimate and fare where relevant. Ride details use estimated duration to avoid stale planned arrival times.
 - Maps share driver/rider route colours, identifiable icons and compact address labels. The pickup minute badge is flush beside the address, not surrounded by another visible shell. Do not show pickup ETA after pickup or in history. Preserve required attribution, and keep it below navigation overlays.
+- Ride-detail maps frame driver and pickup during approach, zooming closer as they converge (maximum automatic zoom 16). After pickup they follow the shared position at street level. Manual pan, pinch, zoom controls or map keyboard navigation suspend automatic framing for that mounted map; location updates must never undo the user's chosen view.
 
 ## Lifecycle and privacy
 

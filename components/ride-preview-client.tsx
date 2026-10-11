@@ -1000,6 +1000,17 @@ export default function RidePreviewClient({
               />
             ) : null}
             <JourneyMap
+              followPins={
+                ride.driverLocation &&
+                riderRoute &&
+                ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
+                  ride.status,
+                )
+                  ? privateRide?.pickupEstablished
+                    ? [ride.driverLocation]
+                    : [ride.driverLocation, riderRoute.pickup]
+                  : undefined
+              }
               fitPins={[
                 ...(ride.driverLocation ? [ride.driverLocation] : []),
                 ...(ride.plannedRoute

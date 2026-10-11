@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { divIcon } from "leaflet";
 import {
   CircleMarker,
@@ -85,23 +85,67 @@ function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {
   });
   return null;
 }
-function Fit({ pins, lines }: { pins: Pin[]; lines: Line[] }) {
+function Fit({
+  pins,
+  lines,
+  followPins,
+}: {
+  pins: Pin[];
+  lines: Line[];
+  followPins?: Pin[];
+}) {
   const map = useMap();
-  const pointKey = [...pins, ...lines.flatMap((line) => line.points)]
+  const manualView = useRef(false);
+  const points = followPins?.length
+    ? followPins
+    : [...pins, ...lines.flatMap((line) => line.points)];
+  const pointKey = points
     .map((point) => `${point.latitude}:${point.longitude}`)
     .join("|");
   useEffect(() => {
-    const points = [...pins, ...lines.flatMap((line) => line.points)];
-    if (points.length === 0) return;
+    const container = map.getContainer();
+    const takeControl = () => {
+      manualView.current = true;
+      map.stop();
+    };
+    const keyboardControl = (event: KeyboardEvent) => {
+      if (
+        [
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "+",
+          "-",
+          "=",
+          "Enter",
+          " ",
+        ].includes(event.key)
+      )
+        takeControl();
+    };
+    container.addEventListener("pointerdown", takeControl, { passive: true });
+    container.addEventListener("wheel", takeControl, { passive: true });
+    container.addEventListener("keydown", keyboardControl);
+    return () => {
+      container.removeEventListener("pointerdown", takeControl);
+      container.removeEventListener("wheel", takeControl);
+      container.removeEventListener("keydown", keyboardControl);
+    };
+  }, [map]);
+  useEffect(() => {
+    if (manualView.current || points.length === 0) return;
     if (points.length === 1) {
-      map.setView([points[0].latitude, points[0].longitude], 16);
+      map.setView([points[0].latitude, points[0].longitude], 16, {
+        animate: true,
+      });
       return;
     }
     map.fitBounds(
       points.map(
         (point) => [point.latitude, point.longitude] as [number, number],
       ),
-      { padding: [28, 28], maxZoom: 16 },
+      { padding: [48, 48], maxZoom: 16, animate: true },
     );
     // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +255,7 @@ function PinMarkers({
 export default function JourneyMap({
   pins = [],
   fitPins,
+  followPins,
   lines = [],
   onPick,
   markerKinds,
@@ -219,6 +264,7 @@ export default function JourneyMap({
 }: {
   pins?: Pin[];
   fitPins?: Pin[];
+  followPins?: Pin[];
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
@@ -256,7 +302,7 @@ export default function JourneyMap({
           markerLabels={markerLabels}
         />
         <MapClick onPick={onPick} />
-        <Fit pins={fitPins ?? pins} lines={lines} />
+        <Fit pins={fitPins ?? pins} lines={lines} followPins={followPins} />
         <ZoomControl position="bottomright" />
       </MapContainer>
       <p className="map-attribution">
