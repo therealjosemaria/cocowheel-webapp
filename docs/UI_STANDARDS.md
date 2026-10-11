@@ -4,6 +4,7 @@ Current decisions, 11 October 2026. Read this before changing the UI. Keep this 
 
 ## Principles
 
+- While awaiting pickup, show the shared pickup-code/verification panel directly below the map legend and above the details. Remove it after verification. PayID type and value stay closely grouped, with the Copy button alongside them for all PayID formats and both roles.
 - Successful rider requests open that ride's details directly, not Activity. Details reuse the ride-selection map-first layout and route legend, with details and controls underneath and no redundant Ride Details heading. Activity opens this same shared view.
 - Mobile first, desktop equally functional. Verify both layouts.
 - Consistency: reuse shared screens, labels, icons, buttons and dialogs rather than building separate versions for each role.

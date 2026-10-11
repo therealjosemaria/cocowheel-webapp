@@ -771,6 +771,9 @@ export default function RidePreviewClient({
                 </span>
               ) : null}
             </div>
+            {!readOnly && privateRide ? (
+              <PickupConfirmation ride={privateRide} driver={driverOwned} />
+            ) : null}
             <div className="ride-preview-summary">
               <dl className="ride-preview-fields">
                 <div>
@@ -971,9 +974,6 @@ export default function RidePreviewClient({
                 </dl>
               ) : null}
             </div>
-            {!readOnly && privateRide ? (
-              <PickupConfirmation ride={privateRide} driver={driverOwned} />
-            ) : null}
             {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
                 <h2>Rider requests</h2>

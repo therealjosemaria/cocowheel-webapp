@@ -1108,14 +1108,31 @@ p {
   background: var(--ink);
 }
 .preview-payid {
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
-  gap: 3px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-content: start;
 }
-.preview-payid span {
+.preview-payid > span:not(.payid-copy-row) {
+  grid-column: 1;
   color: var(--muted);
   font-size: 0.68rem;
+}
+.preview-payid .payid-copy-row { display: contents; }
+.preview-payid .payid-copy-row code {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  color: var(--ink);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.preview-payid .payid-copy-row > button {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
 }
 .preview-payid code {
   overflow-wrap: anywhere;
