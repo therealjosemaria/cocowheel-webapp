@@ -2,7 +2,7 @@
 
 ## Pickup and completion update — 11 October 2026
 
-These decisions supersede older lifecycle/payment notes below. Acceptance creates a four-digit pickup code visible only to the accepted rider; the driver verifies it. Codes expire after 15 minutes, allow five wrong attempts with a two-second attempt interval, and may be renewed by the rider no more than once per minute. Verification consumes the code and records pickup internally; the public status remains Ride in progress.
+These decisions supersede older lifecycle/payment notes below. Acceptance creates a four-digit pickup code visible only to the accepted rider; the driver verifies it. Codes expire after 15 minutes, allow five wrong attempts with a two-second attempt interval, and may be renewed by the rider no more than once per minute. Acceptance and the legacy pre-pickup RIDE_ACTIVE state display Awaiting pickup for both participants. Verification consumes the code and records pickup internally; CO_RIDE_ACTIVE displays Ride in progress. No new backend state is needed.
 
 Before verification riders receive only the payment method (PayID or Cash), never the driver's PayID value/type. The driver retains access to their own details. Verified accepted riders can see PayID. All disclosure rules are enforced server-side.
 

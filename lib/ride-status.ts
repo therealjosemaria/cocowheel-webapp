@@ -4,8 +4,8 @@ export function rideStatusLabel(status: RideStatus): string {
   return {
     PUBLISHED: "Published",
     REQUESTED: "Published",
-    ACCEPTED: "Ride in progress",
-    RIDE_ACTIVE: "Ride in progress",
+    ACCEPTED: "Awaiting pickup",
+    RIDE_ACTIVE: "Awaiting pickup",
     CO_RIDE_ACTIVE: "Ride in progress",
     COMPLETED: "Completed",
     CANCELLED: "Cancelled",

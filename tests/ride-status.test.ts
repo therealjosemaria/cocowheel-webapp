@@ -11,14 +11,18 @@ test("requests do not change the published ride label", () => {
   );
 });
 
-test("acceptance through travel has one participant label", () => {
-  for (const status of ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"] as const) {
-    assert.equal(participantStatusLabel(status), "Ride in progress");
-    assert.equal(
-      participantStatusLabel(status, "ACCEPTED"),
-      "Ride in progress",
-    );
+test("acceptance awaits pickup until the pickup code is verified", () => {
+  for (const status of ["ACCEPTED", "RIDE_ACTIVE"] as const) {
+    assert.equal(rideStatusLabel(status), "Awaiting pickup");
+    assert.equal(participantStatusLabel(status), "Awaiting pickup");
+    assert.equal(participantStatusLabel(status, "ACCEPTED"), "Awaiting pickup");
   }
+  assert.equal(rideStatusLabel("CO_RIDE_ACTIVE"), "Ride in progress");
+  assert.equal(participantStatusLabel("CO_RIDE_ACTIVE"), "Ride in progress");
+  assert.equal(
+    participantStatusLabel("CO_RIDE_ACTIVE", "ACCEPTED"),
+    "Ride in progress",
+  );
 });
 
 test("ride and individual request outcomes stay distinct", () => {
