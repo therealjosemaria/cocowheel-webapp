@@ -122,6 +122,14 @@ button:disabled {
   pointer-events: auto;
   transform: translateY(0);
 }
+.guest-identity-popover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -11px;
+  height: 11px;
+}
 .guest-identity-popover > strong {
   display: block;
   margin-bottom: 9px;

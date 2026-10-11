@@ -15,6 +15,10 @@ export default function AppNavigation() {
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
+  const identityCloseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(identityCloseTimer.current), []);
   const pathname = usePathname();
   const activeRideTab = activeRideTabForPath(pathname, rideTab);
   const router = useRouter();
@@ -197,12 +201,18 @@ export default function AppNavigation() {
         className={`guest-identity${identityOpen ? " open" : ""}`}
         ref={identityRef}
         onMouseEnter={() => {
+          clearTimeout(identityCloseTimer.current);
           if (window.matchMedia("(hover: hover)").matches)
             setIdentityOpen(true);
         }}
         onMouseLeave={() => {
-          if (window.matchMedia("(hover: hover)").matches)
-            setIdentityOpen(false);
+          if (window.matchMedia("(hover: hover)").matches) {
+            clearTimeout(identityCloseTimer.current);
+            identityCloseTimer.current = setTimeout(() => {
+              if (!identityRef.current?.contains(document.activeElement))
+                setIdentityOpen(false);
+            }, 350);
+          }
         }}
       >
         <button
@@ -212,6 +222,7 @@ export default function AppNavigation() {
           aria-controls="guest-identity-popover"
           aria-label={`Profile: ${identityLabel}`}
           onClick={() => {
+            clearTimeout(identityCloseTimer.current);
             setOpen(false);
             // Hover opens this on desktop before click fires; don't immediately
             // close it again when the user clicks to reach verification.
