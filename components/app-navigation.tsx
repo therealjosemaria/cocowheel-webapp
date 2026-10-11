@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
 import ActiveRideLink, { type ActiveRide } from "./active-ride-link";
+import { activeRideTabForPath } from "@/lib/navigation-state";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
@@ -15,6 +16,7 @@ export default function AppNavigation() {
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const activeRideTab = activeRideTabForPath(pathname, rideTab);
   const router = useRouter();
   const links = [
     { href: "/", label: "Home" },
@@ -159,24 +161,24 @@ export default function AppNavigation() {
         <button
           type="button"
           className={
-            rideTab === "driver"
+            activeRideTab === "driver"
               ? "desktop-navigation-cta active"
               : "desktop-navigation-cta"
           }
           onClick={() => startRide("driver")}
-          aria-pressed={rideTab === "driver"}
+          aria-pressed={activeRideTab === "driver"}
         >
           Offer a ride
         </button>
         <button
           type="button"
           className={
-            rideTab === "rider"
+            activeRideTab === "rider"
               ? "desktop-navigation-cta find active"
               : "desktop-navigation-cta find"
           }
           onClick={() => startRide("rider")}
-          aria-pressed={rideTab === "rider"}
+          aria-pressed={activeRideTab === "rider"}
         >
           Find a ride
         </button>
@@ -332,12 +334,12 @@ export default function AppNavigation() {
             <button
               type="button"
               className={
-                rideTab === "driver"
+                activeRideTab === "driver"
                   ? "mobile-navigation-link active"
                   : "mobile-navigation-link"
               }
               onClick={() => startRide("driver")}
-              aria-pressed={rideTab === "driver"}
+              aria-pressed={activeRideTab === "driver"}
               tabIndex={open ? undefined : -1}
             >
               Offer a ride
@@ -345,12 +347,12 @@ export default function AppNavigation() {
             <button
               type="button"
               className={
-                rideTab === "rider"
+                activeRideTab === "rider"
                   ? "mobile-navigation-link active"
                   : "mobile-navigation-link"
               }
               onClick={() => startRide("rider")}
-              aria-pressed={rideTab === "rider"}
+              aria-pressed={activeRideTab === "rider"}
               tabIndex={open ? undefined : -1}
             >
               Find a ride
