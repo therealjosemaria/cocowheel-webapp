@@ -185,18 +185,18 @@ export function CompleteRide({ ride }: { ride: Ride }) {
             <p>{warning}</p>
             <div className="cancel-prompt-actions">
               <button
-                className="secondary"
-                disabled={busy}
-                onClick={() => setWarning(null)}
-              >
-                GO BACK
-              </button>
-              <button
                 className="primary"
                 disabled={busy}
                 onClick={() => void complete(true)}
               >
                 {busy ? "COMPLETING…" : "COMPLETE RIDE"}
+              </button>
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() => setWarning(null)}
+              >
+                GO BACK
               </button>
             </div>
           </section>

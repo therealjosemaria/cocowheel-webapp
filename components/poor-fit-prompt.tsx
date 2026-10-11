@@ -8,9 +8,9 @@ export default function PoorFitPrompt({
   confirm: () => void;
 }) {
   return (
-    <div className="location-prompt-backdrop" role="presentation">
+    <div className="cancel-prompt-backdrop" role="presentation">
       <section
-        className="location-prompt"
+        className="cancel-prompt"
         role="dialog"
         aria-modal="true"
         aria-label="Confirm request"
@@ -19,12 +19,12 @@ export default function PoorFitPrompt({
         <p id="poor-fit-message">
           This route is a poor fit. Continue with your request?
         </p>
-        <div className="location-prompt-actions">
-          <button type="button" className="secondary" onClick={close}>
-            CANCEL
-          </button>
-          <button type="button" onClick={confirm}>
+        <div className="cancel-prompt-actions">
+          <button type="button" className="primary" onClick={confirm}>
             CONTINUE
+          </button>
+          <button type="button" className="secondary" onClick={close}>
+            GO BACK
           </button>
         </div>
       </section>

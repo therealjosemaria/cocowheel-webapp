@@ -1015,11 +1015,11 @@ function LocationPrompt({
           {departure ? "starting point" : "pickup location"}.
         </p>
         <div className="location-prompt-actions">
-          <button type="button" className="secondary" onClick={close}>
-            Not now
-          </button>
           <button type="button" className="primary" onClick={confirm}>
             USE CURRENT LOCATION
+          </button>
+          <button type="button" className="secondary" onClick={close}>
+            NOT NOW
           </button>
         </div>
       </section>

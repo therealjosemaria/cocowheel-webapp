@@ -1,6 +1,6 @@
 # Cocowheels
 
-Cocowheels is a guest-first, scheduled one-driver/one-rider carpool web app.
+Cocowheels is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
 The MVP keeps the journey simple: a driver publishes a fixed-price ride, a rider requests to join a compatible direction, both parties share private live location after acceptance, and they confirm pickup with a short-lived four-digit code before completing a PayID or cash handoff.
 
@@ -8,7 +8,11 @@ This repository is intentionally independent from other projects: it has its own
 
 ## Status
 
-The first local vertical slice is implemented and verified. It is not externally deployed.
+Production frontend: https://cocowheel-webapp.vercel.app. The standalone API and SQLite database run on the Pi; pushes to `main` trigger the Vercel frontend deployment.
+
+## Product and UI standards
+
+See [the product and UI standards](docs/UI_STANDARDS.md) before changing user-facing behaviour, wording or layouts. These are the current conventions, not a claim that every legacy screen has already been migrated. [CURRENT_CONTEXT.md](CURRENT_CONTEXT.md) retains implementation history; newer dated decisions supersede older notes.
 
 ## Local development
 
@@ -24,7 +28,7 @@ This one command starts the local API and web client together, then stops both w
 
 The frontend can be deployed independently before the Pi API is public. In Vercel, import `therealjosemaria/cocowheel-webapp`, leave the root directory at the repository root, and use the detected Next.js preset. Do not set `COCOWHEELS_API_PROXY_TARGET` for this frontend-only preview: the page will load safely, while server-dependent ride actions remain unavailable until the dedicated API tunnel is configured.
 
-Connect the `initial-mvp` branch for a preview deployment. Keep `main` as the future production branch. Once the permanent Cocowheels API tunnel is ready, set `COCOWHEELS_API_PROXY_TARGET` in Vercel as a server-side environment variable to that HTTPS hostname. Never expose it as `NEXT_PUBLIC_*`.
+`main` is the production branch. Set `COCOWHEELS_API_PROXY_TARGET` in Vercel as a server-side environment variable pointing to the dedicated API tunnel HTTPS hostname. Never expose it as `NEXT_PUBLIC_*`.
 
 ## Verification
 
