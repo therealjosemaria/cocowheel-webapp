@@ -1,5 +1,6 @@
 "use client";
 
+import { participantStatusLabel } from "@/lib/ride-status";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -164,32 +165,21 @@ function ActivityCard({
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState(false);
-  const withdrawn =
-    ride.request?.status === "CANCELLED" && ride.status !== "CANCELLED";
-  const rideCancelled = ride.status === "CANCELLED";
-  const unavailableRequest =
-    ride.request?.status === "DECLINED" || ride.request?.status === "DISCARDED";
-  const status = ["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(ride.status)
-    ? "Active"
-    : rideCancelled
-      ? "Cancelled"
-      : {
-          PUBLISHED: "Active",
-          REQUESTED: "Requested",
-          ACCEPTED: "Accepted",
-          RIDE_ACTIVE: "Ride active",
-          CO_RIDE_ACTIVE: "Ride in progress",
-          COMPLETED: "Completed",
-          CANCELLED: "Cancelled",
-          EXPIRED: "Expired",
-        }[ride.status];
-  const statusClass = rideCancelled
+  const status = participantStatusLabel(
+    ride.status,
+    role === "RIDER" ? ride.request?.status : undefined,
+  );
+  const showStatus = status !== "Published";
+  const statusClass = [
+    "Cancelled",
+    "Declined",
+    "Withdrawn",
+    "Unavailable",
+  ].includes(status)
     ? "activity-status cancelled"
-    : status === "Active"
-      ? "activity-status published"
-      : ride.status === "EXPIRED"
-        ? "activity-status expired"
-        : "activity-status";
+    : status === "Expired"
+      ? "activity-status expired"
+      : "activity-status";
   const route =
     role === "DRIVER"
       ? ride.plannedRoute
@@ -202,15 +192,6 @@ function ActivityCard({
     (role === "RIDER" && ride.request
       ? "?request=" + encodeURIComponent(ride.request.requestId)
       : "");
-  const requestStatus = ride.request
-    ? {
-        PENDING: "Pending",
-        ACCEPTED: "Accepted",
-        DECLINED: "Declined",
-        DISCARDED: "Unavailable",
-        CANCELLED: "Withdrawn",
-      }[ride.request.status]
-    : null;
   const canEndRequest =
     role === "RIDER" &&
     Boolean(ride.request) &&
@@ -279,9 +260,13 @@ function ActivityCard({
         <dl className="activity-card-fields">
           <div>
             <dt>
-              <RideFieldLabel icon="status">Status</RideFieldLabel>
+              <RideFieldLabel icon={showStatus ? "status" : "price"}>
+                {showStatus ? "Status" : "Fare"}
+              </RideFieldLabel>
             </dt>
-            <dd className={statusClass}>{status}</dd>
+            <dd className={showStatus ? statusClass : undefined}>
+              {showStatus ? status : `A$${ride.priceAud}`}
+            </dd>
           </div>
           <div>
             <dt>
@@ -301,30 +286,12 @@ function ActivityCard({
             </dt>
             <dd>{locationText(route?.destination)}</dd>
           </div>
-          <div>
-            <dt>
-              <RideFieldLabel icon="price">Fare</RideFieldLabel>
-            </dt>
-            <dd>A${ride.priceAud}</dd>
-          </div>
-          {role === "RIDER" && requestStatus ? (
+          {showStatus ? (
             <div>
               <dt>
-                <RideFieldLabel icon="request-status">
-                  Request status
-                </RideFieldLabel>
+                <RideFieldLabel icon="price">Fare</RideFieldLabel>
               </dt>
-              <dd
-                className={
-                  unavailableRequest || withdrawn
-                    ? "activity-status cancelled"
-                    : ride.request?.status === "ACCEPTED"
-                      ? "activity-status published"
-                      : "activity-status"
-                }
-              >
-                {requestStatus}
-              </dd>
+              <dd>A${ride.priceAud}</dd>
             </div>
           ) : null}
           <div className="activity-card-action">
@@ -341,7 +308,7 @@ function ActivityCard({
               </Link>
             </dd>
           </div>
-          {role === "RIDER" && requestStatus ? (
+          {role === "RIDER" && ride.request ? (
             <div className="activity-card-action">
               <dt>
                 <RideFieldLabel icon="action">Action</RideFieldLabel>

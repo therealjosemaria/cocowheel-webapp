@@ -1,5 +1,6 @@
 "use client";
 
+import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -82,17 +83,6 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
-const rideStatusLabel = (status: Ride["status"]) =>
-  ({
-    PUBLISHED: "Active",
-    REQUESTED: "Requested",
-    ACCEPTED: "Accepted",
-    RIDE_ACTIVE: "Ride active",
-    CO_RIDE_ACTIVE: "Ride in progress",
-    COMPLETED: "Completed",
-    CANCELLED: "Cancelled",
-    EXPIRED: "Expired",
-  })[status];
 const requestStatusLabel = (status: NonNullable<Ride["request"]>["status"]) =>
   ({
     PENDING: "Pending",
@@ -687,12 +677,9 @@ export default function RidePreviewClient({
                     <RideFieldLabel icon="status">Status</RideFieldLabel>
                   </dt>
                   <dd className="route-status">
-                    {["PUBLISHED", "REQUESTED", "ACCEPTED"].includes(
+                    {participantStatusLabel(
                       ride.status,
-                    ) ? (
-                      <span className="route-status-active">Active</span>
-                    ) : (
-                      rideStatusLabel(ride.status)
+                      driverOwned ? undefined : activityRequest?.status,
                     )}
                   </dd>
                 </div>
@@ -724,16 +711,6 @@ export default function RidePreviewClient({
                       : ride.destinationLabel}
                   </dd>
                 </div>
-                {!driverOwned && activityRequest ? (
-                  <div>
-                    <dt>
-                      <RideFieldLabel icon="status">
-                        Request status
-                      </RideFieldLabel>
-                    </dt>
-                    <dd>{requestStatusLabel(activityRequest.status)}</dd>
-                  </div>
-                ) : null}
                 <div>
                   <dt>
                     <RideFieldLabel icon="price">Fare</RideFieldLabel>
@@ -978,32 +955,13 @@ export default function RidePreviewClient({
                       </dt>
                       <dd>{locationLabel(riderDetail.pickup)}</dd>
                     </div>
-                    {!driverOwned ? (
-                      <div className="request-detail-status">
-                        <dt>
-                          <RideFieldLabel icon="request-status">
-                            Request status
-                          </RideFieldLabel>
-                        </dt>
-                        <dd>{requestStatusLabel(riderDetail.status)}</dd>
-                      </div>
-                    ) : null}
+
                     <div className="request-detail-to">
                       <dt>
                         <RideFieldLabel icon="to">Where to?</RideFieldLabel>
                       </dt>
                       <dd>{locationLabel(riderDetail.destination)}</dd>
                     </div>
-                    {driverOwned ? (
-                      <div className="request-detail-status">
-                        <dt>
-                          <RideFieldLabel icon="request-status">
-                            Request status
-                          </RideFieldLabel>
-                        </dt>
-                        <dd>{requestStatusLabel(riderDetail.status)}</dd>
-                      </div>
-                    ) : null}
                   </dl>
                 </article>
               </section>

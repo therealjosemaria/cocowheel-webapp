@@ -2000,9 +2000,9 @@ function RideStatus({
     ride.status === "REQUESTED" && driver
       ? "Rider requests"
       : ride.status === "ACCEPTED"
-        ? "Rider accepted"
+        ? "Ride in progress"
         : ride.status === "RIDE_ACTIVE"
-          ? "Heading to pickup"
+          ? "Ride in progress"
           : ride.status === "CO_RIDE_ACTIVE"
             ? "Ride in progress"
             : ride.status === "COMPLETED"

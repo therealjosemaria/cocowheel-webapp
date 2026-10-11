@@ -1,5 +1,6 @@
 "use client";
 
+import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, cocowheelsApi } from "@/lib/api-client";
@@ -24,17 +25,6 @@ const prettyTime = (value: string) =>
     day: "numeric",
     month: "short",
   }).format(new Date(value));
-const statusFor = (status: Ride["status"]) =>
-  ({
-    PUBLISHED: "Published",
-    REQUESTED: "Requested",
-    ACCEPTED: "Accepted",
-    RIDE_ACTIVE: "Approaching pickup",
-    CO_RIDE_ACTIVE: "In progress",
-    COMPLETED: "Completed",
-    CANCELLED: "Cancelled",
-    EXPIRED: "Expired",
-  })[status];
 
 export default function ActivityRideClient({
   rideId,
@@ -224,7 +214,7 @@ function RideView({ ride }: { ride: Ride }) {
               ? "Declined"
               : ride.request?.status === "DISCARDED"
                 ? "Unavailable"
-                : statusFor(ride.status)}
+                : participantStatusLabel(ride.status, ride.request?.status)}
         </span>
       </div>
       <div className="ride-summary">

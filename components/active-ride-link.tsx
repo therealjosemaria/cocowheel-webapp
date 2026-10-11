@@ -1,5 +1,6 @@
 "use client";
 
+import { participantStatusLabel } from "@/lib/ride-status";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cocowheelsApi } from "@/lib/api-client";
@@ -83,18 +84,10 @@ export default function ActiveRideLink({
     role === "RIDER" ? riderRoute?.pickup : ride.plannedRoute?.origin;
   const destination =
     role === "RIDER" ? riderRoute?.destination : ride.plannedRoute?.destination;
-  const status =
-    ride.status === "CO_RIDE_ACTIVE" || ride.status === "RIDE_ACTIVE"
-      ? "In progress"
-      : ride.status === "ACCEPTED"
-        ? role === "RIDER"
-          ? pickupEstimate?.key === estimateKey
-            ? `Pickup · ${pickupEstimate.minutes} min`
-            : "Ride confirmed"
-          : "Pickup arranged"
-        : role === "RIDER"
-          ? "Request pending"
-          : "Ride published";
+  const status = participantStatusLabel(
+    ride.status,
+    role === "RIDER" ? ride.request?.status : undefined,
+  );
   const href = `/activity/${encodeURIComponent(ride.rideId)}${role === "RIDER" && ride.request ? `?request=${encodeURIComponent(ride.request.requestId)}` : ""}`;
   return (
     <Link
@@ -106,7 +99,7 @@ export default function ActiveRideLink({
     >
       <strong>
         <RideFieldLabel icon={role === "DRIVER" ? "driver" : "rider"}>
-          {compact ? "Active ride" : status}
+          {status}
         </RideFieldLabel>
       </strong>
       {!compact && (
@@ -115,6 +108,11 @@ export default function ActiveRideLink({
             {origin?.label || "Where from"} <span aria-hidden="true">→</span>{" "}
             {destination?.label || "Where to"}
           </span>
+          {estimateEnabled && pickupEstimate?.key === estimateKey ? (
+            <span className="active-ride-status">
+              Pickup · {pickupEstimate.minutes} min
+            </span>
+          ) : null}
           <span className="active-ride-price">A${ride.priceAud}</span>
           {role === "RIDER" &&
           ride.status === "ACCEPTED" &&
