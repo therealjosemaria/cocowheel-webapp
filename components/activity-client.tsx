@@ -305,9 +305,9 @@ function ActivityCard({
               <Link
                 className="activity-open"
                 href={href}
-                aria-label={`View ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
+                aria-label={`Details for ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
               >
-                VIEW
+                DETAILS
               </Link>
             </dd>
           </div>
