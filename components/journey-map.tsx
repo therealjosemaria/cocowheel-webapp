@@ -97,25 +97,49 @@ function Fit({
   lines,
   followPins,
   recenterPin,
+  followZoom = 16,
 }: {
   pins: Pin[];
   lines: Line[];
   followPins?: Pin[];
   recenterPin?: Pin;
+  followZoom?: number;
 }) {
   const map = useMap();
   const manualView = useRef(false);
   const lastInteraction = useRef(0);
+  const lastFollowPosition = useRef("");
+  const followStarted = useRef(false);
   const recenterEnabled = Boolean(recenterPin);
   const recenter = useEffectEvent(() => {
-    if (!recenterPin || Date.now() - lastInteraction.current < 1000) return;
+    if (!recenterPin || Date.now() - lastInteraction.current < 7000) return;
+    const key = `${recenterPin.latitude}:${recenterPin.longitude}`;
+    if (lastFollowPosition.current === key) return;
+    lastFollowPosition.current = key;
+    if (!followStarted.current) {
+      followStarted.current = true;
+      map.setView(
+        [recenterPin.latitude, recenterPin.longitude],
+        manualView.current ? map.getZoom() : followZoom,
+        { animate: true },
+      );
+      return;
+    }
     map.panTo([recenterPin.latitude, recenterPin.longitude], { animate: true });
   });
   useEffect(() => {
-    if (!recenterEnabled) return;
-    const timer = setInterval(() => recenter(), 10_000);
+    if (!recenterEnabled) {
+      followStarted.current = false;
+      lastFollowPosition.current = "";
+      return;
+    }
+    recenter();
+    const timer = setInterval(() => recenter(), 250);
     return () => clearInterval(timer);
   }, [recenterEnabled]);
+  useEffect(() => {
+    recenter();
+  }, [recenterPin?.latitude, recenterPin?.longitude]);
   const points = followPins?.length
     ? followPins
     : [...pins, ...lines.flatMap((line) => line.points)];
@@ -126,6 +150,7 @@ function Fit({
     const container = map.getContainer();
     const takeControl = () => {
       lastInteraction.current = Date.now();
+      lastFollowPosition.current = "";
       manualView.current = true;
       map.stop();
     };
@@ -146,10 +171,17 @@ function Fit({
         takeControl();
     };
     container.addEventListener("pointerdown", takeControl, { passive: true });
+    const dragControl = (event: PointerEvent) => {
+      if (event.buttons) takeControl();
+    };
+    container.addEventListener("pointermove", dragControl, { passive: true });
+    container.addEventListener("pointerup", takeControl, { passive: true });
     container.addEventListener("wheel", takeControl, { passive: true });
     container.addEventListener("keydown", keyboardControl);
     return () => {
       container.removeEventListener("pointerdown", takeControl);
+      container.removeEventListener("pointermove", dragControl);
+      container.removeEventListener("pointerup", takeControl);
       container.removeEventListener("wheel", takeControl);
       container.removeEventListener("keydown", keyboardControl);
     };
@@ -278,6 +310,7 @@ export default function JourneyMap({
   fitPins,
   followPins,
   recenterPin,
+  followZoom,
   lines = [],
   onPick,
   markerKinds,
@@ -288,6 +321,7 @@ export default function JourneyMap({
   fitPins?: Pin[];
   followPins?: Pin[];
   recenterPin?: Pin;
+  followZoom?: number;
   lines?: Line[];
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
@@ -330,6 +364,7 @@ export default function JourneyMap({
           lines={lines}
           followPins={followPins}
           recenterPin={recenterPin}
+          followZoom={followZoom}
         />
         <ZoomControl position="bottomright" />
       </MapContainer>

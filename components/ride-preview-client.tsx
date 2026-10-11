@@ -998,6 +998,7 @@ export default function RidePreviewClient({
               />
             ) : null}
             <JourneyMap
+              followZoom={ride.isSample ? 14 : 16}
               recenterPin={
                 privateRide?.pickupEstablished &&
                 ride.status === "CO_RIDE_ACTIVE"
