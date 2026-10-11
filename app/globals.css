@@ -1687,8 +1687,23 @@ p {
 .pickup-code-entry { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .pickup-code-entry input { width: 8rem; min-width: 0; text-align: center; letter-spacing: 0.35em; font-size: 1.2rem; }
 .pickup-code-entry button { flex: 1; }
-.pickup-code-display { display: flex; gap: 8px; margin-bottom: 12px; }
-.pickup-code-display span { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: 1.4rem; }
+.pickup-code-display {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.pickup-code-display span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
 .ride-directions svg {
   width: 15px;
   height: 15px;
