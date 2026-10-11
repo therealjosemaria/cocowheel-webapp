@@ -584,6 +584,8 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
       new Date(baseTime.getTime() + 1_000).toISOString(),
     );
     assert.equal(riderPending.request?.directionFit, "GOOD");
+    assert.deepEqual(riderPending.plannedRoute, pending.plannedRoute);
+    assert.equal(riderPending.payId, undefined);
     const accepted = decideRequest(
       h.db,
       first.published.sessionToken,
@@ -607,6 +609,7 @@ test("acceptance is atomic, discards competing requests, and prevents a second r
     );
     assert.equal(acceptedRider.payId, "driver@example.com");
     assert.equal(acceptedRider.payIdType, "EMAIL");
+    assert.deepEqual(acceptedRider.plannedRoute, accepted.plannedRoute);
     const secondSession = findSession(
       h.db,
       second.sessionToken,

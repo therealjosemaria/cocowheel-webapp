@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { cocowheelsApi } from "@/lib/api-client";
+import LocationAge from "./location-age";
 import type { Ride } from "@/lib/client-types";
 import RideFieldLabel from "./ride-field-label";
 
@@ -14,6 +19,49 @@ export default function ActiveRideLink({
   onClick?: () => void;
 }) {
   const { role, ride } = item;
+  const [pickupEstimate, setPickupEstimate] = useState<{
+    key: string;
+    minutes: number;
+  } | null>(null);
+  const pickup = (ride.request ?? ride.rider)?.pickup;
+  const originPoint = ride.driverLocation ?? ride.plannedRoute?.origin;
+  const estimateKey =
+    originPoint && pickup
+      ? `${ride.rideId}:${originPoint.latitude},${originPoint.longitude}:${pickup.latitude},${pickup.longitude}`
+      : "";
+  const estimateEnabled =
+    !compact && role === "RIDER" && ride.status === "ACCEPTED";
+  useEffect(() => {
+    if (!estimateEnabled || !estimateKey) return;
+    let cancelled = false;
+    const [, coordinates] = estimateKey.split(":");
+    const [latitude, longitude] = coordinates.split(",").map(Number);
+    const [pickupLatitude, pickupLongitude] = estimateKey
+      .split(":")[2]
+      .split(",")
+      .map(Number);
+    void cocowheelsApi<{ durationSeconds: number | null }>(
+      "/api/route-preview",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          origin: { latitude, longitude },
+          destination: { latitude: pickupLatitude, longitude: pickupLongitude },
+        }),
+      },
+    )
+      .then(({ durationSeconds }) => {
+        if (!cancelled && durationSeconds !== null)
+          setPickupEstimate({
+            key: estimateKey,
+            minutes: Math.max(1, Math.round(durationSeconds / 60)),
+          });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [estimateEnabled, estimateKey]);
   if (
     ![
       "PUBLISHED",
@@ -39,10 +87,14 @@ export default function ActiveRideLink({
     ride.status === "CO_RIDE_ACTIVE" || ride.status === "RIDE_ACTIVE"
       ? "In progress"
       : ride.status === "ACCEPTED"
-        ? "Accepted"
+        ? role === "RIDER"
+          ? pickupEstimate?.key === estimateKey
+            ? `Pickup · ${pickupEstimate.minutes} min`
+            : "Ride confirmed"
+          : "Pickup arranged"
         : role === "RIDER"
           ? "Request pending"
-          : "Published";
+          : "Ride published";
   const href = `/activity/${encodeURIComponent(ride.rideId)}${role === "RIDER" && ride.request ? `?request=${encodeURIComponent(ride.request.requestId)}` : ""}`;
   return (
     <Link
@@ -54,7 +106,7 @@ export default function ActiveRideLink({
     >
       <strong>
         <RideFieldLabel icon={role === "DRIVER" ? "driver" : "rider"}>
-          Active ride
+          {compact ? "Active ride" : status}
         </RideFieldLabel>
       </strong>
       {!compact && (
@@ -63,7 +115,12 @@ export default function ActiveRideLink({
             {origin?.label || "Where from"} <span aria-hidden="true">→</span>{" "}
             {destination?.label || "Where to"}
           </span>
-          <span className="active-ride-status">{status}</span>
+          <span className="active-ride-price">A${ride.priceAud}</span>
+          {role === "RIDER" &&
+          ride.status === "ACCEPTED" &&
+          ride.driverLocation ? (
+            <LocationAge location={ride.driverLocation} />
+          ) : null}
         </>
       )}
     </Link>

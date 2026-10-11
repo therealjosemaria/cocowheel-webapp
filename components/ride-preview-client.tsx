@@ -13,7 +13,6 @@ import type { PayIdType, Pin, Ride } from "@/lib/client-types";
 import {
   cacheRoadPath,
   cacheRiderRoadPath,
-  cachedRoadPath,
   cachedRiderRoadPath,
   riderSearchDraft,
   riderPreviewRoute,
@@ -120,9 +119,9 @@ export default function RidePreviewClient({
 }) {
   const router = useRouter();
   const [publicRide, setPublicRide] = useState<PreviewRide | null>(null);
-  const [serverNow, setServerNow] = useState<string | null>(() =>
-    activityRide || participantRide ? new Date().toISOString() : null,
-  );
+  const [driverDurationSeconds, setDriverDurationSeconds] = useState<
+    number | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] = useState(false);
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
@@ -240,7 +239,6 @@ export default function RidePreviewClient({
         .then((result) => {
           if (!cancelled) {
             setPublicRide(result.ride);
-            setServerNow(result.serverNow);
           }
         })
         .catch((reason) => {
@@ -333,28 +331,14 @@ export default function RidePreviewClient({
 
   useEffect(() => {
     if (!driverRouteInput) return;
-    const cached = cachedRoadPath(
-      driverRouteInput.origin,
-      driverRouteInput.destination,
-    );
-    if (cached?.length) {
-      const timer = window.setTimeout(
-        () =>
-          setDriverRoadPath({
-            coordinates: driverRouteCoordinates,
-            points: cached,
-          }),
-        0,
-      );
-      return () => window.clearTimeout(timer);
-    }
     let cancelled = false;
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
       body: JSON.stringify(driverRouteInput),
     })
-      .then(({ points }) => {
+      .then(({ points, durationSeconds }) => {
         if (cancelled || points.length < 2) return;
+        setDriverDurationSeconds(durationSeconds);
         cacheRoadPath(
           driverRouteInput.origin,
           driverRouteInput.destination,
@@ -386,19 +370,13 @@ export default function RidePreviewClient({
     !rideIsActive || pickupDurationSeconds === null
       ? null
       : Math.max(1, Math.round(pickupDurationSeconds / 60));
-  const estimatedArrival =
-    rideIsActive &&
-    serverNow &&
-    pickupDurationSeconds !== null &&
-    riderDurationSeconds !== null
-      ? new Date(
-          Math.max(
-            new Date(serverNow).getTime(),
-            new Date(ride?.scheduledDepartureAt ?? serverNow).getTime(),
-          ) +
-            (pickupDurationSeconds + riderDurationSeconds) * 1_000,
-        )
-      : null;
+  const durationSeconds = driverOwned
+    ? driverDurationSeconds
+    : riderDurationSeconds;
+  const estimatedDuration =
+    durationSeconds === null
+      ? "—"
+      : `${Math.max(1, Math.round(durationSeconds / 60))} min`;
 
   async function joinRide(confirmed = false) {
     if (!ride) return;
@@ -722,26 +700,38 @@ export default function RidePreviewClient({
                   <dt>
                     <RideFieldLabel icon="from">Where from?</RideFieldLabel>
                   </dt>
-                  <dd>{ride.departureLabel}</dd>
+                  <dd>
+                    {!driverOwned && activityRequest
+                      ? locationLabel(activityRequest.pickup)
+                      : ride.departureLabel}
+                  </dd>
                 </div>
                 <div>
                   <dt>
-                    <RideFieldLabel icon="driver">Driver</RideFieldLabel>
+                    <RideFieldLabel icon={driverOwned ? "arrival" : "driver"}>
+                      {driverOwned ? "Estimated duration" : "Driver"}
+                    </RideFieldLabel>
                   </dt>
-                  <dd>{ride.driverAlias}</dd>
+                  <dd>{driverOwned ? estimatedDuration : ride.driverAlias}</dd>
                 </div>
                 <div>
                   <dt>
                     <RideFieldLabel icon="to">Where to?</RideFieldLabel>
                   </dt>
-                  <dd>{ride.destinationLabel}</dd>
+                  <dd>
+                    {!driverOwned && activityRequest
+                      ? locationLabel(activityRequest.destination)
+                      : ride.destinationLabel}
+                  </dd>
                 </div>
-                {ride.acceptedAt ? (
+                {!driverOwned && activityRequest ? (
                   <div>
                     <dt>
-                      <RideFieldLabel icon="accepted">Accepted</RideFieldLabel>
+                      <RideFieldLabel icon="status">
+                        Request status
+                      </RideFieldLabel>
                     </dt>
-                    <dd>{prettyTime(ride.acceptedAt)}</dd>
+                    <dd>{requestStatusLabel(activityRequest.status)}</dd>
                   </div>
                 ) : null}
                 <div>
@@ -750,19 +740,14 @@ export default function RidePreviewClient({
                   </dt>
                   <dd>A${ride.priceAud}</dd>
                 </div>
-                {estimatedArrival ? (
+                {!driverOwned ? (
                   <div>
                     <dt>
                       <RideFieldLabel icon="arrival">
-                        Est. arrival
+                        Estimated duration
                       </RideFieldLabel>
                     </dt>
-                    <dd>
-                      {new Intl.DateTimeFormat("en-AU", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      }).format(estimatedArrival)}
-                    </dd>
+                    <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
                 {ride.payId ? (
@@ -962,7 +947,7 @@ export default function RidePreviewClient({
                 ))}
               </section>
             ) : null}
-            {riderDetail ? (
+            {driverOwned && riderDetail ? (
               <section className="driver-request-stack">
                 <h2>{driverOwned ? "Rider details" : "Request details"}</h2>
                 <article className="driver-request-card">
@@ -1034,6 +1019,7 @@ export default function RidePreviewClient({
             ) : null}
             <JourneyMap
               fitPins={[
+                ...(ride.driverLocation ? [ride.driverLocation] : []),
                 ...(ride.plannedRoute
                   ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
                   : []),

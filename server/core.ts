@@ -1779,22 +1779,18 @@ function riderView(
     acceptedAt: row.accepted_at,
     request: riderRequestView(row, request),
     isSample: Boolean(row.is_sample),
-    ...(row.is_sample
-      ? {
-          plannedRoute: {
-            origin: {
-              latitude: row.origin_latitude,
-              longitude: row.origin_longitude,
-              label: row.origin_label ?? undefined,
-            },
-            destination: {
-              latitude: row.destination_latitude,
-              longitude: row.destination_longitude,
-              label: row.destination_label ?? undefined,
-            },
-          },
-        }
-      : {}),
+    plannedRoute: {
+      origin: {
+        latitude: row.origin_latitude,
+        longitude: row.origin_longitude,
+        label: row.origin_label ?? undefined,
+      },
+      destination: {
+        latitude: row.destination_latitude,
+        longitude: row.destination_longitude,
+        label: row.destination_label ?? undefined,
+      },
+    },
     driverLocation:
       ["PUBLISHED", "REQUESTED"].includes(row.status) ||
       (canSeePartner && !terminal(row.status))
