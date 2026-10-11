@@ -910,9 +910,7 @@ export default function RidePreviewClient({
                 !["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status) ? (
                   <div
                     className={`preview-field-action${
-                      !driverOwned && (ride.acceptedAt || !activityRequest)
-                        ? " preview-field-action-wide"
-                        : ""
+                      !driverOwned ? " preview-field-action-wide" : ""
                     }`}
                   >
                     <dt>
