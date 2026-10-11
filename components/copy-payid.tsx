@@ -5,13 +5,11 @@ import { createPortal } from "react-dom";
 
 export default function CopyPayId({ value }: { value: string }) {
   const [message, setMessage] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      clearTimeout(timer.current);
     };
   }, []);
   async function copy() {
@@ -22,9 +20,7 @@ export default function CopyPayId({ value }: { value: string }) {
       text = "Couldn’t copy. Select the PayID to copy manually.";
     }
     if (!mounted.current) return;
-    clearTimeout(timer.current);
     setMessage(text);
-    timer.current = setTimeout(() => setMessage(null), 2500);
   }
   return (
     <>
@@ -51,18 +47,27 @@ export default function CopyPayId({ value }: { value: string }) {
       </span>
       {message
         ? createPortal(
-            <div className="copy-feedback" role="status" aria-live="polite">
-              <span>{message}</span>
-              <button
-                type="button"
-                aria-label="Dismiss copy confirmation"
-                onClick={() => {
-                  clearTimeout(timer.current);
-                  setMessage(null);
-                }}
+            <div className="cancel-prompt-backdrop" role="presentation">
+              <section
+                className="cancel-prompt"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Copy PayID confirmation"
               >
-                ×
-              </button>
+                <p>{message}</p>
+                <div className="cancel-prompt-actions">
+                  <button
+                    type="button"
+                    className="primary"
+                    autoFocus
+                    onClick={() => {
+                      setMessage(null);
+                    }}
+                  >
+                    OKAY
+                  </button>
+                </div>
+              </section>
             </div>,
             document.body,
           )

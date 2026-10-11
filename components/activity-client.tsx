@@ -307,11 +307,11 @@ function ActivityCard({
                 href={href}
                 aria-label={`View ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
               >
-                VIEW RIDE
+                VIEW
               </Link>
             </dd>
           </div>
-          {role === "RIDER" && ride.request ? (
+          {canEndRequest ? (
             <div className="activity-card-action">
               <dt>
                 <RideFieldLabel icon="action">Action</RideFieldLabel>

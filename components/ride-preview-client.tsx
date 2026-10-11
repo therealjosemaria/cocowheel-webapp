@@ -903,52 +903,55 @@ export default function RidePreviewClient({
                     </dd>
                   </div>
                 ) : null}
-                <div
-                  className={`preview-field-action${
-                    !driverOwned && (ride.acceptedAt || !activityRequest)
-                      ? " preview-field-action-wide"
-                      : ""
-                  }`}
-                >
-                  <dt>
-                    <RideFieldLabel icon="action">Action</RideFieldLabel>
-                  </dt>
-                  <dd className="ride-action-buttons">
-                    {!readOnly &&
-                    privateRide &&
-                    (driverOwned || activityRequest?.status === "ACCEPTED") &&
-                    ride.status === "CO_RIDE_ACTIVE" &&
-                    privateRide.pickupEstablished ? (
-                      <CompleteRide ride={privateRide} />
-                    ) : null}
-                    {readOnly ? null : activityRequest || driverOwned ? (
-                      <button
-                        type="button"
-                        className="preview-end-action"
-                        disabled={ending}
-                        onClick={() => setEndPromptOpen(true)}
-                      >
-                        {ending
-                          ? driverOwned
-                            ? "CANCELLING…"
-                            : "WITHDRAWING…"
-                          : driverOwned ||
-                              activityRequest?.status === "ACCEPTED"
-                            ? "CANCEL RIDE"
-                            : "WITHDRAW REQUEST"}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="availability-join"
-                        disabled={joining}
-                        onClick={() => void joinRide()}
-                      >
-                        {joining ? "REQUESTING…" : "REQUEST TO JOIN"}
-                      </button>
-                    )}
-                  </dd>
-                </div>
+                {!readOnly &&
+                !["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status) ? (
+                  <div
+                    className={`preview-field-action${
+                      !driverOwned && (ride.acceptedAt || !activityRequest)
+                        ? " preview-field-action-wide"
+                        : ""
+                    }`}
+                  >
+                    <dt>
+                      <RideFieldLabel icon="action">Action</RideFieldLabel>
+                    </dt>
+                    <dd className="ride-action-buttons">
+                      {!readOnly &&
+                      privateRide &&
+                      (driverOwned || activityRequest?.status === "ACCEPTED") &&
+                      ride.status === "CO_RIDE_ACTIVE" &&
+                      privateRide.pickupEstablished ? (
+                        <CompleteRide ride={privateRide} />
+                      ) : null}
+                      {readOnly ? null : activityRequest || driverOwned ? (
+                        <button
+                          type="button"
+                          className="preview-end-action"
+                          disabled={ending}
+                          onClick={() => setEndPromptOpen(true)}
+                        >
+                          {ending
+                            ? driverOwned
+                              ? "CANCELLING…"
+                              : "WITHDRAWING…"
+                            : driverOwned ||
+                                activityRequest?.status === "ACCEPTED"
+                              ? "CANCEL RIDE"
+                              : "WITHDRAW REQUEST"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="availability-join"
+                          disabled={joining}
+                          onClick={() => void joinRide()}
+                        >
+                          {joining ? "REQUESTING…" : "REQUEST TO JOIN"}
+                        </button>
+                      )}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
               {driverOwned && ride.payId ? (
                 <dl className="driver-payment-details">

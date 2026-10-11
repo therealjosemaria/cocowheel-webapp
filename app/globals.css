@@ -1814,25 +1814,12 @@ p {
   box-shadow: 0 2px 3px rgb(15 23 42 / 12%);
 }
 .payid-copy-row svg { width: 15px; height: 15px; flex-shrink: 0; }
-.copy-feedback {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2400;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  padding: 8px 8px 8px 16px;
-  border-radius: 10px;
-  background: var(--ink);
-  color: white;
-  box-shadow: 0 5px 20px rgb(15 23 42 / 20%);
-  font-size: 0.875rem;
+.activity-card-fields > div:last-child:nth-child(odd),
+.ride-preview-fields > div:last-child:nth-child(odd),
+.driver-request-fields:not(.rider-request-detail-fields) > div:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  border-right: 0;
 }
-.copy-feedback button { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: inherit; font-size: 1.3rem; }
 .ride-action-buttons,
 .cancel-prompt-actions,
 .location-prompt-actions {
@@ -1938,7 +1925,7 @@ p {
   grid-row: 2;
 }
 .rider-request-detail-fields .request-detail-fit {
-  grid-column: 2;
+  grid-column: 1 / -1;
   grid-row: 3;
   border-right: 0;
   border-bottom: 0;
