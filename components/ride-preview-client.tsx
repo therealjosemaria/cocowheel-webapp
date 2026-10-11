@@ -880,7 +880,7 @@ export default function RidePreviewClient({
                   </div>
                 ) : null}
                 {!driverOwned && (ride.payId || ride.paymentMethod) ? (
-                  <div>
+                  <div className="preview-field-payment">
                     <dt>
                       <RideFieldLabel icon="payid">
                         {ride.payId ? "Driver PayID" : "Payment"}

@@ -103,7 +103,9 @@ export function PickupConfirmation({
         </form>
       ) : (
         <>
-          <p>Share this code with your driver at pickup.</p>
+          <p className="pickup-code-instruction">
+            Share this code with your driver at pickup.
+          </p>
           {ride.coRideCode ? (
             <strong
               className="pickup-code-display"

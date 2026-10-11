@@ -1715,6 +1715,7 @@ p {
 .ride-action-buttons button { width: 100%; }
 .pickup-confirmation { margin: 14px 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; }
 .pickup-confirmation p { margin: 0 0 12px; }
+.pickup-code-instruction { text-align: center; }
 .pickup-code-entry { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .pickup-code-entry input { width: 8rem; min-width: 0; text-align: center; letter-spacing: 0.35em; font-size: 1.2rem; }
 .pickup-code-entry button { flex: 1; }
@@ -1783,6 +1784,10 @@ p {
   grid-column: span 2;
   border-right: 0;
   border-bottom: 0;
+}
+.ride-preview-fields .preview-field-payment {
+  grid-column: 1 / -1;
+  border-right: 0;
 }
 .preview-field-action .availability-join {
   width: 100%;
