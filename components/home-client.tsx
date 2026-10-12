@@ -1831,7 +1831,10 @@ function RideSelection({
                         : ""}
                     </small>
                   </span>
-                  <b>A${candidate.priceAud}</b>
+                  <span className="ride-option-payment">
+                    <b>A${candidate.priceAud}</b>
+                    <small>PayID</small>
+                  </span>
                 </button>
               );
             })}
