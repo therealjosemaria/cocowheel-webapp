@@ -1313,26 +1313,32 @@ function DriverForm(props: {
       <h1 className="page-title">Offer a ride</h1>
       <div className="form-panel-content">
         <div className="pin-summary driver-location-summary">
-          <p>
-            <strong className="location-heading">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="6.5" />
-              </svg>
-              Where from?
-            </strong>
-            {props.locatingDeparture
-              ? "Finding your current location…"
-              : props.pins.origin
-                ? locationText(props.pins.origin)
-                : null}
-            {!props.locatingDeparture ? (
-              <button
-                type="button"
-                className="pickup-location-button"
-                onClick={props.onDepartureRequest}
-              >
-                {props.pins.origin ? "Update location" : "Use current location"}
-              </button>
+          <p className="rider-origin-field">
+            <span className="rider-origin-heading">
+              <strong className="location-heading">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="6.5" />
+                </svg>
+                Where from?
+              </strong>
+              {!props.locatingDeparture ? (
+                <button
+                  type="button"
+                  className="pickup-location-button"
+                  onClick={props.onDepartureRequest}
+                >
+                  {props.pins.origin
+                    ? "Update location"
+                    : "Use current location"}
+                </button>
+              ) : null}
+            </span>
+            {props.locatingDeparture || props.pins.origin ? (
+              <span className="rider-origin-address">
+                {props.locatingDeparture
+                  ? "Finding your current location…"
+                  : locationText(props.pins.origin!)}
+              </span>
             ) : null}
           </p>
           <p>

@@ -755,6 +755,11 @@ p {
 .driver-location-summary p {
   min-width: 0;
 }
+@media (max-width: 699px) {
+  .driver-location-summary:has(.rider-origin-heading) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .location-heading {
   display: flex !important;
   align-items: center;
