@@ -24,6 +24,6 @@ test("only ongoing status labels pulse and offer a pause control", () => {
     "Unavailable",
   ]) {
     const html = renderToStaticMarkup(createElement(RideStatusText, { label }));
-    assert.equal(html, `<span>${label}</span>`);
+    assert.equal(html, `<span class="ride-status-finished">${label}</span>`);
   }
 });
