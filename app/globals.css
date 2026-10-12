@@ -1710,7 +1710,7 @@ p {
 .ride-status-text:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 3px; }
 @keyframes status-gentle-pulse {
   0%, 100% { color: var(--ink); text-shadow: 0 0 0 transparent; }
-  50% { color: #666666; text-shadow: 0 0 2px rgb(17 24 39 / 12%); }
+  50% { color: #666666; text-shadow: 0 0 3px rgb(17 24 39 / 20%); }
 }
 @media (prefers-reduced-motion: reduce) {
   .ride-status-text { animation: none; }
