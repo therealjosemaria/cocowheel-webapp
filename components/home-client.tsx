@@ -1772,12 +1772,12 @@ function RideSelection({
           <LocationAge location={selectedCandidate.driverLocation} />
         ) : null}
         <span>
-          <i className="ride-selection-route-driver" aria-hidden="true" />
-          Driver route
-        </span>
-        <span>
           <i className="ride-selection-route-rider" aria-hidden="true" />
           Your route
+        </span>
+        <span>
+          <i className="ride-selection-route-driver" aria-hidden="true" />
+          Driver route
         </span>
       </div>
       <section className="ride-options" aria-live="polite">

@@ -1,4 +1,5 @@
 "use client";
+import RideStatusText from "./ride-status-text";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import Link from "next/link";
@@ -268,7 +269,11 @@ function ActivityCard({
               </RideFieldLabel>
             </dt>
             <dd className={showStatus ? statusClass : undefined}>
-              {showStatus ? status : `A$${ride.priceAud}`}
+              {showStatus ? (
+                <RideStatusText label={status} />
+              ) : (
+                `A$${ride.priceAud}`
+              )}
             </dd>
           </div>
           <div>

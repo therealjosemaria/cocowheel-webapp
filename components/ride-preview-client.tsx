@@ -1,4 +1,5 @@
 "use client";
+import RideStatusText from "./ride-status-text";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 
 import { participantStatusLabel } from "@/lib/ride-status";
@@ -755,16 +756,16 @@ export default function RidePreviewClient({
                   label={privateRide?.pickupEstablished ? "Trip" : "Driver"}
                 />
               ) : null}
-              {ride.plannedRoute ? (
-                <span>
-                  <i className="ride-selection-route-driver" />
-                  Driver route
-                </span>
-              ) : null}
               {riderRoute ? (
                 <span>
                   <i className="ride-selection-route-rider" />
                   Your route
+                </span>
+              ) : null}
+              {ride.plannedRoute ? (
+                <span>
+                  <i className="ride-selection-route-driver" />
+                  Driver route
                 </span>
               ) : null}
             </div>
@@ -778,10 +779,12 @@ export default function RidePreviewClient({
                     <RideFieldLabel icon="status">Status</RideFieldLabel>
                   </dt>
                   <dd className="route-status">
-                    {participantStatusLabel(
-                      ride.status,
-                      driverOwned ? undefined : activityRequest?.status,
-                    )}
+                    <RideStatusText
+                      label={participantStatusLabel(
+                        ride.status,
+                        driverOwned ? undefined : activityRequest?.status,
+                      )}
+                    />
                   </dd>
                 </div>
                 <div>
