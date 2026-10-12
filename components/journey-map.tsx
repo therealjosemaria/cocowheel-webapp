@@ -79,9 +79,9 @@ const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   }),
   destination: divIcon({
     className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-destination" aria-label="Destination"></span>',
-    iconSize: [34, 28],
-    iconAnchor: [17, 14],
+    html: '<span class="journey-marker journey-marker-destination" aria-label="Destination"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3h14v12H5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 3h4.67v4H5zm9.33 0H19v4h-4.67zM9.67 7h4.66v4H9.67zM5 11h4.67v4H5zm9.33 0H19v4h-4.67z" fill="currentColor"/></svg></span>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
   }),
 };
 function MapClick({ onPick }: { onPick?: (pin: Pin) => void }) {

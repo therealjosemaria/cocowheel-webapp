@@ -1,4 +1,5 @@
 "use client";
+import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
@@ -509,9 +510,7 @@ export default function RidePreviewClient({
               points: activeDriverRoadPath?.length
                 ? activeDriverRoadPath
                 : [ride.plannedRoute.origin, ride.plannedRoute.destination],
-              color: "#2563eb",
-              weight: 7,
-              opacity: 0.82,
+              ...DRIVER_ROUTE,
             },
           ]
         : []),
@@ -521,9 +520,7 @@ export default function RidePreviewClient({
               points: roadPath?.length
                 ? roadPath
                 : [riderRoute.pickup, riderRoute.destination],
-              color: "#f97316",
-              weight: 4,
-              opacity: 0.95,
+              ...RIDER_ROUTE,
             },
           ]
         : []),

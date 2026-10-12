@@ -1,4 +1,5 @@
 "use client";
+import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
 
@@ -1266,7 +1267,7 @@ function PinControls({
                     points: routePoints?.length
                       ? routePoints
                       : [startingPoint, pins.destination],
-                    color: "#111827",
+                    ...(driver ? DRIVER_ROUTE : RIDER_ROUTE),
                     muted: !routePoints?.length,
                   },
                 ]
@@ -1745,17 +1746,13 @@ function RideSelection({
               ? [
                   {
                     points: visibleDriverRoute.points,
-                    color: "#2563eb",
-                    weight: 7,
-                    opacity: 0.82,
+                    ...DRIVER_ROUTE,
                   },
                 ]
               : []),
             {
               points: riderRoute?.length ? riderRoute : [pickup, destination],
-              color: "#f97316",
-              weight: 4,
-              opacity: 0.95,
+              ...RIDER_ROUTE,
             },
           ]}
         />
