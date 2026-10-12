@@ -1,6 +1,30 @@
 @import "tailwindcss";
 
 :root {
+  --font-ui: Arial, Helvetica, sans-serif;
+  --text-caption: 0.75rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-section: 1.125rem;
+  --text-subheading: 1.25rem;
+  --text-code: 1.5rem;
+  --text-admin-metric: 2rem;
+  --text-page: clamp(1.9rem, 7.5vw, 2.75rem);
+  --text-hero: clamp(3.65rem, 15vw, 5.6rem);
+  --text-display-small: 3.6rem;
+  --text-map-unit: 0.46rem;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --icon-label: 14px;
+  --icon-field: 18px;
+  --icon-map: 21px;
+  --marker-size: 32px;
+  --radius-control: 10px;
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --status-finished: #444444;
+  --status-pulse: #666666;
   --route-driver: #c65d12;
   --route-rider: #2563eb;
   --ink: #111827;
@@ -20,7 +44,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: #ffffff;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
 }
 button,
 input {
@@ -50,7 +74,7 @@ button:disabled {
   border-top: 1px solid #f1f5f9;
   color: var(--muted);
   text-align: center;
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
 }
 .topbar {
   display: flex;
@@ -61,8 +85,8 @@ button:disabled {
 }
 .brand {
   color: var(--ink);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.08em;
   text-decoration: none;
 }
@@ -135,7 +159,7 @@ button:disabled {
 .guest-identity-popover > strong {
   display: block;
   margin-bottom: 9px;
-  font-size: 0.74rem;
+  font-size: var(--text-caption);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -148,17 +172,17 @@ button:disabled {
 }
 .guest-identity-row span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
 }
 .guest-identity-row b {
   min-width: 0;
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .guest-identity-popover p {
   margin: 8px 0;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 .menu-toggle {
   position: relative;
@@ -252,8 +276,8 @@ button:disabled {
   border-radius: 14px;
   color: var(--ink);
   font-family: inherit;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
   text-align: left;
   text-decoration: none;
   background: #ffffff;
@@ -288,7 +312,7 @@ button:disabled {
 .activity-panel > .page-title,
 .form-page > .page-title,
 .ride-preview > .page-title {
-  font-size: clamp(1.9rem, 7.5vw, 2.75rem);
+  font-size: var(--text-page);
 }
 .activity-list {
   display: grid;
@@ -319,8 +343,8 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--ink);
-  font-size: 0.66rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   background: #ffffff;
@@ -350,8 +374,8 @@ button:disabled {
 }
 .activity-card-fields dt {
   color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -362,23 +386,23 @@ button:disabled {
   gap: 5px;
 }
 .ride-field-label svg {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
+  width: var(--icon-label);
+  height: var(--icon-label);
+  flex: 0 0 var(--icon-label);
 }
 .activity-card-fields dd {
   min-width: 0;
   margin: 0;
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .activity-card-fields code {
   color: var(--ink);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 .activity-status {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   color: var(--muted);
 }
 .activity-status.published {
@@ -399,8 +423,8 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 14px;
   color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
   text-decoration: none;
   background: #ffffff;
@@ -423,8 +447,8 @@ button:disabled {
   border: 1px solid #fecdca;
   border-radius: 14px;
   color: var(--danger);
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.035em;
   background: #fff5f4;
 }
@@ -449,7 +473,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 14px;
   color: var(--ink);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   background: #ffffff;
   box-shadow: 0 2px 0 #e2e8f0;
 }
@@ -473,13 +497,13 @@ button:disabled {
 }
 .activity-record-header strong,
 .activity-record-header span {
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .activity-record-header span {
   color: var(--muted);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 .activity-record .ride-summary {
   margin: 0 0 14px;
@@ -493,7 +517,7 @@ button:disabled {
 .activity-note {
   margin-top: 18px;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: var(--text-small);
 }
 .page-content {
   padding: 0 0 34px;
@@ -501,13 +525,13 @@ button:disabled {
 h1 {
   max-width: 10ch;
   margin: 0 0 12px;
-  font-size: clamp(2.45rem, 12vw, 4.2rem);
+  font-size: var(--text-page);
   line-height: 0.96;
   letter-spacing: -0.065em;
 }
 h2 {
   margin: 0 0 8px;
-  font-size: 1.15rem;
+  font-size: var(--text-section);
   letter-spacing: -0.025em;
 }
 p {
@@ -516,8 +540,8 @@ p {
 .eyebrow {
   margin: 0 0 10px;
   color: var(--ocean);
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -525,7 +549,7 @@ p {
   max-width: 38ch;
   margin: 0 0 28px;
   color: var(--muted);
-  font-size: 1.04rem;
+  font-size: var(--text-body);
 }
 .role-choice {
   display: grid;
@@ -547,8 +571,8 @@ p {
   align-items: center;
   margin: 0 0 30px;
   color: var(--ink);
-  font-size: clamp(3.65rem, 15vw, 5.6rem);
-  font-weight: 800;
+  font-size: var(--text-hero);
+  font-weight: var(--weight-bold);
   line-height: 0.9;
   letter-spacing: -0.075em;
   text-align: center;
@@ -575,15 +599,15 @@ p {
   box-shadow: 0 1px 0 #e2e8f0;
 }
 .home-current-ride strong {
-  font-size: 0.94rem;
+  font-size: var(--text-small);
 }
 .active-ride-status {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: var(--text-caption);
 }
 .active-ride-route {
   min-width: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .profile-active-ride {
@@ -605,8 +629,8 @@ p {
   color: var(--ink);
   text-align: center;
   background: #ffffff;
-  font-size: 1.22rem;
-  font-weight: 750;
+  font-size: var(--text-subheading);
+  font-weight: var(--weight-bold);
   box-shadow: 0 2px 0 #e2e8f0;
 }
 .role-card-primary {
@@ -634,7 +658,7 @@ p {
 .page-title {
   max-width: 12ch;
   margin: 0 0 12px;
-  font-size: clamp(2.15rem, 9vw, 3.25rem);
+  font-size: var(--text-page);
   line-height: 0.98;
   letter-spacing: -0.055em;
 }
@@ -683,7 +707,7 @@ p {
   border-radius: 12px;
   color: var(--ink);
   background: white;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 .pin-tabs button svg {
   width: 18px;
@@ -712,14 +736,14 @@ p {
 .journey-summary p {
   margin: 10px 0;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .pin-summary strong,
 .journey-summary strong {
   display: block;
   color: var(--ink);
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -766,8 +790,8 @@ p {
   gap: 6px;
 }
 .location-heading svg {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-field);
+  height: var(--icon-field);
   flex: 0 0 auto;
   fill: none;
   stroke: currentColor;
@@ -783,8 +807,8 @@ p {
   border: 1px solid var(--line);
   border-radius: 9px;
   color: var(--ink);
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   background: #ffffff;
   box-shadow: 0 1px 0 #e2e8f0;
 }
@@ -834,7 +858,7 @@ p {
 .map-help {
   margin: 8px 2px 16px;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 .map-attribution {
   position: absolute;
@@ -845,14 +869,14 @@ p {
   padding: 3px 6px;
   border-radius: 5px;
   color: #475569;
-  font-size: 0.62rem;
+  font-size: var(--text-caption);
   line-height: 1.25;
   background: rgb(255 255 255 / 88%);
   box-shadow: 0 1px 4px rgb(15 23 42 / 12%);
 }
 .map-attribution a {
   color: inherit;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 .journey-marker-icon {
   background: transparent;
@@ -860,23 +884,23 @@ p {
 }
 .driver-location-age {
   display: block;
-  font-size: 0.68rem;
+  font-size: var(--text-caption);
   color: var(--muted);
   line-height: 1.5;
 }
 .journey-marker {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: var(--marker-size);
+  height: var(--marker-size);
   place-items: center;
   border: 0;
   background: transparent;
 }
 .leaflet-tooltip.journey-location-label,
 .journey-location-label-icon {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-family: var(--font-ui);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   line-height: 1.5;
   color: var(--ink);
 }
@@ -887,8 +911,8 @@ p {
   border: 1px solid var(--line) !important;
   border-radius: 8px !important;
   color: var(--ink) !important;
-  font-size: 0.68rem !important;
-  font-weight: 700;
+  font-size: var(--text-caption)!important;
+  font-weight: var(--weight-bold);
   text-overflow: ellipsis;
   white-space: nowrap;
   background: rgb(255 255 255 / 94%) !important;
@@ -925,12 +949,12 @@ p {
   background: #111827;
 }
 .journey-location-eta strong {
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   line-height: 0.95;
 }
 .journey-location-eta small {
   margin-top: 2px;
-  font-size: 0.46rem;
+  font-size: var(--text-map-unit);
   line-height: 1;
   letter-spacing: 0.08em;
 }
@@ -958,8 +982,8 @@ p {
 .journey-marker-destination svg,
 .journey-marker-driver svg,
 .journey-marker-departure svg {
-  width: 21px;
-  height: 21px;
+  width: var(--icon-map);
+  height: var(--icon-map);
 }
 .journey-marker-destination.finish-driver { border: 3px solid var(--route-driver); }
 .journey-marker-destination.finish-rider { border: 3px solid var(--route-rider); }
@@ -993,7 +1017,7 @@ p {
 }
 .location-prompt h2 {
   margin-bottom: 8px;
-  font-size: 1.4rem;
+  font-size: var(--text-code);
 }
 .location-prompt p:not(.eyebrow) {
   margin: 0;
@@ -1047,7 +1071,7 @@ p {
 }
 .time-choice legend {
   padding: 0 5px;
-  font-weight: 800;
+  font-weight: var(--weight-bold);
 }
 .time-choice label {
   display: flex;
@@ -1066,9 +1090,10 @@ p {
   background: white;
 }
 .field {
+  font-size: var(--text-small);
   display: block;
   margin: 20px 0;
-  font-weight: 800;
+  font-weight: var(--weight-bold);
 }
 .payid-field {
   min-width: 0;
@@ -1078,8 +1103,8 @@ p {
 }
 .payid-field legend {
   margin-bottom: 7px;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
 }
 .payid-field > input {
   width: 100%;
@@ -1102,8 +1127,8 @@ p {
   border: 1px solid var(--line);
   border-radius: 9px;
   color: var(--ink);
-  font-size: 0.76rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   background: #ffffff;
 }
 .payid-type-options button.active {
@@ -1122,7 +1147,7 @@ p {
 .preview-payid > span:not(.payid-copy-row) {
   grid-column: 1;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-caption);
 }
 .preview-payid .payid-copy-row { display: contents; }
 .preview-payid .payid-copy-row code {
@@ -1130,7 +1155,7 @@ p {
   grid-row: 2;
   align-self: start;
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   line-height: 1.35;
 }
 .preview-payid .payid-copy-row > button {
@@ -1145,8 +1170,8 @@ p {
   display: block;
   margin: 4px 0 8px;
   color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 400;
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
 }
 .money {
   display: flex;
@@ -1173,7 +1198,7 @@ p {
   padding: 12px 16px;
   border: 0;
   border-radius: 14px;
-  font-weight: 800;
+  font-weight: var(--weight-bold);
   letter-spacing: 0.015em;
 }
 .primary {
@@ -1199,7 +1224,7 @@ p {
   margin-top: 28px;
   color: var(--danger);
   background: transparent;
-  font-size: 0.84rem;
+  font-size: var(--text-small);
 }
 .text-button {
   margin-bottom: 18px;
@@ -1207,7 +1232,7 @@ p {
   border: 0;
   color: var(--ocean);
   background: transparent;
-  font-weight: 800;
+  font-weight: var(--weight-bold);
 }
 .candidate-list,
 .request-stack {
@@ -1260,8 +1285,8 @@ p {
   border: 0;
   border-radius: 8px;
   color: #ffffff;
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   background: var(--ink);
 }
 .place-results {
@@ -1347,8 +1372,8 @@ p {
 .availability-heading {
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   background: #f8fafc;
@@ -1358,7 +1383,7 @@ p {
 }
 .availability-row {
   border-top: 1px solid #f1f5f9;
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
 }
 .availability-row strong,
 .availability-row span,
@@ -1370,11 +1395,11 @@ p {
 }
 .availability-row code {
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: var(--text-caption);
 }
 .availability-row span {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-caption);
 }
 .availability-row .availability-expiry {
   display: flex;
@@ -1383,13 +1408,13 @@ p {
   text-align: center;
 }
 .availability-row b {
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
 }
 .availability-row .direction-fit {
   display: block;
   padding: 0;
-  font-size: 0.64rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   text-align: center;
   white-space: nowrap;
 }
@@ -1408,8 +1433,8 @@ p {
   border: 1px solid var(--line);
   border-radius: 9px;
   color: var(--ink);
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
   background: #ffffff;
   box-shadow: 0 1px 0 #e2e8f0;
@@ -1430,8 +1455,8 @@ p {
   border: 1px solid var(--ink);
   border-radius: 9px;
   color: #ffffff;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
   background: var(--ink);
   box-shadow: 0 2px 0 #042b38;
@@ -1449,7 +1474,7 @@ p {
   margin: 0;
   padding: 16px 14px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
 }
 .ride-selection-page {
   display: flex;
@@ -1509,7 +1534,7 @@ p {
   margin: 0 -14px 12px;
   padding: 13px 14px 12px;
   border-bottom: 1px solid var(--line);
-  font-size: 1rem;
+  font-size: var(--text-body);
   letter-spacing: -0.015em;
   text-align: center;
 }
@@ -1522,8 +1547,8 @@ p {
   padding: 7px 14px;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
 }
 .ride-selection-route-key span {
   display: inline-flex;
@@ -1601,7 +1626,7 @@ p {
   grid-row: 1;
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 0.86rem;
+  font-size: var(--text-small);
 }
 .ride-option-main small {
   grid-column: 2;
@@ -1609,13 +1634,13 @@ p {
   min-width: 0;
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: var(--text-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ride-option-fit {
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   white-space: nowrap;
 }
 .ride-option-fit.direction-fit-good {
@@ -1630,21 +1655,21 @@ p {
   grid-row: 1;
   align-self: start;
   text-align: right;
-  font-size: 0.9rem;
+  font-size: var(--text-small);
   white-space: nowrap;
 }
 .ride-option-payment > small {
   grid-column: 3;
   grid-row: 2;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: var(--text-caption);
   text-align: right;
 }
 .ride-options-empty {
   margin: 0;
   padding: 14px 2px;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: var(--text-small);
 }
 .ride-selection-action {
   position: sticky;
@@ -1692,8 +1717,8 @@ p {
   overflow: hidden;
 }
 .ride-preview-fields dt {
-  font-size: 0.78rem;
-  font-weight: 750;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -1706,16 +1731,16 @@ p {
   border: 0;
   background: transparent;
   font: inherit;
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   text-align: left;
   animation: status-gentle-pulse 3s ease-in-out infinite;
 }
-.ride-status-finished { color: #444444; }
+.ride-status-finished { color: var(--status-finished); }
 .ride-status-text.paused { animation: none; }
 .ride-status-text:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 3px; }
 @keyframes status-gentle-pulse {
   0%, 100% { color: var(--ink); text-shadow: 0 0 0 transparent; }
-  50% { color: #666666; text-shadow: 0 0 3px rgb(17 24 39 / 20%); }
+  50% { color: var(--status-pulse); text-shadow: 0 0 3px rgb(17 24 39 / 20%); }
 }
 @media (prefers-reduced-motion: reduce) {
   .ride-status-text { animation: none; }
@@ -1753,7 +1778,7 @@ p {
   margin-top: 4px;
   margin-left: auto;
   padding: 5px 0;
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   text-underline-offset: 3px;
 }
 .ride-action-buttons { display: grid; gap: 8px; }
@@ -1762,7 +1787,7 @@ p {
 .pickup-confirmation p { margin: 0 0 12px; }
 .pickup-code-instruction { text-align: center; }
 .pickup-code-entry { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.pickup-code-entry input { width: 8rem; min-width: 0; text-align: center; letter-spacing: 0.35em; font-size: 1.2rem; }
+.pickup-code-entry input { width: 8rem; min-width: 0; text-align: center; letter-spacing: 0.35em; font-size: var(--text-subheading); }
 .pickup-code-entry button { flex: 1; }
 .pickup-code-display {
   display: flex;
@@ -1778,7 +1803,7 @@ p {
   min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 1.4rem;
+  font-size: var(--text-code);
   line-height: 1;
 }
 .ride-directions svg {
@@ -1794,7 +1819,7 @@ p {
 .driver-payment-details {
   margin: 0;
   padding: 10px 14px;
-  font-size: 0.88rem;
+  font-size: var(--text-small);
 }
 .driver-payment-details dt { color: var(--muted); }
 .driver-payment-details dd { margin: 4px 0 0; overflow-wrap: anywhere; }
@@ -1808,7 +1833,7 @@ p {
   grid-column: 2;
   grid-row: 1 / 3;
   align-self: center;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 .ride-preview-fields > div {
   display: grid;
@@ -1843,7 +1868,7 @@ p {
 .ride-preview-fields dd {
   margin: 0;
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .ride-preview-fields dd.route-status {
@@ -1855,8 +1880,8 @@ p {
   border: 1px solid #fecdca;
   border-radius: 9px;
   color: var(--danger);
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.035em;
   background: #fff5f4;
 }
@@ -1882,8 +1907,8 @@ p {
   margin: 0;
   padding: 10px;
   border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   line-height: 1.3;
   letter-spacing: 0.035em;
   box-shadow: 0 2px 3px rgb(15 23 42 / 12%);
@@ -1912,8 +1937,8 @@ p {
   border-style: solid;
   border-radius: 10px;
   font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   line-height: 1.3;
   letter-spacing: 0.035em;
   box-shadow: 0 2px 3px rgb(15 23 42 / 12%);
@@ -1925,8 +1950,8 @@ p {
   box-shadow: 0 1px 2px rgb(15 23 42 / 12%);
 }
 .preview-fit {
-  font-size: 0.76rem;
-  font-weight: 750;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
 }
 .ride-preview-fields .preview-fit-good {
   color: #15803d;
@@ -1965,8 +1990,8 @@ p {
 }
 .driver-request-fields dt {
   color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 750;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -1974,7 +1999,7 @@ p {
   min-width: 0;
   margin: 0;
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
 .driver-request-fields .preview-fit-good {
@@ -2021,7 +2046,7 @@ p {
   margin: 0;
   padding: 9px 10px;
   border-radius: 10px;
-  font-size: 0.7rem;
+  font-size: var(--text-caption);
 }
 .driver-request-buttons .primary {
   box-shadow: none;
@@ -2032,7 +2057,7 @@ p {
   gap: 14px;
   margin: 10px 2px 0;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-caption);
 }
 .route-key span {
   display: inline-flex;
@@ -2073,11 +2098,11 @@ p {
 .candidate small {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 .candidate > b {
   color: var(--coral);
-  font-size: 1.18rem;
+  font-size: var(--text-section);
 }
 .empty,
 .complete-card {
@@ -2094,7 +2119,7 @@ p {
   margin: 0 0 16px;
   padding: 12px 14px;
   border-radius: 13px;
-  font-size: 0.88rem;
+  font-size: var(--text-small);
 }
 .reconnect {
   color: #624900;
@@ -2115,11 +2140,11 @@ p {
   background: var(--ink);
 }
 .ride-summary span {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 .ride-summary strong {
   color: var(--sun);
-  font-size: 1.25rem;
+  font-size: var(--text-subheading);
 }
 .ride-summary small {
   grid-column: 1 / -1;
@@ -2140,7 +2165,7 @@ p {
 .request-card small,
 .location-card p {
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: var(--text-small);
 }
 .split-actions {
   display: grid;
@@ -2160,7 +2185,7 @@ p {
 .code-card strong {
   display: block;
   margin: 10px 0;
-  font-size: 3.6rem;
+  font-size: var(--text-display-small);
   letter-spacing: 0.13em;
 }
 .code-card small,
@@ -2168,15 +2193,15 @@ p {
 .complete-card small {
   display: block;
   color: var(--muted);
-  font-size: 0.79rem;
+  font-size: var(--text-caption);
 }
 .code-entry label {
   display: block;
-  font-weight: 800;
+  font-weight: var(--weight-bold);
 }
 .code-entry input {
   margin: 9px 0 16px;
-  font-size: 1.4rem;
+  font-size: var(--text-code);
   letter-spacing: 0.25em;
   text-align: center;
 }
@@ -2200,7 +2225,7 @@ p {
 .copy-grid .secondary {
   min-height: 44px;
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 .complete-card {
   border-color: #a4dcbf;
@@ -2243,8 +2268,8 @@ p {
     border: 1px solid transparent;
     border-radius: 999px;
     color: var(--ink);
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: var(--text-caption);
+    font-weight: var(--weight-bold);
     text-decoration: none;
     background: transparent;
     transition:
@@ -2267,8 +2292,8 @@ p {
     border-radius: 999px;
     color: var(--ink);
     font: inherit;
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: var(--text-caption);
+    font-weight: var(--weight-bold);
     letter-spacing: 0.01em;
     background: transparent;
     transition:
@@ -2279,7 +2304,7 @@ p {
       box-shadow 0.2s ease;
   }
   .desktop-navigation-cta.find {
-    font-weight: 700;
+    font-weight: var(--weight-bold);
     letter-spacing: 0.01em;
   }
   .desktop-navigation-cta.active {
@@ -2317,7 +2342,7 @@ p {
   gap: 12px;
 }
 .admin-heading h1 {
-  font-size: 1.45rem;
+  font-size: var(--text-code);
   margin: 0;
 }
 .admin-login {
@@ -2330,7 +2355,7 @@ p {
 .admin-filter {
   display: grid;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 .admin-panel input,
 .admin-panel select {
@@ -2359,7 +2384,7 @@ p {
   border-radius: 12px;
   background: transparent;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   cursor: pointer;
 }
 .admin-tabs button[aria-current] {
@@ -2379,13 +2404,13 @@ p {
   background: #f3f4f6;
 }
 .admin-stats strong {
-  font-size: 1.8rem;
+  font-size: var(--text-admin-metric);
 }
 .admin-stats span,
 .admin-muted,
 .admin-fields dt {
   color: #626975;
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 }
 .admin-muted {
   line-height: 1.6;
@@ -2402,7 +2427,7 @@ p {
 .admin-fields dd {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 .admin-records {
   display: grid;
@@ -2416,7 +2441,7 @@ p {
   min-width: 0;
 }
 .admin-records h2 {
-  font-size: 1rem;
+  font-size: var(--text-body);
   margin: 0;
 }
 .admin-pagination {
@@ -2425,7 +2450,7 @@ p {
   align-items: center;
   gap: 8px;
   margin-top: 20px;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
 }
 .admin-filter {
   max-width: 280px;
@@ -2434,13 +2459,13 @@ p {
   padding: 12px;
   background: #f3f4f6;
   border-radius: 12px;
-  font-size: 0.9rem;
+  font-size: var(--text-small);
 }
 .admin-footer-link {
   display: block;
   margin-top: 8px;
   color: inherit;
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 .admin-panel button:focus-visible {
   outline: 2px solid #111827;
@@ -2470,11 +2495,11 @@ p {
 }
 .university-form h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: var(--text-subheading);
 }
 .university-form p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -2489,3 +2514,14 @@ p {
   padding: 10px 12px;
   width: 100%;
 }
+
+/* Shared semantic roles: use these tokens, not screen-specific type sizes. */
+h3 { font-size: var(--text-body); font-weight: var(--weight-bold); }
+input, select, textarea { font-family: var(--font-ui); font-size: var(--text-body); font-weight: var(--weight-regular); }
+.field, .payid-field legend { font-family: var(--font-ui); font-size: var(--text-small); font-weight: var(--weight-bold); color: var(--ink); }
+.activity-card-fields dt, .ride-preview-fields dt, .driver-request-fields dt,
+.driver-payment-details dt { font-size: var(--text-caption); font-weight: var(--weight-bold); color: var(--muted); }
+.activity-card-fields dd, .ride-preview-fields dd, .driver-request-fields dd,
+.driver-payment-details dd { font-size: var(--text-small); }
+.preview-payid code { font-family: var(--font-ui); }
+.ride-field-label svg, .payid-copy-row svg { width: var(--icon-label); height: var(--icon-label); flex-basis: var(--icon-label); }

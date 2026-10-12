@@ -1,6 +1,6 @@
 # Coco Wheels product and UI standards
 
-Current decisions, 11 October 2026. Read this before changing the UI. Keep this file updated when an agreed convention changes; do not treat older conversation notes as overriding newer decisions.
+Current decisions, 12 October 2026. Read this and [the visual-system token reference](DESIGN_TOKENS.md) before changing the UI. Keep these files updated when an agreed convention changes; do not treat older conversation notes as overriding newer decisions.
 
 ## Principles
 

@@ -12,7 +12,7 @@ Production frontend: https://cocowheel-webapp.vercel.app. The standalone API and
 
 ## Product and UI standards
 
-See [the product and UI standards](docs/UI_STANDARDS.md) before changing user-facing behaviour, wording or layouts. These are the current conventions, not a claim that every legacy screen has already been migrated. [CURRENT_CONTEXT.md](CURRENT_CONTEXT.md) retains implementation history; newer dated decisions supersede older notes.
+See [the product and UI standards](docs/UI_STANDARDS.md) and [visual-system tokens](docs/DESIGN_TOKENS.md) before changing user-facing behaviour, wording or layouts. These are the current conventions, not a claim that every legacy screen has already been migrated. [CURRENT_CONTEXT.md](CURRENT_CONTEXT.md) retains implementation history; newer dated decisions supersede older notes.
 
 ## Local development
 
