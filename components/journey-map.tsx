@@ -13,6 +13,7 @@ import {
   CircleMarker,
   MapContainer,
   Marker,
+  Popup,
   Polyline,
   TileLayer,
   Tooltip,
@@ -50,10 +51,13 @@ const escapeHtml = (value: string) =>
       })[character]!,
   );
 
-const locationLabelIcon = (markerLabel: Exclude<MarkerLabel, string>) =>
+const locationLabelIcon = (
+  markerLabel: Exclude<MarkerLabel, string>,
+  index: number,
+) =>
   divIcon({
     className: "journey-location-label-icon",
-    html: `<span class="journey-location-row"><span class="journey-location-eta"><strong>${markerLabel.etaMinutes}</strong><small>MIN</small></span><span class="journey-location-address">${escapeHtml(markerLabel.text)}</span></span>`,
+    html: `<span class="journey-location-row" data-map-label="${index}"><span class="journey-location-eta"><strong>${markerLabel.etaMinutes}</strong><small>MIN</small></span><span class="journey-location-address">${escapeHtml(markerLabel.text)}</span></span>`,
     iconSize: [0, 0],
     iconAnchor: [0, 20],
   });
@@ -223,6 +227,18 @@ function PinMarkers({
   const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
   const updateOverlap = useCallback(() => {
     const next = new Set<number>();
+    const finishes = pins
+      .map((pin, index) => ({ pin, index }))
+      .filter(({ index }) => markerKinds?.[index] === "destination");
+    if (finishes.length === 2) {
+      const [a, b] = finishes.map(({ pin }) =>
+        map.latLngToContainerPoint([pin.latitude, pin.longitude]),
+      );
+      if (a.distanceTo(b) <= 32) {
+        next.add(finishes[0].index);
+        next.add(finishes[1].index);
+      }
+    }
     pins.forEach((driverPin, driverIndex) => {
       if (markerKinds?.[driverIndex] !== "driver") return;
       pins.forEach((pickupPin, pickupIndex) => {
@@ -252,20 +268,150 @@ function PinMarkers({
     };
   }, [map, updateOverlap]);
 
+  useEffect(() => {
+    const container = map.getContainer();
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("map-label-connectors");
+    container.appendChild(svg);
+    let frame = 0;
+    const place = () => {
+      svg.style.visibility = "visible";
+      svg.replaceChildren();
+      const viewport = container.getBoundingClientRect();
+      const occupied: Array<{
+        left: number;
+        top: number;
+        right: number;
+        bottom: number;
+      }> = [];
+      container
+        .querySelectorAll<HTMLElement>("[data-map-label]")
+        .forEach((node) => {
+          const index = Number(node.dataset.mapLabel);
+          const pin = pins[index];
+          if (!pin) return;
+          const label = node.closest<HTMLElement>(".leaflet-tooltip") ?? node;
+          const oldX = Number(label.dataset.shiftX ?? 0),
+            oldY = Number(label.dataset.shiftY ?? 0);
+          const measured = label.getBoundingClientRect();
+          const baseX = measured.left - viewport.left - oldX,
+            baseY = measured.top - viewport.top - oldY;
+          const w = measured.width,
+            h = measured.height;
+          const anchor = map.latLngToContainerPoint([
+            pin.latitude,
+            pin.longitude,
+          ]);
+          const options = [
+            [baseX + oldX, baseY + oldY],
+            [anchor.x - w / 2, anchor.y - h - 22],
+            [anchor.x + 22, anchor.y - h / 2],
+            [anchor.x - w - 22, anchor.y - h / 2],
+            [anchor.x - w / 2, anchor.y + 22],
+          ];
+          const score = ([x, y]: number[]) => {
+            const clipping =
+              Math.max(0, 8 - x) +
+              Math.max(0, 8 - y) +
+              Math.max(0, x + w - viewport.width + 8) +
+              Math.max(0, y + h - viewport.height + 8);
+            const overlap = occupied.reduce(
+              (sum, r) =>
+                sum +
+                Math.max(
+                  0,
+                  Math.min(x + w + 6, r.right) - Math.max(x - 6, r.left),
+                ) *
+                  Math.max(
+                    0,
+                    Math.min(y + h + 6, r.bottom) - Math.max(y - 6, r.top),
+                  ),
+              0,
+            );
+            return clipping * 1000 + overlap;
+          };
+          const chosen = options.reduce((best, option) =>
+            score(option) < score(best) ? option : best,
+          );
+          const x = Math.max(8, Math.min(chosen[0], viewport.width - w - 8));
+          const y = Math.max(8, Math.min(chosen[1], viewport.height - h - 8));
+          label.dataset.shiftX = String(x - baseX);
+          label.dataset.shiftY = String(y - baseY);
+          label.style.translate = `${x - baseX}px ${y - baseY}px`;
+          const shifted = Math.abs(x - baseX) > 1 || Math.abs(y - baseY) > 1;
+          label.classList.toggle("map-label-shifted", shifted);
+          occupied.push({ left: x, top: y, right: x + w, bottom: y + h });
+          if (shifted) {
+            const line = document.createElementNS(svg.namespaceURI, "line");
+            for (const [key, value] of Object.entries({
+              x1: anchor.x,
+              y1: anchor.y,
+              x2: Math.max(x, Math.min(anchor.x, x + w)),
+              y2: Math.max(y, Math.min(anchor.y, y + h)),
+            }))
+              line.setAttribute(key, String(value));
+            svg.appendChild(line);
+          }
+        });
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(place);
+    };
+    schedule();
+    const hideConnectors = () => {
+      svg.style.visibility = "hidden";
+    };
+    map.on("movestart zoomstart", hideConnectors);
+    map.on("moveend zoomend resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      map.off("moveend zoomend resize", schedule);
+      map.off("movestart zoomstart", hideConnectors);
+      svg.remove();
+    };
+  }, [map, pins, markerLabels]);
+
   return (
     <>
       {pins.map((pin, index) => {
         const markerKind = markerKinds?.[index];
         const markerLabel = markerLabels?.[index];
         const markerKey = `${pin.latitude}-${pin.longitude}-${index}`;
+        const driverFinish =
+          markerKind === "destination" && markerKinds?.[index - 1] === "driver";
+        const finishTitle = driverFinish
+          ? "Driver destination"
+          : "Rider destination";
+        const icon =
+          markerKind === "destination"
+            ? divIcon({
+                ...mapMarkerIcons.destination.options,
+                html: String(mapMarkerIcons.destination.options.html)
+                  .replace(
+                    "journey-marker-destination",
+                    `journey-marker-destination ${driverFinish ? "finish-driver" : "finish-rider"}`,
+                  )
+                  .replace(
+                    'aria-label="Destination"',
+                    `aria-label="${finishTitle}"`,
+                  ),
+              })
+            : markerKind
+              ? mapMarkerIcons[markerKind]
+              : undefined;
         return markerKind ? (
           <Fragment key={markerKey}>
             <Marker
               position={[pin.latitude, pin.longitude]}
-              icon={mapMarkerIcons[markerKind]}
+              icon={icon}
+              title={markerKind === "destination" ? finishTitle : undefined}
               opacity={overlapping.has(index) ? 0.52 : 1}
               zIndexOffset={markerKind === "pickup" ? 2 : 1}
             >
+              {markerKind === "destination" ? (
+                <Popup>{finishTitle}</Popup>
+              ) : null}
               {typeof markerLabel === "string" ? (
                 <Tooltip
                   className="journey-location-label"
@@ -274,14 +420,14 @@ function PinMarkers({
                   opacity={1}
                   permanent
                 >
-                  {markerLabel}
+                  <span data-map-label={index}>{markerLabel}</span>
                 </Tooltip>
               ) : null}
             </Marker>
             {markerLabel && typeof markerLabel !== "string" ? (
               <Marker
                 position={[pin.latitude, pin.longitude]}
-                icon={locationLabelIcon(markerLabel)}
+                icon={locationLabelIcon(markerLabel, index)}
                 interactive={false}
                 keyboard={false}
                 zIndexOffset={1000}

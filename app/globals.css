@@ -956,6 +956,19 @@ p {
   width: 21px;
   height: 21px;
 }
+.journey-marker-destination.finish-driver { border: 3px solid var(--route-driver); }
+.journey-marker-destination.finish-rider { border: 3px solid var(--route-rider); }
+.map-label-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 590;
+  stroke: #64748b;
+  stroke-width: 1;
+}
+.map-label-shifted::before { display: none; }
 .location-prompt-backdrop {
   position: fixed;
   z-index: 1100;

@@ -4,6 +4,7 @@ Current decisions, 11 October 2026. Read this before changing the UI. Keep this 
 
 ## Principles
 
+- Destination flags retain their true coordinates: driver orange ring, rider blue ring, matching the routes. Overlapping finish markers use the same transparency as overlapping car/person markers, never side-by-side displacement. Labels prefer their existing above-marker placement, choosing another side when needed to reduce collisions or edge clipping; shifted labels have subtle location connectors and retain the joined ETA/address design.
 - Maps use shared route styles: rider blue, driver dark orange, both 7px with identical opacity; legends use the same CSS colour tokens. Car, person and checkered-finish markers are matching 32px black circles with 21px white symbols. Preserve labelled legends and overlapping-marker transparency.
 - While awaiting pickup, show the shared pickup-code/verification panel directly below the map legend and above the details. Remove it after verification. PayID type and value stay closely grouped, with the Copy button alongside them for all PayID formats and both roles.
 - Successful rider requests open that ride's details directly, not Activity. Details reuse the ride-selection map-first layout and route legend, with details and controls underneath and no redundant Ride Details heading. Activity opens this same shared view.
