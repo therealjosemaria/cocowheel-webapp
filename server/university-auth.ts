@@ -15,9 +15,7 @@ const hash = (value: string) =>
 export function normalizeUniKey(value: unknown) {
   if (typeof value !== "string") throw new Error("INVALID_UNIKEY");
   const normalized = value.trim().toLowerCase();
-  // One test identity: alias and email share sessions, limits and active-role checks.
-  if (normalized === "test") return TEST_EMAIL;
-  if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== TEST_EMAIL)
+  if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== TEST_EMAIL && normalized !== "guest")
     throw new Error("INVALID_UNIKEY");
   return normalized;
 }
@@ -94,7 +92,7 @@ export async function requestUniversityCode(
     ).run(id, unikey, digest, now + 10 * 60000);
   })();
   const deliveryAddress =
-    unikey === TEST_EMAIL ? unikey : `${unikey}@${UNIVERSITY_DOMAIN}`;
+    unikey === TEST_EMAIL || unikey === "guest" ? TEST_EMAIL : `${unikey}@${UNIVERSITY_DOMAIN}`;
   try {
     await send(deliveryAddress, code);
   } catch (error) {
