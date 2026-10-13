@@ -15,6 +15,8 @@ const hash = (value: string) =>
 export function normalizeUniKey(value: unknown) {
   if (typeof value !== "string") throw new Error("INVALID_UNIKEY");
   const normalized = value.trim().toLowerCase();
+  // One test identity: alias and email share sessions, limits and active-role checks.
+  if (normalized === "test") return TEST_EMAIL;
   if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== TEST_EMAIL)
     throw new Error("INVALID_UNIKEY");
   return normalized;

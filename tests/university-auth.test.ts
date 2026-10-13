@@ -58,6 +58,7 @@ async function login(
   );
 }
 test("UniKey input accepts only the exact additional email and rejects other recipients", () => {
+  assert.equal(normalizeUniKey(" TEST "), "mosciarobusiness@gmail.com");
   assert.equal(normalizeUniKey(" JMOS0905 "), "jmos0905");
   assert.equal(
     normalizeUniKey(" MOSCIAROBUSINESS@GMAIL.COM "),
@@ -77,6 +78,24 @@ test("UniKey input accepts only the exact additional email and rejects other rec
   ])
     assert.throws(() => normalizeUniKey(value));
 });
+test("test alias delivers to the owner inbox and reuses the existing non-admin account", async () => {
+  const db = database();
+  try {
+    const start = Date.now();
+    const original = await login(db, "mosciarobusiness@gmail.com", start);
+    let delivered = "";
+    const challenge = await requestUniversityCode(db, "test", async (email, code) => {
+      assert.equal(email, "mosciarobusiness@gmail.com");
+      delivered = code;
+    }, start + 60001);
+    assert.equal(challenge.expiresAt, start + 60001 + 10 * 60000);
+    const verified = verifyUniversityCode(db, challenge.challengeId, delivered, null, new Date(start + 60002));
+    assert.equal(verified.unikey, "mosciarobusiness@gmail.com");
+    assert.equal(findSession(db, original.token)?.id, findSession(db, verified.token)?.id);
+    assert.notEqual(verified.unikey, "jmos0905");
+  } finally { db.close(); }
+});
+
 test("verification is single use, expires, caps guesses and resends, and never stores plaintext codes", async () => {
   const db = database();
   let code = "";
