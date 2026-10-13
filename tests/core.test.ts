@@ -389,6 +389,35 @@ test("pickup code is rider-only at acceptance and gates PayID for every other re
   }
 });
 
+test("pickup evidence is non-blocking, immutable and retained; codes have no timer", () => {
+  for (const mode of ["near", "far", "driver-only", "missing"] as const) {
+    const h = harness();
+    try {
+      const flow = sessions(h);
+      const id = flow.published.ride.rideId;
+      decideRequest(h.db, flow.published.sessionToken, id, flow.requested.ride.request!.requestId, "ACCEPT", baseTime);
+      const code = getRide(h.db, id, flow.rider, baseTime).coRideCode!;
+      const internal = (h.db.prepare("SELECT id FROM rides WHERE public_id = ?").get(id) as { id: string }).id;
+      if (mode !== "missing") {
+        const insert = h.db.prepare("INSERT INTO live_locations (ride_id, participant, latitude, longitude, accuracy_meters, captured_at, received_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        insert.run(internal, "DRIVER", -33.87, 151.2, 10, baseTime.toISOString(), baseTime.toISOString());
+        if (mode !== "driver-only") insert.run(internal, "RIDER", mode === "near" ? -33.8701 : -34, 151.2, 20, baseTime.toISOString(), baseTime.toISOString());
+      }
+      const later = new Date(baseTime.getTime() + 2 * 60 * 60_000);
+      assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, code);
+      assert.equal(confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later).status, "CO_RIDE_ACTIVE");
+      const evidence = adminInspector(h.db, id).pickupEvidence!;
+      assert.equal(evidence.within_250_metres, ["missing", "driver-only"].includes(mode) ? "Unknown" : mode === "near" ? "Yes" : "No");
+      if (mode === "near" || mode === "far") assert.equal(evidence.rider_gps_age_seconds, 7200);
+      assert.equal("pickupEvidence" in getRide(h.db, id, flow.rider, later), false);
+      assert.throws(() => confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later), /CO_RIDE_CODE_EXPIRED/);
+      cancelRide(h.db, flow.published.sessionToken, id, later);
+      assert.deepEqual(adminInspector(h.db, id).pickupEvidence, evidence);
+      assert.equal(adminInspector(h.db, id).locations.length, 0);
+    } finally { h.close(); }
+  }
+});
+
 test("pickup code renewal is rider-only, throttled, invalidates old code and recovers lockout", () => {
   const h = harness();
   try {
@@ -435,7 +464,7 @@ test("pickup code renewal is rider-only, throttled, invalidates old code and rec
       /CO_RIDE_CODE_LOCKED/,
     );
     const later = new Date(+baseTime + 16 * 60000);
-    assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, undefined);
+    assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, lockedCode);
     const renewed = renewPickupCode(
       h.db,
       flow.requested.sessionToken,
@@ -443,13 +472,15 @@ test("pickup code renewal is rider-only, throttled, invalidates old code and rec
       later,
     );
     assert.match(renewed.coRideCode!, /^\d{4}$/);
+    assert.notEqual(renewed.coRideCode, lockedCode);
+    assert.throws(() => confirmCoRideCode(h.db, flow.published.sessionToken, id, lockedCode, later), /CO_RIDE_CODE_INVALID/);
     assert.equal(
       confirmCoRideCode(
         h.db,
         flow.published.sessionToken,
         id,
         renewed.coRideCode!,
-        later,
+        new Date(+later + 2001),
       ).status,
       "CO_RIDE_ACTIVE",
     );

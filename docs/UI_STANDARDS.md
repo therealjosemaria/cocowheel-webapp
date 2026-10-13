@@ -47,6 +47,9 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Lifecycle and privacy
 
+- Pickup verification (13 October 2026): GPS proximity is audit-only, never a gate. Atomically retain both latest reported GPS fixes, capture/receipt times, accuracy, verification time and measured separation in an admin-only immutable pickup snapshot. Within 250 metres is Yes/No when both fixes exist, Unknown otherwise; stale or inaccurate fixes are not proof of physical proximity. Snapshots survive live-location cleanup. No retrospective evidence is fabricated for historical rides.
+- Pickup codes have no independent time expiry. They remain valid while awaiting pickup until replaced by the rider, consumed once, or the ride closes. Keep wrong-code attempt limits and renewal throttling. Existing ride inactivity expiry remains unchanged; this policy does not apply to email verification codes.
+
 - Published is the driver's available offer; a pending request does not change the public offer into an accepted ride.
 - Participant labels: Request pending → Awaiting pickup → Ride in progress → Completed. ACCEPTED and legacy RIDE_ACTIVE mean Awaiting pickup; only verified pickup (CO_RIDE_ACTIVE) means Ride in progress. Cancellation, withdrawal, decline and expiry retain distinct outcomes.
 - Acceptance issues the rider's four-digit pickup code. Only the driver verifies it. Before verification, riders may see the PayID preference but not private PayID values/types. Server responses enforce this, not CSS. New offers require PayID (Mobile, Email or Other/ABN); there is no cash option. Historical cash records are retained.

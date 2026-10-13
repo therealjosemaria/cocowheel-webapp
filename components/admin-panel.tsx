@@ -10,6 +10,7 @@ type Dashboard = {
 };
 type Inspector = {
   ride: Row;
+  pickupEvidence: Row | null;
   requests: Row[];
   locations: Row[];
   events: Row[];
@@ -39,6 +40,9 @@ const names: Record<string, string> = {
   is_sample: "Sample",
   rider_alias: "Rider",
   pickup_label: "Where from",
+  within_250_metres: "Driver/rider within 250 metres at pickup verification",
+  verified_at: "Pickup verified",
+  separation_metres: "GPS separation (metres)",
 };
 function Fields({ row }: { row: Row }) {
   return (
@@ -307,6 +311,11 @@ export default function AdminPanel() {
                         <Fields key={i} row={row} />
                       ))}
                       {!inspector.requests.length && <p>No requests.</p>}
+                    </article>
+                    <article>
+                      <h2>Pickup verification</h2>
+                      <p className="admin-muted">Last reported GPS at code verification. Proximity is recorded, never enforced; old or inaccurate fixes do not prove physical proximity.</p>
+                      {inspector.pickupEvidence ? <Fields row={inspector.pickupEvidence} /> : <p>No recorded pickup evidence.</p>}
                     </article>
                     <article>
                       <h2>Latest locations</h2>

@@ -171,6 +171,24 @@ export function adminInspector(db: Db, id: string) {
     )
     .get(id);
   if (!ride || !fitRide) throw new Error("RIDE_NOT_FOUND");
+  const evidence = db.prepare("SELECT * FROM pickup_evidence WHERE ride_id = ?").get(fitRide.id) as {
+    verified_at: string; within_250_metres: number | null; separation_metres: number | null;
+    driver_fix: string | null; rider_fix: string | null;
+  } | undefined;
+  const pickupEvidence: Record<string, string | number | null> | null = evidence ? {
+    verified_at: evidence.verified_at,
+    within_250_metres: evidence.within_250_metres === null ? "Unknown" : evidence.within_250_metres ? "Yes" : "No",
+    separation_metres: evidence.separation_metres === null ? null : Math.round(evidence.separation_metres),
+  } : null;
+  if (evidence && pickupEvidence) {
+    for (const role of ["driver", "rider"] as const) {
+      const raw = evidence[`${role}_fix`];
+      if (!raw) { pickupEvidence[`${role}_gps`] = "Not available"; continue; }
+      const fix = JSON.parse(raw) as { latitude: number; longitude: number; accuracy_meters: number; captured_at: string; received_at: string };
+      for (const [key, value] of Object.entries(fix)) pickupEvidence[`${role}_${key}`] = value;
+      pickupEvidence[`${role}_gps_age_seconds`] = Math.max(0, Math.round((Date.parse(evidence.verified_at) - Date.parse(fix.captured_at)) / 1000));
+    }
+  }
   const driverLocation = db
     .prepare(
       "SELECT latitude, longitude FROM live_locations WHERE ride_id = ? AND participant = 'DRIVER'",
@@ -178,6 +196,7 @@ export function adminInspector(db: Db, id: string) {
     .get(fitRide.id) as { latitude: number; longitude: number } | undefined;
   return {
     ride,
+    pickupEvidence,
     requests: db
       .prepare(
         `SELECT rider_alias, status, pickup_label, destination_label, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude, requested_departure_at, created_at, decided_at FROM ride_requests WHERE ride_id = (SELECT id FROM rides WHERE public_id = ?) ORDER BY created_at DESC LIMIT 200`,

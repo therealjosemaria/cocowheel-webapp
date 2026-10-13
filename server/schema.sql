@@ -137,3 +137,12 @@ CREATE TABLE IF NOT EXISTS ride_events (
   actor TEXT NOT NULL CHECK (actor IN ('DRIVER', 'RIDER', 'SYSTEM')),
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS pickup_evidence (
+  ride_id TEXT PRIMARY KEY REFERENCES rides(id),
+  verified_at TEXT NOT NULL,
+  within_250_metres INTEGER,
+  separation_metres REAL,
+  driver_fix TEXT,
+  rider_fix TEXT
+);

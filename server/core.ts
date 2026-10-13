@@ -40,7 +40,6 @@ const OFFER_STALE_MS = 6 * 60 * 60 * 1000;
 const SAMPLE_OFFER_STALE_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_STALE_MS = 24 * 60 * 60 * 1000;
 const LOCATION_FRESH_MS = 2 * 60 * 1000;
-const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
 const CODE_ATTEMPT_INTERVAL_MS = 2_000;
 export const ANONYMOUS_ANIMALS = [
@@ -122,6 +121,7 @@ type RideRow = {
   co_ride_code_hash: string | null;
   co_ride_code_ciphertext: string | null;
   co_ride_code_expires_at: string | null;
+  co_ride_code_issued_at: string | null;
   co_ride_code_attempts: number;
   co_ride_code_last_attempt_at: string | null;
   created_at: string;
@@ -328,6 +328,12 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{ name: string }>;
+  if (!pickupColumns.some((column) => column.name === "co_ride_code_issued_at")) {
+    db.exec("ALTER TABLE rides ADD COLUMN co_ride_code_issued_at TEXT");
+    db.exec("UPDATE rides SET co_ride_code_issued_at = strftime('%Y-%m-%dT%H:%M:%fZ', co_ride_code_expires_at, '-15 minutes') WHERE co_ride_code_hash IS NOT NULL");
+  }
+  db.exec("UPDATE rides SET co_ride_code_expires_at = NULL WHERE co_ride_code_hash IS NOT NULL");
   const locationColumns = db
     .prepare("PRAGMA table_info(live_locations)")
     .all() as Array<{ name: string }>;
@@ -803,7 +809,7 @@ export function expireStaleRides(db: Db, now = new Date()) {
     .run(iso(now), iso(now), iso(now), staleScheduled).changes;
   const active = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ? WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
     )
     .run(iso(now), iso(now), staleActive).changes;
   if (scheduled || active)
@@ -1266,10 +1272,9 @@ export function advanceSampleSimulations(db: Db, now = new Date()) {
       const pickupAt = Date.parse(ride.accepted_at!) + 20_000;
       withSampleDriver(db, ride, (token) => {
         if (!ride.co_ride_started_at && +now >= pickupAt) {
-          // Refresh expired codes only for the automatic sample driver, never real rides.
+          // Recreate a missing code only for the automatic sample driver.
           if (
-            !ride.co_ride_code_ciphertext ||
-            Date.parse(ride.co_ride_code_expires_at!) <= +now
+            !ride.co_ride_code_ciphertext
           ) {
             issuePickupCode(db, ride.id, now);
             ride = rideRow(db, ride.public_id)!;
@@ -1439,13 +1444,16 @@ export function requestFitForRide(row: RideRow, request: RequestRow) {
 }
 
 function issuePickupCode(db: Db, rideId: string, now: Date) {
-  const code = randomInt(1000, 10_000).toString();
+  const previous = db.prepare("SELECT co_ride_code_ciphertext FROM rides WHERE id = ?").get(rideId) as { co_ride_code_ciphertext: string | null };
+  const oldCode = previous.co_ride_code_ciphertext ? decryptCode(previous.co_ride_code_ciphertext) : null;
+  let code: string;
+  do { code = randomInt(1000, 10_000).toString(); } while (code === oldCode);
   db.prepare(
-    "UPDATE rides SET co_ride_code_hash = ?, co_ride_code_ciphertext = ?, co_ride_code_expires_at = ?, co_ride_code_attempts = 0, co_ride_code_last_attempt_at = NULL WHERE id = ?",
+    "UPDATE rides SET co_ride_code_hash = ?, co_ride_code_ciphertext = ?, co_ride_code_issued_at = ?, co_ride_code_expires_at = NULL, co_ride_code_attempts = 0, co_ride_code_last_attempt_at = NULL WHERE id = ?",
   ).run(
     hash(code),
     encryptCode(code),
-    iso(new Date(now.getTime() + CODE_TTL_MS)),
+    iso(now),
     rideId,
   );
 }
@@ -1464,8 +1472,8 @@ export function renewPickupCode(
   if (!["ACCEPTED", "RIDE_ACTIVE"].includes(ride.status))
     throw new Error("CO_RIDE_NOT_ACTIVE");
   if (
-    ride.co_ride_code_expires_at &&
-    now.getTime() - (Date.parse(ride.co_ride_code_expires_at) - CODE_TTL_MS) <
+    ride.co_ride_code_issued_at &&
+    now.getTime() - Date.parse(ride.co_ride_code_issued_at) <
       60_000
   )
     throw new Error("CO_RIDE_CODE_RATE_LIMITED");
@@ -1691,9 +1699,7 @@ export function confirmCoRideCode(
   requireDriver(ride, session);
   if (
     !["ACCEPTED", "RIDE_ACTIVE"].includes(ride.status) ||
-    !ride.co_ride_code_hash ||
-    !ride.co_ride_code_expires_at ||
-    new Date(ride.co_ride_code_expires_at).getTime() <= now.getTime()
+    !ride.co_ride_code_hash
   )
     throw new Error("CO_RIDE_CODE_EXPIRED");
   if (!/^\d{4}$/.test(code)) throw new Error("CO_RIDE_CODE_INVALID");
@@ -1712,6 +1718,17 @@ export function confirmCoRideCode(
     throw new Error("CO_RIDE_CODE_INVALID");
   }
   db.transaction(() => {
+    // Immutable admin evidence, never a pickup gate. Preserve stale fixes as-is.
+    const readFix = (participant: Participant) => db.prepare(
+      "SELECT latitude, longitude, accuracy_meters, captured_at, received_at FROM live_locations WHERE ride_id = ? AND participant = ?",
+    ).get(ride.id, participant) as { latitude: number; longitude: number; accuracy_meters: number; captured_at: string; received_at: string } | undefined;
+    const driver = readFix("DRIVER");
+    const rider = readFix("RIDER");
+    const separation = driver && rider ? metersBetween(driver, rider) : null;
+    db.prepare("INSERT INTO pickup_evidence (ride_id, verified_at, within_250_metres, separation_metres, driver_fix, rider_fix) VALUES (?, ?, ?, ?, ?, ?)").run(
+      ride.id, iso(now), separation === null ? null : Number(separation <= 250), separation,
+      driver ? JSON.stringify(driver) : null, rider ? JSON.stringify(rider) : null,
+    );
     db.prepare(
       "UPDATE rides SET status = 'CO_RIDE_ACTIVE', co_ride_started_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL, last_activity_at = ? WHERE id = ?",
     ).run(iso(now), iso(now), ride.id);
@@ -1736,7 +1753,7 @@ export function cancelRide(
   const actor: Participant = driver ? "DRIVER" : "RIDER";
   db.transaction(() => {
     db.prepare(
-      "UPDATE rides SET status = 'CANCELLED', cancelled_at = ?, cancellation_reason = ?, last_activity_at = ? WHERE id = ?",
+      "UPDATE rides SET status = 'CANCELLED', cancelled_at = ?, cancellation_reason = ?, last_activity_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL WHERE id = ?",
     ).run(iso(now), `${actor}_CANCELLED`, iso(now), ride.id);
     db.prepare(
       "UPDATE ride_requests SET status = 'CANCELLED', decided_at = ? WHERE id = ? AND status = 'ACCEPTED'",
@@ -1956,9 +1973,7 @@ function riderView(
     request.id === row.accepted_request_id &&
     request.status === "ACCEPTED" &&
     ["ACCEPTED", "RIDE_ACTIVE"].includes(row.status) &&
-    row.co_ride_code_ciphertext &&
-    row.co_ride_code_expires_at &&
-    new Date(row.co_ride_code_expires_at).getTime() > now.getTime()
+    row.co_ride_code_ciphertext
       ? decryptCode(row.co_ride_code_ciphertext)
       : undefined;
   return {
