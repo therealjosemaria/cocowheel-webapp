@@ -1,7 +1,7 @@
 # University pilot
 
 Participants enter only their UniKey (four letters and four digits, normalized
-to lowercase). Cocowheels appends `@uni.sydney.edu.au` on the server. The six-digit
+to lowercase). GUMWHEEL appends `@uni.sydney.edu.au` on the server. The six-digit
 code proves inbox access, not current enrolment, identity checks, or driving
 eligibility. The UI tells participants their UniKey will be publicly visible.
 
@@ -31,6 +31,17 @@ eligibility. The UI tells participants their UniKey will be publicly visible.
   prompt. Only that account sees the Admin navigation link; the page and every
   admin API endpoint enforce access too. The Gmail test account has no admin access.
 
+## Guest identity and location source
+
+The `guest` alias is also allowed. Its verification code goes to
+`mosciarobusiness@gmail.com`, but its principal and visible name are `guest`,
+separate from the account named by that email address. `test` is rejected.
+Guest verification uses the same code/session/role restrictions as other accounts.
+
+Multiple sessions can view the same account, but only the selected browser login
+session may report each participant's location. **Use this device for location**
+explicitly transfers ownership. See [the ownership contract](docs/LOCATION_OWNERSHIP.md).
+
 ## Email setup (required for real delivery)
 
 The initial delivery adapter uses Resend's `POST /emails` API. Create/configure
@@ -39,7 +50,7 @@ the University's domain. Set these only in the Pi API's private `.env`:
 
 ```
 COCOWHEELS_RESEND_API_KEY=<server-side sending key>
-COCOWHEELS_EMAIL_FROM=Cocowheels <verified-sender@your-domain>
+COCOWHEELS_EMAIL_FROM=GUMWHEEL <verified-sender@your-domain>
 ```
 
 The existing `COCOWHEELS_CODE_ENCRYPTION_KEY` supplies a domain-separated HMAC key

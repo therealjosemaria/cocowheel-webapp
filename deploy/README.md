@@ -1,4 +1,9 @@
-# Cocowheels Pi deployment
+# GUMWHEEL Pi deployment
+
+Legacy `cocowheels` service names, paths and environment keys intentionally remain.
+The current frontend is `https://www.gumwheel.com`, reached via `gumwheel.com`.
+Keep both origins and the previous Vercel URL in the API allowlist during migration.
+See the root [README](../README.md) for current architecture and behaviour.
 
 The Pi runs the authoritative Cocowheels Node API and its dedicated SQLite database. The cloud frontend only forwards same-origin `/api/*` requests to a dedicated Cocowheels HTTPS tunnel; it never writes to SQLite.
 
@@ -46,6 +51,30 @@ the application `.env` file, a systemd environment variable, or another
 project.
 
 ## Verification
+
+Frontend pushes and backend deployments are separate. After tested backend/env
+changes, restart only the dedicated API and confirm health:
+
+```bash
+sudo systemctl restart cocowheels-api
+systemctl is-active cocowheels-api
+```
+
+Then test the new domain's `/api` proxy and representative read-only requests,
+including the correct browser Origin. Test search/reverse labels, authentication
+and current-ride recovery on an authorized test account. Do not create or cancel
+real user rides as a health check. A DNS/HTTPS success alone is not API verification.
+
+The schema initializer applies compatibility changes at API startup. Before a
+material schema change, take a consistent SQLite backup using SQLite's backup API
+or an equivalent validated process; do not copy only the main database file while
+WAL writes are active. Preserve the encryption key or existing encrypted pickup
+codes may no longer be recoverable. Backups contain private data and need restricted
+access. No automated backup/restore schedule is claimed by this documentation.
+
+If rolling back, check schema compatibility first. Do not delete the database or
+reset production records to resolve a deployment problem. Inspect service logs
+without copying tokens, payment identifiers or private locations into reports.
 
 ```bash
 COCOWHEELS_API_URL=http://127.0.0.1:5060 ./deploy/health-check.sh

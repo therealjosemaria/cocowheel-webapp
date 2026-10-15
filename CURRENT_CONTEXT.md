@@ -1,4 +1,9 @@
-# Cocowheels current context
+# GUMWHEEL implementation history
+
+> Current architecture and behaviour were consolidated in README.md on
+> 16 October 2026. Older notes below may be superseded, including guest-only
+> identity, payment options, expiry and pickup-code rules. Consult README.md
+> and its linked guides before relying on historical decisions.
 
 ## Pickup and completion update — 11 October 2026
 
