@@ -224,6 +224,10 @@ An isolated, opt-in polling/GPS harness is prepared in
 It uses a fresh synthetic database, random loopback port and no external APIs.
 Its short smoke mode verifies the harness, not production capacity. Do not run
 load stages on the Pi during real trips, even though their data is isolated.
+The [16 October isolated results](docs/BACKEND_LOAD_RESULTS_2026-10-16.md)
+cover 5–160 trips in two-minute stages with zero errors/skipped polls. At 160,
+CPU and tail latency showed pressure. These reduced-workload results do not
+establish a safe public-user ceiling or a measured breaking point.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

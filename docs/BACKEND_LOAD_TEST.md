@@ -1,6 +1,8 @@
 # Isolated polling and GPS capacity preparation
 
-Status: harness prepared; one-trip smoke verification is not a capacity result.
+Status: harness prepared and first isolated ramp completed; see
+[16 October results](BACKEND_LOAD_RESULTS_2026-10-16.md). One-trip smoke
+verification is not a capacity result.
 Never use this tool against a live service or run meaningful load on the production
 Pi while real trips are active. Data isolation is not CPU/RAM/storage isolation.
 
@@ -9,7 +11,7 @@ final three-second smoke made six successful requests (two per endpoint), with
 two GPS records updated after startup, two ownership rows, one paired trip and
 SQLite integrity `ok`. Maximum observed request time was about 58 ms; six requests
 are far too few to establish meaningful latency percentiles or safe capacity.
-No maintenance-gated load stage has been run as part of this preparation.
+Subsequent maintenance-gated stages are recorded separately in the results above.
 
 ## Scope
 
@@ -63,8 +65,9 @@ node --import tsx scripts/backend-load.mjs --smoke
 node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=1 --seconds=120
 ```
 
-Future approved stages: 1, 5, 10 trips, then choose further increments from the
-observations. Run stages separately and inspect each report before proceeding.
+The first approved ramp skipped the longer one-trip baseline after smoke checks:
+5, 10, 20, 40, 80 and 160 trips. Future runs require a fresh maintenance window
+and stage selection based on observations. Inspect each report before proceeding.
 The confirmation flag is an operator acknowledgement, not automatic proof that
 production has no active users. Load is capped at 250 trips and 30–600 seconds;
 these are harness safety bounds, not supported capacity claims. Unknown, duplicate,
