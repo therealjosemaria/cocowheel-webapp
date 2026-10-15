@@ -231,6 +231,9 @@ establish a safe public-user ceiling or a measured breaking point.
 A follow-up ten-minute 80-trip soak completed 26,400 requests with no errors or
 skipped polls, GPS-write P95 226 ms and peak API RSS 231 MiB; see the same results
 guide. Full frontend/network/provider load and fault recovery remain untested.
+The subsequent ten-minute 120-trip stage also passed (39,600 requests, no errors
+or skips; GPS-write P95 307 ms). Peak CPU rose to 73% of one core and event-loop
+delay briefly exceeded 250 ms, without a sustained guardrail violation.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

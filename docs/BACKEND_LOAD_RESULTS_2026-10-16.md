@@ -115,3 +115,45 @@ reduced loopback workload at 80 trips, not a real-user admission limit. A propos
 next step is 120 trips at the same duration/guardrails in a separately approved
 window, before repeating 160. Keep fuller polling, representative history, network
 latency and failure/recovery tests separate so their effects can be measured.
+
+## Follow-up: ten-minute 120-trip soak
+
+Operator-approved next stage, repository revision `de13cad`, unchanged harness.
+Command: `node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=120 --seconds=600`.
+120 trips / 240 participants ran for 600.135 seconds, approximately 66 requests/s.
+The workload, isolation and automatic guardrails were unchanged.
+
+| Endpoint | Requests | Errors | P95 ms | P99 ms | Maximum ms |
+| --- | --- | --- | --- | --- | --- |
+| Current ride | 14,400 | 0 | 6.2 | 18.8 | 177.5 |
+| Ride details | 18,000 | 0 | 7.2 | 20.1 | 145.2 |
+| GPS write | 7,200 | 0 | 307.3 | 375.4 | 573.9 |
+
+Total 39,600 requests, zero errors and zero skipped polls; maximum scheduler start
+lag 85.5 ms. Normal duration stop, exit code zero. SQLite integrity `ok`, 120 paired
+rides, 240 location sources and all 240 participant fixes updated after startup.
+
+Across 599 worker samples, API CPU peaked at 73.3% of one core (sample mean 17.6%).
+Peak API RSS was 267.9 MiB; first-minute mean 260.8 MiB, final-minute mean 267.9 MiB.
+Memory settled during this observation window; this is not a long-term leak test.
+Peak sampled event-loop P99 was 275.5 ms. Eight samples exceeded 250 ms, with no
+consecutive overloaded samples, versus five required for automatic shutdown. Treat this
+as a pressure signal despite the successful run. GPS-write P95 increased from
+226 ms at 80 trips to 307 ms at 120 trips, while read P95 stayed near 6–7 ms.
+
+SQLite size was 700,416 bytes at both first and last sample; peak WAL 4,136,512
+bytes. Worker minimum free-system memory was 3,775.9 MiB. Host available-memory
+snapshots were approximately 4,140 MiB before and 4,174 MiB after; swap usage
+remained approximately 1,172 MiB. These memory metrics have different accounting.
+
+Production health returned `ok` before, midway and after the test. Both isolated
+processes exited. Production data/configuration remained unchanged; no restart,
+external API load, browser test or fault injection was performed. Raw evidence
+and synthetic database artifacts remain in `/tmp/gumwheel-backend-load-FLkug7/`
+(`report.json`); no artifacts were deleted.
+
+This establishes a successful ten-minute 120-trip reduced loopback test, not a
+safe real-user ceiling. Proposed next stage: 160 trips for ten minutes in an
+approved maintenance window, retaining all guardrails and stopping on sustained
+degradation. The earlier short 160-trip stage already showed CPU/tail-latency
+pressure; a longer run must not disable thresholds merely to finish.
