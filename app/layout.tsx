@@ -16,16 +16,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LocationTracker />
         <UniversityVerification />
         <main className="app-shell">
           <header className="topbar">
-            <span className="brand">
-              GUMWHEEL
-            </span>
+            <span className="brand">GUMWHEEL</span>
             <AppNavigation />
           </header>
-          <div className="app-content">{children}</div>
+          <div className="app-content">
+            <LocationTracker />
+            {children}
+          </div>
           <SiteFooter />
         </main>
       </body>

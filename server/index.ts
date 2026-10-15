@@ -30,6 +30,7 @@ import {
   requestRide,
   searchRides,
   submitLocation,
+  locationSource,
 } from "./core";
 import db from "./db";
 import {
@@ -131,7 +132,8 @@ function errorStatus(error: unknown) {
   if (code === "ADMIN_RATE_LIMITED") return 429;
   if (code === "ADMIN_NOT_CONFIGURED") return 503;
   if (code === "GUEST_SESSION_REQUIRED") return 401;
-  if (code === "RIDE_ACCESS_DENIED") return 403;
+  if (code === "RIDE_ACCESS_DENIED" || code === "LOCATION_SOURCE_OTHER_DEVICE")
+    return 403;
   if (code === "RIDE_NOT_FOUND") return 404;
   if (
     [
@@ -643,7 +645,16 @@ export function createApiServer(
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/current") {
-        const currents = currentOpenRides(database, token);
+        const currents = currentOpenRides(database, token).map((current) => ({
+          ...current,
+          locationSource:
+            current.role === "DRIVER" ||
+            ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
+              current.ride.status,
+            )
+              ? locationSource(database, token, current.ride.rideId)
+              : null,
+        }));
         writeJson(
           response,
           200,
@@ -816,6 +827,22 @@ export function createApiServer(
               body.decision === "ACCEPT" ? "ACCEPT" : "DECLINE",
             ),
           },
+          cors,
+        );
+        return;
+      }
+      if (
+        request.method === "POST" &&
+        parts.length === 4 &&
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "location-source"
+      ) {
+        requireUniversitySession(database, token);
+        writeJson(
+          response,
+          200,
+          locationSource(database, token, parts[2], true),
           cors,
         );
         return;

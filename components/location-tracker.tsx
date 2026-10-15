@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
@@ -8,6 +8,9 @@ import { movementTracker } from "@/lib/location-tracking";
 
 export default function LocationTracker() {
   const adminPage = usePathname().startsWith("/admin");
+  const [otherDeviceRide, setOtherDeviceRide] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState(false);
   useEffect(() => {
     if (adminPage) return;
     let stopped = false;
@@ -33,7 +36,11 @@ export default function LocationTracker() {
       const tickStartedAt = Date.now();
       try {
         const { currents } = await cocowheelsApi<{
-          currents: Array<{ role: string; ride: Ride }>;
+          currents: Array<{
+            role: string;
+            ride: Ride;
+            locationSource?: { canReport: boolean } | null;
+          }>;
         }>("/api/current");
         const current = currents.find(
           ({ role, ride }) =>
@@ -45,8 +52,15 @@ export default function LocationTracker() {
         );
         if (!current || stopped) {
           currentId = "";
+          if (!stopped) setOtherDeviceRide(null);
           return;
         }
+        setOtherDeviceRide(
+          current.locationSource?.canReport === false
+            ? current.ride.rideId
+            : null,
+        );
+        if (current.locationSource?.canReport === false) return;
         if (currentId !== current.ride.rideId) {
           currentId = current.ride.rideId;
           lastSent = 0;
@@ -125,6 +139,7 @@ export default function LocationTracker() {
     window.addEventListener("pageshow", resume);
     window.addEventListener("online", resume);
     window.addEventListener("cocowheels:identity-changed", resume);
+    window.addEventListener("cocowheels:location-source-changed", resume);
     return () => {
       stopped = true;
       clearTimeout(timer);
@@ -132,7 +147,60 @@ export default function LocationTracker() {
       window.removeEventListener("pageshow", resume);
       window.removeEventListener("online", resume);
       window.removeEventListener("cocowheels:identity-changed", resume);
+      window.removeEventListener("cocowheels:location-source-changed", resume);
     };
   }, [adminPage]);
-  return null;
+  async function switchDevice() {
+    if (!otherDeviceRide || switching) return;
+    setSwitching(true);
+    try {
+      await cocowheelsApi(
+        `/api/rides/${encodeURIComponent(otherDeviceRide)}/location-source`,
+        { method: "POST" },
+      );
+      setOtherDeviceRide(null);
+      window.dispatchEvent(new Event("cocowheels:location-source-changed"));
+    } catch {
+      setSwitchError(true);
+    } finally {
+      setSwitching(false);
+    }
+  }
+  if (adminPage) return null;
+  return (
+    <>
+      {otherDeviceRide ? (
+        <section className="location-source-notice">
+          <p>Location is updating from another device.</p>
+          <button
+            type="button"
+            className="secondary"
+            disabled={switching}
+            onClick={() => void switchDevice()}
+          >
+            {switching ? "Switching…" : "Use this device for location"}
+          </button>
+        </section>
+      ) : null}
+      {switchError ? (
+        <div className="cancel-prompt-backdrop">
+          <section
+            className="cancel-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Location update"
+          >
+            <p>We couldn’t switch devices. Please try again.</p>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => setSwitchError(false)}
+            >
+              OKAY
+            </button>
+          </section>
+        </div>
+      ) : null}
+    </>
+  );
 }

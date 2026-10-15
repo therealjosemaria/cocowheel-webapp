@@ -146,3 +146,11 @@ CREATE TABLE IF NOT EXISTS pickup_evidence (
   driver_fix TEXT,
   rider_fix TEXT
 );
+-- Browser login sessions own location reporting independently for each participant.
+CREATE TABLE IF NOT EXISTS location_sources (
+  ride_id TEXT NOT NULL,
+  participant TEXT NOT NULL,
+  principal_id TEXT NOT NULL,
+  token_hash TEXT NOT NULL,
+  PRIMARY KEY (ride_id, participant, principal_id)
+);

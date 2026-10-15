@@ -2543,3 +2543,12 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .driver-payment-details dd { font-size: var(--text-small); }
 .preview-payid code { font-family: var(--font-ui); }
 .ride-field-label svg, .payid-copy-row svg { width: var(--icon-label); height: var(--icon-label); flex-basis: var(--icon-label); }
+.location-source-notice {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  font-size: var(--text-small);
+}
+.location-source-notice p { margin: 0; }
+.location-source-notice .secondary { margin-bottom: 0; }

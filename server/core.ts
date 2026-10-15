@@ -328,12 +328,20 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
-  const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{ name: string }>;
-  if (!pickupColumns.some((column) => column.name === "co_ride_code_issued_at")) {
+  const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
+    name: string;
+  }>;
+  if (
+    !pickupColumns.some((column) => column.name === "co_ride_code_issued_at")
+  ) {
     db.exec("ALTER TABLE rides ADD COLUMN co_ride_code_issued_at TEXT");
-    db.exec("UPDATE rides SET co_ride_code_issued_at = strftime('%Y-%m-%dT%H:%M:%fZ', co_ride_code_expires_at, '-15 minutes') WHERE co_ride_code_hash IS NOT NULL");
+    db.exec(
+      "UPDATE rides SET co_ride_code_issued_at = strftime('%Y-%m-%dT%H:%M:%fZ', co_ride_code_expires_at, '-15 minutes') WHERE co_ride_code_hash IS NOT NULL",
+    );
   }
-  db.exec("UPDATE rides SET co_ride_code_expires_at = NULL WHERE co_ride_code_hash IS NOT NULL");
+  db.exec(
+    "UPDATE rides SET co_ride_code_expires_at = NULL WHERE co_ride_code_hash IS NOT NULL",
+  );
   const locationColumns = db
     .prepare("PRAGMA table_info(live_locations)")
     .all() as Array<{ name: string }>;
@@ -1273,9 +1281,7 @@ export function advanceSampleSimulations(db: Db, now = new Date()) {
       withSampleDriver(db, ride, (token) => {
         if (!ride.co_ride_started_at && +now >= pickupAt) {
           // Recreate a missing code only for the automatic sample driver.
-          if (
-            !ride.co_ride_code_ciphertext
-          ) {
+          if (!ride.co_ride_code_ciphertext) {
             issuePickupCode(db, ride.id, now);
             ride = rideRow(db, ride.public_id)!;
           }
@@ -1444,18 +1450,19 @@ export function requestFitForRide(row: RideRow, request: RequestRow) {
 }
 
 function issuePickupCode(db: Db, rideId: string, now: Date) {
-  const previous = db.prepare("SELECT co_ride_code_ciphertext FROM rides WHERE id = ?").get(rideId) as { co_ride_code_ciphertext: string | null };
-  const oldCode = previous.co_ride_code_ciphertext ? decryptCode(previous.co_ride_code_ciphertext) : null;
+  const previous = db
+    .prepare("SELECT co_ride_code_ciphertext FROM rides WHERE id = ?")
+    .get(rideId) as { co_ride_code_ciphertext: string | null };
+  const oldCode = previous.co_ride_code_ciphertext
+    ? decryptCode(previous.co_ride_code_ciphertext)
+    : null;
   let code: string;
-  do { code = randomInt(1000, 10_000).toString(); } while (code === oldCode);
+  do {
+    code = randomInt(1000, 10_000).toString();
+  } while (code === oldCode);
   db.prepare(
     "UPDATE rides SET co_ride_code_hash = ?, co_ride_code_ciphertext = ?, co_ride_code_issued_at = ?, co_ride_code_expires_at = NULL, co_ride_code_attempts = 0, co_ride_code_last_attempt_at = NULL WHERE id = ?",
-  ).run(
-    hash(code),
-    encryptCode(code),
-    iso(now),
-    rideId,
-  );
+  ).run(hash(code), encryptCode(code), iso(now), rideId);
 }
 
 export function renewPickupCode(
@@ -1473,8 +1480,7 @@ export function renewPickupCode(
     throw new Error("CO_RIDE_NOT_ACTIVE");
   if (
     ride.co_ride_code_issued_at &&
-    now.getTime() - Date.parse(ride.co_ride_code_issued_at) <
-      60_000
+    now.getTime() - Date.parse(ride.co_ride_code_issued_at) < 60_000
   )
     throw new Error("CO_RIDE_CODE_RATE_LIMITED");
   issuePickupCode(db, ride.id, now);
@@ -1563,6 +1569,51 @@ function isAcceptedRider(db: Db, row: RideRow, session: Session) {
   return Boolean(request && request.rider_session_id === session.id);
 }
 
+export function locationSource(
+  db: Db,
+  token: string | null,
+  rideId: string,
+  takeOver = false,
+  now = new Date(),
+) {
+  const session = requireSession(db, token, now);
+  const ride = rideRow(db, rideId);
+  if (
+    !ride ||
+    ![
+      "PUBLISHED",
+      "REQUESTED",
+      "ACCEPTED",
+      "RIDE_ACTIVE",
+      "CO_RIDE_ACTIVE",
+    ].includes(ride.status)
+  )
+    throw new Error("LOCATION_NOT_ALLOWED");
+  const participant =
+    ride.driver_session_id === session.id
+      ? "DRIVER"
+      : isAcceptedRider(db, ride, session)
+        ? "RIDER"
+        : null;
+  if (!participant) throw new Error("RIDE_ACCESS_DENIED");
+  if (takeOver) {
+    db.transaction(() => {
+      db.prepare(
+        `INSERT INTO location_sources VALUES (?, ?, ?, ?)
+        ON CONFLICT(ride_id, participant, principal_id) DO UPDATE SET token_hash = excluded.token_hash`,
+      ).run(ride.id, participant, session.id, hash(token!));
+      event(db, ride.id, "LOCATION_SOURCE_CHANGED", participant, now);
+    })();
+  }
+  const source = db
+    .prepare(
+      "SELECT token_hash FROM location_sources WHERE ride_id = ? AND participant = ? AND principal_id = ?",
+    )
+    .get(ride.id, participant, session.id) as
+    { token_hash: string } | undefined;
+  return { canReport: !source || source.token_hash === hash(token!) };
+}
+
 export function submitLocation(
   db: Db,
   rawSessionToken: string | null,
@@ -1614,6 +1665,14 @@ export function submitLocation(
     throw new Error("LOCATION_STALE");
   db.transaction(() => {
     const previous = locationFor(db, ride.id, participant, now);
+    // Sample drivers use ephemeral server-only tokens, never browser tracking.
+    if (!(ride.is_sample && participant === "DRIVER")) {
+      db.prepare(
+        "INSERT OR IGNORE INTO location_sources VALUES (?, ?, ?, ?)",
+      ).run(ride.id, participant, session.id, hash(rawSessionToken!));
+      if (!locationSource(db, rawSessionToken, rideId, false, now).canReport)
+        throw new Error("LOCATION_SOURCE_OTHER_DEVICE");
+    }
     if (
       previous &&
       new Date(previous.capturedAt).getTime() >= captured.getTime()
@@ -1719,15 +1778,32 @@ export function confirmCoRideCode(
   }
   db.transaction(() => {
     // Immutable admin evidence, never a pickup gate. Preserve stale fixes as-is.
-    const readFix = (participant: Participant) => db.prepare(
-      "SELECT latitude, longitude, accuracy_meters, captured_at, received_at FROM live_locations WHERE ride_id = ? AND participant = ?",
-    ).get(ride.id, participant) as { latitude: number; longitude: number; accuracy_meters: number; captured_at: string; received_at: string } | undefined;
+    const readFix = (participant: Participant) =>
+      db
+        .prepare(
+          "SELECT latitude, longitude, accuracy_meters, captured_at, received_at FROM live_locations WHERE ride_id = ? AND participant = ?",
+        )
+        .get(ride.id, participant) as
+        | {
+            latitude: number;
+            longitude: number;
+            accuracy_meters: number;
+            captured_at: string;
+            received_at: string;
+          }
+        | undefined;
     const driver = readFix("DRIVER");
     const rider = readFix("RIDER");
     const separation = driver && rider ? metersBetween(driver, rider) : null;
-    db.prepare("INSERT INTO pickup_evidence (ride_id, verified_at, within_250_metres, separation_metres, driver_fix, rider_fix) VALUES (?, ?, ?, ?, ?, ?)").run(
-      ride.id, iso(now), separation === null ? null : Number(separation <= 250), separation,
-      driver ? JSON.stringify(driver) : null, rider ? JSON.stringify(rider) : null,
+    db.prepare(
+      "INSERT INTO pickup_evidence (ride_id, verified_at, within_250_metres, separation_metres, driver_fix, rider_fix) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(
+      ride.id,
+      iso(now),
+      separation === null ? null : Number(separation <= 250),
+      separation,
+      driver ? JSON.stringify(driver) : null,
+      rider ? JSON.stringify(rider) : null,
     );
     db.prepare(
       "UPDATE rides SET status = 'CO_RIDE_ACTIVE', co_ride_started_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL, last_activity_at = ? WHERE id = ?",

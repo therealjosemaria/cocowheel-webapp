@@ -10,6 +10,9 @@ import {
   cancelRide,
   currentOpenRides,
   createGuestSession,
+  locationSource,
+  submitLocation,
+  decideRequest,
 } from "../server/core";
 import {
   normalizeUniKey,
@@ -85,20 +88,52 @@ test("guest delivers to the owner inbox but has its own identity and history", a
     const start = Date.now();
     const original = await login(db, "mosciarobusiness@gmail.com", start);
     let delivered = "";
-    const challenge = await requestUniversityCode(db, "guest", async (email, code) => {
-      assert.equal(email, "mosciarobusiness@gmail.com");
-      delivered = code;
-    }, start + 60001);
+    const challenge = await requestUniversityCode(
+      db,
+      "guest",
+      async (email, code) => {
+        assert.equal(email, "mosciarobusiness@gmail.com");
+        delivered = code;
+      },
+      start + 60001,
+    );
     assert.equal(challenge.expiresAt, start + 60001 + 10 * 60000);
-    const verified = verifyUniversityCode(db, challenge.challengeId, delivered, null, new Date(start + 60002));
+    const verified = verifyUniversityCode(
+      db,
+      challenge.challengeId,
+      delivered,
+      null,
+      new Date(start + 60002),
+    );
     assert.equal(verified.unikey, "guest");
     assert.equal(findSession(db, verified.token)?.alias, "guest");
-    assert.notEqual(findSession(db, original.token)?.id, findSession(db, verified.token)?.id);
+    assert.notEqual(
+      findSession(db, original.token)?.id,
+      findSession(db, verified.token)?.id,
+    );
     assert.notEqual(verified.unikey, "jmos0905");
-    const again = await requestUniversityCode(db, "GUEST", async (_email, code) => { delivered = code; }, start + 120002);
-    const second = verifyUniversityCode(db, again.challengeId, delivered, null, new Date(start + 120003));
-    assert.equal(findSession(db, second.token)?.id, findSession(db, verified.token)?.id);
-  } finally { db.close(); }
+    const again = await requestUniversityCode(
+      db,
+      "GUEST",
+      async (_email, code) => {
+        delivered = code;
+      },
+      start + 120002,
+    );
+    const second = verifyUniversityCode(
+      db,
+      again.challengeId,
+      delivered,
+      null,
+      new Date(start + 120003),
+    );
+    assert.equal(
+      findSession(db, second.token)?.id,
+      findSession(db, verified.token)?.id,
+    );
+  } finally {
+    db.close();
+  }
 });
 
 test("verification is single use, expires, caps guesses and resends, and never stores plaintext codes", async () => {
@@ -244,6 +279,113 @@ test("every account shares history and one role across signed-in devices", async
     null,
   );
   db.close();
+});
+
+test("location source stays with one browser per participant until explicitly switched", async () => {
+  const db = database();
+  try {
+    const start = Date.now();
+    const driverA = await login(db, "driv0001", start);
+    const driverB = await login(db, "driv0001", start + 60001);
+    const riderA = await login(db, "ride0001", start);
+    const riderB = await login(db, "ride0001", start + 60001);
+    const outsider = await login(db, "else0001", start);
+    const now = new Date(start + 120000);
+    const origin = { latitude: -33.87, longitude: 151.2 };
+    const destination = { latitude: -33.92, longitude: 151.26 };
+    const ride = publishRide(
+      db,
+      driverA.token,
+      {
+        origin,
+        destination,
+        scheduledDepartureAt: now.toISOString(),
+        priceAud: 5,
+        payId: "driver@example.com",
+        payIdType: "EMAIL",
+      },
+      now,
+    ).ride;
+    const fix = {
+      ...origin,
+      accuracyMeters: 10,
+      capturedAt: now.toISOString(),
+    };
+    assert.equal(
+      locationSource(db, driverA.token, ride.rideId, false, now).canReport,
+      true,
+    );
+    submitLocation(db, driverA.token, ride.rideId, fix, now);
+    assert.equal(
+      locationSource(db, driverB.token, ride.rideId, false, now).canReport,
+      false,
+    );
+    assert.throws(
+      () => submitLocation(db, driverB.token, ride.rideId, fix, now),
+      /LOCATION_SOURCE_OTHER_DEVICE/,
+    );
+    assert.throws(
+      () => locationSource(db, outsider.token, ride.rideId, true, now),
+      /RIDE_ACCESS_DENIED/,
+    );
+    const requested = requestRide(
+      db,
+      riderA.token,
+      ride.rideId,
+      {
+        pickup: origin,
+        destination,
+        requestedDepartureAt: now.toISOString(),
+      },
+      now,
+    );
+    assert.throws(
+      () => locationSource(db, riderA.token, ride.rideId, true, now),
+      /RIDE_ACCESS_DENIED/,
+    );
+    decideRequest(
+      db,
+      driverA.token,
+      ride.rideId,
+      requested.ride.request!.requestId,
+      "ACCEPT",
+      now,
+    );
+    submitLocation(db, riderA.token, ride.rideId, fix, now);
+    locationSource(db, driverB.token, ride.rideId, true, now);
+    assert.equal(
+      locationSource(db, driverA.token, ride.rideId, false, now).canReport,
+      false,
+    );
+    assert.throws(
+      () => submitLocation(db, driverA.token, ride.rideId, fix, now),
+      /LOCATION_SOURCE_OTHER_DEVICE/,
+    );
+    submitLocation(db, driverB.token, ride.rideId, fix, now);
+    assert.equal(
+      locationSource(db, riderA.token, ride.rideId, false, now).canReport,
+      true,
+    );
+    locationSource(db, riderB.token, ride.rideId, true, now);
+    assert.throws(
+      () => submitLocation(db, riderA.token, ride.rideId, fix, now),
+      /LOCATION_SOURCE_OTHER_DEVICE/,
+    );
+    submitLocation(db, riderB.token, ride.rideId, fix, now);
+    // Ownership survives application/database schema initialization, without a lease timer.
+    initializeCoreSchema(db);
+    assert.equal(
+      locationSource(db, driverB.token, ride.rideId, false, now).canReport,
+      true,
+    );
+    cancelRide(db, driverB.token, ride.rideId, now);
+    assert.throws(
+      () => locationSource(db, driverB.token, ride.rideId, true, now),
+      /LOCATION_NOT_ALLOWED/,
+    );
+  } finally {
+    db.close();
+  }
 });
 test("switching accounts replaces only that browser session", async () => {
   const db = database();
