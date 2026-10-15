@@ -136,6 +136,9 @@ separate follow-up tests.
 The owner authorized autonomous sequential tests for up to eight hours after the
 overnight request, stopping at measurable degradation rather than forced failure.
 No production behavior or safety thresholds are changed.
+Completed experiments and boundary interpretations are recorded in the
+[overnight report](OVERNIGHT_CAPACITY_2026-10-16.md). No further unattended runs
+are scheduled by this harness.
 
 - `--gps=synchronized|staggered` (default synchronized) changes only GPS phases.
   Staggering distributes each pair deterministically over 20 seconds while
@@ -151,7 +154,8 @@ No production behavior or safety thresholds are changed.
   response history on every request. Compare schedules on this same revised harness.
 - `--workload=history --history=20` switches to history and availability reads,
   each every ten seconds per participant (0.4 requests/s per synthetic pair).
-  Fixture depth is bounded 1–100; default 20 completed rides per account. Each
+  Fixture depth is bounded 1–100, with at most 5,000 total completed rows;
+  default 20 completed rides per account. Each
   pair shares those completed rides; the database has pairs × depth historical
   rides, plus paired fixture rides and 20 separately owned public offers.
   Completed rows are synthetic clones, not a claim that lifecycle transitions

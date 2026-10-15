@@ -30,6 +30,13 @@ test("load harness refuses unsafe or ambiguous arguments before startup", () => 
     ["--run", "--maintenance-confirmed", "--workload=history", "--history=101"],
     ["--run", "--maintenance-confirmed", "--workload=history", "--history=0"],
     ["--run", "--maintenance-confirmed", "--history=20"],
+    [
+      "--run",
+      "--maintenance-confirmed",
+      "--workload=history",
+      "--trips=100",
+      "--history=100",
+    ],
     ["--run", "--maintenance-confirmed", "--profile", "--profile"],
   ]) {
     const result = run(...args);

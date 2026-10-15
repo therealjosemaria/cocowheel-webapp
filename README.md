@@ -246,6 +246,11 @@ The isolated harness now supports synchronized/staggered GPS comparisons,
 optional SQL statement timing, and a separate discovery/history read workload
 with bounded synthetic history. See [the harness guide](docs/BACKEND_LOAD_TEST.md)
 for limitations. These are test-only additions, not production behavior changes.
+The [overnight two-workload report](docs/OVERNIGHT_CAPACITY_2026-10-16.md) confirms
+GPS burst sensitivity (160-trip GPS P95 578 ms synchronized versus 11 ms staggered)
+and a separate history/discovery boundary: 200 pairs sustained ten minutes, while
+250 pairs hit the 512 MiB test-process guardrail. These are workload-specific
+measurements, not additive capacities or a certified production user limit.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

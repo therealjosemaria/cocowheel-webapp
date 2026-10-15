@@ -294,6 +294,7 @@ async function main() {
   if (
     historyDepth < 1 ||
     historyDepth > 100 ||
+    (workload === "history" && trips * historyDepth > 5000) ||
     (args.some((a) => a.startsWith("--history=")) && workload !== "history")
   )
     throw new Error("INVALID_HISTORY_DEPTH");
