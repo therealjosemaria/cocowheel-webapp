@@ -234,6 +234,10 @@ guide. Full frontend/network/provider load and fault recovery remain untested.
 The subsequent ten-minute 120-trip stage also passed (39,600 requests, no errors
 or skips; GPS-write P95 307 ms). Peak CPU rose to 73% of one core and event-loop
 delay briefly exceeded 250 ms, without a sustained guardrail violation.
+The ten-minute 160-trip stage completed 52,800 requests without errors/skips,
+but read P99 rose above 300 ms and 43 event-loop samples exceeded 250 ms.
+Pause the ramp to investigate burst-related latency before increasing load;
+successful completion does not make 160 trips a recommended operating limit.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

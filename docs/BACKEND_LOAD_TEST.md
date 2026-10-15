@@ -1,6 +1,6 @@
 # Isolated polling and GPS capacity preparation
 
-Status: harness prepared, first isolated ramp and ten-minute 80/120-trip soaks completed; see
+Status: harness prepared, first isolated ramp and ten-minute 80/120/160-trip soaks completed; see
 [16 October results](BACKEND_LOAD_RESULTS_2026-10-16.md). One-trip smoke
 verification is not a capacity result.
 Never use this tool against a live service or run meaningful load on the production

@@ -157,3 +157,57 @@ safe real-user ceiling. Proposed next stage: 160 trips for ten minutes in an
 approved maintenance window, retaining all guardrails and stopping on sustained
 degradation. The earlier short 160-trip stage already showed CPU/tail-latency
 pressure; a longer run must not disable thresholds merely to finish.
+
+## Follow-up: ten-minute 160-trip soak
+
+Operator approved this stage after reviewing 120-trip results. Repository revision
+`e43d025`, unchanged harness, workload and guardrails.
+Command: `node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=160 --seconds=600`.
+160 trips / 320 participants ran for 600.169 seconds at approximately 88 requests/s.
+
+| Endpoint | Requests | Errors | P95 ms | P99 ms | Maximum ms |
+| --- | --- | --- | --- | --- | --- |
+| Current ride | 19,200 | 0 | 16.4 | 303.6 | 808.2 |
+| Ride details | 24,000 | 0 | 17.1 | 314.2 | 816.1 |
+| GPS write | 9,600 | 0 | 504.6 | 601.5 | 833.1 |
+
+52,800 requests completed with zero errors and zero skipped polls. Maximum
+scheduler start lag was 103.6 ms. Normal duration stop and exit code zero.
+SQLite integrity `ok`; all 160 rides remained paired, with 320 independent
+location sources and all 320 participant fixes updated after startup.
+
+Across 599 worker samples:
+
+- API CPU peaked at 99.9% of one core; sample mean 24.4%. One sample exceeded 90%.
+- Peak event-loop P99 was 405.5 ms; 43 samples exceeded 250 ms. The longest
+  combined CPU/event-loop overload streak was one sample, below the five-sample
+  automatic stop rule. Periodic pressure can therefore pass this guardrail.
+- API RSS peaked at 314.7 MiB; first-minute mean 304.4 MiB, final-minute mean
+  309.1 MiB. No continuing large memory rise was observed within ten minutes.
+- SQLite grew from 831,488 to 856,064 bytes; peak WAL 4,136,512 bytes.
+- Worker minimum free-system memory was 3,680 MiB. Host available-memory snapshots
+  were approximately 4,158 MiB before and 4,116 MiB after, with swap usage unchanged
+  at approximately 1,172 MiB. These memory metrics use different accounting.
+
+Production health returned `ok` before, midway and after. Both isolated processes
+exited. No production data/configuration changes, restart, external provider load,
+browser verification or fault injection occurred. Retained raw report:
+`/tmp/gumwheel-backend-load-xtdWQk/report.json`. Synthetic database artifacts remain
+in that private directory; nothing was deleted.
+
+### Assessment: pause the ramp
+
+The workload completed correctly, but latency degradation is materially visible:
+read P99 increased from about 19–20 ms at 120 trips to 304–314 ms at 160, while GPS
+P95 increased from 307 to 505 ms. There were 43 event-loop threshold exceedances
+versus eight at 120. This is not a crash or measured breaking point, but neither
+is it evidence of comfortable headroom. Do not raise an admission limit to 160
+based on these results.
+
+Recommended next work is diagnostic, not another concurrency increase: instrument
+time-window/endpoint latency and CPU, investigate synchronous database/API work,
+and compare staggered GPS writes with the synchronized bursts as a separately
+labelled workload. Correlation with bursts is a hypothesis until measured; the
+current aggregate report does not prove the bottleneck. Any profiling or harness
+changes need their own checks. Full frontend polling, mature history, network
+latency, long-duration leaks and recovery remain outside these results.
