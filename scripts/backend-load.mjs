@@ -1,6 +1,6 @@
 // Isolated test tool. Never accepts a target URL, database path or production env.
 import { fork } from "node:child_process";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { mkdtempSync, writeFileSync, statSync } from "node:fs";
 import { tmpdir, freemem, totalmem, cpus } from "node:os";
 import { join } from "node:path";
@@ -32,6 +32,40 @@ async function worker() {
   const core = await import("../server/core.ts");
   const { default: database } = await import("../server/db.ts");
   const { createApiServer } = await import("../server/index.ts");
+  const sqlTimings = {};
+  let measuring = false;
+  if (process.env.GUMWHEEL_LOAD_PROFILE === "1") {
+    const prepare = database.prepare.bind(database);
+    database.prepare = (sql) => {
+      const statement = prepare(sql);
+      const category = sql.startsWith("UPDATE rides SET status = 'EXPIRED'")
+        ? "expiry"
+        : /^SELECT/i.test(sql.trim())
+          ? "select"
+          : "write";
+      for (const method of ["run", "get", "all"]) {
+        const original = statement[method].bind(statement);
+        statement[method] = (...parameters) => {
+          if (!measuring) return original(...parameters);
+          const started = performance.now();
+          try {
+            return original(...parameters);
+          } finally {
+            const elapsed = performance.now() - started;
+            const metric = (sqlTimings[category] ??= {
+              count: 0,
+              totalMs: 0,
+              maxMs: 0,
+            });
+            metric.count++;
+            metric.totalMs += elapsed;
+            metric.maxMs = Math.max(metric.maxMs, elapsed);
+          }
+        };
+      }
+      return statement;
+    };
+  }
   const api = createApiServer(database, { sampleRides: false });
   const actors = [];
   const pin = { latitude: -33.87, longitude: 151.2, label: "Synthetic pickup" };
@@ -86,11 +120,63 @@ async function worker() {
       });
     const code = core.getRide(database, ride.rideId, rider.session).coRideCode;
     core.confirmCoRideCode(database, driver.token, ride.rideId, code);
+    if (process.env.GUMWHEEL_LOAD_WORKLOAD === "history") {
+      const original = database
+        .prepare("SELECT * FROM rides WHERE public_id = ?")
+        .get(ride.rideId);
+      const originalRequest = database
+        .prepare("SELECT * FROM ride_requests WHERE id = ?")
+        .get(original.accepted_request_id);
+      const insertRow = (table, row) =>
+        database
+          .prepare(
+            `INSERT INTO ${table} (${Object.keys(row).join(",")}) VALUES (${Object.keys(
+              row,
+            )
+              .map(() => "?")
+              .join(",")})`,
+          )
+          .run(...Object.values(row));
+      database.transaction(() => {
+        for (let h = 0; h < Number(process.env.GUMWHEEL_LOAD_HISTORY); h++) {
+          const id = randomUUID(),
+            requestId = randomUUID();
+          const ended = new Date(Date.now() - (h + 1) * 86400000).toISOString();
+          insertRow("rides", {
+            ...original,
+            id,
+            public_id: randomUUID(),
+            status: "COMPLETED",
+            accepted_request_id: requestId,
+            completed_at: ended,
+            last_activity_at: ended,
+          });
+          insertRow("ride_requests", {
+            ...originalRequest,
+            id: requestId,
+            ride_id: id,
+          });
+        }
+      })();
+    }
     for (const [role, actor] of [
       ["DRIVER", driver],
       ["RIDER", rider],
     ])
       actors.push({ token: actor.token, rideId: ride.rideId, role });
+  }
+  if (process.env.GUMWHEEL_LOAD_WORKLOAD === "history") {
+    for (let i = 0; i < 20; i++) {
+      const driver = account(`load-public-${i}`);
+      core.publishRide(database, driver.token, {
+        origin: pin,
+        destination,
+        scheduledDepartureAt: new Date().toISOString(),
+        priceAud: 5,
+        payId: "driver@example.com",
+        payIdType: "EMAIL",
+      });
+    }
   }
   // Listen only on an OS-assigned loopback port, never on the production port.
   api.listen(0, "127.0.0.1");
@@ -125,9 +211,11 @@ async function worker() {
   };
   const timer = setInterval(metrics, 1000);
   const readyAt = new Date().toISOString();
+  measuring = true;
   process.send({ type: "ready", port: api.address().port, actors });
   process.on("message", async (message) => {
     if (message !== "stop") return;
+    measuring = false;
     clearInterval(timer);
     lag.disable();
     api.close();
@@ -158,6 +246,7 @@ async function worker() {
       sources,
       active,
       updatedFixes,
+      sqlTimings,
     });
     process.disconnect();
   });
@@ -175,7 +264,7 @@ async function main() {
   if (
     args.some(
       (a) =>
-        !/^(--smoke|--run|--maintenance-confirmed|--trips=\d+|--seconds=\d+)$/.test(
+        !/^(--smoke|--run|--maintenance-confirmed|--profile|--gps=(synchronized|staggered)|--workload=(polling|history)|--history=\d+|--trips=\d+|--seconds=\d+)$/.test(
           a,
         ),
     )
@@ -196,6 +285,18 @@ async function main() {
     );
   const trips = smoke ? 1 : numberArg("trips", 1);
   const seconds = smoke ? 3 : numberArg("seconds", 120);
+  const gpsSchedule =
+    args.find((a) => a.startsWith("--gps="))?.split("=")[1] ?? "synchronized";
+  const profile = args.includes("--profile");
+  const workload =
+    args.find((a) => a.startsWith("--workload="))?.split("=")[1] ?? "polling";
+  const historyDepth = numberArg("history", 20);
+  if (
+    historyDepth < 1 ||
+    historyDepth > 100 ||
+    (args.some((a) => a.startsWith("--history=")) && workload !== "history")
+  )
+    throw new Error("INVALID_HISTORY_DEPTH");
   if (trips < 1 || trips > 250 || seconds < (smoke ? 3 : 30) || seconds > 600)
     throw new Error("OUTSIDE_SAFETY_BOUNDS");
   const directory = mkdtempSync(join(tmpdir(), "gumwheel-backend-load-"));
@@ -208,12 +309,16 @@ async function main() {
       GUMWHEEL_LOAD_WORKER: "1",
       GUMWHEEL_LOAD_DIRECTORY: directory,
       GUMWHEEL_LOAD_TRIPS: String(trips),
+      GUMWHEEL_LOAD_PROFILE: profile ? "1" : "0",
+      GUMWHEEL_LOAD_WORKLOAD: workload,
+      GUMWHEEL_LOAD_HISTORY: String(historyDepth),
     },
   });
   const samples = [],
     responses = [],
     tasks = [];
   let stopped = false,
+    failedResponses = 0,
     stopReason = "duration",
     overload = 0,
     final = null,
@@ -257,11 +362,16 @@ async function main() {
       end = start + seconds * 1000;
     for (const [index, actor] of ready.actors.entries()) {
       // Defined reduced workload: current 10s, details 8s, paired GPS 20s/device.
-      for (const [kind, period] of [
-        ["current", 10000],
-        ["details", 8000],
-        ["gps", 20000],
-      ])
+      for (const [kind, period] of workload === "history"
+        ? [
+            ["history", 10000],
+            ["availability", 10000],
+          ]
+        : [
+            ["current", 10000],
+            ["details", 8000],
+            ["gps", 20000],
+          ])
         tasks.push({
           actor,
           kind,
@@ -271,9 +381,11 @@ async function main() {
             (smoke
               ? 0
               : kind === "gps"
-                ? actor.role === "DRIVER"
-                  ? 10000
-                  : 0
+                ? ((gpsSchedule === "staggered"
+                    ? (Math.floor(index / 2) * 997) % 20000
+                    : 0) +
+                    (actor.role === "DRIVER" ? 10000 : 0)) %
+                  20000
                 : (index * 997) % period),
           busy: false,
           skipped: 0,
@@ -287,9 +399,11 @@ async function main() {
         valid = false;
       try {
         const path =
-          task.kind === "current"
-            ? "/api/current"
-            : `/api/rides/${encodeURIComponent(task.actor.rideId)}${task.kind === "gps" ? "/location" : ""}`;
+          task.kind === "history" || task.kind === "availability"
+            ? `/api/${task.kind}`
+            : task.kind === "current"
+              ? "/api/current"
+              : `/api/rides/${encodeURIComponent(task.actor.rideId)}${task.kind === "gps" ? "/location" : ""}`;
         const response = await fetch(base + path, {
           redirect: "error",
           signal: AbortSignal.timeout(5000),
@@ -315,14 +429,21 @@ async function main() {
         const data = await response.json();
         valid =
           response.ok &&
-          (task.kind === "current"
-            ? data.currents?.some(
-                (c) =>
-                  c.ride.rideId === task.actor.rideId &&
-                  c.locationSource?.canReport,
-              )
-            : data.ride?.rideId === task.actor.rideId &&
-              data.ride.status === "CO_RIDE_ACTIVE");
+          (task.kind === "history"
+            ? Array.isArray(data.driver) &&
+              Array.isArray(data.rider) &&
+              data[task.actor.role === "DRIVER" ? "driver" : "rider"].length ===
+                historyDepth
+            : task.kind === "availability"
+              ? Array.isArray(data.rides) && data.rides.length === 20
+              : task.kind === "current"
+                ? data.currents?.some(
+                    (c) =>
+                      c.ride.rideId === task.actor.rideId &&
+                      c.locationSource?.canReport,
+                  )
+                : data.ride?.rideId === task.actor.rideId &&
+                  data.ride.status === "CO_RIDE_ACTIVE");
       } catch {
         /* Record failures without credentials or response bodies. */
       }
@@ -332,10 +453,11 @@ async function main() {
         valid: Boolean(valid),
         latencyMs: performance.now() - began,
         startLagMs: began - scheduledAt,
+        elapsedMs: began - start,
       });
       task.busy = false;
-      if (responses.filter((r) => !r.valid).length >= 5)
-        stop("five failed responses");
+      if (!valid) failedResponses++;
+      if (failedResponses >= 5) stop("five failed responses");
       if (
         responses.length >= 100 &&
         percentile(
@@ -360,7 +482,10 @@ async function main() {
     const shutdownStart = Date.now();
     while (!final && Date.now() - shutdownStart < 5000) await sleep(25);
     const summary = Object.fromEntries(
-      ["current", "details", "gps"].map((kind) => {
+      (workload === "history"
+        ? ["history", "availability"]
+        : ["current", "details", "gps"]
+      ).map((kind) => {
         const list = responses.filter((r) => r.kind === kind),
           times = list.map((r) => r.latencyMs);
         return [
@@ -381,6 +506,10 @@ async function main() {
       trips,
       participants: trips * 2,
       seconds,
+      gpsSchedule,
+      profile,
+      workload,
+      historyDepth: workload === "history" ? historyDepth : 0,
       elapsedSeconds: (performance.now() - start) / 1000,
       stopReason,
       scheduledSkips: tasks.reduce((s, t) => s + t.skipped, 0),
@@ -389,6 +518,20 @@ async function main() {
         : null,
       host: { cores: cpus().length, memoryMiB: totalmem() / 1048576 },
       summary,
+      windows: Array.from({ length: Math.ceil(seconds / 10) }, (_, index) => {
+        const list = responses.filter(
+          (r) => Math.floor(r.elapsedMs / 10000) === index,
+        );
+        return {
+          startSeconds: index * 10,
+          requests: list.length,
+          p95Ms: percentile(
+            list.map((r) => r.latencyMs),
+            0.95,
+          ),
+          maxMs: list.length ? Math.max(...list.map((r) => r.latencyMs)) : null,
+        };
+      }),
       samples,
       final,
       limitations:
@@ -406,7 +549,7 @@ async function main() {
       final.active !== trips ||
       final.fixes !== trips * 2 ||
       final.sources !== trips * 2 ||
-      final.updatedFixes !== trips * 2 ||
+      final.updatedFixes !== (workload === "history" ? 0 : trips * 2) ||
       responses.some((r) => !r.valid)
     )
       process.exitCode = 1;

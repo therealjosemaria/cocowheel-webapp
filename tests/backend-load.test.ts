@@ -26,6 +26,11 @@ test("load harness refuses unsafe or ambiguous arguments before startup", () => 
     ["--run", "--maintenance-confirmed", "--trips=1", "--trips=5"],
     ["--target=https://gumwheel.com"],
     ["--database=data/cocowheels.db"],
+    ["--run", "--maintenance-confirmed", "--gps=unknown"],
+    ["--run", "--maintenance-confirmed", "--workload=history", "--history=101"],
+    ["--run", "--maintenance-confirmed", "--workload=history", "--history=0"],
+    ["--run", "--maintenance-confirmed", "--history=20"],
+    ["--run", "--maintenance-confirmed", "--profile", "--profile"],
   ]) {
     const result = run(...args);
     assert.equal(result.status, 1, args.join(" "));

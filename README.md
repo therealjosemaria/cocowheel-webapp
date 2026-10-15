@@ -242,6 +242,10 @@ The [follow-up diagnostic review](docs/BACKEND_LOAD_RESULTS_2026-10-16.md#diagno
 identified repeated expiry checks, duplicate detail-view construction and broad
 query plans. These are profiling candidates, not proven dominant bottlenecks;
 no optimization or multi-worker change has been applied.
+The isolated harness now supports synchronized/staggered GPS comparisons,
+optional SQL statement timing, and a separate discovery/history read workload
+with bounded synthetic history. See [the harness guide](docs/BACKEND_LOAD_TEST.md)
+for limitations. These are test-only additions, not production behavior changes.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

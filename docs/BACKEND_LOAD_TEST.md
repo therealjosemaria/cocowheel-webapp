@@ -130,3 +130,36 @@ the runner's cleanup path; abrupt machine/process failure can leave artifacts.
 No production limit, service configuration or provider budget is changed by this
 preparation. Backups, restart recovery, fault injection and provider quotas are
 separate follow-up tests.
+
+## Overnight diagnostic extensions
+
+The owner authorized autonomous sequential tests for up to eight hours after the
+overnight request, stopping at measurable degradation rather than forced failure.
+No production behavior or safety thresholds are changed.
+
+- `--gps=synchronized|staggered` (default synchronized) changes only GPS phases.
+  Staggering distributes each pair deterministically over 20 seconds while
+  preserving the ten-second driver/rider offset and total offered volume.
+- `--profile` times statement execution (`get`, `all`, `run`) by expiry/select/write
+  category, excluding setup. It does not time statement preparation, transaction
+  begin/commit, JSON serialization or network queueing; totals are not total DB
+  cost. Only counts/timings are retained, never SQL parameters or response bodies.
+- Reports add ten-second latency windows and label the schedule/workload/profile
+  configuration. Resource samples still lack explicit timestamps; exact cross-
+  correlation requires additional instrumentation and must not be claimed.
+- Generator failures use an incremental counter rather than rescanning its entire
+  response history on every request. Compare schedules on this same revised harness.
+- `--workload=history --history=20` switches to history and availability reads,
+  each every ten seconds per participant (0.4 requests/s per synthetic pair).
+  Fixture depth is bounded 1–100; default 20 completed rides per account. Each
+  pair shares those completed rides; the database has pairs × depth historical
+  rides, plus paired fixture rides and 20 separately owned public offers.
+  Completed rows are synthetic clones, not a claim that lifecycle transitions
+  were exercised during measurement. Public offers use normal publish logic.
+  This workload sends no GPS writes and expects zero post-start fix updates.
+  Responses must contain the expected history count and 20 discoverable offers.
+
+Existing bounds (250 pairs, 600 seconds), loopback-only targeting, provider block,
+private fixtures and guardrails remain. History fixture construction is excluded
+from measured load; setup still has the existing 30-second readiness deadline.
+Do not compare history request rates directly with GPS rates as equal-cost work.
