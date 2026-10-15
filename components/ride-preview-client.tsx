@@ -904,7 +904,10 @@ export default function RidePreviewClient({
                     <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
-                {!driverOwned && (ride.payId || ride.paymentMethod) ? (
+                {!driverOwned &&
+                (ride.payId ||
+                  ride.paymentMethod ||
+                  (activityRequest && rideIsActive)) ? (
                   <div className="preview-field-payment">
                     <dt>
                       <RideFieldLabel icon="payid">
@@ -916,7 +919,9 @@ export default function RidePreviewClient({
                         {!ride.payId
                           ? ride.paymentMethod === "PAYID"
                             ? "PayID"
-                            : "Cash"
+                            : ride.paymentMethod === "CASH"
+                              ? "Cash"
+                              : "PayID"
                           : ride.payIdType === "MOBILE"
                             ? "Mobile"
                             : ride.payIdType === "EMAIL"
@@ -927,7 +932,11 @@ export default function RidePreviewClient({
                                   : "Other"
                                 : "PayID"}
                       </span>
-                      {ride.payId ? <CopyPayId value={ride.payId} /> : null}
+                      {ride.payId ? (
+                        <CopyPayId value={ride.payId} />
+                      ) : ride.paymentMethod !== "CASH" && rideIsActive ? (
+                        <span>Visible after pickup confirmation</span>
+                      ) : null}
                     </dd>
                   </div>
                 ) : null}
