@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cocowheels",
+  title: "GUMWHEEL",
   description: "A simple planned ride, together.",
 };
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
         <main className="app-shell">
           <header className="topbar">
             <span className="brand">
-              COCOWHEELS
+              GUMWHEEL
             </span>
             <AppNavigation />
           </header>

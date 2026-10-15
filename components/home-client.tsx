@@ -1014,7 +1014,7 @@ function LocationPrompt({
         <p className="eyebrow">{departure ? "Starting point" : "Pickup"}</p>
         <h2 id="location-prompt-title">Use your current location?</h2>
         <p>
-          Cocowheels will use your current location as the{" "}
+          GUMWHEEL will use your current location as the{" "}
           {departure ? "starting point" : "pickup location"}.
         </p>
         <div className="location-prompt-actions">
@@ -2199,7 +2199,7 @@ function RideStatus({
               className="secondary"
               onClick={() =>
                 void navigator.clipboard?.writeText(
-                  `Cocowheels ride ${routeReference(ride.rideId)}`,
+                  `GUMWHEEL ride ${routeReference(ride.rideId)}`,
                 )
               }
             >
@@ -2213,7 +2213,7 @@ function RideStatus({
             </button>
           </div>
           <small>
-            Cocowheels records your selected payment method only. It never
+            GUMWHEEL records your selected payment method only. It never
             verifies a bank payment.
           </small>
         </section>

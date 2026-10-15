@@ -52,10 +52,11 @@ export const sendUniversityEmail: CodeSender = async (email, code) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from,
+        // Only rebrand the display name; preserve the verified sender address.
+        from: from.replace(/^"?Coco\s?Wheels?"?(?=\s*<)/i, "GUMWHEEL"),
         to: [email],
-        subject: "Your Cocowheels verification code",
-        text: `Your Cocowheels code is ${code}. It expires in 10 minutes. Do not share it. If you did not request this code, ignore this email.`,
+        subject: "Your GUMWHEEL verification code",
+        text: `Your GUMWHEEL code is ${code}. It expires in 10 minutes. Do not share it. If you did not request this code, ignore this email.`,
       }),
     });
     if (!response.ok) throw new Error("EMAIL_SEND_FAILED");

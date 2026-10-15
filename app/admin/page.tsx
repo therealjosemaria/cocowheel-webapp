@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Admin · Cocowheels",
+  title: "Admin · GUMWHEEL",
   robots: { index: false, follow: false },
 };
 export default async function AdminPage() {
