@@ -1785,10 +1785,12 @@ p {
 .ride-action-buttons button { width: 100%; }
 .pickup-confirmation { margin: 14px 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; }
 .pickup-confirmation p { margin: 0 0 12px; }
-.pickup-code-instruction { text-align: center; }
-.pickup-code-entry { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.pickup-code-entry input { width: 8rem; min-width: 0; text-align: center; letter-spacing: 0.35em; font-size: var(--text-subheading); }
-.pickup-code-entry button { flex: 1; }
+.pickup-code-instruction { display: block; text-align: center; }
+.pickup-code-entry { display: grid; gap: 12px; margin-top: 12px; }
+.pickup-code-input { position: relative; width: fit-content; margin: 0 auto; border-radius: 8px; }
+.pickup-code-input .pickup-code-display { margin: 0; }
+.pickup-code-input input { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; opacity: 0; cursor: text; font-size: 16px; }
+.pickup-code-input:focus-within { outline: 2px solid var(--ink); outline-offset: 4px; }
 .pickup-code-display {
   display: flex;
   justify-content: center;

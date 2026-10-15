@@ -81,21 +81,30 @@ export function PickupConfirmation({
             void submit();
           }}
         >
-          <label htmlFor="pickup-code">Rider’s pickup code</label>
+          <label className="pickup-code-instruction" htmlFor="pickup-code">
+            Enter the rider’s pickup code.
+          </label>
           <div className="pickup-code-entry">
-            <input
-              id="pickup-code"
-              aria-label="Four-digit pickup code"
-              inputMode="numeric"
-              autoComplete="off"
-              pattern="[0-9]{4}"
-              maxLength={4}
-              required
-              value={code}
-              onChange={(event) =>
-                setCode(event.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-            />
+            <div className="pickup-code-input">
+              <strong className="pickup-code-display" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <span key={index}>{code[index] ?? ""}</span>
+                ))}
+              </strong>
+              <input
+                id="pickup-code"
+                aria-label="Four-digit pickup code"
+                inputMode="numeric"
+                autoComplete="off"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                required
+                value={code}
+                onChange={(event) =>
+                  setCode(event.target.value.replace(/\D/g, "").slice(0, 4))
+                }
+              />
+            </div>
             <button className="primary" disabled={busy || code.length !== 4}>
               {busy ? "CONFIRMING…" : "CONFIRM PICKUP"}
             </button>
