@@ -1067,11 +1067,6 @@ export default function RidePreviewClient({
                                 showRoute ? request.requestId : null,
                               );
                               setPickupDurationSeconds(null);
-                              if (showRoute) {
-                                document
-                                  .getElementById("ride-comparison-map")
-                                  ?.scrollIntoView({ block: "start" });
-                              }
                             }}
                           >
                             {selectedRequestId === request.requestId
