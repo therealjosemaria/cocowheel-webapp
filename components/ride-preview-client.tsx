@@ -765,6 +765,14 @@ export default function RidePreviewClient({
                       ]
                     : []),
                 ]}
+                labelPins={[
+                  ...(ride.plannedRoute
+                    ? [ride.plannedRoute.origin, ride.plannedRoute.destination]
+                    : []),
+                  ...(riderRoute
+                    ? [riderRoute.pickup, riderRoute.destination]
+                    : []),
+                ]}
                 lines={lines}
                 roadPathAttribution={Boolean(
                   activeDriverRoadPath?.length || roadPath?.length,

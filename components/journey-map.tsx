@@ -218,10 +218,12 @@ function PinMarkers({
   pins,
   markerKinds,
   markerLabels,
+  labelPins,
 }: {
   pins: Pin[];
   markerKinds?: MarkerKind[];
   markerLabels?: Array<MarkerLabel | undefined>;
+  labelPins?: Pin[];
 }) {
   const map = useMap();
   const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
@@ -288,7 +290,7 @@ function PinMarkers({
         .querySelectorAll<HTMLElement>("[data-map-label]")
         .forEach((node) => {
           const index = Number(node.dataset.mapLabel);
-          const pin = pins[index];
+          const pin = labelPins?.[index] ?? pins[index];
           if (!pin) return;
           const label = node.closest<HTMLElement>(".leaflet-tooltip") ?? node;
           const oldX = Number(label.dataset.shiftX ?? 0),
@@ -370,13 +372,14 @@ function PinMarkers({
       map.off("movestart zoomstart", hideConnectors);
       svg.remove();
     };
-  }, [map, pins, markerLabels]);
+  }, [map, pins, markerLabels, labelPins]);
 
   return (
     <>
       {pins.map((pin, index) => {
         const markerKind = markerKinds?.[index];
         const markerLabel = markerLabels?.[index];
+        const labelPin = labelPins?.[index] ?? pin;
         const markerKey = `${pin.latitude}-${pin.longitude}-${index}`;
         const driverFinish =
           markerKind === "destination" && markerKinds?.[index - 1] === "driver";
@@ -412,21 +415,22 @@ function PinMarkers({
               {markerKind === "destination" ? (
                 <Popup>{finishTitle}</Popup>
               ) : null}
-              {typeof markerLabel === "string" ? (
-                <Tooltip
-                  className="journey-location-label"
-                  direction="top"
-                  offset={[0, -16]}
-                  opacity={1}
-                  permanent
-                >
-                  <span data-map-label={index}>{markerLabel}</span>
-                </Tooltip>
-              ) : null}
             </Marker>
+            {typeof markerLabel === "string" ? (
+              <Tooltip
+                position={[labelPin.latitude, labelPin.longitude]}
+                className="journey-location-label"
+                direction="top"
+                offset={[0, -16]}
+                opacity={1}
+                permanent
+              >
+                <span data-map-label={index}>{markerLabel}</span>
+              </Tooltip>
+            ) : null}
             {markerLabel && typeof markerLabel !== "string" ? (
               <Marker
-                position={[pin.latitude, pin.longitude]}
+                position={[labelPin.latitude, labelPin.longitude]}
                 icon={locationLabelIcon(markerLabel, index)}
                 interactive={false}
                 keyboard={false}
@@ -461,6 +465,7 @@ export default function JourneyMap({
   onPick,
   markerKinds,
   markerLabels,
+  labelPins,
   roadPathAttribution = false,
 }: {
   pins?: Pin[];
@@ -472,6 +477,7 @@ export default function JourneyMap({
   onPick?: (pin: Pin) => void;
   markerKinds?: MarkerKind[];
   markerLabels?: Array<MarkerLabel | undefined>;
+  labelPins?: Pin[];
   roadPathAttribution?: boolean;
 }) {
   return (
@@ -503,6 +509,7 @@ export default function JourneyMap({
           pins={pins}
           markerKinds={markerKinds}
           markerLabels={markerLabels}
+          labelPins={labelPins}
         />
         <MapClick onPick={onPick} />
         <Fit
