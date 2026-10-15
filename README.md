@@ -218,6 +218,13 @@ There is **no measured safe concurrent-user ceiling yet**. Do not load-test live
 trips. Capacity work requires isolated tests, provider quota checks, CPU/RAM/network
 and SQLite measurements, polling analysis and safety headroom.
 
+An isolated, opt-in polling/GPS harness is prepared in
+[`scripts/backend-load.mjs`](scripts/backend-load.mjs). See
+[the workload, guardrails and maintenance procedure](docs/BACKEND_LOAD_TEST.md).
+It uses a fresh synthetic database, random loopback port and no external APIs.
+Its short smoke mode verifies the harness, not production capacity. Do not run
+load stages on the Pi during real trips, even though their data is isolated.
+
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS
 permissions do not automatically transfer. Do not promise seamless handoff without
