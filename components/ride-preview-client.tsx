@@ -1061,15 +1061,21 @@ export default function RidePreviewClient({
                             }
                             aria-controls="ride-comparison-map"
                             onClick={() => {
-                              setSelectedRequestId(request.requestId);
+                              const showRoute =
+                                selectedRequestId !== request.requestId;
+                              setSelectedRequestId(
+                                showRoute ? request.requestId : null,
+                              );
                               setPickupDurationSeconds(null);
-                              document
-                                .getElementById("ride-comparison-map")
-                                ?.scrollIntoView({ block: "start" });
+                              if (showRoute) {
+                                document
+                                  .getElementById("ride-comparison-map")
+                                  ?.scrollIntoView({ block: "start" });
+                              }
                             }}
                           >
                             {selectedRequestId === request.requestId
-                              ? "Route shown"
+                              ? "Hide route"
                               : "Show route"}
                           </button>
                         </dt>
