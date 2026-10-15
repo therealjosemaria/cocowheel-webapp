@@ -211,3 +211,79 @@ labelled workload. Correlation with bursts is a hypothesis until measured; the
 current aggregate report does not prove the bottleneck. Any profiling or harness
 changes need their own checks. Full frontend polling, mature history, network
 latency, long-duration leaks and recovery remain outside these results.
+
+## Diagnostic review after the soaks
+
+Read-only source and retained synthetic-database review at revision `a03c45a`.
+No new load, production database access, service restart, optimization or worker
+change was performed. Findings below describe the paired, verified-account
+workload tested; other paths can behave differently.
+
+### Confirmed request-path work
+
+| Endpoint | Calls to global expiry cleanup per request | Path |
+| --- | --- | --- |
+| Current ride | 3 | HTTP dispatch → currentOpenRides → getRide |
+| Ride details | 3 | HTTP dispatch → getRide for authorization/hydration → getRide for response |
+| GPS write | 3 | HTTP dispatch → submitLocation → getRide for response |
+
+Each `expireStaleRides` call executes two UPDATE statements examining eligible
+rides. With 52,800 successful requests, the tested paths imply 316,800 expiry
+UPDATE executions during the 160-trip measurement, even with no expired fixtures.
+This is derived from the call graph, not a profiler count. No-op UPDATE executions
+are not equivalent to 316,800 disk writes or commits.
+
+`GET /api/rides/:id` constructs the full view twice around optional address-label
+hydration. Removing either call blindly could break authorization or return stale
+labels; optimization needs regression coverage. GPS submissions perform one
+transaction containing ownership checks, the latest-fix upsert, a separate moving
+flag update and a ride last-activity update, then construct the full ride response.
+The separate moving update is in the same transaction, not a separate commit.
+Database operations use synchronous better-sqlite3 on the API thread.
+
+Verified sessions return early from `findSession`; they do not execute the legacy
+guest last-seen UPDATE. That guest write is therefore not the explanation for
+these verified-account measurements.
+
+### Query-plan evidence
+
+Opened only `/tmp/gumwheel-backend-load-xtdWQk/synthetic.sqlite` read-only and used
+`EXPLAIN QUERY PLAN`; no statements were executed to modify it.
+
+- The exact current-driver lookup uses `rides_discovery_index (status=?)` and
+  `USE TEMP B-TREE FOR ORDER BY`. There is no driver-account-specific index on
+  rides in this fixture. The plan cannot seek directly by driver account.
+- An equivalent active-expiry predicate uses the same status index, without an
+  indexed last-activity range. It examines matching-status candidates as the
+  active population grows. This does not establish how expensive that is.
+- Public ride ID and location primary-key lookups already have indexes. Do not
+  describe the entire database as unindexed.
+
+### What remains unproven
+
+The harness synchronizes every rider GPS update, then every driver update ten
+seconds later: at 160 trips that is a burst of 160 writes, not evenly distributed
+traffic. Reports preserve endpoint-wide latency aggregates and resource samples,
+but not timestamped per-request latency or timestamps on resource samples.
+They cannot reliably correlate individual stalls with writes, checkpoints or
+specific functions after the fact. SQL lock wait, commit time and per-function
+CPU time were not measured. SQLite is a candidate, not a proven bottleneck.
+
+The load generator also shares the host and scans accumulated responses for
+failures on each completion. Its growing bookkeeping cost is another possible
+measurement influence; zero skipped polls does not eliminate all generator bias.
+
+### Next diagnostic experiment (not yet implemented or run)
+
+Keep one API worker and production unchanged. Add isolated-harness instrumentation
+for elapsed timestamps, per-endpoint time windows, request handling duration and
+exclusive SQL/transaction timing (avoid double-counting nested transactions).
+Collect normalized operation counts only, never SQL parameters, tokens or GPS.
+Measure instrumentation overhead with an uninstrumented control.
+
+At fixed concurrency, compare the existing synchronized GPS schedule against a
+labelled staggered schedule with the same request count/cadence, retaining driver/
+rider offsets and all stop conditions. Run each separately in an approved empty-
+trip window. Only then select a narrowly scoped optimization and repeat the
+baseline. Do not remove expiry enforcement, ownership checks or durable writes
+merely because their paths appear expensive.

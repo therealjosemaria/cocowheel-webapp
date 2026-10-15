@@ -238,6 +238,10 @@ The ten-minute 160-trip stage completed 52,800 requests without errors/skips,
 but read P99 rose above 300 ms and 43 event-loop samples exceeded 250 ms.
 Pause the ramp to investigate burst-related latency before increasing load;
 successful completion does not make 160 trips a recommended operating limit.
+The [follow-up diagnostic review](docs/BACKEND_LOAD_RESULTS_2026-10-16.md#diagnostic-review-after-the-soaks)
+identified repeated expiry checks, duplicate detail-view construction and broad
+query plans. These are profiling candidates, not proven dominant bottlenecks;
+no optimization or multi-worker change has been applied.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS
