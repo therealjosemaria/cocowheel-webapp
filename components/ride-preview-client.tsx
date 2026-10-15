@@ -784,7 +784,7 @@ export default function RidePreviewClient({
               {riderRoute ? (
                 <span>
                   <i className="ride-selection-route-rider" />
-                  Your route
+                  {driverOwned ? "Rider’s route" : "Your route"}
                 </span>
               ) : null}
               {ride.plannedRoute ? (
