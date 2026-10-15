@@ -1789,7 +1789,7 @@ p {
 .pickup-code-entry { display: grid; gap: 12px; margin-top: 12px; }
 .pickup-code-input { position: relative; width: fit-content; margin: 0 auto; border-radius: 8px; }
 .pickup-code-input .pickup-code-display { margin: 0; }
-.pickup-code-input input { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; opacity: 0; cursor: text; font-size: 16px; }
+.pickup-code-input input { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; opacity: 0; cursor: text; font-size: var(--text-body); }
 .pickup-code-input:focus-within { outline: 2px solid var(--ink); outline-offset: 4px; }
 .pickup-code-display {
   display: flex;
