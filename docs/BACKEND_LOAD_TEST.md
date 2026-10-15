@@ -1,6 +1,6 @@
 # Isolated polling and GPS capacity preparation
 
-Status: harness prepared and first isolated ramp completed; see
+Status: harness prepared, first isolated ramp and ten-minute 80-trip soak completed; see
 [16 October results](BACKEND_LOAD_RESULTS_2026-10-16.md). One-trip smoke
 verification is not a capacity result.
 Never use this tool against a live service or run meaningful load on the production
@@ -63,6 +63,9 @@ node --import tsx scripts/backend-load.mjs --smoke
 
 # Only AFTER agreeing a maintenance window or using a separate machine:
 node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=1 --seconds=120
+
+# Sustained workload used after the first ramp, with renewed operator approval:
+node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=80 --seconds=600
 ```
 
 The first approved ramp skipped the longer one-trip baseline after smoke checks:

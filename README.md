@@ -228,6 +228,9 @@ The [16 October isolated results](docs/BACKEND_LOAD_RESULTS_2026-10-16.md)
 cover 5–160 trips in two-minute stages with zero errors/skipped polls. At 160,
 CPU and tail latency showed pressure. These reduced-workload results do not
 establish a safe public-user ceiling or a measured breaking point.
+A follow-up ten-minute 80-trip soak completed 26,400 requests with no errors or
+skipped polls, GPS-write P95 226 ms and peak API RSS 231 MiB; see the same results
+guide. Full frontend/network/provider load and fault recovery remain untested.
 
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS

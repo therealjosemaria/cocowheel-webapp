@@ -72,3 +72,46 @@ backups). Each directory contains `report.json` and synthetic database artifacts
 
 No artifacts were deleted. Keep synthetic session material private; share only
 reviewed reports. No UI changes, deployment or API restart were required.
+
+## Follow-up: ten-minute 80-trip soak
+
+The operator approved the next longer test in the continuing maintenance window.
+Repository revision `967a200`, unchanged harness from `ac67fce`.
+Command: `node --import tsx scripts/backend-load.mjs --run --maintenance-confirmed --trips=80 --seconds=600`.
+Workload and guardrails were unchanged; duration increased fivefold, not concurrency.
+80 trips / 160 participants ran for 600.097 seconds at approximately 44 requests/s.
+
+| Endpoint | Requests | Errors | P95 ms | P99 ms | Maximum ms |
+| --- | --- | --- | --- | --- | --- |
+| Current ride | 9,600 | 0 | 6.0 | 15.8 | 120.4 |
+| Ride details | 12,000 | 0 | 7.3 | 15.9 | 80.5 |
+| GPS write | 4,800 | 0 | 226.1 | 264.5 | 304.3 |
+
+Total 26,400 requests; zero skipped arrivals; maximum scheduler start lag 74.3 ms.
+Normal duration stop, exit code zero. SQLite integrity was `ok`; all 80 rides
+remained paired, with 160 location sources and 160 fixes updated after startup.
+
+Resource evidence from 599 worker samples:
+
+- Peak API CPU 48.9% of one core; sample mean 11.8%.
+- Peak API RSS 230.6 MiB. First-minute mean 218.5 MiB; final-minute mean
+  230.6 MiB. Warm-up growth settled during the observed run; this does not prove
+  absence of a slow memory leak over hours or days.
+- Peak sampled event-loop P99 192.8 ms, below the 250 ms guardrail threshold.
+- SQLite file grew from 462,848 to 503,808 bytes; peak WAL 4,136,512 bytes.
+- Worker-reported minimum system free memory 3,814.8 MiB. Host `free` snapshots
+  use different memory accounting: available memory was approximately 4,109 MiB
+  before and 4,132 MiB after. Do not equate those with the worker's free metric.
+
+Production health returned `ok` before, midway and after the run. Both isolated
+test processes exited. No production records, settings or services were changed,
+and no external providers were exercised. No browser or fault-recovery test was
+performed. The raw report and synthetic artifacts remain privately retained at
+`/tmp/gumwheel-backend-load-KBGwjy/report.json`; nothing was deleted.
+
+GPS P95 was comparable to the previous 80-trip stage (226 ms versus 244 ms), with
+no observed sustained-load degradation over ten minutes. This supports only this
+reduced loopback workload at 80 trips, not a real-user admission limit. A proposed
+next step is 120 trips at the same duration/guardrails in a separately approved
+window, before repeating 160. Keep fuller polling, representative history, network
+latency and failure/recovery tests separate so their effects can be measured.
