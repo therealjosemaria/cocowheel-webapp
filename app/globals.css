@@ -2002,6 +2002,22 @@ p {
   font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
+.driver-request-fields .request-route-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.request-route-button {
+  width: auto;
+  margin: 0;
+  min-height: 44px;
+  padding: 6px 10px;
+  font-size: var(--text-small);
+  letter-spacing: normal;
+  text-transform: none;
+}
 .driver-request-fields .preview-fit-good {
   color: #15803d;
 }

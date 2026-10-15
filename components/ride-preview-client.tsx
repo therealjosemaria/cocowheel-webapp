@@ -134,6 +134,9 @@ export default function RidePreviewClient({
     decision: "ACCEPT" | "DECLINE";
   } | null>(null);
   const [requestDecisionError, setRequestDecisionError] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null,
+  );
   const activityRequest =
     participantRide?.request ?? pendingRequest ?? activityRide?.request;
   const pendingRiderRequests =
@@ -175,13 +178,24 @@ export default function RidePreviewClient({
     directionFit?: "GOOD" | "POOR";
   } | null>(() => {
     if (driverOwned) {
+      const selectedRequest = participantRide?.requests?.find(
+        (request) =>
+          request.requestId === selectedRequestId &&
+          request.status === "PENDING",
+      );
       return participantRide?.rider
         ? {
             pickup: participantRide.rider.pickup,
             destination: participantRide.rider.destination,
             directionFit: participantRide.rider.directionFit,
           }
-        : null;
+        : selectedRequest
+          ? {
+              pickup: selectedRequest.pickup,
+              destination: selectedRequest.destination,
+              directionFit: selectedRequest.directionFit,
+            }
+          : null;
     }
     if (activityRequest) {
       return {
@@ -191,15 +205,18 @@ export default function RidePreviewClient({
       };
     }
     return riderPreviewRoute(rideId);
-  }, [activityRequest, driverOwned, participantRide, rideId]);
-  const [roadPath, setRoadPath] = useState<Pin[] | null>(() =>
-    riderRoute
-      ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
-      : null,
-  );
-  const [riderDurationSeconds, setRiderDurationSeconds] = useState<
-    number | null
-  >(null);
+  }, [
+    activityRequest,
+    driverOwned,
+    participantRide,
+    rideId,
+    selectedRequestId,
+  ]);
+  const [riderRoadResult, setRiderRoadResult] = useState<{
+    key: string;
+    points: Pin[];
+    durationSeconds: number | null;
+  } | null>(null);
   const [pickupDurationSeconds, setPickupDurationSeconds] = useState<
     number | null
   >(null);
@@ -260,6 +277,16 @@ export default function RidePreviewClient({
   const routeKey = riderRoute
     ? `${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
     : null;
+  const roadPath =
+    riderRoadResult?.key === routeKey
+      ? riderRoadResult?.points
+      : riderRoute
+        ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
+        : null;
+  const riderDurationSeconds =
+    riderRoadResult?.key === routeKey
+      ? (riderRoadResult?.durationSeconds ?? null)
+      : null;
   const driverRouteInput = useMemo(
     () =>
       ride?.plannedRoute
@@ -274,8 +301,7 @@ export default function RidePreviewClient({
     ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
     : "";
   useEffect(() => {
-    if (!riderRoute || (roadPath?.length && riderDurationSeconds !== null))
-      return;
+    if (!riderRoute || !routeKey || riderRoadResult?.key === routeKey) return;
     let cancelled = false;
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
@@ -287,14 +313,13 @@ export default function RidePreviewClient({
       .then(({ points, durationSeconds }) => {
         if (cancelled || points.length < 2) return;
         cacheRiderRoadPath(riderRoute.pickup, riderRoute.destination, points);
-        setRoadPath(points);
-        setRiderDurationSeconds(durationSeconds);
+        setRiderRoadResult({ key: routeKey, points, durationSeconds });
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [riderRoute, riderDurationSeconds, roadPath?.length, routeKey]);
+  }, [riderRoute, riderRoadResult?.key, routeKey]);
 
   useEffect(() => {
     if (
@@ -662,7 +687,7 @@ export default function RidePreviewClient({
       ) : (
         <>
           <div className="ride-preview-content">
-            <div className="ride-selection-map">
+            <div className="ride-selection-map" id="ride-comparison-map">
               <JourneyMap
                 followZoom={ride.isSample ? 14 : 16}
                 recenterPin={
@@ -1005,13 +1030,68 @@ export default function RidePreviewClient({
                             Where from?
                           </RideFieldLabel>
                         </dt>
-                        <dd>{locationLabel(request.pickup)}</dd>
+                        <dd>
+                          {locationLabel(request.pickup)}
+                          <a
+                            className="ride-directions"
+                            href={directionsUrl(request.pickup)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                              focusable="false"
+                            >
+                              <path d="m21 3-6 18-4-8-8-4 18-6Z" />
+                            </svg>
+                            Google Maps
+                          </a>
+                        </dd>
                       </div>
                       <div>
-                        <dt>
+                        <dt className="request-route-heading">
                           <RideFieldLabel icon="to">Where to?</RideFieldLabel>
+                          <button
+                            type="button"
+                            className="secondary request-route-button"
+                            aria-pressed={
+                              selectedRequestId === request.requestId
+                            }
+                            aria-controls="ride-comparison-map"
+                            onClick={() => {
+                              setSelectedRequestId(request.requestId);
+                              setPickupDurationSeconds(null);
+                              document
+                                .getElementById("ride-comparison-map")
+                                ?.scrollIntoView({ block: "start" });
+                            }}
+                          >
+                            {selectedRequestId === request.requestId
+                              ? "Route shown"
+                              : "Show route"}
+                          </button>
                         </dt>
-                        <dd>{locationLabel(request.destination)}</dd>
+                        <dd>
+                          {locationLabel(request.destination)}
+                          <a
+                            className="ride-directions"
+                            href={directionsUrl(request.destination)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                              focusable="false"
+                            >
+                              <path d="m21 3-6 18-4-8-8-4 18-6Z" />
+                            </svg>
+                            Google Maps
+                          </a>
+                        </dd>
                       </div>
                       <div>
                         <dt>
