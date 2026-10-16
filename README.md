@@ -28,6 +28,8 @@ stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
 QR payments and expansion to other universities are roadmap messaging, not
 implemented capabilities; current payment and authentication rules stay unchanged.
+The FAQ has a subtle grey background to distinguish it from the white steps and
+suggestion sections; page-title and section-heading sizes remain unchanged.
 
 ## Status
 

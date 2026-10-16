@@ -335,6 +335,9 @@ button:disabled {
 .help-section {
   border-top: 1px solid var(--line);
 }
+.help-section-faq {
+  background: var(--surface-subtle);
+}
 .help-section h2 {
   margin: 0 0 12px;
   color: var(--ink);

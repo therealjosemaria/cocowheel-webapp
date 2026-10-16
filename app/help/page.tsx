@@ -13,7 +13,7 @@ export default function HelpPage() {
           <li><strong>Confirm pickup.</strong> At pickup, the rider shares their four-digit code and the driver enters it to start the ride.</li>
           <li><strong>Pay and finish.</strong> Pay the driver directly through your bank using their PayID, revealed after pickup confirmation. Either person can complete the ride when it ends.</li>
         </ol>
-        <section className="help-section" aria-labelledby="faq-heading">
+        <section className="help-section help-section-faq" aria-labelledby="faq-heading">
           <h2 id="faq-heading">Frequently asked questions</h2>
           <div className="help-faq">
             <details>
