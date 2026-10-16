@@ -45,7 +45,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 ## Icons, controls and spacing
 
 - Cell-label and Copy icons: `--icon-label`, 14px; field/location icons: `--icon-field`, 18px.
-- Help role headings scope `--icon-label` to `--icon-field` (18px) beside the 18px H2 text, with an 8px gap and centred alignment. This does not resize ordinary field labels. Help spacing: 12px heading-to-list, 16px between steps, 24px between sections; keep wrapped lines within each step closer than neighbouring steps.
+- Help role headings scope `--icon-label` to `--icon-field` (18px) beside the 18px H2 text, with an 8px gap and centred alignment. This does not resize ordinary field labels. Help spacing: 12px heading-to-list, 8px between concise steps (superseding 16px for the former longer explanations), 24px between sections; keep wrapped lines within each step closer than neighbouring steps.
 - Help role cards reuse route colours via `--help-role-accent`: 6% accent mixed with `--surface` for backgrounds, full accent for decorative icons, `--ink` for text. Both use 16px padding and `--radius-control` corners, without shadows. This is a role-identification use of the map palette, not a new brand palette.
 - Eligibility copy appears immediately above Verify UniKey in the signed-out Profile popover, using its existing muted 14px paragraph styling and 8px vertical margins. Help has no sign-in/eligibility introduction; the earlier two-line hierarchy is superseded.
 - Header wordmark: 16px (`--text-body`) below 700px; retain 12px (`--text-caption`) at wider sizes. Weight and letter spacing are unchanged; this brand exception is not a section-heading size.

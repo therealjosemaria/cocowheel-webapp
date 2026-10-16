@@ -26,7 +26,7 @@ test("help keeps rider-first visible role paths with four steps each", () => {
     ["Publish your route.", "Accept a rider.", "Meet your rider.", "Receive payment."],
   ]);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
-  assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 16px;/);
+  assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 8px;/);
   assert.match(css, /\.help-role h2\s*\{[^}]*--icon-label: var\(--icon-field\);/);
   assert.match(css, /\.help-role h2 \.ride-field-label\s*\{\s*gap: 8px;/);
   assert.match(css, /@media \(min-width: 1000px\)\s*\{\s*\.help-role-paths\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);

@@ -411,7 +411,7 @@ button:disabled {
 .how-it-works-steps {
   display: grid;
   list-style: decimal;
-  gap: 16px;
+  gap: 8px;
   margin: 0;
   padding: 0 0 0 18px;
   color: var(--muted);

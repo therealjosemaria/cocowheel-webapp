@@ -46,7 +46,7 @@ Rider steps:
 choose your destination, request to join a ride, meet your driver, pay your driver. Driver
 steps: publish your route, accept a rider, meet your rider, receive payment.
 The unchanged FAQs retain pickup and direct PayID payment explanations.
-Help uses 12px heading-to-list spacing, 16px between steps and 24px section
+Help uses 12px heading-to-list spacing, 8px between concise steps and 24px section
 spacing. Role-heading icons use the existing 18px field-icon token alongside
 18px headings with an 8px icon/text gap; ordinary cell-label icons stay 14px.
 
