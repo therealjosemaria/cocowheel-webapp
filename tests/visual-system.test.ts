@@ -18,6 +18,11 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.match(help, /className="help-role help-role-driver"/);
   assert.match(css, /background: color-mix\(in srgb, var\(--help-role-accent\) 6%, var\(--surface\)\);/);
   for (const list of lists) assert.equal((list[1].match(/<li>/g) || []).length, 4);
+  const steps = lists.map((list) => [...list[1].matchAll(/<li><strong>([^<]+)<\/strong><\/li>/g)].map((match) => match[1]));
+  assert.deepEqual(steps, [
+    ["Choose your destination.", "Request to join.", "Meet your driver.", "Pay your driver."],
+    ["Publish your route.", "Accept a rider.", "Enter the rider’s code.", "Receive payment."],
+  ]);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
   assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 16px;/);
   assert.match(css, /\.help-role h2\s*\{[^}]*--icon-label: var\(--icon-field\);/);

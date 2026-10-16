@@ -39,9 +39,11 @@ The role paths stack on mobile/tablet and sit side by side from 1000px, with
 matching H2 headings and equally padded, rounded cards. Both stay visible without tabs;
 FAQs and suggestions remain full width. This aims to reduce onboarding effort,
 not a measured claim of improved traction. No ride or authentication logic changes.
-Role headings reuse the shared rider/person and driver/car SVG labels. Onboarding
-copy explains that payment details appear once the driver confirms pickup, and
-asks drivers to choose how to receive payment by PayID (not an additional payment method).
+Role headings reuse the shared rider/person and driver/car SVG labels. Each
+numbered step is a single bold action, without explanatory text. Rider steps:
+choose your destination, request to join, meet your driver, pay your driver. Driver
+steps: publish your route, accept a rider, enter the rider’s code, receive payment.
+The unchanged FAQs retain pickup and direct PayID payment explanations.
 Help uses 12px heading-to-list spacing, 16px between steps and 24px section
 spacing. Role-heading icons use the existing 18px field-icon token alongside
 18px headings with an 8px icon/text gap; ordinary cell-label icons stay 14px.

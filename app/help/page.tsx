@@ -9,19 +9,19 @@ export default function HelpPage() {
           <section className="help-role help-role-rider" aria-labelledby="rider-steps-heading">
             <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li><strong>Choose your destination.</strong> Compare available rides.</li>
-              <li><strong>Request to join.</strong> Wait for the driver to accept.</li>
-              <li><strong>Meet your driver.</strong> Share your four-digit pickup code.</li>
-              <li><strong>Pay by PayID.</strong> You’ll see the driver’s payment details once they confirm your pickup.</li>
+              <li><strong>Choose your destination.</strong></li>
+              <li><strong>Request to join.</strong></li>
+              <li><strong>Meet your driver.</strong></li>
+              <li><strong>Pay your driver.</strong></li>
             </ol>
           </section>
           <section className="help-role help-role-driver" aria-labelledby="driver-steps-heading">
             <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Offer a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li><strong>Publish your route.</strong> Set your fare and choose how to receive payment by PayID.</li>
-              <li><strong>Choose a rider.</strong> Review their route and accept.</li>
-              <li><strong>Confirm pickup.</strong> Enter the rider’s four-digit code.</li>
-              <li><strong>Share the ride.</strong> Either person can complete it after arrival.</li>
+              <li><strong>Publish your route.</strong></li>
+              <li><strong>Accept a rider.</strong></li>
+              <li><strong>Enter the rider’s code.</strong></li>
+              <li><strong>Receive payment.</strong></li>
             </ol>
           </section>
         </div>
