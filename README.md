@@ -11,6 +11,24 @@ menus. It briefly explains UniKey verification, finding/offering a ride, driver
 acceptance, pickup codes and direct PayID payment. It uses a static server-rendered
 page with no additional API calls or changes to ride behaviour.
 
+### Product structure and early traction
+
+Structure product changes around clarity, low-friction participation and voluntary
+feedback, alongside consistency and MVP simplicity. Consider whether each addition
+helps people understand the service, try a ride, return, or share useful suggestions;
+these are design intentions, not measured growth outcomes or permission to add
+tracking, unsolicited messages or incentives.
+
+How it works now has a UniKey/pilot introduction, four steps, four native FAQ
+accordions (payment, pickup code, location and cancellation), and a separate
+**Have a suggestion?** section. Its **Email us** link opens the user's mail handler
+addressed to `jmos0905@uni.sydney.edu.au` with subject `GUMWHEEL suggestion`.
+The user writes and sends the message themselves; the app neither submits nor
+stores feedback. This avoids a new form endpoint and form-spam controls, but a
+public email address can still receive spam. A configured mail handler is needed.
+QR payments and expansion to other universities are roadmap messaging, not
+implemented capabilities; current payment and authentication rules stay unchanged.
+
 ## Status
 
 Production frontend: https://gumwheel.com currently redirects to https://www.gumwheel.com. The previous https://cocowheel-webapp.vercel.app remains operational. The standalone API and SQLite database run on the Pi; pushes to `main` trigger the Vercel frontend deployment. A push is not proof that deployment succeeded.

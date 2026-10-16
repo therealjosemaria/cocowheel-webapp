@@ -13,6 +13,7 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 - Consistency: reuse shared screens, labels, icons, buttons and dialogs rather than building separate versions for each role.
 - Non-blocking exploration: users can browse any offer, including their own. Poor fit is advice, not a prohibition. Server-enforced identity, permissions, one active role and one accepted rider remain mandatory.
 - Minimal copy: avoid redundant headings, repeated statuses and explanatory filler. Never introduce layout-shifting error banners when an established modal is appropriate.
+- Consider early traction in product structure: make onboarding clear and invite voluntary feedback without distracting from finding/offering rides. Prefer low-maintenance MVP mechanisms; distinguish intended engagement benefits from measured results. Do not add tracking or unsolicited outreach implicitly.
 
 ## Dialogs and actions
 
@@ -29,6 +30,7 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 - Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with a short numbered list: bold action lead-ins and regular explanatory text. Keep its UniKey, request, pickup-code and PayID instructions aligned with actual behaviour.
+- Help structure: pilot/UniKey introduction, four steps, then four FAQ accordions using native `details`/`summary` (initially closed, independently expandable with keyboard/touch), followed by a separate Have a suggestion? section. Reuse text/colour tokens, 44px targets and visible focus. Email us opens the university contact inbox via `mailto`, not an in-app form; future QR payments must be described as planned, not available.
 - Home uses “Going your way”, equally sized FIND A RIDE and OFFER A RIDE buttons; Find is dark with white text, Offer is light. The logo is not a Home link.
 - Desktop shell width is roughly two thirds of the viewport, bounded between 960px and 1360px (from the 1000px breakpoint). Home buttons are centred, 360px wide maximum and at least 64px high from 700px; mobile remains full width. Hero typography is unchanged.
 - Active menu treatment is grey background, not an active shadow or competing call-to-action treatment.

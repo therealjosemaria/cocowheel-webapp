@@ -321,6 +321,57 @@ button:disabled {
   color: var(--ink);
   font-weight: var(--weight-bold);
 }
+.help-intro,
+.help-section {
+  padding: 24px 20px;
+  color: var(--muted);
+  font-size: var(--text-small);
+  line-height: 1.7;
+}
+.help-intro {
+  margin: 0;
+  padding-bottom: 0;
+}
+.help-section {
+  border-top: 1px solid var(--line);
+}
+.help-section h2 {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+}
+.help-section p {
+  margin: 0 0 12px;
+}
+.help-faq details + details {
+  border-top: 1px solid var(--line);
+}
+.help-faq summary {
+  min-height: 44px;
+  padding: 12px 0;
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  list-style: disclosure-closed inside;
+}
+.help-faq details[open] > summary {
+  list-style: disclosure-open inside;
+}
+.help-email {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.help-email:focus-visible,
+.help-faq summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
 .activity-panel-content > .intro:last-child {
   margin-bottom: 0;
 }
