@@ -160,6 +160,8 @@ button:disabled {
   left: -6px;
   /* Optical centring against the uppercase letterforms, not their line box. */
   top: 0.5px;
+  transform: scale(0.875);
+  transform-origin: center;
 }
 .desktop-navigation {
   display: none;

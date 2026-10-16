@@ -55,6 +55,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
+Header icon refinement: apply `scale(0.875)` around the image centre on both
+mobile and desktop, in addition to the framing above. This reduces the icon
+pair by a further 12.5%, preserving its optical centreline and layout footprint;
+do not resize the wordmark or navigation controls with it.
+
 1. Pick an existing semantic role/token before adding a selector; no inline font sizes or new raw font declarations.
 2. Compare the equivalent control in Offer, Find, Activity, ride details, Profile and Admin. Do not globally resize maps or the home hero to fix one form.
 3. Check 320px/390px mobile and desktop, long names/addresses, pending/pickup/ongoing/completed states and missing values. Verify wrapping and no horizontal overflow.
