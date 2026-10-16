@@ -98,7 +98,36 @@ Errors are not silently retried as successful logical actions; a failed lifecycl
 step may be attempted again by the scheduler until the five-error stop, and each
 attempt is recorded as a failure. Do not interpret that as an app retry policy.
 
-## Exclusions
+## Optional event-loop diagnostics
+
+Add `--diagnostics` to a permitted invocation to collect test-worker SQL execution
+timings, GC events, event-loop utilization, Linux runnable scheduler waiting,
+resource-I/O counters and host swap counters. The report also retains individual
+responses taking at least 50 ms. No production instrumentation is installed.
+The same guardrails and maintenance requirements apply. Example:
+
+```sh
+node --import tsx scripts/mixed-load.mjs --run --maintenance-confirmed --users=100 --seconds=600 --diagnostics
+```
+
+SQL timing covers prepared statement `get/all/run` execution, not preparation
+or raw `exec`. Transaction diagnostics separately retain slow transaction total,
+callback and boundary time (begin/commit/rollback overhead together, not a precise
+commit-only measurement). This closes the public-prepare instrumentation gap:
+better-sqlite3 prepares transaction-control statements internally. Slow statements
+(20 ms or more) retain
+only method and SQL verb, never parameters or full SQL. Their elapsed time includes
+any OS preemption, so slow SQL alone does not prove disk latency. GC timestamps are
+worker-monotonic; observer delivery can occur in a later interval. Scheduler wait
+is runnable CPU waiting, not I/O waiting. Host swap counters are cumulative page
+counts: compare differences, not their absolute values. Resource `fsRead/fsWrite`
+values are operation counts, not bytes. Unsupported Linux counters are nullable.
+Diagnostics add measurement overhead; compare cohorts with that caveat. Per-second
+event-loop P99 is a timer-delay histogram (20 ms sampling resolution), not HTTP P99
+or a count of precisely how many pauses happened. A single outlying interval does
+not establish that only one underlying operation was slow.
+
+## Exclusions and untested boundaries
 
 No external address lookup, route provider, email, tile downloads, frontend
 rendering, real GPS, internet/tunnel/TLS or mobile lifecycle is measured. Ride

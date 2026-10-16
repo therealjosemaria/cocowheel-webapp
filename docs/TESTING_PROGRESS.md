@@ -14,8 +14,14 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 | 2026-10-16 | Basic synthetic backup/restore | 9/9 checks, 85 regression tests and lint pass; BAK-001 off-Pi protection unverified; two corrected harness failures retained | [Procedure and findings](BACKUP_RESTORE_TESTING.md), [result](results/restore-2026-10-16.json) |
 | 2026-10-16 | Pre-pilot authorization/privacy | 52/52 security checks; 25/25 recovery/concurrency rerun; 86 regression tests and lint pass; no runtime/deployment change | [Matrix and limitations](SECURITY_TESTING.md), [dated result](results/security-2026-10-16.json) |
 | 2026-10-16 | Mixed core-API capacity | SD-card 100-user ten-minute mix passed 19,657 requests/150 completed journeys, zero failures/skips; 87 regression tests and lint pass; RAM runs and failed smoke retained | [Results](MIXED_LOAD_RESULTS_2026-10-16.md), [reproducible procedure](MIXED_LOAD_TESTING.md) |
+| 2026-10-17 | Event-loop outlier reproduction | Two ten-minute 100-user repeats, 39,316 requests/300 journeys, zero errors/skips; first reproduced 1,039 ms stall and two >1s GPS responses; traced repeat max 91 ms, smaller pause tied to filesystem sync; LAT-001 open, 87 tests/lint pass | [Investigation, commands and evidence](EVENT_LOOP_INVESTIGATION_2026-10-17.md) |
 
 ## Open findings
+
+- **LAT-001:** intermittent SD-card mixed-workload event-loop stalls reproduced,
+  but exact cause of the large spikes remains unproven. Transaction/storage sync
+  is the leading explanation; a smaller pause was directly correlated with sync.
+  No mitigation applied. See [17 October investigation](EVENT_LOOP_INVESTIGATION_2026-10-17.md).
 
 Mixed-workload campaign completed 2026-10-16 at `ea59f55`: RAM-backed 25/50/100
 stages, then corrected-storage SD-card 50/100 stages passed. Final ten-minute

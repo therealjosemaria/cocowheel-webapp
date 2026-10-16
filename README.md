@@ -414,6 +414,16 @@ safety stops, transient event-loop delay and exclusions are recorded in the
 [harness guide](docs/MIXED_LOAD_TESTING.md) and results; no runtime settings changed.
 Providers, signup bursts, real browsers/GPS and deployment remain separate gates.
 
+The [17 October event-loop investigation](docs/EVENT_LOOP_INVESTIGATION_2026-10-17.md)
+reproduced a larger transient pause in the same isolated mix: 1,039 ms event-loop
+delay, 22 responses above 500 ms and two above one second, with no failed requests
+or lost journeys. This is a latency finding despite passing sustained safety stops.
+Test-only optional SQL/GC/scheduler/transaction diagnostics are documented in the
+harness guide; no production tuning, tracing or instrumentation is installed.
+A second traced ten-minute repeat had no >250 ms event-loop window and tied a
+smaller 71 ms transaction pause to filesystem syncing. Storage/checkpoint waiting
+is the leading explanation, not proven for the larger spikes; LAT-001 remains open.
+
 The [pre-pilot security regression campaign](docs/SECURITY_TESTING.md) passed
 52 isolated HTTP authorization/privacy checks at `bd20dfc`, plus a repeat of
 25 crash/concurrency checks. Run `npm run test:security`. It covers account

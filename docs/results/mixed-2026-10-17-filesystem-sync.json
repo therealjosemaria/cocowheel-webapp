@@ -1,0 +1,310 @@
+{
+  "scope": "Only fsync/fdatasync from the isolated synthetic process tree. Startup and shutdown included. PIDs stripped; file roles verified via read-only /proc during run. Not a block-device or kernel I/O trace.",
+  "command": "strace -f --seccomp-bpf -e trace=fsync,fdatasync -T -ttt -o /tmp/gumwheel-mixed-sync-20261017.log node --import tsx scripts/mixed-load.mjs --run --maintenance-confirmed --users=100 --seconds=600 --diagnostics",
+  "calls": [
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.099Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 13.396
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.112Z",
+      "syscall": "fsync",
+      "file": "other descriptor (startup)",
+      "result": 0,
+      "durationMs": 0.007
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.112Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.624
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.116Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 11.797
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.171Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 4.916
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:26.176Z",
+      "syscall": "fsync",
+      "file": "other descriptor (startup)",
+      "result": 0,
+      "durationMs": 0.007
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:39.281Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 60.244
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:39.342Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 9.792
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:38:39.356Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.747
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:39:41.356Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 14.245000000000001
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:39:41.370Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 10.72
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:39:42.232Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.532
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:40:30.420Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 8.966
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:40:30.429Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 14.364
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:40:31.225Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 4.449
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:41:47.550Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 17.707
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:41:47.568Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 10.009
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:41:48.275Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.357
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:03.581Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 32.854
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:03.615Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 11.5
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:03.631Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.003
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:45.255Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 20.896
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:45.276Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 13.802
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:43:46.206Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.219
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:44:52.248Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 10.886
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:44:52.259Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 18.679000000000002
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:44:52.716Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 4.592
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:07.810Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 6.969
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:07.818Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 23.997
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:08.704Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 4.9719999999999995
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:59.203Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 7.86
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:59.211Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 20.490000000000002
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:46:59.242Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 4.523
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:47:54.793Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 15.469
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:47:54.809Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 23.395
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:47:54.853Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 3.7520000000000002
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:48:26.285Z",
+      "syscall": "fsync",
+      "file": "synthetic WAL",
+      "result": 0,
+      "durationMs": 7.988
+    },
+    {
+      "process": "synthetic-worker",
+      "at": "2026-10-16T13:48:26.293Z",
+      "syscall": "fsync",
+      "file": "synthetic database",
+      "result": 0,
+      "durationMs": 23.345000000000002
+    }
+  ]
+}

@@ -6,7 +6,11 @@ import { mkdtempSync, readFileSync, writeFileSync, statfsSync } from "node:fs";
 import { freemem } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { monitorEventLoopDelay } from "node:perf_hooks";
+import {
+  monitorEventLoopDelay,
+  PerformanceObserver,
+  performance,
+} from "node:perf_hooks";
 import assert from "node:assert/strict";
 const here = fileURLToPath(import.meta.url),
   origin = "http://127.0.0.1";
@@ -37,6 +41,98 @@ async function worker() {
   const { default: db } = await import("../server/db.ts");
   const core = await import("../server/core.ts");
   const { createApiServer } = await import("../server/index.ts");
+  const diagnostics = process.env.MIXED_DIAGNOSTICS === "1";
+  let sqlMaxMs = 0,
+    sqlTotalMs = 0,
+    sqlCount = 0,
+    slowSql = [],
+    slowTransactions = [],
+    gcEvents = [];
+  const observer = diagnostics
+    ? new PerformanceObserver((list) => {
+        for (const e of list.getEntries())
+          gcEvents.push({
+            startMs: e.startTime,
+            durationMs: e.duration,
+            kind: e.detail.kind,
+          });
+      })
+    : null;
+  observer?.observe({ entryTypes: ["gc"] });
+  if (diagnostics) {
+    const prepare = db.prepare.bind(db);
+    db.prepare = (sql) => {
+      const statement = prepare(sql);
+      for (const method of ["get", "all", "run"]) {
+        const original = statement[method].bind(statement);
+        statement[method] = (...parameters) => {
+          const startMs = performance.now();
+          try {
+            return original(...parameters);
+          } finally {
+            const durationMs = performance.now() - startMs;
+            sqlCount++;
+            sqlTotalMs += durationMs;
+            sqlMaxMs = Math.max(sqlMaxMs, durationMs);
+            if (durationMs >= 20 && slowSql.length < 100)
+              slowSql.push({
+                startMs,
+                durationMs,
+                method,
+                verb: sql.trim().split(/\s+/)[0].toUpperCase(),
+              });
+          }
+        };
+      }
+      return statement;
+    };
+    // better-sqlite3 prepares COMMIT internally, bypassing the public prepare.
+    // Time the callback separately from the complete transaction wrapper.
+    const transaction = db.transaction.bind(db);
+    db.transaction = (fn) => {
+      let callbackMs = 0;
+      const wrapped = transaction(function (...args) {
+        const start = performance.now();
+        try {
+          return fn.apply(this, args);
+        } finally {
+          callbackMs = performance.now() - start;
+        }
+      });
+      const measure = (execute) =>
+        function (...args) {
+          const startMs = performance.now();
+          callbackMs = 0;
+          try {
+            return execute.apply(this, args);
+          } finally {
+            const durationMs = performance.now() - startMs;
+            if (durationMs >= 20 && slowTransactions.length < 100)
+              slowTransactions.push({
+                startMs,
+                durationMs,
+                callbackMs,
+                boundaryMs: durationMs - callbackMs,
+              });
+          }
+        };
+      const result = measure(wrapped);
+      for (const mode of ["default", "deferred", "immediate", "exclusive"])
+        result[mode] = measure(wrapped[mode]);
+      result.database = db;
+      return result;
+    };
+  }
+  const procNumbers = (path, pattern) => {
+    try {
+      const text = readFileSync(path, "utf8");
+      return pattern
+        ? Number(text.match(pattern)?.[1] ?? 0)
+        : text.trim().split(/\s+/).map(Number);
+    } catch {
+      return null;
+    }
+  };
   const api = createApiServer(db, {
     sampleRides: false,
     sendUniversityCode: async () => {
@@ -68,9 +164,21 @@ async function worker() {
   lag.enable();
   let cpu = process.cpuUsage(),
     time = performance.now();
+  let resource = process.resourceUsage(),
+    sched = diagnostics ? procNumbers("/proc/self/schedstat") : null;
+  let utilization = performance.eventLoopUtilization();
+  sqlMaxMs = 0;
+  sqlTotalMs = 0;
+  sqlCount = 0;
+  slowSql = [];
+  slowTransactions = [];
+  gcEvents = [];
   const timer = setInterval(() => {
     const next = process.cpuUsage(),
       now = performance.now();
+    const nextResource = process.resourceUsage(),
+      nextSched = diagnostics ? procNumbers("/proc/self/schedstat") : null;
+    const nextUtilization = performance.eventLoopUtilization();
     process.send({
       type: "metrics",
       at: new Date().toISOString(),
@@ -79,9 +187,48 @@ async function worker() {
         (next.user + next.system - cpu.user - cpu.system) / ((now - time) * 10),
       lagMs: lag.percentile(99) / 1e6,
       freeMiB: freemem() / 1048576,
+      ...(diagnostics
+        ? {
+            diagnostics: {
+              workerMs: now,
+              intervalMs: now - time,
+              eventLoopUtilization: performance.eventLoopUtilization(
+                nextUtilization,
+                utilization,
+              ).utilization,
+              sqlCount,
+              sqlTotalMs,
+              sqlMaxMs,
+              slowSql,
+              slowTransactions,
+              gcEvents,
+              involuntaryContextSwitches:
+                nextResource.involuntaryContextSwitches -
+                resource.involuntaryContextSwitches,
+              fsRead: nextResource.fsRead - resource.fsRead,
+              fsWrite: nextResource.fsWrite - resource.fsWrite,
+              schedulerWaitMs:
+                sched && nextSched ? (nextSched[1] - sched[1]) / 1e6 : null,
+              hostSwapInPages: procNumbers("/proc/vmstat", /^pswpin\s+(\d+)/m),
+              hostSwapOutPages: procNumbers(
+                "/proc/vmstat",
+                /^pswpout\s+(\d+)/m,
+              ),
+            },
+          }
+        : {}),
     });
     cpu = next;
     time = now;
+    resource = nextResource;
+    sched = nextSched;
+    utilization = nextUtilization;
+    sqlMaxMs = 0;
+    sqlTotalMs = 0;
+    sqlCount = 0;
+    slowSql = [];
+    slowTransactions = [];
+    gcEvents = [];
     lag.reset();
   }, 1000);
   process.send({ type: "ready", port: api.address().port, actors });
@@ -89,6 +236,7 @@ async function worker() {
     if (message !== "stop") return;
     clearInterval(timer);
     lag.disable();
+    observer?.disconnect();
     api.closeAllConnections();
     await new Promise((r) => api.close(r));
     const final = {
@@ -121,13 +269,16 @@ async function main() {
     return;
   }
   if (
-    args.length !== 4 ||
+    args.length !== (args.includes("--diagnostics") ? 5 : 4) ||
     !args.includes("--run") ||
     !args.includes("--maintenance-confirmed") ||
     args.some(
-      (a) => !/^--(run|maintenance-confirmed|users=\d+|seconds=\d+)$/.test(a),
+      (a) =>
+        !/^--(run|maintenance-confirmed|diagnostics|users=\d+|seconds=\d+)$/.test(
+          a,
+        ),
     ) ||
-    new Set(args.map((a) => a.split("=")[0])).size !== 4
+    new Set(args.map((a) => a.split("=")[0])).size !== args.length
   )
     throw new Error("INVALID_ARGUMENTS");
   const users = Number(
@@ -151,6 +302,7 @@ async function main() {
       NODE_ENV: "test",
       MIXED_DIRECTORY: directory,
       MIXED_USERS: String(users),
+      MIXED_DIAGNOSTICS: args.includes("--diagnostics") ? "1" : "0",
     },
     stdio: ["ignore", "ignore", "ignore", "ipc"],
   });
@@ -554,6 +706,10 @@ async function main() {
       paired,
       completed,
       metrics,
+      diagnosticsEnabled: args.includes("--diagnostics"),
+      slowResponses: args.includes("--diagnostics")
+        ? results.filter((r) => r.ms >= 50)
+        : undefined,
       samples,
       final,
       scope:
