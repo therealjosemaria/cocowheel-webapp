@@ -158,7 +158,8 @@ button:disabled {
   height: 30px;
   max-width: none;
   left: -6px;
-  top: 1px;
+  /* Optical centring against the uppercase letterforms, not their line box. */
+  top: 0.5px;
 }
 .desktop-navigation {
   display: none;
@@ -921,6 +922,9 @@ p {
 @media (max-width: 699px) {
   .brand {
     font-size: var(--text-body);
+  }
+  .brand-art img {
+    top: 0;
   }
   .driver-location-summary:has(.rider-origin-heading) {
     grid-template-columns: minmax(0, 1fr);

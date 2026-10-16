@@ -226,7 +226,9 @@ for service operations.
   A 48×32px CSS window frames the 60×30px image, reducing the icons by 25%
   while retaining vertical alignment. An 18px trailing spacer preserves the
   original header footprint and navigation positions. The wordmark typography
-  is unchanged. Icons are decorative and do not duplicate the accessible name.
+  is unchanged. Artwork is optically raised by 1px on mobile and 0.5px on
+  desktop to align with the visible uppercase letters rather than the line box.
+  Icons are decorative and do not duplicate the accessible name.
 - Desktop pages use roughly two thirds of the viewport (960–1360px shell), with
   a single-row menu from 1000px; smaller viewports use the menu drawer. Home
   buttons stay centred and compact on desktop, full width on mobile; hero
