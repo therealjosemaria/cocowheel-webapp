@@ -423,29 +423,11 @@ button:disabled {
   color: var(--ink);
   font-weight: var(--weight-bold);
 }
-.help-intro,
 .help-section {
   padding: 24px 20px;
   color: var(--muted);
   font-size: var(--text-small);
   line-height: 1.7;
-}
-.help-intro {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding-bottom: 0;
-}
-.help-intro-action {
-  color: var(--ink);
-  font-size: var(--text-small);
-  font-weight: var(--weight-regular);
-}
-.help-intro-eligibility {
-  color: var(--muted);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-regular);
 }
 .help-section {
   border-top: 1px solid var(--line);

@@ -19,7 +19,7 @@ helps people understand the service, try a ride, return, or share useful suggest
 these are design intentions, not measured growth outcomes or permission to add
 tracking, unsolicited messages or incentives.
 
-How it works now has a UniKey/pilot introduction, two role-specific four-step
+How it works now starts directly with two role-specific four-step
 paths (Find a ride first, Offer a ride second), and four native FAQ
 accordions (payment, pickup code, location and cancellation), and a separate
 **Have a suggestion?** section. Its **Email us** link opens the user's mail handler
@@ -27,12 +27,11 @@ addressed to `jmos0905@uni.sydney.edu.au` with subject `GUMWHEEL suggestion`.
 The user writes and sends the message themselves; the app neither submits nor
 stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
-QR payments are roadmap messaging, not an implemented capability. The Help
-introduction reads “Sign in with your UniKey to get started.” followed by
-“For University of Sydney students only.” Expansion messaging is removed;
-current payment, authentication and approved testing exceptions stay unchanged.
-The introduction uses regular-weight 14px dark action text above 12px muted
-eligibility text, left-aligned with a 4px gap; no extra badges or decoration.
+QR payments are roadmap messaging, not an implemented capability. The signed-out
+Profile popover shows “For University of Sydney students only.” directly above
+Verify UniKey, using its existing paragraph styling. Both former introductory
+sentences are removed from Help. Profile controls, mobile menu, verification
+behaviour and approved testing exceptions stay unchanged.
 The FAQ has a subtle grey background; role cards use pale blue/orange tints
 derived from the rider/driver map colours, with matching coloured icons and dark
 text. Suggestions remain white; heading sizes are unchanged.

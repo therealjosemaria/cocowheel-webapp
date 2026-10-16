@@ -249,17 +249,20 @@ export default function AppNavigation() {
               <b>{guestName}</b>
             </div>
           ) : (
-            <button
-              className="secondary"
-              onClick={() => {
-                setIdentityOpen(false);
-                window.dispatchEvent(
-                  new CustomEvent("cocowheels:verify-university"),
-                );
-              }}
-            >
-              Verify UniKey
-            </button>
+            <>
+              <p>For University of Sydney students only.</p>
+              <button
+                className="secondary"
+                onClick={() => {
+                  setIdentityOpen(false);
+                  window.dispatchEvent(
+                    new CustomEvent("cocowheels:verify-university"),
+                  );
+                }}
+              >
+                Verify UniKey
+              </button>
+            </>
           )}
           {guestName && activeRide && (
             <ActiveRideLink
