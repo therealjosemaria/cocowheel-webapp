@@ -298,6 +298,37 @@ real-device verification.
 
 ## Product and UI standards
 
+### Privacy and terms pages
+
+Public `/privacy` and `/terms` pages are linked only by the compact Legal footer
+navigation beneath copyright, on mobile and desktop. Both use the shared
+`LegalPage` server component, dated 16 October 2026. They add no API, consent
+capture, account gate or tracking. Home's minimum hero height reserves the
+additional footer-link row. The main menu is unchanged.
+
+Copy describes the current pilot: visible UniKeys and published driver locations,
+participant-scoped requests, PayID disclosure after pairing, retained pickup
+snapshots/history, browser caches, provider processing, direct payments, and
+synthetic rides. It does not promise current-enrolment checks, automatic account
+deletion, guaranteed safety, or verified payment. Support/privacy contact is the
+owner's university inbox. Contact requests require manual handling; this change
+does not implement a deletion or complaints workflow.
+
+These are initial product-specific documents, not lawyer-approved compliance
+certification. Before wider rollout, confirm the legal operator's name/contact
+requirements, applicable privacy and transport obligations, age/eligibility rules,
+provider processing countries and retention/backups, and an appropriate retention
+and complaint-handling policy. No unverified company identity, age gate, deletion
+deadline, overseas country list or liability waiver has been invented. The current
+indefinite history retention and unlabelled simulated offers need particular review;
+mentioning test rides in terms does not itself resolve discovery confusion.
+
+Reference style: Mosciaro Therapy repository (read-only); its healthcare/Square
+terms were not copied. Drafting references:
+[OAIC privacy guidance](https://www.oaic.gov.au/privacy/your-privacy-rights/your-personal-information)
+and [ACCC contracts guidance](https://www.accc.gov.au/consumers/buying-products-and-services/contracts).
+Keep these pages aligned with actual behaviour when handling/sharing changes.
+
 See [the product and UI standards](docs/UI_STANDARDS.md) and [visual-system tokens](docs/DESIGN_TOKENS.md) before changing user-facing behaviour, wording or layouts. These are the current conventions, not a claim that every legacy screen has already been migrated. [CURRENT_CONTEXT.md](CURRENT_CONTEXT.md) retains implementation history; newer dated decisions supersede older notes.
 
 ## Local development

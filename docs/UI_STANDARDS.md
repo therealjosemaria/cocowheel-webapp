@@ -28,6 +28,7 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Navigation and layout
 
+- Footer navigation contains only Privacy and Terms, centred beneath copyright; no duplicate main menu or large site-map footer. Text remains small with 44px-tall tap targets and visible focus. Public legal pages share the standard panel/H1, 18px H2 hierarchy, readable line length and revision date. Preserve Home footer visibility when adding footer rows. Legal copy must describe real behaviour, not invent guarantees or imply legal certification.
 - Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with a short numbered list: bold action lead-ins and regular explanatory text. Keep its UniKey, request, pickup-code and PayID instructions aligned with actual behaviour.
 - The FAQ section alone uses `--surface-subtle` to distinguish it from the white steps and suggestion section. Keep the larger H1 and matching smaller H2 headings; do not introduce patterned backgrounds or additional shadows for this grouping.
