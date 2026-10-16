@@ -228,7 +228,7 @@ for service operations.
   original header footprint and navigation positions. The wordmark typography
   is unchanged. Artwork is optically raised by 1px on mobile and 0.5px on
   desktop to align with the visible uppercase letters rather than the line box.
-  A scale of 0.669921875 applies three successive 12.5% reductions without
+  A scale of 0.586181640625 applies four successive 12.5% reductions without
   changing the header footprint or the established optical centreline. The
   horizontal scale origin is 6px into the image (its visible bubble edge), so
   transparent padding does not enlarge the 6px wordmark-to-artwork gap.

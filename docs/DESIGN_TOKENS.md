@@ -55,9 +55,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
-Header icon refinement: apply `scale(0.669921875)` with `transform-origin: 6px center` on both
+Header icon refinement: apply `scale(0.586181640625)` with `transform-origin: 6px center` on both
 mobile and desktop, in addition to the framing above. This reduces the icon
-pair by three successive 12.5% reductions, preserving its optical centreline and layout footprint.
+pair by four successive 12.5% reductions, preserving its optical centreline and layout footprint.
 The horizontal origin anchors the visible bubble edge, not the padded image centre,
 so the wordmark gap stays at 6px instead of growing as the icons shrink;
 do not resize the wordmark or navigation controls with it.
