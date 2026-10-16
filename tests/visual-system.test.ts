@@ -12,7 +12,7 @@ test("header artwork stays decorative beside the non-clickable brand", () => {
   assert.match(css, /\.brand-art\s*\{[^}]*width: 48px;[^}]*height: 32px;/);
   assert.match(css, /\.brand-art img\s*\{[^}]*width: 60px;[^}]*height: 30px;/);
   assert.match(css, /\.brand-art img\s*\{[^}]*top: 0\.5px;/);
-  assert.match(css, /\.brand-art img\s*\{[^}]*transform: scale\(0\.875\);[^}]*transform-origin: center;/);
+  assert.match(css, /\.brand-art img\s*\{[^}]*transform: scale\(0\.765625\);[^}]*transform-origin: center;/);
   assert.match(css, /@media \(max-width: 699px\)\s*\{\s*\.brand\s*\{[^}]*\}\s*\.brand-art img\s*\{\s*top: 0;/);
   assert.match(css, /\.brand\s*\{[^}]*gap: 6px;[^}]*padding-right: 18px;/);
   const png = readFileSync("public/brand/gumwheel-bubble-wheel.png");
