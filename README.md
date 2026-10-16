@@ -27,8 +27,10 @@ addressed to `jmos0905@uni.sydney.edu.au` with subject `GUMWHEEL suggestion`.
 The user writes and sends the message themselves; the app neither submits nor
 stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
-QR payments and expansion to other universities are roadmap messaging, not
-implemented capabilities; current payment and authentication rules stay unchanged.
+QR payments are roadmap messaging, not an implemented capability. The Help
+introduction reads “Sign in with your UniKey to get started.” followed by
+“For University of Sydney students only.” Expansion messaging is removed;
+current payment, authentication and approved testing exceptions stay unchanged.
 The FAQ has a subtle grey background; role cards use pale blue/orange tints
 derived from the rider/driver map colours, with matching coloured icons and dark
 text. Suggestions remain white; heading sizes are unchanged.
