@@ -3,7 +3,12 @@
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import {
+  ApiError,
+  apiErrorMessage,
+  CONNECTION_MESSAGE,
+  cocowheelsApi,
+} from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
 import RidePreviewClient from "./ride-preview-client";
@@ -54,10 +59,18 @@ export default function ActivityRideClient({
         }
       } catch (reason) {
         if (cancelled) return;
+        if (
+          reason instanceof ApiError &&
+          [401, 403, 404].includes(reason.status)
+        )
+          setRide(null);
         setError(
           reason instanceof ApiError && reason.status === 403
             ? "This ride is not available."
-            : "Trying to reconnect. Please try again.",
+            : apiErrorMessage(
+                reason,
+                "We couldn’t load this ride. Please try again.",
+              ),
         );
       } finally {
         if (!cancelled) {
@@ -80,7 +93,13 @@ export default function ActivityRideClient({
       className="activity-detail"
       aria-live={ride ? undefined : "polite"}
     >
-      {error ? (
+      {error && ride ? (
+        <p className="stale-notice" role="status">
+          {error !== CONNECTION_MESSAGE ? `${error} ` : ""}Showing previously
+          loaded ride details.
+        </p>
+      ) : null}
+      {error && !ride ? (
         <>
           <h1>Not available</h1>
           <p className="intro">{error}</p>
@@ -144,8 +163,13 @@ function RideView({ ride }: { ride: Ride }) {
     try {
       await cocowheelsApi(cancelPath, { method: "POST" });
       window.location.assign("/activity");
-    } catch {
-      setCancelError("We couldn’t cancel this ride. Please try again.");
+    } catch (reason) {
+      setCancelError(
+        apiErrorMessage(
+          reason,
+          "We couldn’t cancel this ride. Please try again.",
+        ),
+      );
       setCancelling(false);
     }
   };

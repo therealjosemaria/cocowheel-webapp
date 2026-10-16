@@ -1,4 +1,5 @@
 "use client";
+import { Message } from "./ride-journey-controls";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
@@ -16,7 +17,12 @@ import {
   payIdInputError,
   searchInputError,
 } from "@/lib/input-validation";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import {
+  ApiError,
+  apiErrorMessage,
+  CONNECTION_MESSAGE,
+  cocowheelsApi,
+} from "@/lib/api-client";
 import type { Candidate, PayIdType, Pin, Ride } from "@/lib/client-types";
 import { routeReference } from "@/lib/route-id";
 import {
@@ -178,8 +184,7 @@ const humanError = (error: unknown) => {
   const messages: Record<string, string> = {
     VERIFICATION_CANCELLED: "",
     UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your UniKey to continue.",
-    SERVICE_UNAVAILABLE:
-      "Trying to reconnect. Your last known ride is still safe on the server.",
+    SERVICE_UNAVAILABLE: CONNECTION_MESSAGE,
     OPEN_ITEM_EXISTS: "You already have an active ride or request.",
     FRESH_LOCATIONS_REQUIRED:
       "Both people need to update their location before the driver can start.",
@@ -196,9 +201,7 @@ const humanError = (error: unknown) => {
     REQUEST_TIME_INCOMPATIBLE:
       "That requested time is not compatible with the driver’s planned departure.",
   };
-  return (
-    messages[code] ?? "We couldn’t complete that action. Please try again."
-  );
+  return messages[code] ?? apiErrorMessage(error);
 };
 
 export default function HomeClient({
@@ -226,6 +229,8 @@ export default function HomeClient({
   >([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [discoveryError, setDiscoveryError] = useState<string | null>(null);
+  const [serviceError, setServiceError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
     null,
   );
@@ -327,13 +332,23 @@ export default function HomeClient({
         currents: Array<{ role: Role; ride: Ride }>;
       }>("/api/current");
       setServiceAvailable(true);
+      setServiceError(null);
       setHomeCurrent(result.currents);
     } catch (reason) {
-      if (reason instanceof ApiError && reason.status === 401) {
+      if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         setServiceAvailable(true);
+        setServiceError(null);
+        setHomeCurrent([]);
+        setRide(null);
         return;
       }
       setServiceAvailable(false);
+      setServiceError(
+        apiErrorMessage(
+          reason,
+          "We couldn’t refresh your ride. Please try again.",
+        ),
+      );
     }
   }
   useEffect(() => {
@@ -438,9 +453,21 @@ export default function HomeClient({
         .then((result) => {
           setRide(result.ride);
           setServiceAvailable(true);
+          setServiceError(null);
         })
-        .catch(() => {
+        .catch((reason) => {
+          if (
+            reason instanceof ApiError &&
+            [401, 403, 404].includes(reason.status)
+          )
+            setRide(null);
           setServiceAvailable(false);
+          setServiceError(
+            apiErrorMessage(
+              reason,
+              "We couldn’t refresh your ride. Please try again.",
+            ),
+          );
         });
     }, 8_000);
     return () => window.clearInterval(timer);
@@ -726,13 +753,14 @@ export default function HomeClient({
         .then((result) => {
           if (cancelled) return;
           setCandidates(result.candidates);
+          setDiscoveryError(null);
           setSelected((current) =>
             result.candidates.some((candidate) => candidate.rideId === current)
               ? current
               : (result.candidates[0]?.rideId ?? null),
           );
         })
-        .catch((reason) => !cancelled && setError(humanError(reason)))
+        .catch((reason) => !cancelled && setDiscoveryError(humanError(reason)))
         .finally(() => !cancelled && setSearching(false));
     };
     const timer = window.setTimeout(search, 250);
@@ -866,8 +894,10 @@ export default function HomeClient({
           : "page-content"
       }
     >
-      {serviceAvailable === false ? (
-        <p className="reconnect">Trying to reconnect.</p>
+      {serviceAvailable === false && serviceError !== CONNECTION_MESSAGE ? (
+        <p className="reconnect" role="status">
+          {serviceError}
+        </p>
       ) : null}
       {locationPromptTarget ? (
         <LocationPrompt
@@ -904,9 +934,10 @@ export default function HomeClient({
           close={() => setPublishRouteRequiredPromptOpen(false)}
         />
       ) : null}
-      {error ? (
-        <p className="error" role="alert">
-          {error}
+      {error ? <Message text={error} close={() => setError(null)} /> : null}
+      {discoveryError && screen === "RIDER" ? (
+        <p className="reconnect" role="status">
+          {discoveryError}
         </p>
       ) : null}
       {ride ? (
@@ -1884,6 +1915,7 @@ function PlaceSearch({
 }) {
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!autoFocus) return;
@@ -1908,8 +1940,19 @@ function PlaceSearch({
         ...(countryCode ? { countryCode } : {}),
       }),
     })
-      .then((result) => setPlaces(result.places))
-      .catch(() => setPlaces([]));
+      .then((result) => {
+        setPlaces(result.places);
+        setSearchError(null);
+      })
+      .catch((reason) => {
+        setPlaces([]);
+        setSearchError(
+          apiErrorMessage(
+            reason,
+            "We couldn’t search destinations. Please try again.",
+          ),
+        );
+      });
   };
   return (
     <div
@@ -1949,6 +1992,11 @@ function PlaceSearch({
           Search
         </button>
       </div>
+      {searchError ? (
+        <p className="reconnect" role="alert">
+          {searchError}
+        </p>
+      ) : null}
       {places.length ? (
         <div
           className="place-results"

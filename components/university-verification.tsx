@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
 type Pending = { resolve: () => void; reject: () => void };
 export default function UniversityVerification() {
@@ -37,37 +38,20 @@ export default function UniversityVerification() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(
-        `/api/university/${challenge ? "verify" : "code"}`,
-        {
-          method: "POST",
-          credentials: "same-origin",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Cocowheels-Auth": "1",
-          },
-          body: JSON.stringify(
-            challenge ? { challengeId: challenge, code } : { unikey },
-          ),
+      const result = await requestJson<{
+        challengeId: string;
+        deliveryAddress: string;
+      }>(`/api/university/${challenge ? "verify" : "code"}`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Cocowheels-Auth": "1",
         },
-      );
-      const result = await response.json();
-      if (!response.ok) {
-        const messages: Record<string, string> = {
-          INVALID_UNIKEY: "Enter your UniKey, for example abcd1234.",
-          VERIFICATION_INVALID:
-            "That code is invalid or expired. Try again or request a new code.",
-          VERIFICATION_RATE_LIMITED:
-            "Too many attempts. Please try again in 15 minutes.",
-          EMAIL_NOT_CONFIGURED:
-            "Email verification isn’t available yet. Please try again later.",
-          EMAIL_SEND_FAILED:
-            "We couldn’t send your code. Please try again shortly.",
-        };
-        throw new Error(
-          messages[result.error] ?? "We couldn’t verify you. Please try again.",
-        );
-      }
+        body: JSON.stringify(
+          challenge ? { challengeId: challenge, code } : { unikey },
+        ),
+      });
       if (!challenge) {
         setChallenge(result.challengeId);
         setDeliveryAddress(result.deliveryAddress);
@@ -86,7 +70,26 @@ export default function UniversityVerification() {
         setCode("");
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to connect.");
+      const messages: Record<string, string> = {
+        INVALID_UNIKEY: "Enter your UniKey, for example abcd1234.",
+        VERIFICATION_INVALID:
+          "That code is invalid or expired. Try again or request a new code.",
+        VERIFICATION_RATE_LIMITED:
+          "Too many attempts. Please try again in 15 minutes.",
+        EMAIL_NOT_CONFIGURED:
+          "Email verification isn’t available yet. Please try again later.",
+        EMAIL_SEND_FAILED:
+          "We couldn’t send your code. Please try again shortly.",
+      };
+      setError(
+        apiErrorMessage(
+          reason,
+          reason instanceof ApiError
+            ? (messages[reason.code] ??
+                "We couldn’t verify you. Please try again.")
+            : "We couldn’t verify you. Please try again.",
+        ),
+      );
     } finally {
       setBusy(false);
     }

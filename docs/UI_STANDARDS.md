@@ -17,6 +17,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Dialogs and actions
 
+- API outage copy is shared: “We can’t reach the server. Please try again shortly.”
+  User actions reuse existing dialogs; verification/profile keep errors in their
+  existing surfaces. Background failures use one fixed neutral, non-interactive
+  notice, not repeated modals. Preserve loaded details with explicit stale wording;
+  do not present failed search as no results or stale GPS as live. Keep validation,
+  permissions and provider errors distinct. See [API_FAILURES.md](API_FAILURES.md).
+
 - Ordinary two-action confirmations: primary action first/top; dismiss second/bottom. Examples: CONTINUE / GO BACK, COMPLETE RIDE / GO BACK, USE CURRENT LOCATION / NOT NOW.
 - Destructive confirmations are the exception: safe action first/top, destructive action second/bottom. Examples: KEEP IT / CANCEL RIDE or KEEP IT / WITHDRAW REQUEST. Use the existing danger treatment, not the normal primary colour.
 - Buttons are stacked, full width, with equal sizing and consistent rounded corners on mobile and desktop. Ride-action and dialog buttons share 44px minimum height, 10px corners, padding, typography and shadow; equal grid rows accommodate wrapped labels. DOM and visual order must agree; do not use CSS ordering to invert keyboard navigation.

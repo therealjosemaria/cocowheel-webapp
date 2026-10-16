@@ -1,17 +1,15 @@
-export class ApiError extends Error {
-  constructor(
-    readonly code: string,
-    readonly status: number,
-  ) {
-    super(code);
-  }
-}
+import { ApiError, requestJson } from "./api-transport";
+export { ApiError, apiErrorMessage, CONNECTION_MESSAGE } from "./api-transport";
 
 const storageKey = "cocowheels:guest-session";
 function fallbackToken() {
-  return typeof window === "undefined"
-    ? null
-    : window.sessionStorage.getItem(storageKey);
+  try {
+    return typeof window === "undefined"
+      ? null
+      : window.sessionStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
 }
 
 export async function cocowheelsApi<T>(
@@ -25,38 +23,41 @@ export async function cocowheelsApi<T>(
   if (init.body) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   else headers.set("X-Cocowheels-Session-Fallback", "1");
-  let response: Response;
+  let payload: T & { sessionToken?: string | null };
   try {
-    response = await fetch(path, { ...init, headers, credentials: "include" });
-  } catch {
-    throw new ApiError("SERVICE_UNAVAILABLE", 0);
-  }
-  const payload = (await response.json().catch(() => ({}))) as T & {
-    error?: string;
-    sessionToken?: string | null;
-  };
-  if (payload.sessionToken && typeof window !== "undefined")
-    window.sessionStorage.setItem(storageKey, payload.sessionToken);
-  if (
-    !response.ok &&
-    payload.error === "UNIVERSITY_VERIFICATION_REQUIRED" &&
-    !verifiedRetry &&
-    typeof window !== "undefined" &&
-    init.method === "POST"
-  ) {
-    await new Promise<void>((resolve, reject) => {
-      window.dispatchEvent(
-        new CustomEvent("cocowheels:verify-university", {
-          detail: {
-            resolve,
-            reject: () => reject(new ApiError("VERIFICATION_CANCELLED", 401)),
-          },
-        }),
-      );
+    payload = await requestJson(path, {
+      ...init,
+      headers,
+      credentials: "include",
     });
-    return cocowheelsApi<T>(path, init, true);
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.code === "UNIVERSITY_VERIFICATION_REQUIRED" &&
+      !verifiedRetry &&
+      typeof window !== "undefined" &&
+      init.method === "POST"
+    ) {
+      await new Promise<void>((resolve, reject) => {
+        window.dispatchEvent(
+          new CustomEvent("cocowheels:verify-university", {
+            detail: {
+              resolve,
+              reject: () => reject(new ApiError("VERIFICATION_CANCELLED", 401)),
+            },
+          }),
+        );
+      });
+      return cocowheelsApi<T>(path, init, true);
+    }
+    throw error;
   }
-  if (!response.ok)
-    throw new ApiError(payload.error ?? "REQUEST_FAILED", response.status);
+  if (payload.sessionToken && typeof window !== "undefined") {
+    try {
+      window.sessionStorage.setItem(storageKey, payload.sessionToken);
+    } catch {
+      /* Cookies remain available. */
+    }
+  }
   return payload;
 }

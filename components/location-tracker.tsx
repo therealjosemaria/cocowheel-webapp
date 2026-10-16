@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { cocowheelsApi } from "@/lib/api-client";
+import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 import { movementTracker } from "@/lib/location-tracking";
 
@@ -10,7 +10,7 @@ export default function LocationTracker() {
   const adminPage = usePathname().startsWith("/admin");
   const [otherDeviceRide, setOtherDeviceRide] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
-  const [switchError, setSwitchError] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
   useEffect(() => {
     if (adminPage) return;
     let stopped = false;
@@ -160,8 +160,13 @@ export default function LocationTracker() {
       );
       setOtherDeviceRide(null);
       window.dispatchEvent(new Event("cocowheels:location-source-changed"));
-    } catch {
-      setSwitchError(true);
+    } catch (reason) {
+      setSwitchError(
+        apiErrorMessage(
+          reason,
+          "We couldn’t switch devices. Please try again.",
+        ),
+      );
     } finally {
       setSwitching(false);
     }
@@ -190,11 +195,11 @@ export default function LocationTracker() {
             aria-modal="true"
             aria-label="Location update"
           >
-            <p>We couldn’t switch devices. Please try again.</p>
+            <p>{switchError}</p>
             <button
               type="button"
               className="primary"
-              onClick={() => setSwitchError(false)}
+              onClick={() => setSwitchError(null)}
             >
               OKAY
             </button>

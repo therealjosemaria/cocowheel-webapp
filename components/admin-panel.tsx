@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
 type Row = Record<string, string | number | null>;
 type Dashboard = {
@@ -73,7 +74,7 @@ async function api<T>(
   body?: unknown,
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(`/api/admin/${path}`, {
+  return requestJson<T>(`/api/admin/${path}`, {
     credentials: "same-origin",
     cache: "no-store",
     signal,
@@ -88,8 +89,6 @@ async function api<T>(
           body: JSON.stringify(body),
         }),
   });
-  if (!response.ok) throw new Error(String(response.status));
-  return response.json();
 }
 export default function AdminPanel() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
@@ -110,10 +109,11 @@ export default function AdminPanel() {
   const failure = useCallback(
     (reason: unknown) => {
       if (reason instanceof Error && reason.name === "AbortError") return;
-      if (reason instanceof Error && ["401", "403"].includes(reason.message)) {
+      if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         clear();
         window.location.replace("/");
-      } else setError("Unable to load. Please try again.");
+      } else
+        setError(apiErrorMessage(reason, "Unable to load. Please try again."));
     },
     [clear],
   );
@@ -123,6 +123,7 @@ export default function AdminPanel() {
       .then((data) => {
         setDashboard(data);
         setAuthenticated(true);
+        setError("");
       })
       .catch((reason) => {
         failure(reason);
@@ -153,6 +154,7 @@ export default function AdminPanel() {
           );
           setDashboard(data);
         }
+        setError("");
       } catch (reason) {
         failure(reason);
       } finally {
@@ -314,8 +316,16 @@ export default function AdminPanel() {
                     </article>
                     <article>
                       <h2>Pickup verification</h2>
-                      <p className="admin-muted">Last reported GPS at code verification. Proximity is recorded, never enforced; old or inaccurate fixes do not prove physical proximity.</p>
-                      {inspector.pickupEvidence ? <Fields row={inspector.pickupEvidence} /> : <p>No recorded pickup evidence.</p>}
+                      <p className="admin-muted">
+                        Last reported GPS at code verification. Proximity is
+                        recorded, never enforced; old or inaccurate fixes do not
+                        prove physical proximity.
+                      </p>
+                      {inspector.pickupEvidence ? (
+                        <Fields row={inspector.pickupEvidence} />
+                      ) : (
+                        <p>No recorded pickup evidence.</p>
+                      )}
                     </article>
                     <article>
                       <h2>Latest locations</h2>
@@ -346,6 +356,11 @@ export default function AdminPanel() {
             {error}
           </p>
         )}
+        {error && !authenticated ? (
+          <button className="primary" onClick={() => window.location.reload()}>
+            Try again
+          </button>
+        ) : null}
       </div>
     </section>
   );

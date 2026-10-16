@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 
 function updated() {
@@ -9,7 +9,7 @@ function updated() {
   window.dispatchEvent(new Event("focus"));
 }
 
-function Message({ text, close }: { text: string; close: () => void }) {
+export function Message({ text, close }: { text: string; close: () => void }) {
   return (
     <div className="cancel-prompt-backdrop">
       <section
@@ -63,10 +63,13 @@ export function PickupConfirmation({
         CO_RIDE_CODE_RATE_LIMITED: "Please wait a moment before trying again.",
       };
       setError(
-        reason instanceof ApiError
-          ? (messages[reason.code] ??
-              "We couldn’t confirm pickup. Please try again.")
-          : "Please try again.",
+        apiErrorMessage(
+          reason,
+          reason instanceof ApiError
+            ? (messages[reason.code] ??
+                "We couldn’t confirm pickup. Please try again.")
+            : "Please try again.",
+        ),
       );
     } finally {
       setBusy(false);
@@ -171,10 +174,13 @@ export function CompleteRide({ ride }: { ride: Ride }) {
       if (message) setWarning(message);
       else
         setError(
-          reason instanceof ApiError &&
-            reason.code === "COMPLETION_PICKUP_UNCONFIRMED"
-            ? "The driver must confirm pickup before completing the ride."
-            : "We couldn’t complete the ride. Please try again.",
+          apiErrorMessage(
+            reason,
+            reason instanceof ApiError &&
+              reason.code === "COMPLETION_PICKUP_UNCONFIRMED"
+              ? "The driver must confirm pickup before completing the ride."
+              : "We couldn’t complete the ride. Please try again.",
+          ),
         );
     } finally {
       setBusy(false);

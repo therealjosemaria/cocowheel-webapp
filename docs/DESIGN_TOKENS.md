@@ -58,6 +58,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
+The shared connection notice uses existing surface-subtle/ink/line colours,
+small text, control-radius and 12px/16px padding. It is fixed above the safe-area
+bottom without page reflow, animation or a new colour/shadow. It is non-interactive;
+recovery and actions remain in their existing controls.
+
 After any copy/layout change, review the full affected screen for competing
 emphasis on mobile and desktop. Check the hierarchy from page title to section
 heading, body, helper text and actions; do not preserve bold formatting blindly

@@ -4,7 +4,12 @@ import RideStatusText from "./ride-status-text";
 import { participantStatusLabel } from "@/lib/ride-status";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import {
+  ApiError,
+  apiErrorMessage,
+  CONNECTION_MESSAGE,
+  cocowheelsApi,
+} from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
 import RideFieldLabel from "./ride-field-label";
@@ -55,12 +60,18 @@ export default function ActivityClient() {
         }
       } catch (reason) {
         if (cancelled) return;
-        if (reason instanceof ApiError && reason.status === 401) {
+        if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
           setCurrent([]);
           setHistory({ driver: [], rider: [] });
+          setError(null);
           return;
         }
-        setError("Trying to reconnect. Please try again.");
+        setError(
+          apiErrorMessage(
+            reason,
+            "We couldn’t load your activity. Please try again.",
+          ),
+        );
       } finally {
         requestInFlight = false;
         if (!cancelled) setLoading(false);
@@ -102,7 +113,7 @@ export default function ActivityClient() {
     return <section className="activity-page" aria-busy="true" />;
   }
 
-  if (error) {
+  if (error && !history) {
     return (
       <section className="activity-page">
         <div className="activity-panel">
@@ -128,6 +139,12 @@ export default function ActivityClient() {
       <div className="activity-panel">
         <h1 className="page-title">Activity</h1>
         <div className="activity-panel-content">
+          {error ? (
+            <p className="stale-notice" role="status">
+              {error !== CONNECTION_MESSAGE ? `${error} ` : ""}Showing
+              previously loaded activity.
+            </p>
+          ) : null}
           {current.length ? (
             <section className="activity-current">
               {current.map((item) => (
@@ -170,7 +187,7 @@ function ActivityCard({
 }: ActivityItem & { refresh: () => void }) {
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
-  const [endError, setEndError] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
   const status = participantStatusLabel(
     ride.status,
     role === "RIDER" ? ride.request?.status : undefined,
@@ -216,9 +233,9 @@ function ActivityCard({
       );
       setEndPromptOpen(false);
       refresh();
-    } catch {
+    } catch (reason) {
       setEndPromptOpen(false);
-      setEndError(true);
+      setEndError(apiErrorMessage(reason, "We couldn’t update this request."));
     } finally {
       setEnding(false);
     }
@@ -241,14 +258,12 @@ function ActivityCard({
             aria-modal="true"
             aria-labelledby="activity-action-error-title"
           >
-            <h2 id="activity-action-error-title">
-              We couldn’t update this request.
-            </h2>
+            <h2 id="activity-action-error-title">{endError}</h2>
             <div className="location-prompt-actions">
               <button
                 type="button"
                 className="primary"
-                onClick={() => setEndError(false)}
+                onClick={() => setEndError(null)}
               >
                 OKAY
               </button>

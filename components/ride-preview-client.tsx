@@ -12,9 +12,18 @@ import LocationAge from "./location-age";
 import { mapLocationText } from "@/lib/map-label";
 import { directionsUrl } from "@/lib/directions";
 import RideFieldLabel from "./ride-field-label";
-import { CompleteRide, PickupConfirmation } from "./ride-journey-controls";
+import {
+  CompleteRide,
+  PickupConfirmation,
+  Message,
+} from "./ride-journey-controls";
 import CopyPayId from "./copy-payid";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import {
+  ApiError,
+  apiErrorMessage,
+  CONNECTION_MESSAGE,
+  cocowheelsApi,
+} from "@/lib/api-client";
 import type { PayIdType, Pin, Ride } from "@/lib/client-types";
 import {
   cacheRoadPath,
@@ -124,7 +133,9 @@ export default function RidePreviewClient({
   const [selfJoinPromptOpen, setSelfJoinPromptOpen] = useState(false);
   const [poorFitPromptOpen, setPoorFitPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
-  const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState(false);
+  const [joinFailurePromptOpen, setJoinFailurePromptOpen] = useState<
+    string | null
+  >(null);
   const [joining, setJoining] = useState(false);
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
@@ -133,7 +144,9 @@ export default function RidePreviewClient({
     requestId: string;
     decision: "ACCEPT" | "DECLINE";
   } | null>(null);
-  const [requestDecisionError, setRequestDecisionError] = useState(false);
+  const [requestDecisionError, setRequestDecisionError] = useState<
+    string | null
+  >(null);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
     null,
   );
@@ -255,14 +268,23 @@ export default function RidePreviewClient({
         .then((result) => {
           if (!cancelled) {
             setPublicRide(result.ride);
+            setError(null);
           }
         })
         .catch((reason) => {
           if (cancelled) return;
+          if (
+            reason instanceof ApiError &&
+            [401, 403, 404].includes(reason.status)
+          )
+            setPublicRide(null);
           setError(
             reason instanceof ApiError && reason.status === 404
               ? "This ride is no longer available."
-              : "Trying to reconnect. Please try again.",
+              : apiErrorMessage(
+                  reason,
+                  "We couldn’t load this ride. Please try again.",
+                ),
           );
         });
     };
@@ -434,7 +456,9 @@ export default function RidePreviewClient({
       )
         return;
       if (!(reason instanceof ApiError && reason.status === 401)) {
-        setJoinFailurePromptOpen(true);
+        setJoinFailurePromptOpen(
+          apiErrorMessage(reason, "We couldn’t send your request."),
+        );
         return;
       }
     }
@@ -479,7 +503,10 @@ export default function RidePreviewClient({
         reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
       )
         setRoleChangePromptOpen(true);
-      else setJoinFailurePromptOpen(true);
+      else
+        setJoinFailurePromptOpen(
+          apiErrorMessage(reason, "We couldn’t send your request."),
+        );
     } finally {
       setJoining(false);
     }
@@ -496,11 +523,14 @@ export default function RidePreviewClient({
         { method: "POST" },
       );
       router.push("/activity");
-    } catch {
+    } catch (reason) {
       setEndError(
-        driverOwned
-          ? "We couldn’t cancel this ride. Please try again."
-          : "We couldn’t withdraw this request. Please try again.",
+        apiErrorMessage(
+          reason,
+          driverOwned
+            ? "We couldn’t cancel this ride. Please try again."
+            : "We couldn’t withdraw this request. Please try again.",
+        ),
       );
       setEnding(false);
       setEndPromptOpen(false);
@@ -521,8 +551,10 @@ export default function RidePreviewClient({
         },
       );
       window.location.reload();
-    } catch {
-      setRequestDecisionError(true);
+    } catch (reason) {
+      setRequestDecisionError(
+        apiErrorMessage(reason, "We couldn’t update this request."),
+      );
       setRequestDecision(null);
     }
   }
@@ -631,12 +663,12 @@ export default function RidePreviewClient({
             aria-modal="true"
             aria-labelledby="join-failure-title"
           >
-            <h2 id="join-failure-title">We couldn’t send your request.</h2>
+            <h2 id="join-failure-title">{joinFailurePromptOpen}</h2>
             <div className="location-prompt-actions">
               <button
                 type="button"
                 className="primary"
-                onClick={() => setJoinFailurePromptOpen(false)}
+                onClick={() => setJoinFailurePromptOpen(null)}
               >
                 OKAY
               </button>
@@ -652,14 +684,12 @@ export default function RidePreviewClient({
             aria-modal="true"
             aria-labelledby="request-decision-error-title"
           >
-            <h2 id="request-decision-error-title">
-              We couldn’t update this request.
-            </h2>
+            <h2 id="request-decision-error-title">{requestDecisionError}</h2>
             <div className="location-prompt-actions">
               <button
                 type="button"
                 className="primary"
-                onClick={() => setRequestDecisionError(false)}
+                onClick={() => setRequestDecisionError(null)}
               >
                 OKAY
               </button>
@@ -675,7 +705,13 @@ export default function RidePreviewClient({
           confirm={endOpenRide}
         />
       ) : null}
-      {error ? (
+      {error && ride ? (
+        <p className="stale-notice" role="status">
+          {error !== CONNECTION_MESSAGE ? `${error} ` : ""}Showing previously
+          loaded ride details.
+        </p>
+      ) : null}
+      {error && !ride ? (
         <>
           <div className="ride-preview-content">
             <h2>Not available</h2>
@@ -1201,7 +1237,9 @@ export default function RidePreviewClient({
                 }}
               />
             ) : null}
-            {endError ? <p className="error">{endError}</p> : null}
+            {endError ? (
+              <Message text={endError} close={() => setEndError(null)} />
+            ) : null}
           </div>
         </>
       )}

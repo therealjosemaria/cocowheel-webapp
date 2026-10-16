@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, cocowheelsApi } from "@/lib/api-client";
+import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
+import { requestJson } from "@/lib/api-transport";
 import ActiveRideLink, { type ActiveRide } from "./active-ride-link";
 import { activeRideTabForPath } from "@/lib/navigation-state";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
   const [canAdmin, setCanAdmin] = useState(false);
@@ -274,21 +277,38 @@ export default function AppNavigation() {
           {guestName && (
             <button
               className="secondary"
+              disabled={signingOut}
               onClick={async () => {
-                const response = await fetch("/api/university/logout", {
-                  method: "POST",
-                  headers: { "X-Cocowheels-Auth": "1" },
-                  credentials: "same-origin",
-                });
-                if (response.ok) {
-                  sessionStorage.removeItem("cocowheels:guest-session");
+                setSigningOut(true);
+                setLogoutError(null);
+                try {
+                  await requestJson("/api/university/logout", {
+                    method: "POST",
+                    headers: { "X-Cocowheels-Auth": "1" },
+                    credentials: "same-origin",
+                  });
+                  try {
+                    sessionStorage.removeItem("cocowheels:guest-session");
+                  } catch {
+                    /* Cookies remain authoritative. */
+                  }
                   window.location.assign("/");
+                } catch (reason) {
+                  setLogoutError(
+                    apiErrorMessage(
+                      reason,
+                      "We couldn’t sign you out. Please try again.",
+                    ),
+                  );
+                } finally {
+                  setSigningOut(false);
                 }
               }}
             >
               Sign out
             </button>
           )}
+          {logoutError ? <p role="alert">{logoutError}</p> : null}
         </div>
       </div>
       <button

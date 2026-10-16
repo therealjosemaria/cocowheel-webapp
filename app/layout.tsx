@@ -4,6 +4,7 @@ import AppNavigation from "@/components/app-navigation";
 import SiteFooter from "@/components/site-footer";
 import LocationTracker from "@/components/location-tracker";
 import UniversityVerification from "@/components/university-verification";
+import ConnectionNotice from "@/components/connection-notice";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <UniversityVerification />
+        <ConnectionNotice />
         <main className="app-shell">
           <header className="topbar">
             <span className="brand">

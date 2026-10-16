@@ -188,6 +188,17 @@ See [LOCATION_OWNERSHIP.md](docs/LOCATION_OWNERSHIP.md) for the full contract.
 
 ## Provider dependencies and failures
 
+All frontend API families now share bounded transport and consistent connection
+copy: “We can’t reach the server. Please try again shortly.” Browser requests time
+out after 15 seconds (including body reading); the admin authorization gate keeps
+five seconds. Background failures use a shared quiet notice, with a visible-only
+15-second recovery probe while unavailable. Loaded ride/activity details survive
+transient failures with stale-data wording; protected data is cleared on loss of
+authorization. User actions retain established dialogs; validation/auth/provider
+errors remain distinct. No automatic mutation replay or backend changes are added.
+See [API failure handling and endpoint inventory](docs/API_FAILURES.md) for exact
+classification, recovery, write uncertainty and verification scope.
+
 Geoapify handles forward search, reverse labels and road routing; credentials stay
 server-side. Search uses available country filtering and proximity bias and is
 explicitly triggered, not submitted on each keystroke. Provider failure may return
