@@ -1,0 +1,39 @@
+{
+  "testedAt": "2026-10-16T11:32:15.747Z",
+  "sourceRevision": "0dfd33e00df674f2c796a1aee8f476d4cec5deab",
+  "harnessSha256": "e8ebda1d9dbbf6b0bfcdb2507b9fefe76de5c306a5afb48004a71175c9145c7e",
+  "runtime": "v22.22.0 linux/arm64",
+  "isolation": "Synthetic SQLite only; same host; no production DB, env, providers or services",
+  "checks": [
+    {
+      "name": "Synthetic WAL-backed fixture contains accepted, pending and completed trips, accounts, evidence and GPS",
+      "status": "PASS"
+    },
+    {
+      "name": "SQLite online backup succeeds while source connection and WAL remain open",
+      "status": "PASS"
+    },
+    {
+      "name": "Standalone restored file passes integrity/FK checks and exactly matches every backed-up table",
+      "status": "PASS"
+    },
+    {
+      "name": "Post-backup cancellation is absent: snapshot recovery explicitly loses later changes",
+      "status": "PASS"
+    },
+    {
+      "name": "Campaign stopped; inspect locally before claiming success",
+      "status": "FAIL",
+      "errorType": "AssertionError"
+    }
+  ],
+  "timingsMs": {
+    "backup": 1
+  },
+  "limitations": [
+    "No verified production/off-Pi backup",
+    "No production RPO/RTO established",
+    "Not a hardware, disk-full, remote transfer or browser test",
+    "Small fixture; no writes concurrent with backup; no power loss simulated"
+  ]
+}

@@ -72,6 +72,11 @@ WAL writes are active. Preserve the encryption key or existing encrypted pickup
 codes may no longer be recoverable. Backups contain private data and need restricted
 access. No automated backup/restore schedule is claimed by this documentation.
 
+See [the isolated restore drill and proposed recovery procedure](../docs/BACKUP_RESTORE_TESTING.md).
+The synthetic drill passed; an off-Pi production backup/key recovery remains
+unverified (BAK-001). Do not treat a successful local drill as disaster protection
+or restore a backup over the running production database.
+
 If rolling back, check schema compatibility first. Do not delete the database or
 reset production records to resolve a deployment problem. Inspect service logs
 without copying tokens, payment identifiers or private locations into reports.

@@ -405,6 +405,15 @@ The frontend can be deployed independently before the Pi API is public. In Verce
 
 ## Verification
 
+The [basic backup/restore drill](docs/BACKUP_RESTORE_TESTING.md) passed nine
+synthetic checks: consistent online SQLite backup, exact restored tables,
+saved sessions/code recovery, privacy gates and continued trip writes. Run
+`npm run test:restore`; no production database or service is touched. This does
+not establish production recovery time or data-loss bounds. No GUMWHEEL backup
+schedule/off-Pi destination was found in the inspected configuration; BAK-001
+remains open until a real backup and secure key recovery are verified. No backup
+automation or infrastructure configuration was changed by this campaign.
+
 Track reliability work in [the testing progress register](docs/TESTING_PROGRESS.md).
 The [isolated crash/retry campaign](docs/RECOVERY_TESTING.md) exercises real HTTP,
 process SIGKILL and SQLite rollback/restart without touching live trips. At the

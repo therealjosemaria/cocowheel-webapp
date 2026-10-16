@@ -1,0 +1,55 @@
+{
+  "testedAt": "2026-10-16T11:32:59.949Z",
+  "sourceRevision": "0dfd33e00df674f2c796a1aee8f476d4cec5deab",
+  "harnessSha256": "de1b34be172a7a5225dd704b6bfc69de3dfe36fb30b74e9ae82b66ec4884749c",
+  "runtime": "v22.22.0 linux/arm64",
+  "isolation": "Synthetic SQLite only; same host; no production DB, env, providers or services",
+  "checks": [
+    {
+      "name": "Synthetic WAL-backed fixture contains accepted, pending and completed trips, accounts, evidence and GPS",
+      "status": "PASS"
+    },
+    {
+      "name": "SQLite online backup succeeds while source connection and WAL remain open",
+      "status": "PASS"
+    },
+    {
+      "name": "Standalone restored file passes integrity/FK checks and exactly matches every backed-up table",
+      "status": "PASS"
+    },
+    {
+      "name": "Post-backup cancellation is absent: snapshot recovery explicitly loses later changes",
+      "status": "PASS"
+    },
+    {
+      "name": "Wrong encryption key cannot recover the pending pickup code; original key is required",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored API accepts saved sessions, decrypts pickup code, hides PayID and denies outsider",
+      "status": "PASS"
+    },
+    {
+      "name": "Completed trip remains readable after restore",
+      "status": "PASS"
+    },
+    {
+      "name": "Recovered journey can pair, reveal PayID, complete and reject code reuse",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored database remains valid after new lifecycle writes",
+      "status": "PASS"
+    }
+  ],
+  "timingsMs": {
+    "backup": 1,
+    "restoreThroughAuthenticatedRead": 87
+  },
+  "limitations": [
+    "No verified production/off-Pi backup",
+    "No production RPO/RTO established",
+    "Not a hardware, disk-full, remote transfer or browser test",
+    "Small fixture; no writes concurrent with backup; no power loss simulated"
+  ]
+}

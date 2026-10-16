@@ -150,3 +150,7 @@ original exit-2 result is preserved, not overwritten or reclassified as a pass.
 Next priority: safely deploy the fix, then separately test storage failure and restore
 on disposable storage. Every new run should preserve the command, revision, date,
 environment, scenario results, open findings and untested boundaries.
+
+Follow-up: the [basic synthetic backup/restore drill](BACKUP_RESTORE_TESTING.md)
+now passes. Production/off-Pi restoration, storage-failure injection and hardware
+loss remain unverified; this narrows only the synthetic restore boundary above.

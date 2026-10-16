@@ -1,0 +1,21 @@
+{
+  "testedAt": "2026-10-16T11:31:52.661Z",
+  "sourceRevision": "0dfd33e00df674f2c796a1aee8f476d4cec5deab",
+  "harnessSha256": "1a54d603681e2114b4acdd17c9d67298fc216f183a771c079f05f939a0150c89",
+  "runtime": "v22.22.0 linux/arm64",
+  "isolation": "Synthetic SQLite only; same host; no production DB, env, providers or services",
+  "checks": [
+    {
+      "name": "Campaign stopped; inspect locally before claiming success",
+      "status": "FAIL",
+      "errorType": "Error"
+    }
+  ],
+  "timingsMs": {},
+  "limitations": [
+    "No verified production/off-Pi backup",
+    "No production RPO/RTO established",
+    "Not a hardware, disk-full, remote transfer or browser test",
+    "Small fixture; no writes concurrent with backup; no power loss simulated"
+  ]
+}

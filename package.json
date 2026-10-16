@@ -15,6 +15,7 @@
     "db:init": "tsx server/migrate.ts",
     "test": "tsx --test tests/**/*.test.ts",
     "test:recovery": "node scripts/recovery-check.mjs --run",
+    "test:restore": "node --import tsx scripts/restore-check.mjs --run",
     "lint": "eslint .",
     "format:check": "prettier . --check"
   },

@@ -11,8 +11,15 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 | 2026-10-16 | Frontend connection errors | Shared timeout/errors; 82-test baseline and mocked mobile/desktop recovery checks; production outage not induced | [API failure contract](API_FAILURES.md) |
 | 2026-10-16 | API crash/retry and persisted state | 23 checks pass, REC-001 open: renewal code can persist without its audit event | [Recovery campaign](RECOVERY_TESTING.md), [machine-readable result](results/recovery-2026-10-16.json) |
 | 2026-10-16 | REC-001 remediation/retest | Fixed in source; 25/25 fault checks, 84 regression tests and lint pass; production restart not performed | [Remediation](RECOVERY_TESTING.md), [fixed-run result](results/recovery-2026-10-16-fixed.json) |
+| 2026-10-16 | Basic synthetic backup/restore | 9/9 checks, 85 regression tests and lint pass; BAK-001 off-Pi protection unverified; two corrected harness failures retained | [Procedure and findings](BACKUP_RESTORE_TESTING.md), [result](results/restore-2026-10-16.json) |
 
 ## Open findings
+
+- **BAK-001:** off-Pi backups and production recovery objectives are unverified.
+  Synthetic restore passed nine checks; this does not verify a live backup.
+  See [backup/restore drill and retained harness failures](BACKUP_RESTORE_TESTING.md)
+  and [dated final evidence](results/restore-2026-10-16.json), tested 2026-10-16
+  at application revision `0dfd33e`. Command: `npm run test:restore`.
 
 - **REC-001 deployment:** source fix and isolated retest complete. Controlled
   production API restart and post-restart verification are still pending. The
