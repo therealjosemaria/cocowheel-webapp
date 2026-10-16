@@ -160,8 +160,9 @@ button:disabled {
   left: -6px;
   /* Optical centring against the uppercase letterforms, not their line box. */
   top: 0.5px;
-  transform: scale(0.765625);
-  transform-origin: center;
+  transform: scale(0.669921875);
+  /* Anchor at the visible bubble edge, excluding the PNG's left padding. */
+  transform-origin: 6px center;
 }
 .desktop-navigation {
   display: none;

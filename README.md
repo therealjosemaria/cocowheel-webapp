@@ -228,8 +228,10 @@ for service operations.
   original header footprint and navigation positions. The wordmark typography
   is unchanged. Artwork is optically raised by 1px on mobile and 0.5px on
   desktop to align with the visible uppercase letters rather than the line box.
-  A centre-origin scale of 0.765625 applies two successive 12.5% reductions without
-  changing the header footprint or the established optical centreline.
+  A scale of 0.669921875 applies three successive 12.5% reductions without
+  changing the header footprint or the established optical centreline. The
+  horizontal scale origin is 6px into the image (its visible bubble edge), so
+  transparent padding does not enlarge the 6px wordmark-to-artwork gap.
   Icons are decorative and do not duplicate the accessible name.
 - Desktop pages use roughly two thirds of the viewport (960–1360px shell), with
   a single-row menu from 1000px; smaller viewports use the menu drawer. Home
