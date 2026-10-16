@@ -27,9 +27,10 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Navigation and layout
 
-- Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. Desktop items retain equal widths and wrap when space is limited rather than overflowing.
+- Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with a short numbered list: bold action lead-ins and regular explanatory text. Keep its UniKey, request, pickup-code and PayID instructions aligned with actual behaviour.
 - Home uses “Going your way”, equally sized FIND A RIDE and OFFER A RIDE buttons; Find is dark with white text, Offer is light. The logo is not a Home link.
+- Desktop shell width is roughly two thirds of the viewport, bounded between 960px and 1360px (from the 1000px breakpoint). Home buttons are centred, 360px wide maximum and at least 64px high from 700px; mobile remains full width. Hero typography is unchanged.
 - Active menu treatment is grey background, not an active shadow or competing call-to-action treatment.
 - Keep equivalent heading sizes, spacing below the header divider and enclosing panels across non-Home screens, including ride details. Keep the Home footer visible without unnecessary overflow.
 - Current ride access belongs on Home and Profile. Profile identifies the signed-in user; admin visibility and access are restricted server-side to the authorised account.

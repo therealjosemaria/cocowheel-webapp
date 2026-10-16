@@ -198,6 +198,10 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Desktop pages use roughly two thirds of the viewport (960–1360px shell), with
+  a single-row menu from 1000px; smaller viewports use the menu drawer. Home
+  buttons stay centred and compact on desktop, full width on mobile; hero
+  typography and all ride behaviour are unchanged.
 - Shared ride preview adapts to discovery, participant views and history.
 - Driver **Show route / Hide route** previews one pending rider alongside the driver
   without accepting them or moving the page scroll position.

@@ -2286,9 +2286,12 @@ p {
   .role-choice {
     min-height: calc(100svh - 242px);
   }
+  .role-choice > .role-card {
+    width: min(100%, 360px);
+    min-height: 64px;
+    justify-self: center;
+  }
   .desktop-navigation {
-    display: flex;
-    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
     gap: 6px;
@@ -2356,10 +2359,6 @@ p {
   .desktop-navigation-cta:active {
     transform: translateY(1px);
   }
-  .menu-toggle,
-  .menu-backdrop {
-    display: none;
-  }
   .ride-selection-page {
     min-height: 720px;
   }
@@ -2368,6 +2367,24 @@ p {
   }
   .ride-option-list {
     max-height: 240px;
+  }
+}
+@media (min-width: 1000px) {
+  .app-shell {
+    width: clamp(960px, 66.667vw, 1360px);
+  }
+  .desktop-navigation {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .desktop-navigation-link,
+  .desktop-navigation-cta {
+    flex: 0 0 106px;
+    white-space: nowrap;
+  }
+  .menu-toggle,
+  .menu-backdrop {
+    display: none;
   }
 }
 .admin-panel {

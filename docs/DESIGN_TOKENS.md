@@ -47,6 +47,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 - Cell-label and Copy icons: `--icon-label`, 14px; field/location icons: `--icon-field`, 18px.
 - Map symbols: `--icon-map`, 21px, within `--marker-size`, 32px circles. Profile/menu controls and the logo are navigation/brand exceptions, not cell icons.
 - Use the existing shared primary/secondary/danger button selectors and dialog/action groups. Equal actions must have equal dimensions; minimum 44px hit targets, 10px corners for action/dialog controls. Home CTAs remain larger deliberate exceptions.
+- Responsive shell: retain the 680px mobile/tablet cap below 1000px; from 1000px use `clamp(960px, 66.667vw, 1360px)`. Desktop navigation starts at 1000px and remains one row, including Admin; narrower screens use the drawer. Home CTAs retain mobile dimensions below 700px; above that they are equal, centred, max 360px wide and min 64px high. Hero size remains unchanged.
 - Use existing spacing families: 4/8px for tightly related content, 12/16px for fields and panel padding, 24px for section separation. Preserve established map and mobile-sheet layouts rather than changing geometry during typography edits.
 - Never reduce input size to match its label. “You receive” and “Your PayID” must have identical computed family, size, weight and colour.
 
