@@ -405,6 +405,14 @@ The frontend can be deployed independently before the Pi API is public. In Verce
 
 ## Verification
 
+The [pre-pilot security regression campaign](docs/SECURITY_TESTING.md) passed
+52 isolated HTTP authorization/privacy checks at `bd20dfc`, plus a repeat of
+25 crash/concurrency checks. Run `npm run test:security`. It covers account
+isolation, role gates, pickup/payment disclosure, admin, logout/expiry and selected
+OTP abuse cases. It is not a penetration-test certification or verified production
+deployment. No runtime permissions changed. The owner confirmed no off-Pi backup
+and deferred it; that data-loss risk remains open rather than resolved by testing.
+
 The [basic backup/restore drill](docs/BACKUP_RESTORE_TESTING.md) passed nine
 synthetic checks: consistent online SQLite backup, exact restored tables,
 saved sessions/code recovery, privacy gates and continued trip writes. Run

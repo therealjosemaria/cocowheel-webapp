@@ -12,10 +12,20 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 | 2026-10-16 | API crash/retry and persisted state | 23 checks pass, REC-001 open: renewal code can persist without its audit event | [Recovery campaign](RECOVERY_TESTING.md), [machine-readable result](results/recovery-2026-10-16.json) |
 | 2026-10-16 | REC-001 remediation/retest | Fixed in source; 25/25 fault checks, 84 regression tests and lint pass; production restart not performed | [Remediation](RECOVERY_TESTING.md), [fixed-run result](results/recovery-2026-10-16-fixed.json) |
 | 2026-10-16 | Basic synthetic backup/restore | 9/9 checks, 85 regression tests and lint pass; BAK-001 off-Pi protection unverified; two corrected harness failures retained | [Procedure and findings](BACKUP_RESTORE_TESTING.md), [result](results/restore-2026-10-16.json) |
+| 2026-10-16 | Pre-pilot authorization/privacy | 52/52 security checks; 25/25 recovery/concurrency rerun; 86 regression tests and lint pass; no runtime/deployment change | [Matrix and limitations](SECURITY_TESTING.md), [dated result](results/security-2026-10-16.json) |
 
 ## Open findings
 
+Security campaign completed 2026-10-16: **52/52** isolated checks and **25/25**
+repeated recovery/concurrency checks at `bd20dfc`. See [scope/matrix](SECURITY_TESTING.md),
+[dated security result](results/security-2026-10-16.json) and
+[recovery rerun](results/security-recovery-2026-10-16.json). Reproduce with
+`npm run test:security` and `npm run test:recovery`. Initial harness OTP-status
+assertion failure is preserved in the guide. No runtime/deployment change.
+
 - **BAK-001:** off-Pi backups and production recovery objectives are unverified.
+  Owner subsequently confirmed no off-Pi backup and explicitly deferred it for
+  now. Risk accepted/deferred, not remediated; host-loss data loss remains possible.
   Synthetic restore passed nine checks; this does not verify a live backup.
   See [backup/restore drill and retained harness failures](BACKUP_RESTORE_TESTING.md)
   and [dated final evidence](results/restore-2026-10-16.json), tested 2026-10-16

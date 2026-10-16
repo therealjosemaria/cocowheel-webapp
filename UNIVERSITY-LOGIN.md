@@ -71,3 +71,7 @@ delivery; perform a real inbox test after sender configuration.
 Tests inject an in-memory mail sender, covering the HTTP verification flow,
 expiry, replay/guess limits, cookie transport, API gating, shared roles/history,
 and the allowlisted email with identical account-wide role restrictions.
+
+The [16 October security campaign](docs/SECURITY_TESTING.md) records a real local
+HTTP login/role/privacy matrix with synthetic mail, reproducible commands and
+limits. It does not verify real delivery or launch-scale signup capacity.

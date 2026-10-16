@@ -1,0 +1,222 @@
+{
+  "testedAt": "2026-10-16T11:44:07.757Z",
+  "sourceRevision": "bd20dfc545b1e6a3c9e8417f5b4f6de8668a8778",
+  "harnessSha256": "0c59476b6c5e7c1606d12b455a0fa2ec98e31d1508e6b482b6084f2f8dfa2cf3",
+  "isolation": "Synthetic database; loopback real API; in-memory mail; no production env or services",
+  "checks": [
+    {
+      "name": "Seven real HTTP OTP logins: cookie flags, no token/code in JSON, single-use OTP",
+      "result": "PASS"
+    },
+    {
+      "name": "Invalid UniKeys/email/header-injection inputs never send mail",
+      "result": "PASS"
+    },
+    {
+      "name": "OTP requests require explicit auth header and allowed Origin",
+      "result": "PASS"
+    },
+    {
+      "name": "OTP resend cooldown and five wrong guesses block access",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: cannot publish or request",
+      "result": "PASS"
+    },
+    {
+      "name": "forged: cannot publish or request",
+      "result": "PASS"
+    },
+    {
+      "name": "legacy: cannot publish or request",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: cannot read participant details",
+      "result": "PASS"
+    },
+    {
+      "name": "forged: cannot read participant details",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: cannot read participant details",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected accept without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected decline without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected confirm pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected begin without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected GPS without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected GPS ownership without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: rejected complete before pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected accept without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected decline without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected confirm pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected begin without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected GPS without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected GPS ownership without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "rider: rejected complete before pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected accept without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected decline without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected confirm pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected begin without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected GPS without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected GPS ownership without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: rejected complete before pickup without trip mutation",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider cannot cancel or withdraw another ride/request",
+      "result": "PASS"
+    },
+    {
+      "name": "public discovery and preview omit private rider/payment/code data",
+      "result": "PASS"
+    },
+    {
+      "name": "request-ID tampering never exposes competing rider data",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider history and current never contain another account ride",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous: admin dashboard/inspector blocked",
+      "result": "PASS"
+    },
+    {
+      "name": "outsider: admin dashboard/inspector blocked",
+      "result": "PASS"
+    },
+    {
+      "name": "guest: admin dashboard/inspector blocked",
+      "result": "PASS"
+    },
+    {
+      "name": "gmail: admin dashboard/inspector blocked",
+      "result": "PASS"
+    },
+    {
+      "name": "verified owner admin access succeeds without payment/code disclosure",
+      "result": "PASS"
+    },
+    {
+      "name": "foreign Origin cannot read private ride or mutate it",
+      "result": "PASS"
+    },
+    {
+      "name": "driver cannot self-join or renew rider code",
+      "result": "PASS"
+    },
+    {
+      "name": "accepted rider only gets code; payment stays hidden across details/history/current",
+      "result": "PASS"
+    },
+    {
+      "name": "accepted rider cannot self-confirm and driver cannot complete early",
+      "result": "PASS"
+    },
+    {
+      "name": "discarded rider cannot cancel accepted ride or take GPS ownership",
+      "result": "PASS"
+    },
+    {
+      "name": "competing acceptance cannot replace accepted rider",
+      "result": "PASS"
+    },
+    {
+      "name": "only paired rider receives payment; discarded/public viewers do not",
+      "result": "PASS"
+    },
+    {
+      "name": "pickup code replay cannot mutate paired ride",
+      "result": "PASS"
+    },
+    {
+      "name": "logout revokes ride access and writes while preserving trip",
+      "result": "PASS"
+    },
+    {
+      "name": "expired owner session loses admin access immediately",
+      "result": "PASS"
+    },
+    {
+      "name": "expired participant session loses private access and mutation authority",
+      "result": "PASS"
+    },
+    {
+      "name": "SQLite integrity and foreign keys remain valid",
+      "result": "PASS"
+    }
+  ],
+  "exclusions": [
+    "Not a penetration-test certification",
+    "No live deployment, browser/XSS, TLS, proxy/cache or provider tests",
+    "No capacity claim; concurrency limited to a single API process",
+    "Production backups remain deferred"
+  ]
+}

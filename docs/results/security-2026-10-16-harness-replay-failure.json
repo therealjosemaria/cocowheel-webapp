@@ -1,0 +1,19 @@
+{
+  "testedAt": "2026-10-16T11:43:17.300Z",
+  "sourceRevision": "bd20dfc545b1e6a3c9e8417f5b4f6de8668a8778",
+  "harnessSha256": "1e09f49128e27489d9b32780e184b4065678451745bb77d974a63214f87472a0",
+  "isolation": "Synthetic database; loopback real API; in-memory mail; no production env or services",
+  "checks": [
+    {
+      "name": "Stopped during startup",
+      "result": "FAIL",
+      "errorType": "AssertionError"
+    }
+  ],
+  "exclusions": [
+    "Not a penetration-test certification",
+    "No live deployment, browser/XSS, TLS, proxy/cache or provider tests",
+    "No capacity claim; concurrency limited to a single API process",
+    "Production backups remain deferred"
+  ]
+}
