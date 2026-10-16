@@ -38,6 +38,9 @@ not a measured claim of improved traction. No ride or authentication logic chang
 Role headings reuse the shared rider/person and driver/car SVG labels. Onboarding
 copy explains that payment details appear once the driver confirms pickup, and
 asks drivers to choose how to receive payment by PayID (not an additional payment method).
+Help uses 12px heading-to-list spacing, 16px between steps and 24px section
+spacing. Role-heading icons use the existing 18px field-icon token alongside
+18px headings with an 8px icon/text gap; ordinary cell-label icons stay 14px.
 
 ## Status
 

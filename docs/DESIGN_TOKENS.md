@@ -45,6 +45,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 ## Icons, controls and spacing
 
 - Cell-label and Copy icons: `--icon-label`, 14px; field/location icons: `--icon-field`, 18px.
+- Help role headings scope `--icon-label` to `--icon-field` (18px) beside the 18px H2 text, with an 8px gap and centred alignment. This does not resize ordinary field labels. Help spacing: 12px heading-to-list, 16px between steps, 24px between sections; keep wrapped lines within each step closer than neighbouring steps.
 - Header wordmark: 16px (`--text-body`) below 700px; retain 12px (`--text-caption`) at wider sizes. Weight and letter spacing are unchanged; this brand exception is not a section-heading size.
 - Header artwork: a 6px wordmark gap, then the generated pink bubble and black/silver tyre together in a 48×32px window (60×30px image, left −6px, top 0px below 700px and 0.5px otherwise). The optical offsets align the icons with uppercase letterforms rather than the font line box. This reduces the original icons by 25%; 18px trailing brand padding preserves the original header footprint and navigation positions. Preserve wordmark typography and approved raster artwork. Empty alt text and an aria-hidden wrapper make these decorative; the brand remains non-clickable.
 - Map symbols: `--icon-map`, 21px, within `--marker-size`, 32px circles. Profile/menu controls and the logo are navigation/brand exceptions, not cell icons.
