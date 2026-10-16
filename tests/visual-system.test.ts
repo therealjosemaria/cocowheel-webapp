@@ -9,6 +9,8 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.ok(help.indexOf('id="rider-steps-heading"') < help.indexOf('id="driver-steps-heading"'));
   const lists = [...help.matchAll(/<ol className="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
   assert.equal(lists.length, 2);
+  assert.match(help, /<RideFieldLabel icon="rider">Find a ride<\/RideFieldLabel>/);
+  assert.match(help, /<RideFieldLabel icon="driver">Offer a ride<\/RideFieldLabel>/);
   for (const list of lists) assert.equal((list[1].match(/<li>/g) || []).length, 4);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
   assert.match(css, /@media \(min-width: 1000px\)\s*\{\s*\.help-role-paths\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);

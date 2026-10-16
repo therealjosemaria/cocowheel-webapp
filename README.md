@@ -35,6 +35,9 @@ The role paths stack on mobile/tablet and sit side by side from 1000px, with
 a subtle divider and matching H2 headings. Both stay visible without tabs;
 FAQs and suggestions remain full width. This aims to reduce onboarding effort,
 not a measured claim of improved traction. No ride or authentication logic changes.
+Role headings reuse the shared rider/person and driver/car SVG labels. Onboarding
+copy explains that payment details appear once the driver confirms pickup, and
+asks drivers to choose how to receive payment by PayID (not an additional payment method).
 
 ## Status
 

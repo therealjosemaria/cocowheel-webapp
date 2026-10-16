@@ -1,3 +1,5 @@
+import RideFieldLabel from "@/components/ride-field-label";
+
 export default function HelpPage() {
   return (
     <section className="activity-page">
@@ -9,18 +11,18 @@ export default function HelpPage() {
         </p>
         <div className="help-role-paths">
           <section className="help-role" aria-labelledby="rider-steps-heading">
-            <h2 id="rider-steps-heading">Find a ride</h2>
+            <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
               <li><strong>Choose your destination.</strong> Compare available rides.</li>
               <li><strong>Request to join.</strong> Wait for the driver to accept.</li>
               <li><strong>Meet your driver.</strong> Share your four-digit pickup code.</li>
-              <li><strong>Pay by PayID.</strong> Payment details appear after pickup confirmation.</li>
+              <li><strong>Pay by PayID.</strong> You’ll see the driver’s payment details once they confirm your pickup.</li>
             </ol>
           </section>
           <section className="help-role" aria-labelledby="driver-steps-heading">
-            <h2 id="driver-steps-heading">Offer a ride</h2>
+            <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Offer a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li><strong>Publish your route.</strong> Set your fare and PayID.</li>
+              <li><strong>Publish your route.</strong> Set your fare and choose how to receive payment by PayID.</li>
               <li><strong>Choose a rider.</strong> Review their route and accept.</li>
               <li><strong>Confirm pickup.</strong> Enter the rider’s four-digit code.</li>
               <li><strong>Share the ride.</strong> Either person can complete it after arrival.</li>
