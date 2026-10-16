@@ -43,8 +43,8 @@ Role headings reuse the shared rider/person and driver/car SVG labels. Each
 numbered step is a single regular-weight action, without explanatory text. The
 18px semibold role headings stay more prominent than 14px regular steps/numbers.
 Rider steps:
-choose your destination, request to join, meet your driver, pay your driver. Driver
-steps: publish your route, accept a rider, enter the rider’s code, receive payment.
+choose your destination, request to join a ride, meet your driver, pay your driver. Driver
+steps: publish your route, accept a rider, meet your rider, receive payment.
 The unchanged FAQs retain pickup and direct PayID payment explanations.
 Help uses 12px heading-to-list spacing, 16px between steps and 24px section
 spacing. Role-heading icons use the existing 18px field-icon token alongside

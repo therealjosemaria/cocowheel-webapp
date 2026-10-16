@@ -10,7 +10,7 @@ export default function HelpPage() {
             <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
               <li>Choose your destination.</li>
-              <li>Request to join.</li>
+              <li>Request to join a ride.</li>
               <li>Meet your driver.</li>
               <li>Pay your driver.</li>
             </ol>
@@ -20,7 +20,7 @@ export default function HelpPage() {
             <ol className="how-it-works-steps">
               <li>Publish your route.</li>
               <li>Accept a rider.</li>
-              <li>Enter the rider’s code.</li>
+              <li>Meet your rider.</li>
               <li>Receive payment.</li>
             </ol>
           </section>
