@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import AppNavigation from "@/components/app-navigation";
 import SiteFooter from "@/components/site-footer";
 import LocationTracker from "@/components/location-tracker";
@@ -19,7 +20,18 @@ export default function RootLayout({
         <UniversityVerification />
         <main className="app-shell">
           <header className="topbar">
-            <span className="brand">GUMWHEEL</span>
+            <span className="brand">
+              GUMWHEEL
+              <span className="brand-art" aria-hidden="true">
+                <Image
+                  src="/brand/gumwheel-bubble-wheel.png"
+                  alt=""
+                  width={80}
+                  height={40}
+                  sizes="80px"
+                />
+              </span>
+            </span>
             <AppNavigation />
           </header>
           <div className="app-content">

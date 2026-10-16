@@ -4,6 +4,17 @@ import test from "node:test";
 
 const css = readFileSync("app/globals.css", "utf8");
 
+test("header artwork stays decorative beside the non-clickable brand", () => {
+  const layout = readFileSync("app/layout.tsx", "utf8");
+  assert.match(layout, /<span className="brand">\s*GUMWHEEL/);
+  assert.match(layout, /className="brand-art" aria-hidden="true"/);
+  assert.match(layout, /src="\/brand\/gumwheel-bubble-wheel\.png"\s+alt=""/);
+  assert.match(css, /\.brand-art\s*\{[^}]*width: 64px;[^}]*height: 32px;/);
+  const png = readFileSync("public/brand/gumwheel-bubble-wheel.png");
+  assert.equal(png.subarray(1, 4).toString(), "PNG");
+  assert.equal(png[25], 6, "Artwork should retain its RGBA alpha channel");
+});
+
 test("font sizes use the documented shared scale", () => {
   const sizes = [...css.matchAll(/font-size:\s*([^;\n}]+)/g)];
   assert.ok(sizes.length > 50);
