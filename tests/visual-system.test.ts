@@ -4,6 +4,16 @@ import test from "node:test";
 
 const css = readFileSync("app/globals.css", "utf8");
 
+test("help keeps rider-first visible role paths with four steps each", () => {
+  const help = readFileSync("app/help/page.tsx", "utf8");
+  assert.ok(help.indexOf('id="rider-steps-heading"') < help.indexOf('id="driver-steps-heading"'));
+  const lists = [...help.matchAll(/<ol className="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
+  assert.equal(lists.length, 2);
+  for (const list of lists) assert.equal((list[1].match(/<li>/g) || []).length, 4);
+  assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
+  assert.match(css, /@media \(min-width: 1000px\)\s*\{\s*\.help-role-paths\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+});
+
 test("header artwork stays decorative beside the non-clickable brand", () => {
   const layout = readFileSync("app/layout.tsx", "utf8");
   assert.match(layout, /<span className="brand">\s*GUMWHEEL/);

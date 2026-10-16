@@ -7,12 +7,26 @@ export default function HelpPage() {
           For University of Sydney students. Sign in with your UniKey to get
           started. More universities coming soon.
         </p>
-        <ol className="how-it-works-steps">
-          <li><strong>Going somewhere?</strong> Find a ride going your way, or offer one with your destination, fare and PayID.</li>
-          <li><strong>Ride together.</strong> Request to join. Once the driver accepts, keep the app open and location enabled for updates.</li>
-          <li><strong>Confirm pickup.</strong> At pickup, the rider shares their four-digit code and the driver enters it to start the ride.</li>
-          <li><strong>Pay and finish.</strong> Pay the driver directly through your bank using their PayID, revealed after pickup confirmation. Either person can complete the ride when it ends.</li>
-        </ol>
+        <div className="help-role-paths">
+          <section className="help-role" aria-labelledby="rider-steps-heading">
+            <h2 id="rider-steps-heading">Find a ride</h2>
+            <ol className="how-it-works-steps">
+              <li><strong>Choose your destination.</strong> Compare available rides.</li>
+              <li><strong>Request to join.</strong> Wait for the driver to accept.</li>
+              <li><strong>Meet your driver.</strong> Share your four-digit pickup code.</li>
+              <li><strong>Pay by PayID.</strong> Payment details appear after pickup confirmation.</li>
+            </ol>
+          </section>
+          <section className="help-role" aria-labelledby="driver-steps-heading">
+            <h2 id="driver-steps-heading">Offer a ride</h2>
+            <ol className="how-it-works-steps">
+              <li><strong>Publish your route.</strong> Set your fare and PayID.</li>
+              <li><strong>Choose a rider.</strong> Review their route and accept.</li>
+              <li><strong>Confirm pickup.</strong> Enter the rider’s four-digit code.</li>
+              <li><strong>Share the ride.</strong> Either person can complete it after arrival.</li>
+            </ol>
+          </section>
+        </div>
         <section className="help-section help-section-faq" aria-labelledby="faq-heading">
           <h2 id="faq-heading">Frequently asked questions</h2>
           <div className="help-faq">

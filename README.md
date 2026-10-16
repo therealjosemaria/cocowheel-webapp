@@ -19,7 +19,8 @@ helps people understand the service, try a ride, return, or share useful suggest
 these are design intentions, not measured growth outcomes or permission to add
 tracking, unsolicited messages or incentives.
 
-How it works now has a UniKey/pilot introduction, four steps, four native FAQ
+How it works now has a UniKey/pilot introduction, two role-specific four-step
+paths (Find a ride first, Offer a ride second), and four native FAQ
 accordions (payment, pickup code, location and cancellation), and a separate
 **Have a suggestion?** section. Its **Email us** link opens the user's mail handler
 addressed to `jmos0905@uni.sydney.edu.au` with subject `GUMWHEEL suggestion`.
@@ -30,6 +31,10 @@ QR payments and expansion to other universities are roadmap messaging, not
 implemented capabilities; current payment and authentication rules stay unchanged.
 The FAQ has a subtle grey background to distinguish it from the white steps and
 suggestion sections; page-title and section-heading sizes remain unchanged.
+The role paths stack on mobile/tablet and sit side by side from 1000px, with
+a subtle divider and matching H2 headings. Both stay visible without tabs;
+FAQs and suggestions remain full width. This aims to reduce onboarding effort,
+not a measured claim of improved traction. No ride or authentication logic changes.
 
 ## Status
 
