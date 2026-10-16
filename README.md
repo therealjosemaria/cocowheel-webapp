@@ -314,6 +314,12 @@ deletion, guaranteed safety, or verified payment. Support/privacy contact is the
 owner's university inbox. Contact requests require manual handling; this change
 does not implement a deletion or complaints workflow.
 
+The privacy notice explicitly explains that PayID is stored to enable ride payment,
+while only the payment preference is visible to riders before pickup confirmation.
+The proposed sentence “We retain personal information for the periods set out in
+our retention policy” is pending definition and implementation of that policy;
+the published notice continues to disclose the absence of automatic deletion.
+
 These are initial product-specific documents, not lawyer-approved compliance
 certification. Before wider rollout, confirm the legal operator's name/contact
 requirements, applicable privacy and transport obligations, age/eligibility rules,

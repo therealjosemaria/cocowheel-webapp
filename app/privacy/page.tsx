@@ -9,7 +9,8 @@ export default function PrivacyPage() {
       <p>This notice explains how the GUMWHEEL university carpool pilot handles your information. For privacy questions, contact <a href="mailto:jmos0905@uni.sydney.edu.au">jmos0905@uni.sydney.edu.au</a>.</p>
       <h2>What we collect and why</h2>
       <p>We use your UniKey and university email address to verify inbox access, maintain your account and associate your rides across devices. Approved testing accounts use their designated email inboxes. Verification does not establish current enrolment, identity or driving eligibility.</p>
-      <p>We store ride and request details, including origin and destination coordinates and addresses, fares, statuses, timestamps and driver PayID details. These support ride matching, pickup, payment-detail sharing and activity history. If you email us, we receive your message and contact details to respond.</p>
+      <p>We store ride and request details, including origin and destination coordinates and addresses, fares, statuses and timestamps. These support ride matching, pickup and activity history. If you email us, we receive your message and contact details to respond.</p>
+      <p>We store your PayID to enable payment for your ride. Riders can see your payment preference, but your PayID details remain hidden from them until pickup is confirmed.</p>
       <h2>Location and pickup records</h2>
       <p>With browser permission, we collect location fixes, accuracy and timestamps to show positions and estimate routes. Updates may pause when the browser is closed, hidden or offline. The app stores the latest live fixes, not a complete journey trail.</p>
       <p>When the pickup code is confirmed, we retain a separate snapshot of both participants’ latest available fixes, their capture and receipt times, and their calculated separation. A fix may be stale or missing. This record supports reviewing pickup events; proximity is not a guarantee that people met.</p>
