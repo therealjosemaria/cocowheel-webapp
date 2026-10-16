@@ -11,6 +11,9 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.equal(lists.length, 2);
   assert.match(help, /<RideFieldLabel icon="rider">Find a ride<\/RideFieldLabel>/);
   assert.match(help, /<RideFieldLabel icon="driver">Offer a ride<\/RideFieldLabel>/);
+  assert.match(help, /className="help-role help-role-rider"/);
+  assert.match(help, /className="help-role help-role-driver"/);
+  assert.match(css, /background: color-mix\(in srgb, var\(--help-role-accent\) 6%, var\(--surface\)\);/);
   for (const list of lists) assert.equal((list[1].match(/<li>/g) || []).length, 4);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
   assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 16px;/);

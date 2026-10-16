@@ -29,10 +29,11 @@ stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
 QR payments and expansion to other universities are roadmap messaging, not
 implemented capabilities; current payment and authentication rules stay unchanged.
-The FAQ has a subtle grey background to distinguish it from the white steps and
-suggestion sections; page-title and section-heading sizes remain unchanged.
+The FAQ has a subtle grey background; role cards use pale blue/orange tints
+derived from the rider/driver map colours, with matching coloured icons and dark
+text. Suggestions remain white; heading sizes are unchanged.
 The role paths stack on mobile/tablet and sit side by side from 1000px, with
-a subtle divider and matching H2 headings. Both stay visible without tabs;
+matching H2 headings and equally padded, rounded cards. Both stay visible without tabs;
 FAQs and suggestions remain full width. This aims to reduce onboarding effort,
 not a measured claim of improved traction. No ride or authentication logic changes.
 Role headings reuse the shared rider/person and driver/car SVG labels. Onboarding
