@@ -304,7 +304,8 @@ CPU and tail latency showed pressure. These reduced-workload results do not
 establish a safe public-user ceiling or a measured breaking point.
 A follow-up ten-minute 80-trip soak completed 26,400 requests with no errors or
 skipped polls, GPS-write P95 226 ms and peak API RSS 231 MiB; see the same results
-guide. Full frontend/network/provider load and fault recovery remain untested.
+guide. Full frontend/network/provider load remains untested. Later isolated
+API crash/retry recovery checks are recorded separately below.
 The subsequent ten-minute 120-trip stage also passed (39,600 requests, no errors
 or skips; GPS-write P95 307 ms). Peak CPU rose to 73% of one core and event-loop
 delay briefly exceeded 250 ms, without a sustained guardrail violation.
@@ -403,6 +404,16 @@ The frontend can be deployed independently before the Pi API is public. In Verce
 `main` is the production branch. Set `COCOWHEELS_API_PROXY_TARGET` in Vercel as a server-side environment variable pointing to the dedicated API tunnel HTTPS hostname. Never expose it as `NEXT_PUBLIC_*`.
 
 ## Verification
+
+Track reliability work in [the testing progress register](docs/TESTING_PROGRESS.md).
+The [isolated crash/retry campaign](docs/RECOVERY_TESTING.md) exercises real HTTP,
+process SIGKILL and SQLite rollback/restart without touching live trips. At the
+`3cb9fc3` application baseline, 23 checks passed and one audit-atomicity gap was
+reproduced: pickup-code renewal can persist without its event if interrupted.
+No production fix was made in that testing-only change. `npm run test:recovery`
+returns 2 while that finding remains; it is not an all-pass result. Hardware power
+loss, disk failure, real-device UI recovery and production outages are separate,
+unverified scopes. Retain reports and append remediation/retest evidence.
 
 ```bash
 npm test

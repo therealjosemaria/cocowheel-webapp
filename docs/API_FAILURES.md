@@ -60,6 +60,10 @@ retry, inspect the current ride state where available.
 
 ## Verification scope
 
+Subsequent real-API crash/retry checks are tracked in
+[RECOVERY_TESTING.md](RECOVERY_TESTING.md). They found one open renewal-event
+atomicity gap; frontend outage-message success does not imply backend atomicity.
+
 Use mocked browser routes and transport tests, never stop the live API or disrupt
 real trips. Cover offline requests, gateway HTML/JSON, timeout including body,
 caller cancellation, provider/validation/auth distinctions, recovery and no automatic

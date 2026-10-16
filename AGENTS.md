@@ -14,6 +14,10 @@ Update README.md for architecture/behaviour and the specialist guide for details
   implemented features, tested behaviour and verified deployments.
 - Keep timeouts, transitions, exceptions and failure behaviour explicit.
 - Report checks performed and any unverified browser/deployment steps in the handoff.
+- Reliability/fault/capacity campaigns must update docs/TESTING_PROGRESS.md and
+  retain a reproducible command plus a dated sanitized result. Record source
+  revision, isolation, failures/findings and untested boundaries. Preserve failed
+  baselines; close findings only with remediation and relevant retest evidence.
 - Never document secrets, live tokens, private GPS samples or credentials.
 - CURRENT_CONTEXT.md contains history; newer verified README/guides/code supersede
   older notes. Mark superseded decisions instead of relying on chat memory.

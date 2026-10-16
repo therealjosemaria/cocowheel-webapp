@@ -14,6 +14,7 @@
     "start:api": "tsx server/index.ts",
     "db:init": "tsx server/migrate.ts",
     "test": "tsx --test tests/**/*.test.ts",
+    "test:recovery": "node scripts/recovery-check.mjs --run",
     "lint": "eslint .",
     "format:check": "prettier . --check"
   },
