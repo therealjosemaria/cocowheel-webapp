@@ -1,0 +1,1259 @@
+{
+  "at": "2026-10-16T12:03:51.176Z",
+  "sourceRevision": "ea59f55d4f42a70f78bc836c181a50361d4af633",
+  "harnessSha256": "3e149583f4372fb509f818362b97d32148ba192e020182bc1b7c0c26943c9f29",
+  "users": 25,
+  "pairs": 6,
+  "browsers": 13,
+  "seconds": 120,
+  "elapsedSeconds": 120.040439929,
+  "passed": true,
+  "reason": "duration",
+  "failures": 0,
+  "skips": 0,
+  "maxSchedulerLagMs": 20.338396000001012,
+  "published": 12,
+  "paired": 12,
+  "completed": 6,
+  "metrics": {
+    "current": {
+      "count": 300,
+      "failures": 0,
+      "p50": 2.8044779999981984,
+      "p95": 4.890672000001359,
+      "p99": 7.077812999999878,
+      "max": 50.964968,
+      "goodWithin500ms": 300,
+      "goodWithin1000ms": 300
+    },
+    "history": {
+      "count": 100,
+      "failures": 0,
+      "p50": 2.465900999995938,
+      "p95": 4.133501000003889,
+      "p99": 10.149514000000636,
+      "max": 24.68118400000003,
+      "goodWithin500ms": 100,
+      "goodWithin1000ms": 100
+    },
+    "session": {
+      "count": 100,
+      "failures": 0,
+      "p50": 2.009158999993815,
+      "p95": 4.990154999999504,
+      "p99": 10.443311999999423,
+      "max": 24.928629,
+      "goodWithin500ms": 100,
+      "goodWithin1000ms": 100
+    },
+    "publish": {
+      "count": 12,
+      "failures": 0,
+      "p50": 5.120119000000159,
+      "p95": 25.980189999999993,
+      "p99": 25.980189999999993,
+      "max": 25.980189999999993,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "availability": {
+      "count": 156,
+      "failures": 0,
+      "p50": 2.590030999999726,
+      "p95": 3.4752210000006016,
+      "p99": 4.110113000002457,
+      "max": 6.300644000000034,
+      "goodWithin500ms": 156,
+      "goodWithin1000ms": 156
+    },
+    "join": {
+      "count": 12,
+      "failures": 0,
+      "p50": 4.504669999994803,
+      "p95": 7.3748160000004646,
+      "p99": 7.3748160000004646,
+      "max": 7.3748160000004646,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "details": {
+      "count": 144,
+      "failures": 0,
+      "p50": 4.132186999995611,
+      "p95": 5.261896999996679,
+      "p99": 7.538242000002356,
+      "max": 17.8818489999976,
+      "goodWithin500ms": 144,
+      "goodWithin1000ms": 144
+    },
+    "search": {
+      "count": 78,
+      "failures": 0,
+      "p50": 3.2095159999880707,
+      "p95": 5.53904700000021,
+      "p99": 8.786267000001317,
+      "max": 8.786267000001317,
+      "goodWithin500ms": 78,
+      "goodWithin1000ms": 78
+    },
+    "accept": {
+      "count": 12,
+      "failures": 0,
+      "p50": 4.6974670000054175,
+      "p95": 8.80399000000034,
+      "p99": 8.80399000000034,
+      "max": 8.80399000000034,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "pickup-code-read": {
+      "count": 12,
+      "failures": 0,
+      "p50": 4.43024399999922,
+      "p95": 6.879922999985865,
+      "p99": 6.879922999985865,
+      "max": 6.879922999985865,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "pair": {
+      "count": 12,
+      "failures": 0,
+      "p50": 4.418948000002274,
+      "p95": 6.037863000005018,
+      "p99": 6.037863000005018,
+      "max": 6.037863000005018,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "gps": {
+      "count": 42,
+      "failures": 0,
+      "p50": 5.274192999997467,
+      "p95": 12.36156199999823,
+      "p99": 14.604147999998531,
+      "max": 14.604147999998531,
+      "goodWithin500ms": 42,
+      "goodWithin1000ms": 42
+    },
+    "complete": {
+      "count": 6,
+      "failures": 0,
+      "p50": 3.619944000005489,
+      "p95": 6.230957000007038,
+      "p99": 6.230957000007038,
+      "max": 6.230957000007038,
+      "goodWithin500ms": 6,
+      "goodWithin1000ms": 6
+    },
+    "history-after-complete": {
+      "count": 6,
+      "failures": 0,
+      "p50": 3.0768669999961276,
+      "p95": 4.101427999994485,
+      "p99": 4.101427999994485,
+      "max": 4.101427999994485,
+      "goodWithin500ms": 6,
+      "goodWithin1000ms": 6
+    }
+  },
+  "samples": [
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:52.130Z",
+      "rssMiB": 92.875,
+      "cpu": 3.529392034688045,
+      "lagMs": 23.216127,
+      "freeMiB": 4099.296875,
+      "generatorRssMiB": 98.171875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:53.131Z",
+      "rssMiB": 93.875,
+      "cpu": 1.9417785350271939,
+      "lagMs": 22.118399,
+      "freeMiB": 4099.046875,
+      "generatorRssMiB": 98.671875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:54.131Z",
+      "rssMiB": 94.375,
+      "cpu": 1.6418734512953204,
+      "lagMs": 20.873215,
+      "freeMiB": 4102.015625,
+      "generatorRssMiB": 99.171875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:55.131Z",
+      "rssMiB": 94.875,
+      "cpu": 1.7345354307474017,
+      "lagMs": 20.398079,
+      "freeMiB": 4101.78125,
+      "generatorRssMiB": 99.671875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:56.131Z",
+      "rssMiB": 95.375,
+      "cpu": 1.6285579780852684,
+      "lagMs": 20.873215,
+      "freeMiB": 4102.15625,
+      "generatorRssMiB": 99.671875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:57.131Z",
+      "rssMiB": 96.375,
+      "cpu": 1.972450367715365,
+      "lagMs": 20.938751,
+      "freeMiB": 4102.671875,
+      "generatorRssMiB": 100.671875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:58.131Z",
+      "rssMiB": 97.375,
+      "cpu": 2.023510065557943,
+      "lagMs": 20.807679,
+      "freeMiB": 4101.5625,
+      "generatorRssMiB": 101.671875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:01:59.131Z",
+      "rssMiB": 90.71875,
+      "cpu": 8.079204402785715,
+      "lagMs": 20.873215,
+      "freeMiB": 4115.328125,
+      "generatorRssMiB": 93.3125
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:00.130Z",
+      "rssMiB": 87.015625,
+      "cpu": 9.077523469180681,
+      "lagMs": 24.018943,
+      "freeMiB": 4117.25,
+      "generatorRssMiB": 92.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:01.131Z",
+      "rssMiB": 87.015625,
+      "cpu": 2.4109421099444015,
+      "lagMs": 23.183359,
+      "freeMiB": 4117.46875,
+      "generatorRssMiB": 93.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:02.131Z",
+      "rssMiB": 88.015625,
+      "cpu": 3.914094008359263,
+      "lagMs": 25.903103,
+      "freeMiB": 4117.640625,
+      "generatorRssMiB": 93.59375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:03.130Z",
+      "rssMiB": 88.015625,
+      "cpu": 2.7645225194733207,
+      "lagMs": 22.708223,
+      "freeMiB": 4118.609375,
+      "generatorRssMiB": 94.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:04.131Z",
+      "rssMiB": 88.515625,
+      "cpu": 2.182161927911366,
+      "lagMs": 21.774335,
+      "freeMiB": 4120.765625,
+      "generatorRssMiB": 94.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:05.132Z",
+      "rssMiB": 88.515625,
+      "cpu": 1.5905587787849553,
+      "lagMs": 20.250623,
+      "freeMiB": 4125.421875,
+      "generatorRssMiB": 94.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:06.132Z",
+      "rssMiB": 88.515625,
+      "cpu": 1.6112164581607105,
+      "lagMs": 20.643839,
+      "freeMiB": 4128.046875,
+      "generatorRssMiB": 94.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:07.131Z",
+      "rssMiB": 88.515625,
+      "cpu": 1.936549893898278,
+      "lagMs": 20.561919,
+      "freeMiB": 4129.578125,
+      "generatorRssMiB": 94.09375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:08.132Z",
+      "rssMiB": 88.515625,
+      "cpu": 3.1400172538768802,
+      "lagMs": 20.676607,
+      "freeMiB": 4132.5,
+      "generatorRssMiB": 91.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:09.132Z",
+      "rssMiB": 88.515625,
+      "cpu": 2.5456746029652293,
+      "lagMs": 21.004287,
+      "freeMiB": 4131,
+      "generatorRssMiB": 92.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:10.132Z",
+      "rssMiB": 88.515625,
+      "cpu": 1.8653650213819835,
+      "lagMs": 20.758527,
+      "freeMiB": 4131.234375,
+      "generatorRssMiB": 93.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:11.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 2.569596115463633,
+      "lagMs": 22.069247,
+      "freeMiB": 4131.671875,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:12.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 3.774673486418114,
+      "lagMs": 23.707647,
+      "freeMiB": 4132.375,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:13.131Z",
+      "rssMiB": 89.015625,
+      "cpu": 2.3422831654270184,
+      "lagMs": 22.069247,
+      "freeMiB": 4132.375,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:14.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 1.7821934056367923,
+      "lagMs": 22.069247,
+      "freeMiB": 4133.828125,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:15.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 1.4816030523311543,
+      "lagMs": 20.774911,
+      "freeMiB": 4136.328125,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:16.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 2.5080766348836874,
+      "lagMs": 22.953983,
+      "freeMiB": 4137.90625,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:17.131Z",
+      "rssMiB": 89.015625,
+      "cpu": 1.7004367190442573,
+      "lagMs": 21.856255,
+      "freeMiB": 4138.796875,
+      "generatorRssMiB": 93.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:18.132Z",
+      "rssMiB": 89.015625,
+      "cpu": 1.2695086127950765,
+      "lagMs": 21.561343,
+      "freeMiB": 4139.453125,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:19.132Z",
+      "rssMiB": 89.515625,
+      "cpu": 2.059649659882086,
+      "lagMs": 21.856255,
+      "freeMiB": 4141.375,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:20.133Z",
+      "rssMiB": 89.515625,
+      "cpu": 1.0696232551931755,
+      "lagMs": 22.740991,
+      "freeMiB": 4141.015625,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:21.134Z",
+      "rssMiB": 89.515625,
+      "cpu": 0.9663763912249314,
+      "lagMs": 20.692991,
+      "freeMiB": 4142.390625,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:22.134Z",
+      "rssMiB": 90.015625,
+      "cpu": 3.646961497938538,
+      "lagMs": 23.265279,
+      "freeMiB": 4140.296875,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:23.134Z",
+      "rssMiB": 90.015625,
+      "cpu": 3.3716319920399473,
+      "lagMs": 20.168703,
+      "freeMiB": 4140.59375,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:24.133Z",
+      "rssMiB": 90.515625,
+      "cpu": 3.9973995263878472,
+      "lagMs": 21.168127,
+      "freeMiB": 4138.296875,
+      "generatorRssMiB": 94.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:25.133Z",
+      "rssMiB": 90.515625,
+      "cpu": 3.8881899568053364,
+      "lagMs": 21.200895,
+      "freeMiB": 4137.046875,
+      "generatorRssMiB": 95.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:26.134Z",
+      "rssMiB": 90.515625,
+      "cpu": 2.233934263516076,
+      "lagMs": 21.790719,
+      "freeMiB": 4139.09375,
+      "generatorRssMiB": 95.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:27.133Z",
+      "rssMiB": 90.515625,
+      "cpu": 2.911129851137116,
+      "lagMs": 22.544383,
+      "freeMiB": 4137.5625,
+      "generatorRssMiB": 95.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:28.134Z",
+      "rssMiB": 91.015625,
+      "cpu": 3.3308134169910195,
+      "lagMs": 22.429695,
+      "freeMiB": 4135.09375,
+      "generatorRssMiB": 95.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:29.133Z",
+      "rssMiB": 91.015625,
+      "cpu": 1.863454405025422,
+      "lagMs": 22.134783,
+      "freeMiB": 4135.125,
+      "generatorRssMiB": 96.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:30.134Z",
+      "rssMiB": 91.015625,
+      "cpu": 0.8543220326575247,
+      "lagMs": 21.151743,
+      "freeMiB": 4134.828125,
+      "generatorRssMiB": 96.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:31.134Z",
+      "rssMiB": 91.015625,
+      "cpu": 1.2397244037540487,
+      "lagMs": 20.430847,
+      "freeMiB": 4133.625,
+      "generatorRssMiB": 97.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:32.134Z",
+      "rssMiB": 91.515625,
+      "cpu": 4.035036825239979,
+      "lagMs": 20.332543,
+      "freeMiB": 4124.53125,
+      "generatorRssMiB": 97.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:33.134Z",
+      "rssMiB": 91.515625,
+      "cpu": 3.221457217891737,
+      "lagMs": 22.724607,
+      "freeMiB": 4124.765625,
+      "generatorRssMiB": 97.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:34.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 2.6815016902642768,
+      "lagMs": 22.118399,
+      "freeMiB": 4126.234375,
+      "generatorRssMiB": 98.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:35.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 2.8726494334183577,
+      "lagMs": 22.659071,
+      "freeMiB": 4124.453125,
+      "generatorRssMiB": 98.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:36.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 3.129404996703108,
+      "lagMs": 23.543807,
+      "freeMiB": 4124.484375,
+      "generatorRssMiB": 99.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:37.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 1.2064918143231878,
+      "lagMs": 23.740415,
+      "freeMiB": 4110.765625,
+      "generatorRssMiB": 99.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:38.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 1.0281534408396191,
+      "lagMs": 20.955135,
+      "freeMiB": 4110.125,
+      "generatorRssMiB": 100.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:39.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 1.1266433501190734,
+      "lagMs": 20.398079,
+      "freeMiB": 4111.875,
+      "generatorRssMiB": 100.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:40.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 1.5216970730305786,
+      "lagMs": 23.068671,
+      "freeMiB": 4114.84375,
+      "generatorRssMiB": 100.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:41.135Z",
+      "rssMiB": 91.515625,
+      "cpu": 1.2919673515630978,
+      "lagMs": 21.217279,
+      "freeMiB": 4115.5625,
+      "generatorRssMiB": 100.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:42.136Z",
+      "rssMiB": 91.515625,
+      "cpu": 2.8989018423483386,
+      "lagMs": 21.970943,
+      "freeMiB": 4115.40625,
+      "generatorRssMiB": 100.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:43.136Z",
+      "rssMiB": 91.515625,
+      "cpu": 3.2574498187984693,
+      "lagMs": 22.757375,
+      "freeMiB": 4116.046875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:44.136Z",
+      "rssMiB": 92.015625,
+      "cpu": 2.7483370072250066,
+      "lagMs": 21.184511,
+      "freeMiB": 4119.46875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:45.136Z",
+      "rssMiB": 92.015625,
+      "cpu": 2.0810676830382326,
+      "lagMs": 21.725183,
+      "freeMiB": 4106.484375,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:46.136Z",
+      "rssMiB": 92.015625,
+      "cpu": 1.7420757586410416,
+      "lagMs": 20.824063,
+      "freeMiB": 4106.9375,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:47.136Z",
+      "rssMiB": 92.015625,
+      "cpu": 0.5689763307186128,
+      "lagMs": 20.529151,
+      "freeMiB": 4112.265625,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:48.137Z",
+      "rssMiB": 92.015625,
+      "cpu": 1.7841439188267028,
+      "lagMs": 20.627455,
+      "freeMiB": 4113.5625,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:49.137Z",
+      "rssMiB": 92.515625,
+      "cpu": 1.3660041446202305,
+      "lagMs": 20.447231,
+      "freeMiB": 4116.015625,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:50.136Z",
+      "rssMiB": 92.515625,
+      "cpu": 0.9193363927472272,
+      "lagMs": 20.168703,
+      "freeMiB": 4116.203125,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:51.137Z",
+      "rssMiB": 92.515625,
+      "cpu": 1.895455358395666,
+      "lagMs": 22.364159,
+      "freeMiB": 4118.390625,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:52.137Z",
+      "rssMiB": 92.515625,
+      "cpu": 3.074721936504086,
+      "lagMs": 20.414463,
+      "freeMiB": 4115.96875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:53.137Z",
+      "rssMiB": 92.515625,
+      "cpu": 3.04321549258248,
+      "lagMs": 25.460735,
+      "freeMiB": 4077.3125,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:54.136Z",
+      "rssMiB": 92.515625,
+      "cpu": 1.6922568821976358,
+      "lagMs": 20.479999,
+      "freeMiB": 4076.421875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:55.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 1.693793486149211,
+      "lagMs": 20.430847,
+      "freeMiB": 4078.28125,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:56.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 1.840476393161091,
+      "lagMs": 21.970943,
+      "freeMiB": 4072.59375,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:57.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 2.1685186470796483,
+      "lagMs": 21.463039,
+      "freeMiB": 4074.921875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:58.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 1.6734472869790502,
+      "lagMs": 22.888447,
+      "freeMiB": 4081.921875,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:02:59.138Z",
+      "rssMiB": 93.015625,
+      "cpu": 2.583446471127112,
+      "lagMs": 20.824063,
+      "freeMiB": 4081.28125,
+      "generatorRssMiB": 101.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:00.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 0.9794264155699752,
+      "lagMs": 20.676607,
+      "freeMiB": 4084.421875,
+      "generatorRssMiB": 102.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:01.139Z",
+      "rssMiB": 93.015625,
+      "cpu": 1.5423586711735604,
+      "lagMs": 20.316159,
+      "freeMiB": 4090.171875,
+      "generatorRssMiB": 102.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:02.138Z",
+      "rssMiB": 93.515625,
+      "cpu": 4.322567061160728,
+      "lagMs": 21.430271,
+      "freeMiB": 4092.515625,
+      "generatorRssMiB": 102.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:03.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 2.2554276176232086,
+      "lagMs": 21.741567,
+      "freeMiB": 4095,
+      "generatorRssMiB": 102.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:04.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 3.5145930753270567,
+      "lagMs": 21.970943,
+      "freeMiB": 4097.546875,
+      "generatorRssMiB": 102.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:05.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 2.85878283260863,
+      "lagMs": 21.397503,
+      "freeMiB": 4100.03125,
+      "generatorRssMiB": 103.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:06.138Z",
+      "rssMiB": 93.515625,
+      "cpu": 3.213923439794075,
+      "lagMs": 20.725759,
+      "freeMiB": 4102.703125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:07.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 2.1747555896283153,
+      "lagMs": 22.937599,
+      "freeMiB": 4104.875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:08.138Z",
+      "rssMiB": 93.515625,
+      "cpu": 2.2833223496056156,
+      "lagMs": 20.398079,
+      "freeMiB": 4106.46875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:09.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 1.4614211455664998,
+      "lagMs": 20.922367,
+      "freeMiB": 4109.5625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:10.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 0.7985656692759444,
+      "lagMs": 20.135935,
+      "freeMiB": 4109.3125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:11.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 1.326482667302131,
+      "lagMs": 22.200319,
+      "freeMiB": 4111.75,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:12.138Z",
+      "rssMiB": 93.515625,
+      "cpu": 1.319266791314501,
+      "lagMs": 21.217279,
+      "freeMiB": 4112.453125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:13.139Z",
+      "rssMiB": 93.515625,
+      "cpu": 0.9051863895898467,
+      "lagMs": 20.725759,
+      "freeMiB": 4113.9375,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:14.138Z",
+      "rssMiB": 93.515625,
+      "cpu": 0.7506995336839546,
+      "lagMs": 20.905983,
+      "freeMiB": 4117.21875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:15.139Z",
+      "rssMiB": 94.015625,
+      "cpu": 1.651134276301244,
+      "lagMs": 20.348927,
+      "freeMiB": 4118.15625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:16.140Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.7630761642378419,
+      "lagMs": 20.643839,
+      "freeMiB": 4121.21875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:17.140Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.8966687218351115,
+      "lagMs": 20.758527,
+      "freeMiB": 4120.265625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:18.139Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.9000784347634032,
+      "lagMs": 21.659647,
+      "freeMiB": 4120.28125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:19.140Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.8245989004522782,
+      "lagMs": 21.790719,
+      "freeMiB": 4114.796875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:20.141Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.4367657543840139,
+      "lagMs": 21.774335,
+      "freeMiB": 4115.203125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:21.142Z",
+      "rssMiB": 94.015625,
+      "cpu": 0.631204559966435,
+      "lagMs": 20.709375,
+      "freeMiB": 4111.3125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:22.142Z",
+      "rssMiB": 94.015625,
+      "cpu": 2.539330636305073,
+      "lagMs": 20.365311,
+      "freeMiB": 4107.578125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:23.142Z",
+      "rssMiB": 94.015625,
+      "cpu": 2.0770201853375148,
+      "lagMs": 20.758527,
+      "freeMiB": 4107.84375,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:24.142Z",
+      "rssMiB": 94.015625,
+      "cpu": 1.7820082135916058,
+      "lagMs": 20.594687,
+      "freeMiB": 4110.890625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:25.141Z",
+      "rssMiB": 94.015625,
+      "cpu": 2.8400812221397436,
+      "lagMs": 22.577151,
+      "freeMiB": 4112.796875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:26.142Z",
+      "rssMiB": 94.015625,
+      "cpu": 2.2142337991536367,
+      "lagMs": 20.922367,
+      "freeMiB": 4114,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:27.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 1.6623133849473835,
+      "lagMs": 20.283391,
+      "freeMiB": 4113.828125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:28.141Z",
+      "rssMiB": 94.515625,
+      "cpu": 2.3249245062299,
+      "lagMs": 22.380543,
+      "freeMiB": 4113.90625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:29.141Z",
+      "rssMiB": 94.515625,
+      "cpu": 2.007504544814181,
+      "lagMs": 22.659071,
+      "freeMiB": 4116.9375,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:30.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 1.3292276336435105,
+      "lagMs": 20.938751,
+      "freeMiB": 4117.171875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:31.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 1.8013096415247598,
+      "lagMs": 21.594111,
+      "freeMiB": 4119.453125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:32.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 3.3851638407846516,
+      "lagMs": 21.856255,
+      "freeMiB": 4119.6875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:33.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 2.7605321016770263,
+      "lagMs": 20.742143,
+      "freeMiB": 4110.09375,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:34.142Z",
+      "rssMiB": 94.515625,
+      "cpu": 1.9192534757295714,
+      "lagMs": 20.807679,
+      "freeMiB": 4110.15625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:35.142Z",
+      "rssMiB": 95.015625,
+      "cpu": 2.029875742783439,
+      "lagMs": 20.709375,
+      "freeMiB": 4112.328125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:36.142Z",
+      "rssMiB": 95.015625,
+      "cpu": 2.2383831984651104,
+      "lagMs": 20.676607,
+      "freeMiB": 4114.28125,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:37.142Z",
+      "rssMiB": 95.015625,
+      "cpu": 2.7990255662995427,
+      "lagMs": 22.118399,
+      "freeMiB": 4115.25,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:38.141Z",
+      "rssMiB": 95.015625,
+      "cpu": 2.2766935938309483,
+      "lagMs": 21.807103,
+      "freeMiB": 4116.015625,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:39.142Z",
+      "rssMiB": 95.015625,
+      "cpu": 2.3349960001672327,
+      "lagMs": 22.380543,
+      "freeMiB": 4117.71875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:40.142Z",
+      "rssMiB": 95.25,
+      "cpu": 3.3930587492200366,
+      "lagMs": 22.822911,
+      "freeMiB": 4118.671875,
+      "generatorRssMiB": 103.859375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:41.142Z",
+      "rssMiB": 95.25,
+      "cpu": 1.5795311715737872,
+      "lagMs": 21.561343,
+      "freeMiB": 4118.671875,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:42.142Z",
+      "rssMiB": 95.25,
+      "cpu": 3.0857540782615893,
+      "lagMs": 22.347775,
+      "freeMiB": 4117.734375,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:43.144Z",
+      "rssMiB": 95.25,
+      "cpu": 2.331524867063983,
+      "lagMs": 23.134207,
+      "freeMiB": 4115.609375,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:44.144Z",
+      "rssMiB": 95.25,
+      "cpu": 1.663091844197594,
+      "lagMs": 21.364735,
+      "freeMiB": 4116.453125,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:45.144Z",
+      "rssMiB": 95.25,
+      "cpu": 2.1109373483880045,
+      "lagMs": 22.052863,
+      "freeMiB": 4118.28125,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:46.144Z",
+      "rssMiB": 95.25,
+      "cpu": 1.3949072415476194,
+      "lagMs": 21.348351,
+      "freeMiB": 4118.890625,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:47.144Z",
+      "rssMiB": 95.25,
+      "cpu": 1.2445781221687335,
+      "lagMs": 22.724607,
+      "freeMiB": 4119.359375,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:48.144Z",
+      "rssMiB": 95.75,
+      "cpu": 1.677466924082578,
+      "lagMs": 21.544959,
+      "freeMiB": 4118.875,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:49.143Z",
+      "rssMiB": 95.75,
+      "cpu": 1.2599486748100002,
+      "lagMs": 21.643263,
+      "freeMiB": 4119.59375,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:50.144Z",
+      "rssMiB": 95.75,
+      "cpu": 0.6058108252897084,
+      "lagMs": 20.742143,
+      "freeMiB": 4119.796875,
+      "generatorRssMiB": 104.359375
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:03:51.144Z",
+      "rssMiB": 95.75,
+      "cpu": 0.777310697395395,
+      "lagMs": 21.348351,
+      "freeMiB": 4119.28125,
+      "generatorRssMiB": 104.359375
+    }
+  ],
+  "final": {
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "statuses": [
+      {
+        "status": "COMPLETED",
+        "count": 6
+      },
+      {
+        "status": "CO_RIDE_ACTIVE",
+        "count": 6
+      }
+    ],
+    "acceptedDuplicates": 0,
+    "paired": 12
+  },
+  "scope": "Synthetic mixed core API; no providers, real browsers, TLS/tunnel or mature historical dataset"
+}

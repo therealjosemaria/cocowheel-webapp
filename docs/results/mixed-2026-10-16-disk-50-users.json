@@ -1,0 +1,1253 @@
+{
+  "at": "2026-10-16T12:19:51.357Z",
+  "sourceRevision": "ea59f55d4f42a70f78bc836c181a50361d4af633",
+  "storage": "private fixture under project data directory; production filesystem, not production database",
+  "harnessSha256": "d279518d30e7091fb054c78be0f8d4f78f55552cf87fbe79919c200407e1edc3",
+  "users": 50,
+  "pairs": 12,
+  "browsers": 26,
+  "seconds": 120,
+  "elapsedSeconds": 120.06456189900001,
+  "passed": true,
+  "reason": "duration",
+  "failures": 0,
+  "skips": 0,
+  "maxSchedulerLagMs": 22.906472999995458,
+  "published": 24,
+  "paired": 24,
+  "completed": 12,
+  "metrics": {
+    "current": {
+      "count": 600,
+      "failures": 0,
+      "p50": 2.710676999995485,
+      "p95": 4.830333000005339,
+      "p99": 6.090005000000019,
+      "max": 54.935487999999964,
+      "goodWithin500ms": 600,
+      "goodWithin1000ms": 600
+    },
+    "history": {
+      "count": 200,
+      "failures": 0,
+      "p50": 2.3938800000032643,
+      "p95": 3.8134589999972377,
+      "p99": 9.142701000004308,
+      "max": 28.654739000000063,
+      "goodWithin500ms": 200,
+      "goodWithin1000ms": 200
+    },
+    "session": {
+      "count": 200,
+      "failures": 0,
+      "p50": 1.8776190000062343,
+      "p95": 4.502868999999919,
+      "p99": 6.866359999999986,
+      "max": 29.508576000000062,
+      "goodWithin500ms": 200,
+      "goodWithin1000ms": 200
+    },
+    "publish": {
+      "count": 24,
+      "failures": 0,
+      "p50": 4.790572999991127,
+      "p95": 9.894908000000214,
+      "p99": 29.550873000000024,
+      "max": 29.550873000000024,
+      "goodWithin500ms": 24,
+      "goodWithin1000ms": 24
+    },
+    "availability": {
+      "count": 312,
+      "failures": 0,
+      "p50": 2.4103610000020126,
+      "p95": 5.164537999997265,
+      "p99": 7.153693999998723,
+      "max": 8.491309999999999,
+      "goodWithin500ms": 312,
+      "goodWithin1000ms": 312
+    },
+    "search": {
+      "count": 156,
+      "failures": 0,
+      "p50": 3.292530999999144,
+      "p95": 6.49711699999898,
+      "p99": 12.08982300000207,
+      "max": 18.042272000002413,
+      "goodWithin500ms": 156,
+      "goodWithin1000ms": 156
+    },
+    "join": {
+      "count": 24,
+      "failures": 0,
+      "p50": 5.070722999999816,
+      "p95": 8.585495000006631,
+      "p99": 11.451413999999204,
+      "max": 11.451413999999204,
+      "goodWithin500ms": 24,
+      "goodWithin1000ms": 24
+    },
+    "details": {
+      "count": 284,
+      "failures": 0,
+      "p50": 4.1401089999999385,
+      "p95": 6.679469999999128,
+      "p99": 8.595070000003034,
+      "max": 10.868336999999883,
+      "goodWithin500ms": 284,
+      "goodWithin1000ms": 284
+    },
+    "accept": {
+      "count": 24,
+      "failures": 0,
+      "p50": 5.290242999995826,
+      "p95": 8.290327999999135,
+      "p99": 9.254182999997283,
+      "max": 9.254182999997283,
+      "goodWithin500ms": 24,
+      "goodWithin1000ms": 24
+    },
+    "pickup-code-read": {
+      "count": 24,
+      "failures": 0,
+      "p50": 4.447054000003845,
+      "p95": 6.422560999999405,
+      "p99": 8.398012999998173,
+      "max": 8.398012999998173,
+      "goodWithin500ms": 24,
+      "goodWithin1000ms": 24
+    },
+    "pair": {
+      "count": 24,
+      "failures": 0,
+      "p50": 4.143403999998554,
+      "p95": 8.637458000011975,
+      "p99": 10.579429000004893,
+      "max": 10.579429000004893,
+      "goodWithin500ms": 24,
+      "goodWithin1000ms": 24
+    },
+    "gps": {
+      "count": 83,
+      "failures": 0,
+      "p50": 5.297352999994473,
+      "p95": 11.289283999998588,
+      "p99": 12.426196000000346,
+      "max": 12.426196000000346,
+      "goodWithin500ms": 83,
+      "goodWithin1000ms": 83
+    },
+    "complete": {
+      "count": 12,
+      "failures": 0,
+      "p50": 4.100848000001861,
+      "p95": 24.879704999999376,
+      "p99": 24.879704999999376,
+      "max": 24.879704999999376,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    },
+    "history-after-complete": {
+      "count": 12,
+      "failures": 0,
+      "p50": 2.3842310000036377,
+      "p95": 4.159553000004962,
+      "p99": 4.159553000004962,
+      "max": 4.159553000004962,
+      "goodWithin500ms": 12,
+      "goodWithin1000ms": 12
+    }
+  },
+  "samples": [
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:52.282Z",
+      "rssMiB": 94.65625,
+      "cpu": 5.448100197823773,
+      "lagMs": 24.625151,
+      "freeMiB": 4068.921875,
+      "generatorRssMiB": 90.546875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:53.281Z",
+      "rssMiB": 96.15625,
+      "cpu": 2.191423401816452,
+      "lagMs": 20.611071,
+      "freeMiB": 4068.015625,
+      "generatorRssMiB": 91.546875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:54.281Z",
+      "rssMiB": 98.15625,
+      "cpu": 2.8896695891172435,
+      "lagMs": 20.676607,
+      "freeMiB": 4072.203125,
+      "generatorRssMiB": 92.046875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:55.282Z",
+      "rssMiB": 98.15625,
+      "cpu": 2.9474143554169037,
+      "lagMs": 20.840447,
+      "freeMiB": 4072.40625,
+      "generatorRssMiB": 93.546875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:56.282Z",
+      "rssMiB": 98.15625,
+      "cpu": 3.4420844788640723,
+      "lagMs": 20.873215,
+      "freeMiB": 4073.65625,
+      "generatorRssMiB": 94.046875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:57.283Z",
+      "rssMiB": 99.65625,
+      "cpu": 2.7843919160408963,
+      "lagMs": 22.740991,
+      "freeMiB": 4077.5625,
+      "generatorRssMiB": 94.046875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:58.283Z",
+      "rssMiB": 101.15625,
+      "cpu": 2.6252736098603124,
+      "lagMs": 20.561919,
+      "freeMiB": 4078.546875,
+      "generatorRssMiB": 94.046875
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:17:59.283Z",
+      "rssMiB": 93.375,
+      "cpu": 9.022275024778958,
+      "lagMs": 21.970943,
+      "freeMiB": 4090.90625,
+      "generatorRssMiB": 86.8125
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:00.282Z",
+      "rssMiB": 89.0625,
+      "cpu": 11.368502774097784,
+      "lagMs": 22.052863,
+      "freeMiB": 4100.359375,
+      "generatorRssMiB": 82.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:01.283Z",
+      "rssMiB": 90.0625,
+      "cpu": 3.3507519092181846,
+      "lagMs": 20.365311,
+      "freeMiB": 4103.890625,
+      "generatorRssMiB": 83
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:02.283Z",
+      "rssMiB": 90.5625,
+      "cpu": 5.44800939943251,
+      "lagMs": 22.839295,
+      "freeMiB": 4105.109375,
+      "generatorRssMiB": 84
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:03.283Z",
+      "rssMiB": 90.5625,
+      "cpu": 6.376847922122423,
+      "lagMs": 24.526847,
+      "freeMiB": 4108.34375,
+      "generatorRssMiB": 85
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:04.284Z",
+      "rssMiB": 90.5625,
+      "cpu": 4.842798161164905,
+      "lagMs": 23.101439,
+      "freeMiB": 4112.0625,
+      "generatorRssMiB": 85.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:05.284Z",
+      "rssMiB": 91.0625,
+      "cpu": 4.474711781555639,
+      "lagMs": 20.905983,
+      "freeMiB": 4115.09375,
+      "generatorRssMiB": 85.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:06.284Z",
+      "rssMiB": 91.0625,
+      "cpu": 5.2685376616205595,
+      "lagMs": 23.166975,
+      "freeMiB": 4116.53125,
+      "generatorRssMiB": 87
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:07.284Z",
+      "rssMiB": 91.0625,
+      "cpu": 4.222281486839879,
+      "lagMs": 22.495231,
+      "freeMiB": 4117.859375,
+      "generatorRssMiB": 88.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:08.284Z",
+      "rssMiB": 91.0625,
+      "cpu": 5.138910890625145,
+      "lagMs": 24.428543,
+      "freeMiB": 4118.046875,
+      "generatorRssMiB": 90
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:09.283Z",
+      "rssMiB": 91.71875,
+      "cpu": 5.058767396741688,
+      "lagMs": 20.840447,
+      "freeMiB": 4119.703125,
+      "generatorRssMiB": 91
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:10.284Z",
+      "rssMiB": 91.71875,
+      "cpu": 3.9227520748066302,
+      "lagMs": 21.577727,
+      "freeMiB": 4117.859375,
+      "generatorRssMiB": 92
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:11.283Z",
+      "rssMiB": 92.21875,
+      "cpu": 6.3881270620918755,
+      "lagMs": 21.954559,
+      "freeMiB": 4117.71875,
+      "generatorRssMiB": 92
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:12.284Z",
+      "rssMiB": 93.21875,
+      "cpu": 6.175880169841937,
+      "lagMs": 24.494079,
+      "freeMiB": 4117.921875,
+      "generatorRssMiB": 92.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:13.283Z",
+      "rssMiB": 93.21875,
+      "cpu": 4.434925422052868,
+      "lagMs": 22.265855,
+      "freeMiB": 4117.703125,
+      "generatorRssMiB": 92.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:14.284Z",
+      "rssMiB": 93.71875,
+      "cpu": 5.231780428370152,
+      "lagMs": 22.659071,
+      "freeMiB": 4118.046875,
+      "generatorRssMiB": 93
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:15.284Z",
+      "rssMiB": 93.71875,
+      "cpu": 4.785237716335521,
+      "lagMs": 24.592383,
+      "freeMiB": 4117.28125,
+      "generatorRssMiB": 93.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:16.284Z",
+      "rssMiB": 94.21875,
+      "cpu": 5.621937364730566,
+      "lagMs": 22.462463,
+      "freeMiB": 4118.5,
+      "generatorRssMiB": 93.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:17.284Z",
+      "rssMiB": 94.71875,
+      "cpu": 5.262858545053475,
+      "lagMs": 23.461887,
+      "freeMiB": 4068.734375,
+      "generatorRssMiB": 95.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:18.284Z",
+      "rssMiB": 94.71875,
+      "cpu": 2.2537111490323354,
+      "lagMs": 20.676607,
+      "freeMiB": 4065.90625,
+      "generatorRssMiB": 96.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:19.283Z",
+      "rssMiB": 95.21875,
+      "cpu": 3.917214596767253,
+      "lagMs": 20.856831,
+      "freeMiB": 4066.8125,
+      "generatorRssMiB": 98.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:20.283Z",
+      "rssMiB": 95.21875,
+      "cpu": 2.358312942421434,
+      "lagMs": 21.168127,
+      "freeMiB": 4070.203125,
+      "generatorRssMiB": 99.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:21.284Z",
+      "rssMiB": 95.71875,
+      "cpu": 2.809346697561942,
+      "lagMs": 21.528575,
+      "freeMiB": 4071.25,
+      "generatorRssMiB": 100.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:22.285Z",
+      "rssMiB": 95.71875,
+      "cpu": 4.317845598216894,
+      "lagMs": 21.790719,
+      "freeMiB": 4075.421875,
+      "generatorRssMiB": 101.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:23.288Z",
+      "rssMiB": 95.71875,
+      "cpu": 3.8540007915658188,
+      "lagMs": 23.347199,
+      "freeMiB": 4077.734375,
+      "generatorRssMiB": 101.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:24.287Z",
+      "rssMiB": 95.71875,
+      "cpu": 4.9708538890270075,
+      "lagMs": 23.511039,
+      "freeMiB": 4080.4375,
+      "generatorRssMiB": 101.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:25.287Z",
+      "rssMiB": 95.71875,
+      "cpu": 4.847418267310893,
+      "lagMs": 24.412159,
+      "freeMiB": 4083.0625,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:26.288Z",
+      "rssMiB": 95.71875,
+      "cpu": 5.05456432426463,
+      "lagMs": 24.346623,
+      "freeMiB": 4088.640625,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:27.292Z",
+      "rssMiB": 95.125,
+      "cpu": 8.405526326380608,
+      "lagMs": 22.626303,
+      "freeMiB": 4093.078125,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:28.292Z",
+      "rssMiB": 95.125,
+      "cpu": 3.4430273070438906,
+      "lagMs": 25.133055,
+      "freeMiB": 4094.0625,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:29.292Z",
+      "rssMiB": 95.125,
+      "cpu": 3.6155270236607135,
+      "lagMs": 22.773759,
+      "freeMiB": 4098.015625,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:30.295Z",
+      "rssMiB": 95.125,
+      "cpu": 3.042346247850425,
+      "lagMs": 20.971519,
+      "freeMiB": 4101.703125,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:31.295Z",
+      "rssMiB": 95.125,
+      "cpu": 3.191731809396511,
+      "lagMs": 22.740991,
+      "freeMiB": 4102.9375,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:32.295Z",
+      "rssMiB": 95.125,
+      "cpu": 5.4475309813153165,
+      "lagMs": 24.510463,
+      "freeMiB": 4104.140625,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:33.294Z",
+      "rssMiB": 95.125,
+      "cpu": 4.406655880992789,
+      "lagMs": 22.429695,
+      "freeMiB": 4105.453125,
+      "generatorRssMiB": 102
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:34.295Z",
+      "rssMiB": 95.125,
+      "cpu": 4.585932037737078,
+      "lagMs": 23.838719,
+      "freeMiB": 4107.34375,
+      "generatorRssMiB": 102.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:35.297Z",
+      "rssMiB": 95.625,
+      "cpu": 6.8638706814973505,
+      "lagMs": 21.905407,
+      "freeMiB": 4108.5625,
+      "generatorRssMiB": 102.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:36.300Z",
+      "rssMiB": 96.125,
+      "cpu": 6.324300204992214,
+      "lagMs": 27.688959,
+      "freeMiB": 4106.078125,
+      "generatorRssMiB": 104
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:37.300Z",
+      "rssMiB": 96.125,
+      "cpu": 3.8089854646411614,
+      "lagMs": 23.101439,
+      "freeMiB": 4102.640625,
+      "generatorRssMiB": 104
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:38.299Z",
+      "rssMiB": 96.125,
+      "cpu": 3.7373029121383357,
+      "lagMs": 22.315007,
+      "freeMiB": 4102.375,
+      "generatorRssMiB": 104
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:39.301Z",
+      "rssMiB": 96.125,
+      "cpu": 3.4091128745330797,
+      "lagMs": 23.674879,
+      "freeMiB": 4104.234375,
+      "generatorRssMiB": 104
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:40.301Z",
+      "rssMiB": 96.125,
+      "cpu": 3.6711986675141577,
+      "lagMs": 21.741567,
+      "freeMiB": 4106.453125,
+      "generatorRssMiB": 104
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:41.300Z",
+      "rssMiB": 96.125,
+      "cpu": 2.7027590143497053,
+      "lagMs": 22.921215,
+      "freeMiB": 4106.390625,
+      "generatorRssMiB": 105.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:42.301Z",
+      "rssMiB": 96.625,
+      "cpu": 5.383454584957521,
+      "lagMs": 24.756223,
+      "freeMiB": 4107.65625,
+      "generatorRssMiB": 107
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:43.301Z",
+      "rssMiB": 96.625,
+      "cpu": 5.28508220892013,
+      "lagMs": 23.724031,
+      "freeMiB": 4105.3125,
+      "generatorRssMiB": 109
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:44.302Z",
+      "rssMiB": 96.625,
+      "cpu": 3.814144186933573,
+      "lagMs": 22.315007,
+      "freeMiB": 4104.1875,
+      "generatorRssMiB": 110.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:45.302Z",
+      "rssMiB": 96.625,
+      "cpu": 3.8313307885742143,
+      "lagMs": 21.872639,
+      "freeMiB": 4105.3125,
+      "generatorRssMiB": 110.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:46.302Z",
+      "rssMiB": 96.875,
+      "cpu": 4.492725899615979,
+      "lagMs": 21.610495,
+      "freeMiB": 4107,
+      "generatorRssMiB": 110.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:47.302Z",
+      "rssMiB": 96.875,
+      "cpu": 2.79008953878338,
+      "lagMs": 22.724607,
+      "freeMiB": 4103.46875,
+      "generatorRssMiB": 112
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:48.302Z",
+      "rssMiB": 96.875,
+      "cpu": 3.133432276226295,
+      "lagMs": 22.200319,
+      "freeMiB": 4103.03125,
+      "generatorRssMiB": 113.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:49.302Z",
+      "rssMiB": 96.875,
+      "cpu": 3.025419569827984,
+      "lagMs": 20.725759,
+      "freeMiB": 4101.484375,
+      "generatorRssMiB": 114.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:50.303Z",
+      "rssMiB": 96.875,
+      "cpu": 3.135567494979275,
+      "lagMs": 22.888447,
+      "freeMiB": 4089.828125,
+      "generatorRssMiB": 116
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:51.304Z",
+      "rssMiB": 96.875,
+      "cpu": 3.8119623593911736,
+      "lagMs": 20.955135,
+      "freeMiB": 4089.953125,
+      "generatorRssMiB": 116.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:52.304Z",
+      "rssMiB": 97.375,
+      "cpu": 5.3456013182333155,
+      "lagMs": 20.971519,
+      "freeMiB": 4089.734375,
+      "generatorRssMiB": 117.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:53.303Z",
+      "rssMiB": 98.375,
+      "cpu": 6.218474712938228,
+      "lagMs": 24.215551,
+      "freeMiB": 4090.359375,
+      "generatorRssMiB": 117.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:54.304Z",
+      "rssMiB": 98.375,
+      "cpu": 2.812166624841921,
+      "lagMs": 23.740415,
+      "freeMiB": 4090.578125,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:55.305Z",
+      "rssMiB": 98.875,
+      "cpu": 4.618873215707317,
+      "lagMs": 20.791295,
+      "freeMiB": 4083.40625,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:56.306Z",
+      "rssMiB": 99.375,
+      "cpu": 4.859720477219816,
+      "lagMs": 21.987327,
+      "freeMiB": 4083.40625,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:57.306Z",
+      "rssMiB": 99.375,
+      "cpu": 3.1626208606472175,
+      "lagMs": 21.561343,
+      "freeMiB": 4083.40625,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:58.306Z",
+      "rssMiB": 99.875,
+      "cpu": 3.4372705436153055,
+      "lagMs": 22.052863,
+      "freeMiB": 4085.328125,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:18:59.306Z",
+      "rssMiB": 99.875,
+      "cpu": 4.444239438012329,
+      "lagMs": 21.217279,
+      "freeMiB": 4088.5,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:00.306Z",
+      "rssMiB": 99.875,
+      "cpu": 3.2442519324258163,
+      "lagMs": 22.593535,
+      "freeMiB": 4087.84375,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:01.308Z",
+      "rssMiB": 99.875,
+      "cpu": 2.858756820553237,
+      "lagMs": 20.709375,
+      "freeMiB": 4082.234375,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:02.308Z",
+      "rssMiB": 99.875,
+      "cpu": 5.314680530097098,
+      "lagMs": 24.952831,
+      "freeMiB": 4081.609375,
+      "generatorRssMiB": 118
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:03.308Z",
+      "rssMiB": 99.875,
+      "cpu": 4.0811991439320074,
+      "lagMs": 41.418751,
+      "freeMiB": 4083.28125,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:04.308Z",
+      "rssMiB": 99.875,
+      "cpu": 4.937165268952696,
+      "lagMs": 23.150591,
+      "freeMiB": 4084.921875,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:05.308Z",
+      "rssMiB": 99.875,
+      "cpu": 6.129328525859312,
+      "lagMs": 24.150015,
+      "freeMiB": 4087.03125,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:06.309Z",
+      "rssMiB": 99.875,
+      "cpu": 5.53216159130405,
+      "lagMs": 21.676031,
+      "freeMiB": 4087.828125,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:07.309Z",
+      "rssMiB": 99.875,
+      "cpu": 5.474777006962127,
+      "lagMs": 22.577151,
+      "freeMiB": 4089.453125,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:08.310Z",
+      "rssMiB": 99.875,
+      "cpu": 4.043164934756083,
+      "lagMs": 22.183935,
+      "freeMiB": 4090.15625,
+      "generatorRssMiB": 118.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:09.309Z",
+      "rssMiB": 99.875,
+      "cpu": 4.116257167489306,
+      "lagMs": 23.838719,
+      "freeMiB": 4088.9375,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:10.310Z",
+      "rssMiB": 100.375,
+      "cpu": 3.8448666051619913,
+      "lagMs": 22.200319,
+      "freeMiB": 4086.046875,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:11.309Z",
+      "rssMiB": 100.375,
+      "cpu": 3.002470461595753,
+      "lagMs": 24.739839,
+      "freeMiB": 4068.296875,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:12.310Z",
+      "rssMiB": 100.375,
+      "cpu": 2.225025671041228,
+      "lagMs": 20.447231,
+      "freeMiB": 4068.625,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:13.310Z",
+      "rssMiB": 100.375,
+      "cpu": 1.8521421714251065,
+      "lagMs": 20.873215,
+      "freeMiB": 4074.328125,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:14.310Z",
+      "rssMiB": 100.375,
+      "cpu": 1.6895013455770727,
+      "lagMs": 20.824063,
+      "freeMiB": 4077.515625,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:15.310Z",
+      "rssMiB": 100.375,
+      "cpu": 2.688391603538151,
+      "lagMs": 21.872639,
+      "freeMiB": 4079.078125,
+      "generatorRssMiB": 120.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:16.311Z",
+      "rssMiB": 100.375,
+      "cpu": 2.9237552342913062,
+      "lagMs": 21.135359,
+      "freeMiB": 4069.390625,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:17.311Z",
+      "rssMiB": 100.375,
+      "cpu": 1.765116597258775,
+      "lagMs": 20.660223,
+      "freeMiB": 4069.5,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:18.312Z",
+      "rssMiB": 100.375,
+      "cpu": 1.206376753573409,
+      "lagMs": 20.971519,
+      "freeMiB": 4069.859375,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:19.312Z",
+      "rssMiB": 100.375,
+      "cpu": 1.3644811083017205,
+      "lagMs": 20.791295,
+      "freeMiB": 4074.1875,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:20.311Z",
+      "rssMiB": 100.375,
+      "cpu": 1.3677194296769062,
+      "lagMs": 20.840447,
+      "freeMiB": 4071.703125,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:21.312Z",
+      "rssMiB": 100.375,
+      "cpu": 1.1992979307114935,
+      "lagMs": 20.791295,
+      "freeMiB": 4072.65625,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:22.311Z",
+      "rssMiB": 100.375,
+      "cpu": 4.5705440292578405,
+      "lagMs": 20.758527,
+      "freeMiB": 4074.28125,
+      "generatorRssMiB": 122
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:23.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.6617836731751026,
+      "lagMs": 26.279935,
+      "freeMiB": 4078.640625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:24.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.621192306787578,
+      "lagMs": 21.839871,
+      "freeMiB": 4082.328125,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:25.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.5993905756137843,
+      "lagMs": 21.774335,
+      "freeMiB": 4083.765625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:26.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.02945595143503,
+      "lagMs": 22.118399,
+      "freeMiB": 4086.34375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:27.312Z",
+      "rssMiB": 100.375,
+      "cpu": 2.7734388661927385,
+      "lagMs": 22.659071,
+      "freeMiB": 4087.28125,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:28.311Z",
+      "rssMiB": 100.375,
+      "cpu": 2.9052313077299936,
+      "lagMs": 25.837567,
+      "freeMiB": 4088.125,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:29.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.2936191106644386,
+      "lagMs": 21.692415,
+      "freeMiB": 4089.546875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:30.312Z",
+      "rssMiB": 100.375,
+      "cpu": 3.189191099119688,
+      "lagMs": 22.069247,
+      "freeMiB": 4089.796875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:31.313Z",
+      "rssMiB": 100.375,
+      "cpu": 4.951381806577985,
+      "lagMs": 20.479999,
+      "freeMiB": 4090.03125,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:32.313Z",
+      "rssMiB": 100.375,
+      "cpu": 5.416519720364159,
+      "lagMs": 21.659647,
+      "freeMiB": 4090.734375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:33.313Z",
+      "rssMiB": 100.375,
+      "cpu": 4.201484132899091,
+      "lagMs": 22.593535,
+      "freeMiB": 4092.046875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:34.313Z",
+      "rssMiB": 100.375,
+      "cpu": 4.274669602682966,
+      "lagMs": 22.872063,
+      "freeMiB": 4093.9375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:35.315Z",
+      "rssMiB": 100.375,
+      "cpu": 4.445765467587813,
+      "lagMs": 22.413311,
+      "freeMiB": 4095.71875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:36.315Z",
+      "rssMiB": 100.375,
+      "cpu": 4.385455861370238,
+      "lagMs": 20.594687,
+      "freeMiB": 4096.6875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:37.314Z",
+      "rssMiB": 100.375,
+      "cpu": 4.546743249996868,
+      "lagMs": 20.889599,
+      "freeMiB": 4097.390625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:38.314Z",
+      "rssMiB": 100.375,
+      "cpu": 4.39646046074138,
+      "lagMs": 23.674879,
+      "freeMiB": 4098.5625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:39.315Z",
+      "rssMiB": 100.875,
+      "cpu": 5.346181015663101,
+      "lagMs": 22.855679,
+      "freeMiB": 4098.71875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:40.315Z",
+      "rssMiB": 100.875,
+      "cpu": 6.053421366569893,
+      "lagMs": 22.740991,
+      "freeMiB": 4097.09375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:41.319Z",
+      "rssMiB": 100.875,
+      "cpu": 3.69033456965929,
+      "lagMs": 21.626879,
+      "freeMiB": 4096.625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:42.320Z",
+      "rssMiB": 100.875,
+      "cpu": 4.771832763516894,
+      "lagMs": 22.544383,
+      "freeMiB": 4097.109375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:43.320Z",
+      "rssMiB": 101.375,
+      "cpu": 4.905918615632442,
+      "lagMs": 23.740415,
+      "freeMiB": 4097.359375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:44.320Z",
+      "rssMiB": 101.375,
+      "cpu": 3.907580354796744,
+      "lagMs": 22.462463,
+      "freeMiB": 4096.65625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:45.320Z",
+      "rssMiB": 101.375,
+      "cpu": 5.10157607470242,
+      "lagMs": 23.609343,
+      "freeMiB": 4097.09375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:46.320Z",
+      "rssMiB": 101.375,
+      "cpu": 4.615691688760954,
+      "lagMs": 22.691839,
+      "freeMiB": 4098.5,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:47.321Z",
+      "rssMiB": 101.375,
+      "cpu": 4.355605286250336,
+      "lagMs": 21.725183,
+      "freeMiB": 4097.734375,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:48.320Z",
+      "rssMiB": 101.375,
+      "cpu": 4.490174502140057,
+      "lagMs": 22.413311,
+      "freeMiB": 4097.265625,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:49.320Z",
+      "rssMiB": 101.375,
+      "cpu": 2.707011159503039,
+      "lagMs": 24.068095,
+      "freeMiB": 4098.71875,
+      "generatorRssMiB": 122.5
+    },
+    {
+      "type": "metrics",
+      "at": "2026-10-16T12:19:50.321Z",
+      "rssMiB": 101.375,
+      "cpu": 3.372038425264237,
+      "lagMs": 22.183935,
+      "freeMiB": 4088.203125,
+      "generatorRssMiB": 122.5
+    }
+  ],
+  "final": {
+    "integrity": "ok",
+    "journalMode": "wal",
+    "synchronous": 1,
+    "foreignKeyViolations": 0,
+    "statuses": [
+      {
+        "status": "COMPLETED",
+        "count": 12
+      },
+      {
+        "status": "CO_RIDE_ACTIVE",
+        "count": 12
+      }
+    ],
+    "acceptedDuplicates": 0,
+    "paired": 24
+  },
+  "scope": "Synthetic mixed core API; no providers, real browsers, TLS/tunnel or mature historical dataset"
+}

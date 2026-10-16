@@ -405,6 +405,15 @@ The frontend can be deployed independently before the Pi API is public. In Verce
 
 ## Verification
 
+The [mixed core-API capacity campaign](docs/MIXED_LOAD_RESULTS_2026-10-16.md)
+passed a ten-minute 100-user workload on a separate SD-card-backed database:
+19,657 requests, 150 completed journeys, zero failures/skips, slowest request
+287 ms. The mix is 25 driver/rider pairs plus 50 browsers, not 100 trips or a
+universal user ceiling. Earlier RAM-backed runs are labelled separately. Commands,
+safety stops, transient event-loop delay and exclusions are recorded in the
+[harness guide](docs/MIXED_LOAD_TESTING.md) and results; no runtime settings changed.
+Providers, signup bursts, real browsers/GPS and deployment remain separate gates.
+
 The [pre-pilot security regression campaign](docs/SECURITY_TESTING.md) passed
 52 isolated HTTP authorization/privacy checks at `bd20dfc`, plus a repeat of
 25 crash/concurrency checks. Run `npm run test:security`. It covers account

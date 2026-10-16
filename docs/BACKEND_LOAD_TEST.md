@@ -8,6 +8,9 @@ below. Existing completed runs are not proof of production SLO compliance.
 Status: harness prepared, first isolated ramp and ten-minute 80/120/160-trip soaks completed; see
 [16 October results](BACKEND_LOAD_RESULTS_2026-10-16.md). One-trip smoke
 verification is not a capacity result.
+The separate [mixed-workload harness](MIXED_LOAD_TESTING.md) adds lifecycle
+mutations, discovery, session and history reads for a specified mix of 25–100
+users. It does not supersede the heavier isolated polling/history measurements.
 Never use this tool against a live service or run meaningful load on the production
 Pi while real trips are active. Data isolation is not CPU/RAM/storage isolation.
 
