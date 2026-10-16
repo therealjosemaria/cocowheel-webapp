@@ -9,19 +9,19 @@ export default function HelpPage() {
           <section className="help-role help-role-rider" aria-labelledby="rider-steps-heading">
             <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li><strong>Choose your destination.</strong></li>
-              <li><strong>Request to join.</strong></li>
-              <li><strong>Meet your driver.</strong></li>
-              <li><strong>Pay your driver.</strong></li>
+              <li>Choose your destination.</li>
+              <li>Request to join.</li>
+              <li>Meet your driver.</li>
+              <li>Pay your driver.</li>
             </ol>
           </section>
           <section className="help-role help-role-driver" aria-labelledby="driver-steps-heading">
             <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Offer a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li><strong>Publish your route.</strong></li>
-              <li><strong>Accept a rider.</strong></li>
-              <li><strong>Enter the rider’s code.</strong></li>
-              <li><strong>Receive payment.</strong></li>
+              <li>Publish your route.</li>
+              <li>Accept a rider.</li>
+              <li>Enter the rider’s code.</li>
+              <li>Receive payment.</li>
             </ol>
           </section>
         </div>

@@ -416,12 +416,12 @@ button:disabled {
   padding: 0 0 0 18px;
   color: var(--muted);
   font-size: var(--text-small);
+  font-weight: var(--weight-regular);
   line-height: 1.7;
 }
-.how-it-works-steps strong,
 .how-it-works-steps li::marker {
   color: var(--ink);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-regular);
 }
 .help-section {
   padding: 24px 20px;

@@ -28,3 +28,9 @@ trips. A push is not a verified deployment; frontend deploys do not restart the 
 Design mobile-first and review desktop too. Reuse shared views, maps, modals,
 buttons and typography tokens. Backend changes need relevant regression tests;
 role-specific UI must be reviewed for both driver and rider.
+
+After every UI or copy change, visually review the whole affected screen on mobile
+and desktop for competing emphasis: headings versus body, text weights, icon
+prominence, colours and spacing. Reassess existing bold formatting when shortening
+copy; do not let former lead-ins become an all-bold body. Tests alone do not replace
+this aesthetic review. Record what was visually checked and what remains unverified.

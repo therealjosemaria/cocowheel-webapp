@@ -58,6 +58,13 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
+After any copy/layout change, review the full affected screen for competing
+emphasis on mobile and desktop. Check the hierarchy from page title to section
+heading, body, helper text and actions; do not preserve bold formatting blindly
+when explanatory text is removed. Help steps and numbers are 14px regular;
+role headings remain 18px semibold. Keep colours and spacing supportive rather
+than adding emphasis to every element. Include a visual review, not only tests.
+
 Header icon refinement: apply `scale(0.586181640625)` with `transform-origin: 6px center` on both
 mobile and desktop, in addition to the framing above. This reduces the icon
 pair by four successive 12.5% reductions, preserving its optical centreline and layout footprint.

@@ -40,7 +40,9 @@ matching H2 headings and equally padded, rounded cards. Both stay visible withou
 FAQs and suggestions remain full width. This aims to reduce onboarding effort,
 not a measured claim of improved traction. No ride or authentication logic changes.
 Role headings reuse the shared rider/person and driver/car SVG labels. Each
-numbered step is a single bold action, without explanatory text. Rider steps:
+numbered step is a single regular-weight action, without explanatory text. The
+18px semibold role headings stay more prominent than 14px regular steps/numbers.
+Rider steps:
 choose your destination, request to join, meet your driver, pay your driver. Driver
 steps: publish your route, accept a rider, enter the rider’s code, receive payment.
 The unchanged FAQs retain pickup and direct PayID payment explanations.
@@ -327,6 +329,12 @@ permissions do not automatically transfer. Do not promise seamless handoff witho
 real-device verification.
 
 ## Product and UI standards
+
+After every UI or copy edit, review the whole affected screen on mobile and
+desktop for competing emphasis, not just the changed element. Reassess weight,
+size, colour, spacing and icon prominence when text is shortened or removed;
+previously useful bold lead-ins must not become an all-bold body. Record actual
+visual checks separately from automated assertions and deployment verification.
 
 ### Privacy and terms pages
 
