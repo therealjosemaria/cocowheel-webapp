@@ -1,6 +1,28 @@
 # Recovery and data-integrity testing
 
-## Current result — 16 October 2026
+## Remediation verified — 16 October 2026
+
+REC-001 is fixed in source: renewal code replacement and its audit event now
+commit in the same SQLite transaction. The full isolated campaign passed **25/25
+checks (exit 0)**, including a real SIGKILL at the previously failing boundary,
+unchanged full state after rollback, and a successful retry with exactly one new
+code/event. [Fixed-run result](results/recovery-2026-10-16-fixed.json) records the
+tested parent revision (`a1379b1`) and exact working-tree `server/core.ts` SHA-256.
+The failed baseline below is retained unchanged as historical evidence.
+
+The normal suite now includes audit-insertion failure both BEFORE and AFTER the
+event write: original code/ciphertext/attempts and events must remain unchanged;
+retry must save one event and immediate repeat must remain throttled. Existing
+tests cover rider-only renewal, old-code invalidation, lockout recovery, pairing
+and withheld PayID. No cooldown, code lifecycle, permissions or UI was changed.
+
+Routine validation: **84 tests passed**, ESLint passed. No new browser/layout test
+is needed for this server-only transaction change; real-API checks cover both
+participant views. Production API restart/deployment has **not** been performed
+or verified. Closing this source finding is not a claim it is live, nor proof
+against power loss or every failure mode listed below.
+
+## Failed baseline — 16 October 2026
 
 Production-code baseline: `3cb9fc3`. Tests use the real API and SQLite on this
 workspace host, not a mocked backend. **23 checks passed and one open finding was
@@ -97,21 +119,20 @@ That protects records but can confuse users without refreshing. No automatic wri
 retry or idempotency-key/reconciliation protocol was added. A generic connection
 message is not proof the operation did not commit.
 
-## Open finding REC-001 — pickup-code renewal / audit atomicity
+## REC-001 history — pickup-code renewal / audit atomicity
 
-`server/core.ts`, `renewPickupCode`, calls `issuePickupCode` and then records
-PICKUP_CODE_RENEWED without wrapping both writes in one transaction.
+Before the fix, `server/core.ts`, `renewPickupCode`, called `issuePickupCode` and
+then recorded PICKUP_CODE_RENEWED without wrapping both writes in one transaction.
 
 Reproduction: accepted ride → renewal eligible → crash immediately before renewal
 event insertion → restart. The new code is persisted, while the corresponding
 renewal event is absent. This is an **audit completeness gap**, not observed trip
 loss or early PayID exposure. The rider can read the new code after recovery.
 
-Status: **reproduced, not fixed in this testing-only change**. Proposed scoped fix:
-wrap code replacement and event insertion in one transaction, then require this
-scenario to roll back both and return exit 0. Retest ordinary/lost-response renewal,
-old-code invalidation and throttling. Do not merely allowlist or remove the finding
-to make the report green. Preserve this baseline and append the remediation result.
+Baseline status was **reproduced, not fixed**. Now **remediated and retested in
+source**, as recorded above. The harness no longer treats recurrence as a tolerated
+finding: it asserts atomic rollback, so a regression fails the campaign. The
+original exit-2 result is preserved, not overwritten or reclassified as a pass.
 
 ## Boundaries not established
 
@@ -126,6 +147,6 @@ to make the report green. Preserve this baseline and append the remediation resu
   participant views; previous mocked UI tests are separate evidence.
 - Latency/capacity or disaster-recovery guarantees; this is not a load test or SLO proof.
 
-Next priority: remediate REC-001, then separately test storage failure and restore
+Next priority: safely deploy the fix, then separately test storage failure and restore
 on disposable storage. Every new run should preserve the command, revision, date,
 environment, scenario results, open findings and untested boundaries.

@@ -1483,8 +1483,10 @@ export function renewPickupCode(
     now.getTime() - Date.parse(ride.co_ride_code_issued_at) < 60_000
   )
     throw new Error("CO_RIDE_CODE_RATE_LIMITED");
-  issuePickupCode(db, ride.id, now);
-  event(db, ride.id, "PICKUP_CODE_RENEWED", "RIDER", now);
+  db.transaction(() => {
+    issuePickupCode(db, ride.id, now);
+    event(db, ride.id, "PICKUP_CODE_RENEWED", "RIDER", now);
+  })();
   return getRide(db, rideId, session, now);
 }
 

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync, fork } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { once } from "node:events";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -659,6 +659,7 @@ async function main() {
     );
     await rpc("age-code", { rideId: renewal.id });
     const auditBefore = (await rpc("snapshot")).events.length;
+    const renewalBaseline = await rpc("snapshot");
     await rpc("fault", {
       mode: "kill-in-transaction",
       event: "PICKUP_CODE_RENEWED",
@@ -670,21 +671,22 @@ async function main() {
     await restart();
     const renewalAfter = (await state(renewal.id, renewal.rider)).coRideCode;
     const auditAfter = (await rpc("snapshot")).events.length;
-    if (renewalAfter !== newCode && auditAfter === auditBefore) {
-      checks.push({
-        name: "pickup-code renewal is not atomic with its audit event",
-        result: "FINDING",
-        consequence:
-          "Crash can save a new code without its renewal event; refreshed rider view recovers the code.",
-      });
-      console.log(
-        "FINDING pickup-code renewal is not atomic with its audit event",
-      );
-    } else {
-      assert.equal(renewalAfter, newCode);
-      assert.equal(auditAfter, auditBefore);
-      record("interrupted pickup-code renewal rolls back atomically");
-    }
+    assert.equal(renewalAfter, newCode);
+    assert.equal(auditAfter, auditBefore);
+    assert.deepEqual(await rpc("snapshot"), renewalBaseline);
+    record("interrupted pickup-code renewal rolls back atomically");
+    assert.equal(
+      (await api(`rides/${renewal.id}/pickup-code`, renewal.rider, {})).status,
+      200,
+    );
+    assert.notEqual(
+      (await state(renewal.id, renewal.rider)).coRideCode,
+      newCode,
+    );
+    assert.equal((await rpc("snapshot")).events.length, auditBefore + 1);
+    record(
+      "retry after interrupted renewal saves one new code and one audit event",
+    );
     const snapshot = await rpc("snapshot");
     assert.deepEqual(snapshot.integrity, [{ integrity_check: "ok" }]);
     assert.deepEqual(snapshot.foreignKeys, []);
@@ -712,6 +714,9 @@ async function main() {
     await stop();
     const report = {
       sourceRevision,
+      coreSha256: createHash("sha256")
+        .update(readFileSync(new URL("../server/core.ts", import.meta.url)))
+        .digest("hex"),
       testedAt: new Date().toISOString(),
       runtime: process.version,
       platform: `${process.platform}/${process.arch}`,

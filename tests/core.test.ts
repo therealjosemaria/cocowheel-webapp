@@ -489,6 +489,39 @@ test("pickup code renewal is rider-only, throttled, invalidates old code and rec
   }
 });
 
+test("pickup renewal rolls back code and audit together when the audit write fails", () => {
+  for (const timing of ["BEFORE", "AFTER"]) {
+    const h = harness();
+    try {
+      const flow = sessions(h);
+      const id = flow.published.ride.rideId;
+      decideRequest(h.db, flow.published.sessionToken, id, flow.requested.ride.request!.requestId, "ACCEPT", baseTime);
+      const later = new Date(+baseTime + 61000);
+      const read = () => ({
+        ride: h.db.prepare("SELECT * FROM rides WHERE public_id = ?").get(id),
+        events: h.db.prepare("SELECT * FROM ride_events ORDER BY id").all(),
+      });
+      const before = read();
+      const oldCode = getRide(h.db, id, flow.rider, later).coRideCode;
+      h.db.exec(`CREATE TEMP TRIGGER fail_renewal ${timing} INSERT ON ride_events
+        WHEN NEW.event = 'PICKUP_CODE_RENEWED'
+        BEGIN SELECT RAISE(ABORT, 'TEST_AUDIT_FAILURE'); END`);
+      assert.throws(() => renewPickupCode(h.db, flow.requested.sessionToken, id, later), /TEST_AUDIT_FAILURE/);
+      assert.deepEqual(read(), before);
+      assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, oldCode);
+      h.db.exec("DROP TRIGGER fail_renewal");
+      const renewed = renewPickupCode(h.db, flow.requested.sessionToken, id, later);
+      assert.notEqual(renewed.coRideCode, oldCode);
+      const eventCount = h.db.prepare("SELECT count(*) AS n FROM ride_events WHERE event = 'PICKUP_CODE_RENEWED'").get() as { n: number };
+      assert.equal(eventCount.n, 1);
+      const committed = read();
+      assert.throws(() => renewPickupCode(h.db, flow.requested.sessionToken, id, later), /CO_RIDE_CODE_RATE_LIMITED/);
+      assert.deepEqual(read(), committed);
+      assert.equal(renewed.payId, undefined);
+    } finally { h.close(); }
+  }
+});
+
 test("either device at drop-off permits either participant to complete without recording payment", () => {
   for (const reporter of ["DRIVER", "RIDER"])
     for (const finisher of ["DRIVER", "RIDER"]) {

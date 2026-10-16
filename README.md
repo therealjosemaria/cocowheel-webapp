@@ -411,7 +411,11 @@ process SIGKILL and SQLite rollback/restart without touching live trips. At the
 `3cb9fc3` application baseline, 23 checks passed and one audit-atomicity gap was
 reproduced: pickup-code renewal can persist without its event if interrupted.
 No production fix was made in that testing-only change. `npm run test:recovery`
-returns 2 while that finding remains; it is not an all-pass result. Hardware power
+returned 2 for that failed baseline. The subsequent atomic-renewal fix passed
+25/25 recovery checks and 84 regression tests; the old report is retained and the
+remediation report is linked in the register. Code replacement and its audit event
+now commit or roll back together; all existing pickup/permission/cooldown rules
+remain unchanged. Production API restart/verification is still pending. Hardware power
 loss, disk failure, real-device UI recovery and production outages are separate,
 unverified scopes. Retain reports and append remediation/retest evidence.
 

@@ -1,0 +1,114 @@
+{
+  "sourceRevision": "a1379b1f8ffe3072c6e54f04b5481a4f21caeef0",
+  "coreSha256": "9f87c021084ac149d9b4686331fd0cf9ed3d0ee3184e90af10063ef78b35e85c",
+  "testedAt": "2026-10-16T11:17:57.272Z",
+  "runtime": "v22.22.0",
+  "platform": "linux/arm64",
+  "checks": [
+    {
+      "name": "lost publish response + restart: one offer, retry rejected",
+      "result": "PASS",
+      "retry": "OPEN_ITEM_EXISTS"
+    },
+    {
+      "name": "crash after request commit: one request and same session restored",
+      "result": "PASS"
+    },
+    {
+      "name": "acceptance and encrypted pickup code survive restart; PayID/access remain private",
+      "result": "PASS"
+    },
+    {
+      "name": "lost GPS response + restart retains the captured timestamp",
+      "result": "PASS"
+    },
+    {
+      "name": "crash after pickup: both roles agree, PayID released, code consumed once",
+      "result": "PASS"
+    },
+    {
+      "name": "completion replay is idempotent; terminal history and pickup evidence survive crash",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside RIDER_REQUESTED: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside RIDER_ACCEPTED: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside CO_RIDE_BEGUN: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside RIDE_COMPLETED_OVERRIDE: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside REQUEST_CANCELLED: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside RIDE_CANCELLED: entire transaction rolls back; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "kill inside publication: no partial offer or event; retry succeeds",
+      "result": "PASS"
+    },
+    {
+      "name": "two concurrent accepts: exactly one rider wins, including after restart",
+      "result": "PASS"
+    },
+    {
+      "name": "lost request/cancel reply: retry rejected without duplicate state/event",
+      "result": "PASS",
+      "retry": "REQUEST_CANCELLATION_NOT_ALLOWED"
+    },
+    {
+      "name": "lost cancel reply: retry rejected without duplicate state/event",
+      "result": "PASS",
+      "retry": "CANCELLATION_NOT_ALLOWED"
+    },
+    {
+      "name": "concurrent duplicate publication creates one offer",
+      "result": "PASS"
+    },
+    {
+      "name": "concurrent requests to two drivers leave only one active rider request",
+      "result": "PASS"
+    },
+    {
+      "name": "concurrent driver publication and rider request preserve one active role",
+      "result": "PASS"
+    },
+    {
+      "name": "duplicate/out-of-order GPS does not overwrite newer location or receipt time",
+      "result": "PASS"
+    },
+    {
+      "name": "GPS ownership survives restart; interrupted takeover rolls back; committed takeover persists",
+      "result": "PASS"
+    },
+    {
+      "name": "lost renewal response: refreshed view recovers new code; immediate retry is throttled",
+      "result": "PASS"
+    },
+    {
+      "name": "interrupted pickup-code renewal rolls back atomically",
+      "result": "PASS"
+    },
+    {
+      "name": "retry after interrupted renewal saves one new code and one audit event",
+      "result": "PASS"
+    },
+    {
+      "name": "SQLite integrity and foreign-key checks pass after all interruptions",
+      "result": "PASS"
+    }
+  ],
+  "passed": true,
+  "scope": "isolated loopback API + synthetic SQLite; no external providers or live trips"
+}
