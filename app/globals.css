@@ -431,8 +431,21 @@ button:disabled {
   line-height: 1.7;
 }
 .help-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin: 0;
   padding-bottom: 0;
+}
+.help-intro-action {
+  color: var(--ink);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+}
+.help-intro-eligibility {
+  color: var(--muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
 }
 .help-section {
   border-top: 1px solid var(--line);

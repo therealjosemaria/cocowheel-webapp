@@ -31,6 +31,8 @@ QR payments are roadmap messaging, not an implemented capability. The Help
 introduction reads “Sign in with your UniKey to get started.” followed by
 “For University of Sydney students only.” Expansion messaging is removed;
 current payment, authentication and approved testing exceptions stay unchanged.
+The introduction uses regular-weight 14px dark action text above 12px muted
+eligibility text, left-aligned with a 4px gap; no extra badges or decoration.
 The FAQ has a subtle grey background; role cards use pale blue/orange tints
 derived from the rider/driver map colours, with matching coloured icons and dark
 text. Suggestions remain white; heading sizes are unchanged.

@@ -6,9 +6,8 @@ export default function HelpPage() {
       <div className="activity-panel">
         <h1 className="page-title">How it works</h1>
         <p className="help-intro">
-          Sign in with your UniKey to get started.
-          <br />
-          For University of Sydney students only.
+          <span className="help-intro-action">Sign in with your UniKey to get started.</span>
+          <span className="help-intro-eligibility">For University of Sydney students only.</span>
         </p>
         <div className="help-role-paths">
           <section className="help-role help-role-rider" aria-labelledby="rider-steps-heading">
