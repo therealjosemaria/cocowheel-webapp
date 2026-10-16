@@ -220,11 +220,13 @@ for service operations.
 
 - The header wordmark is 16px on phones (below 700px), retaining its existing
   12px size on larger screens; it remains non-clickable.
-- The wordmark is followed by an 8px gap and the approved pink bubble/black tyre
+- The wordmark is followed by a 6px gap and the approved pink bubble/black tyre
   artwork, shared across pages. The original transparent PNG lives in
   `public/brand/gumwheel-bubble-wheel.png`; Next Image serves resized assets.
-  A 64×32px CSS window trims transparent outer padding without altering the
-  approved artwork. Icons are decorative and do not duplicate the accessible name.
+  A 48×32px CSS window frames the 60×30px image, reducing the icons by 25%
+  while retaining vertical alignment. An 18px trailing spacer preserves the
+  original header footprint and navigation positions. The wordmark typography
+  is unchanged. Icons are decorative and do not duplicate the accessible name.
 - Desktop pages use roughly two thirds of the viewport (960–1360px shell), with
   a single-row menu from 1000px; smaller viewports use the menu drawer. Home
   buttons stay centred and compact on desktop, full width on mobile; hero

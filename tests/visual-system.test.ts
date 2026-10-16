@@ -9,7 +9,9 @@ test("header artwork stays decorative beside the non-clickable brand", () => {
   assert.match(layout, /<span className="brand">\s*GUMWHEEL/);
   assert.match(layout, /className="brand-art" aria-hidden="true"/);
   assert.match(layout, /src="\/brand\/gumwheel-bubble-wheel\.png"\s+alt=""/);
-  assert.match(css, /\.brand-art\s*\{[^}]*width: 64px;[^}]*height: 32px;/);
+  assert.match(css, /\.brand-art\s*\{[^}]*width: 48px;[^}]*height: 32px;/);
+  assert.match(css, /\.brand-art img\s*\{[^}]*width: 60px;[^}]*height: 30px;/);
+  assert.match(css, /\.brand\s*\{[^}]*gap: 6px;[^}]*padding-right: 18px;/);
   const png = readFileSync("public/brand/gumwheel-bubble-wheel.png");
   assert.equal(png.subarray(1, 4).toString(), "PNG");
   assert.equal(png[25], 6, "Artwork should retain its RGBA alpha channel");

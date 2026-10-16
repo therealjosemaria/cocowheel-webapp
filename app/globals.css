@@ -135,7 +135,9 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 8px;
+  gap: 6px;
+  /* Retain the original header footprint so navigation does not move. */
+  padding-right: 18px;
   color: var(--ink);
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
@@ -145,18 +147,18 @@ button:disabled {
 .brand-art {
   position: relative;
   display: block;
-  width: 64px;
+  width: 48px;
   height: 32px;
   overflow: hidden;
   flex-shrink: 0;
 }
 .brand-art img {
   position: absolute;
-  width: 80px;
-  height: 40px;
+  width: 60px;
+  height: 30px;
   max-width: none;
-  left: -8px;
-  top: -4px;
+  left: -6px;
+  top: 1px;
 }
 .desktop-navigation {
   display: none;
