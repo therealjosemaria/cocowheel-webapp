@@ -1,5 +1,10 @@
 # Isolated polling and GPS capacity preparation
 
+For proposed user-quality thresholds and future same-process overload/recovery
+validation, see [the quality policy](QUALITY_AND_OVERLOAD_POLICY.md). Its detection
+windows are not implemented by this harness and do not replace the safety stops
+below. Existing completed runs are not proof of production SLO compliance.
+
 Status: harness prepared, first isolated ramp and ten-minute 80/120/160-trip soaks completed; see
 [16 October results](BACKEND_LOAD_RESULTS_2026-10-16.md). One-trip smoke
 verification is not a capacity result.

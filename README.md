@@ -252,6 +252,14 @@ and a separate history/discovery boundary: 200 pairs sustained ten minutes, whil
 250 pairs hit the 512 MiB test-process guardrail. These are workload-specific
 measurements, not additive capacities or a certified production user limit.
 
+The [quality standards and overload playbook](docs/QUALITY_AND_OVERLOAD_POLICY.md)
+define initial planning objectives (95% of eligible core API attempts successful
+within 500 ms, 99% within one second, 99.9% reliability over 28 days), proposed
+warning/recovery rules and a staged Plan B. These are documented targets, not
+verified production compliance. Monitoring, protective modes, predictive warming
+and admission limits are not implemented; production and load-test safety limits
+remain unchanged. Further tests require their own safe test window.
+
 The proposed Safari browser-transfer fallback is **not implemented in Gumwheel**.
 Signing into another browser restores server-held history; local drafts and GPS
 permissions do not automatically transfer. Do not promise seamless handoff without
