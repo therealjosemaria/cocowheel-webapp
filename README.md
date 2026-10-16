@@ -216,6 +216,8 @@ for service operations.
 
 ## Shared UI behaviour
 
+- The header wordmark is 16px on phones (below 700px), retaining its existing
+  12px size on larger screens; it remains non-clickable.
 - Desktop pages use roughly two thirds of the viewport (960–1360px shell), with
   a single-row menu from 1000px; smaller viewports use the menu drawer. Home
   buttons stay centred and compact on desktop, full width on mobile; hero

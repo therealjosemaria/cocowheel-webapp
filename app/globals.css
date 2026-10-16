@@ -846,6 +846,9 @@ p {
   min-width: 0;
 }
 @media (max-width: 699px) {
+  .brand {
+    font-size: var(--text-body);
+  }
   .driver-location-summary:has(.rider-origin-heading) {
     grid-template-columns: minmax(0, 1fr);
   }
