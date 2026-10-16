@@ -4,7 +4,7 @@ import { activeRideTabForPath } from "../lib/navigation-state";
 
 test("remembered ride tabs cannot remain highlighted after navigating to Activity", () => {
   for (const role of ["driver", "rider"] as const) {
-    for (const path of ["/activity", "/activity/TEST", "/admin", "/rides/TEST"]) {
+    for (const path of ["/help", "/activity", "/activity/TEST", "/admin", "/rides/TEST"]) {
       assert.equal(activeRideTabForPath(path, role), null);
     }
     assert.equal(activeRideTabForPath("/", role), role);

@@ -6,6 +6,11 @@ Drivers publish fixed-price rides; riders request to join; the driver accepts on
 
 This repository is intentionally independent from other projects: it has its own API, SQLite database, guest-session cookies, deployment configuration, tunnel target, and environment variables.
 
+The public **How it works** page (`/help`) sits immediately after Home in both
+menus. It briefly explains UniKey verification, finding/offering a ride, driver
+acceptance, pickup codes and direct PayID payment. It uses a static server-rendered
+page with no additional API calls or changes to ride behaviour.
+
 ## Status
 
 Production frontend: https://gumwheel.com currently redirects to https://www.gumwheel.com. The previous https://cocowheel-webapp.vercel.app remains operational. The standalone API and SQLite database run on the Pi; pushes to `main` trigger the Vercel frontend deployment. A push is not proof that deployment succeeded.

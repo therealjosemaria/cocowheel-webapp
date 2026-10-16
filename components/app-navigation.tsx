@@ -24,6 +24,7 @@ export default function AppNavigation() {
   const router = useRouter();
   const links = [
     { href: "/", label: "Home" },
+    { href: "/help", label: "How it works" },
     { href: "/activity", label: "Activity" },
   ];
   const goHome = () => {

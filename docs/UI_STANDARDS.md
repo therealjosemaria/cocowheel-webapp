@@ -27,7 +27,8 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Navigation and layout
 
-- Main menu order: Home, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile.
+- Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. Desktop items retain equal widths and wrap when space is limited rather than overflowing.
+- How it works (`/help`) is public and uses the shared enclosing panel and page heading, with a short numbered list: bold action lead-ins and regular explanatory text. Keep its UniKey, request, pickup-code and PayID instructions aligned with actual behaviour.
 - Home uses “Going your way”, equally sized FIND A RIDE and OFFER A RIDE buttons; Find is dark with white text, Offer is light. The logo is not a Home link.
 - Active menu treatment is grey background, not an active shadow or competing call-to-action treatment.
 - Keep equivalent heading sizes, spacing below the header divider and enclosing panels across non-Home screens, including ride details. Keep the Home footer visible without unnecessary overflow.
