@@ -299,8 +299,8 @@ for service operations.
 
 ## Samples and unimplemented proposals
 
-Production samples are disabled by default in code (19 October 2026); activation
-awaits an approved API restart. See [verification](docs/SAMPLE_RETIREMENT_2026-10-19.md).
+Production samples are disabled by default and were deactivated at 21:55 AEDT
+on 19 October 2026. See [verification](docs/SAMPLE_RETIREMENT_2026-10-19.md).
 At API startup,
 available synthetic offers are closed as CANCELLED with reason SAMPLES_DISABLED
 and an audit event; pending requests become DISCARDED. No ride/request/history
