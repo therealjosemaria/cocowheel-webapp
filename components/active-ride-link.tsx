@@ -14,10 +14,14 @@ export default function ActiveRideLink({
   item,
   compact = false,
   onClick,
+  notification,
+  notificationTarget,
 }: {
   item: ActiveRide;
   compact?: boolean;
   onClick?: () => void;
+  notification?: string;
+  notificationTarget?: string;
 }) {
   const { role, ride } = item;
   const [pickupEstimate, setPickupEstimate] = useState<{
@@ -91,7 +95,7 @@ export default function ActiveRideLink({
   const href = `/activity/${encodeURIComponent(ride.rideId)}${role === "RIDER" && ride.request ? `?request=${encodeURIComponent(ride.request.requestId)}` : ""}`;
   return (
     <Link
-      href={href}
+      href={`${href}${notificationTarget ? `#${notificationTarget}` : ""}`}
       className={
         compact ? "secondary profile-active-ride" : "home-current-ride"
       }
@@ -102,6 +106,9 @@ export default function ActiveRideLink({
           {status}
         </RideFieldLabel>
       </strong>
+      {notification && (
+        <span className="active-ride-update">{notification}</span>
+      )}
       {!compact && (
         <>
           <span className="active-ride-route">

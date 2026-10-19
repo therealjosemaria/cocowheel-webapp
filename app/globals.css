@@ -222,6 +222,40 @@ button:disabled {
 .desktop-navigation {
   display: none;
 }
+.guest-identity-button { position: relative; }
+.profile-update-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: var(--text-caption);
+  line-height: 18px;
+}
+.active-ride-update { font-size: var(--text-small); font-weight: var(--weight-regular); }
+.profile-active-ride:has(.active-ride-update) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+.ride-update-notice {
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+}
+.ride-update-notice button { min-height: 44px; background: var(--surface); }
+.request-arrived { animation: request-arrival 2s ease-out; }
+@keyframes request-arrival { from { background-color: var(--surface-subtle); } to { background-color: var(--surface); } }
+@media (prefers-reduced-motion: reduce) { .request-arrived { animation: none; } }
 .navigation-actions {
   display: flex;
   align-items: center;

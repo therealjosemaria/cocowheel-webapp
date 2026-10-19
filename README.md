@@ -260,6 +260,16 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Ride updates reuse the existing Profile active-ride card with an unread count
+  on the Profile icon. Drivers see new pending requests; the accepted rider sees
+  “[driver UniKey] accepted your request”. Driver ride details show a non-blocking
+  “New rider request ↓” button only while an unread request is off-screen. Tapping
+  it or the Profile card reaches that request; incoming updates never auto-scroll.
+  Seeing the relevant content clears its indicator. Riders have no in-page notice.
+  Uses existing authenticated polling, no new API or background push service.
+  Read markers are account-scoped in browser storage, not cross-device synced.
+  See [ride update behaviour and checks](docs/RIDE_UPDATES.md).
+
 - The header wordmark is 16px on phones (below 700px), retaining its existing
   12px size on larger screens; it remains non-clickable.
 - The wordmark is followed by a 6px visible gap and the single combined pink

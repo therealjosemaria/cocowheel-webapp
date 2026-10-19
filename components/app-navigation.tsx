@@ -4,7 +4,9 @@ import type { RatingSummary } from "@/lib/rating-types";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { rideUpdates } from "@/lib/ride-updates";
+import RideUpdateNotice, { readSeen } from "./ride-update-notice";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { requestJson } from "@/lib/api-transport";
 import ActiveRideLink, { type ActiveRide } from "./active-ride-link";
@@ -22,6 +24,40 @@ export default function AppNavigation() {
     rider: RatingSummary;
   } | null>(null);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
+  const [seen, setSeen] = useState<string[]>([]);
+  const seenAccount = useRef<string | null>(null);
+  const updates = useMemo(
+    () => rideUpdates(activeRide).filter((u) => !seen.includes(u.key)),
+    [activeRide, seen],
+  );
+  const markSeen = useCallback(
+    (key: string) => {
+      if (!guestName) return;
+      setSeen((previous) => {
+        const next = Array.from(
+          new Set([...readSeen(guestName), ...previous, key]),
+        ).slice(-500);
+        try {
+          localStorage.setItem(
+            `cocowheels:seen-updates:v1:${guestName}`,
+            JSON.stringify(next),
+          );
+        } catch {
+          /* In-memory fallback. */
+        }
+        return next;
+      });
+    },
+    [guestName],
+  );
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (guestName && event.key === `cocowheels:seen-updates:v1:${guestName}`)
+        setSeen(readSeen(guestName));
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, [guestName]);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const identityCloseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -79,6 +115,11 @@ export default function AppNavigation() {
         ratings?: { driver: RatingSummary; rider: RatingSummary };
       }>("/api/university/session");
       setGuestName(result.unikey);
+      if (seenAccount.current !== result.unikey) {
+        seenAccount.current = result.unikey;
+        setActiveRide(null);
+        setSeen(readSeen(result.unikey));
+      }
       setCanAdmin(result.canAdmin === true);
       setRatings(result.ratings ?? null);
       const activity = await cocowheelsApi<{
@@ -97,6 +138,8 @@ export default function AppNavigation() {
         setCanAdmin(false);
         setRatings(null);
         setActiveRide(null);
+        setSeen([]);
+        seenAccount.current = null;
         window.dispatchEvent(
           new CustomEvent("cocowheels:current-updated", { detail: [] }),
         );
@@ -153,6 +196,7 @@ export default function AppNavigation() {
 
   return (
     <div className="navigation-actions">
+      <RideUpdateNotice updates={updates} onSeen={markSeen} />
       <nav aria-label="Primary navigation" className="desktop-navigation">
         {links.map((link) => (
           <Link
@@ -233,7 +277,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Profile: ${identityLabel}`}
+          aria-label={`Profile: ${identityLabel}${updates.length ? `, ${updates.length} unread ride update${updates.length === 1 ? "" : "s"}` : ""}`}
           onClick={() => {
             clearTimeout(identityCloseTimer.current);
             setOpen(false);
@@ -248,6 +292,11 @@ export default function AppNavigation() {
             <circle cx="12" cy="8" r="3.5" />
             <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
           </svg>
+          {updates.length > 0 && (
+            <span className="profile-update-badge" aria-hidden="true">
+              {updates.length > 99 ? "99+" : updates.length}
+            </span>
+          )}
         </button>
         <div
           id="guest-identity-popover"
@@ -292,6 +341,12 @@ export default function AppNavigation() {
             <ActiveRideLink
               item={activeRide}
               compact
+              notification={
+                updates[0]?.driver
+                  ? `${updates.length} new rider request${updates.length === 1 ? "" : "s"}`
+                  : updates[0]?.message
+              }
+              notificationTarget={updates[0]?.target}
               onClick={() => setIdentityOpen(false)}
             />
           )}

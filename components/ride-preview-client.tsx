@@ -1,4 +1,5 @@
 "use client";
+import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
@@ -842,7 +843,17 @@ export default function RidePreviewClient({
               ) : null}
             </div>
             {!readOnly && privateRide ? (
-              <PickupConfirmation ride={privateRide} driver={driverOwned} />
+              <div
+                id={
+                  !driverOwned &&
+                  privateRide.request?.status === "ACCEPTED" &&
+                  !privateRide.pickupEstablished
+                    ? pickupTarget(privateRide.rideId)
+                    : undefined
+                }
+              >
+                <PickupConfirmation ride={privateRide} driver={driverOwned} />
+              </div>
             ) : null}
             {privateRide ? (
               <RideRating
@@ -1078,7 +1089,7 @@ export default function RidePreviewClient({
                     key={request.requestId}
                   >
                     <dl className="driver-request-fields">
-                      <div>
+                      <div id={requestTarget(request.requestId)}>
                         <dt>
                           <RideFieldLabel icon="rider">Rider</RideFieldLabel>
                         </dt>

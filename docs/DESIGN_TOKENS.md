@@ -62,6 +62,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
+Ride notifications reuse ink/surface for the 18px Profile count badge, caption
+text, and a 44px-minimum secondary notice button. Profile update copy uses small
+regular text and a 4px gap below status; a request-card highlight uses only
+surface-subtle → surface over two seconds, disabled with reduced motion.
+
 The shared connection notice uses existing surface-subtle/ink/line colours,
 small text, control-radius and 12px/16px padding. It is fixed above the safe-area
 bottom without page reflow, animation or a new colour/shadow. It is non-interactive;

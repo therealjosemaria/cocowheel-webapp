@@ -49,6 +49,15 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Navigation and layout
 
+- Profile ride notifications extend the one existing active-ride link, never add
+  duplicate destinations. Show a compact neutral unread-count badge and regular
+  update copy below the existing status. Driver notice text is exactly “New rider
+  request ↓”; reuse secondary-button styling without a backdrop, close button,
+  focus lock or layout shift. No rider body notice. Newly seen driver request
+  cards fade from surface-subtle to white once over two seconds; reduced motion
+  disables the fade. Never scroll on an incoming update; navigation requires a
+  tap/click. Read acknowledgement requires visible content, not opening Profile.
+
 - Footer navigation contains only Privacy and Terms, centred beneath copyright; no duplicate main menu or large site-map footer. Text remains small with 44px-tall tap targets and visible focus. Public legal pages share the standard panel/H1, 18px H2 hierarchy, readable line length and revision date. Preserve Home footer visibility when adding footer rows. Legal copy must describe real behaviour, not invent guarantees or imply legal certification.
 - Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with four single regular-weight actions per role and no explanatory text after each action. Numbers also remain regular-weight; reserve stronger emphasis for section headings. Rider step two is “Request to join a ride.” Step three mirrors “Meet your driver.” and “Meet your rider.” Keep required pickup-code verification and PayID explanations in the FAQs and relevant ride screens; simplifying the overview does not change verification requirements.
