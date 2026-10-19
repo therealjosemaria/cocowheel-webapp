@@ -10,6 +10,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
 import { ratingSummary, rideRatingState } from "./ratings";
+import { conversationSummaries } from "./messaging";
+import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
 import {
@@ -208,6 +210,7 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  conversations?: ConversationSummary[];
   driverRating?: RatingSummary;
   rating?: RideRatingState;
   paymentMethod?: "PAYID" | "CASH";
@@ -431,8 +434,10 @@ export function initializeCoreSchema(db: Db) {
     !requestTable?.sql.match(
       /UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i,
     )
-  )
+  ) {
+    initializeMessagingSchema(db);
     return;
+  }
 
   db.pragma("foreign_keys = OFF");
   try {
@@ -478,6 +483,16 @@ export function initializeCoreSchema(db: Db) {
   } finally {
     db.pragma("foreign_keys = ON");
   }
+  initializeMessagingSchema(db);
+}
+
+function initializeMessagingSchema(db: Db) {
+  db.exec(
+    readFileSync(
+      path.join(process.cwd(), "server", "messaging-schema.sql"),
+      "utf8",
+    ),
+  );
 }
 
 export function guestCookie(
@@ -2161,10 +2176,19 @@ export function getRide(
   const row = rideRow(db, rideId);
   if (!row) throw new Error("RIDE_NOT_FOUND");
   if (row.driver_session_id === session.id)
-    return withTracking(db, row, driverView(db, row, now), "DRIVER", now);
+    return {
+      ...withTracking(db, row, driverView(db, row, now), "DRIVER", now),
+      conversations: conversationSummaries(db, rideId, session.id, now),
+    };
   const request = requestForSession(db, row.id, session.id, requestId);
   if (!request) throw new Error("RIDE_ACCESS_DENIED");
   const view = riderView(db, row, request, now);
+  view.conversations = conversationSummaries(
+    db,
+    rideId,
+    session.id,
+    now,
+  ).filter((c) => c.requestId === request.id);
   return request.id === row.accepted_request_id && request.status === "ACCEPTED"
     ? withTracking(db, row, view, "RIDER", now)
     : view;

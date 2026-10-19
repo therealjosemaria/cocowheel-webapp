@@ -105,3 +105,11 @@ wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance
 3. Check 320px/390px mobile and desktop, long names/addresses, pending/pickup/ongoing/completed states and missing values. Verify wrapping and no horizontal overflow.
 4. Check keyboard focus, text contrast, reduced motion, and unchanged payment/privacy behavior.
 5. Run the visual-system regression test, relevant browser checks, lint and build. Update this document and UI standards for agreed exceptions.
+## Private messaging (20 October 2026)
+
+No new colour/font tokens. Messages use `--text-small`, `--text-caption`,
+`--weight-regular`, `--weight-semibold`, `--surface`, `--surface-subtle`, `--line`
+and `--radius-control`. Send/Stop use the shared `ride-action-buttons` sizing,
+wrapping with an 8px gap; body/list gaps 12px, panel padding 16px. Plain message
+body remains regular weight. Verification helper spans both Profile identity
+columns. See UI_STANDARDS.md and MESSAGING_CHECK_2026-10-20.md for review evidence.

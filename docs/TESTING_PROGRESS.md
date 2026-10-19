@@ -65,3 +65,17 @@ safety/isolation, pass/fail/findings, explicit exclusions and deployment status.
 Keep earlier results as history; append rather than silently replace a failed
 baseline with a green result. Never commit session tokens, codes, raw user data,
 live GPS or test databases. A testing claim must identify what was actually exercised.
+# Private messaging regression — 20 October 2026
+
+See [dated report](MESSAGING_CHECK_2026-10-20.md) and [protocol](MESSAGING.md).
+Baseline `57972cb`; synthetic DB and mocked mobile/desktop campaign. 108 regression
+tests passed, including participant isolation, lifecycle, quotas, idempotent
+retries and backup/reopen. Responsive/keyboard scenarios cover both roles.
+Preserved findings: legacy migration order corrected and retested; test-only
+authentication config and modal/anchor assumptions corrected. No production load
+or chat-capacity conclusion; real-device/live two-party checks remain outstanding.
+Final lint/build and eight role/viewport browser scenarios passed. API activated
+03:24 AEDT after protected backup; 112 rides/67 requests preserved, schema/integrity
+checked. Local/public proxy health and unauthorized denial verified; initial
+transient connection failure retained in the report. Frontend rollout/live
+authenticated exchange not claimed verified.

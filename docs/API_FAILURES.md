@@ -99,3 +99,12 @@ HTTP 429 `VERIFICATION_RATE_LIMITED` adds optional `retryAfterSeconds` and a
 duration; the UniKey dialog formats it in seconds/minutes. Missing/invalid metadata
 uses neutral wording, never an invented 15-minute cooldown. No retry is automated,
 no error-modal layout or security threshold changes. See UNIVERSITY-LOGIN.md.
+# Private messaging extension — 20 October 2026
+
+See [messaging protocol](MESSAGING.md). Failed sends preserve draft/UUID for
+idempotent retry and use the shared connection/error copy. Failed refresh keeps
+existing messages with a retry prompt. Unauthorized or closed conversations clear
+message content; closing the ride removes the UI. Private chat POSTs deliberately
+skip automatic verify-and-replay to avoid sending under another account. 429
+means the per-account minute quota; 409 distinguishes closed, stopped, full and
+conflicting retry. Stop failures never claim messaging stopped or cancel a ride.

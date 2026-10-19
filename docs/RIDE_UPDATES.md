@@ -2,6 +2,12 @@
 
 ## Implemented scope
 
+The original 19 October request/acceptance behaviour below remains. The
+20 October [messaging extension](MESSAGING.md) additionally carries server-owned
+unread metadata in the same current poll, fetches open conversations and adds
+message/read/stop endpoints. “No new endpoints/tables” below describes only the
+original ride-notification feature, not private messaging.
+
 Existing AppNavigation `/api/current` polling (10 seconds, plus focus/identity
 refresh) derives updates from the authenticated current ride. No new requests,
 server endpoints, database tables or background/browser push permissions.

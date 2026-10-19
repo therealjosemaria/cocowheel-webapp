@@ -82,6 +82,19 @@ test("schema initialization removes the legacy one-request-per-ride constraint",
       definition.sql,
       /UNIQUE\s*\(\s*ride_id\s*,\s*rider_session_id\s*\)/i,
     );
+    const messageReferences = db
+      .prepare("PRAGMA foreign_key_list(ride_messages)")
+      .all() as Array<{ table: string }>;
+    assert.ok(
+      messageReferences.some(
+        (reference) => reference.table === "ride_requests",
+      ),
+    );
+    assert.ok(
+      !messageReferences.some(
+        (reference) => reference.table === "ride_requests_legacy_unique",
+      ),
+    );
     const indexes = db
       .prepare(
         "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ride_requests'",
@@ -311,19 +324,54 @@ test("retiring samples preserves history and real offers, rejects joins, and is 
     const samples = availableRides(h.db, baseTime);
     assert.equal(samples.length, 3);
     const real = publishRide(h.db, null, driverInput, baseTime);
-    const pending = requestRide(h.db, null, samples[0].rideId, riderInput, baseTime);
+    const pending = requestRide(
+      h.db,
+      null,
+      samples[0].rideId,
+      riderInput,
+      baseTime,
+    );
     const rider = findSession(h.db, pending.sessionToken, baseTime)!;
     const before = h.db.prepare("SELECT count(*) n FROM rides").get();
     assert.equal(retireSampleOffers(h.db, baseTime), 3);
-    assert.deepEqual(h.db.prepare("SELECT count(*) n FROM rides").get(), before);
-    assert.deepEqual(availableRides(h.db, baseTime).map(r => r.rideId), [real.ride.rideId]);
-    assert.equal(getRide(h.db, samples[0].rideId, rider, baseTime).request?.status, "DISCARDED");
-    assert.equal(privateHistory(h.db, pending.sessionToken, baseTime).rider.length, 1);
-    assert.throws(() => publicRidePreview(h.db, samples[1].rideId, baseTime), /RIDE_UNAVAILABLE/);
-    assert.throws(() => requestRide(h.db, null, samples[1].rideId, riderInput, baseTime), /RIDE_UNAVAILABLE/);
+    assert.deepEqual(
+      h.db.prepare("SELECT count(*) n FROM rides").get(),
+      before,
+    );
+    assert.deepEqual(
+      availableRides(h.db, baseTime).map((r) => r.rideId),
+      [real.ride.rideId],
+    );
+    assert.equal(
+      getRide(h.db, samples[0].rideId, rider, baseTime).request?.status,
+      "DISCARDED",
+    );
+    assert.equal(
+      privateHistory(h.db, pending.sessionToken, baseTime).rider.length,
+      1,
+    );
+    assert.throws(
+      () => publicRidePreview(h.db, samples[1].rideId, baseTime),
+      /RIDE_UNAVAILABLE/,
+    );
+    assert.throws(
+      () => requestRide(h.db, null, samples[1].rideId, riderInput, baseTime),
+      /RIDE_UNAVAILABLE/,
+    );
     assert.equal(retireSampleOffers(h.db, baseTime), 0);
-    assert.equal((h.db.prepare("SELECT count(*) n FROM ride_events WHERE event = 'SAMPLE_OFFER_RETIRED'").get() as {n:number}).n, 3);
-  } finally { h.close(); }
+    assert.equal(
+      (
+        h.db
+          .prepare(
+            "SELECT count(*) n FROM ride_events WHERE event = 'SAMPLE_OFFER_RETIRED'",
+          )
+          .get() as { n: number }
+      ).n,
+      3,
+    );
+  } finally {
+    h.close();
+  }
 });
 
 function sessions(h: ReturnType<typeof harness>) {
@@ -418,26 +466,77 @@ test("pickup evidence is non-blocking, immutable and retained; codes have no tim
     try {
       const flow = sessions(h);
       const id = flow.published.ride.rideId;
-      decideRequest(h.db, flow.published.sessionToken, id, flow.requested.ride.request!.requestId, "ACCEPT", baseTime);
+      decideRequest(
+        h.db,
+        flow.published.sessionToken,
+        id,
+        flow.requested.ride.request!.requestId,
+        "ACCEPT",
+        baseTime,
+      );
       const code = getRide(h.db, id, flow.rider, baseTime).coRideCode!;
-      const internal = (h.db.prepare("SELECT id FROM rides WHERE public_id = ?").get(id) as { id: string }).id;
+      const internal = (
+        h.db.prepare("SELECT id FROM rides WHERE public_id = ?").get(id) as {
+          id: string;
+        }
+      ).id;
       if (mode !== "missing") {
-        const insert = h.db.prepare("INSERT INTO live_locations (ride_id, participant, latitude, longitude, accuracy_meters, captured_at, received_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        insert.run(internal, "DRIVER", -33.87, 151.2, 10, baseTime.toISOString(), baseTime.toISOString());
-        if (mode !== "driver-only") insert.run(internal, "RIDER", mode === "near" ? -33.8701 : -34, 151.2, 20, baseTime.toISOString(), baseTime.toISOString());
+        const insert = h.db.prepare(
+          "INSERT INTO live_locations (ride_id, participant, latitude, longitude, accuracy_meters, captured_at, received_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        );
+        insert.run(
+          internal,
+          "DRIVER",
+          -33.87,
+          151.2,
+          10,
+          baseTime.toISOString(),
+          baseTime.toISOString(),
+        );
+        if (mode !== "driver-only")
+          insert.run(
+            internal,
+            "RIDER",
+            mode === "near" ? -33.8701 : -34,
+            151.2,
+            20,
+            baseTime.toISOString(),
+            baseTime.toISOString(),
+          );
       }
       const later = new Date(baseTime.getTime() + 2 * 60 * 60_000);
       assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, code);
-      assert.equal(confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later).status, "CO_RIDE_ACTIVE");
+      assert.equal(
+        confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later)
+          .status,
+        "CO_RIDE_ACTIVE",
+      );
       const evidence = adminInspector(h.db, id).pickupEvidence!;
-      assert.equal(evidence.within_250_metres, ["missing", "driver-only"].includes(mode) ? "Unknown" : mode === "near" ? "Yes" : "No");
-      if (mode === "near" || mode === "far") assert.equal(evidence.rider_gps_age_seconds, 7200);
-      assert.equal("pickupEvidence" in getRide(h.db, id, flow.rider, later), false);
-      assert.throws(() => confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later), /CO_RIDE_CODE_EXPIRED/);
+      assert.equal(
+        evidence.within_250_metres,
+        ["missing", "driver-only"].includes(mode)
+          ? "Unknown"
+          : mode === "near"
+            ? "Yes"
+            : "No",
+      );
+      if (mode === "near" || mode === "far")
+        assert.equal(evidence.rider_gps_age_seconds, 7200);
+      assert.equal(
+        "pickupEvidence" in getRide(h.db, id, flow.rider, later),
+        false,
+      );
+      assert.throws(
+        () =>
+          confirmCoRideCode(h.db, flow.published.sessionToken, id, code, later),
+        /CO_RIDE_CODE_EXPIRED/,
+      );
       cancelRide(h.db, flow.published.sessionToken, id, later);
       assert.deepEqual(adminInspector(h.db, id).pickupEvidence, evidence);
       assert.equal(adminInspector(h.db, id).locations.length, 0);
-    } finally { h.close(); }
+    } finally {
+      h.close();
+    }
   }
 });
 
@@ -496,7 +595,17 @@ test("pickup code renewal is rider-only, throttled, invalidates old code and rec
     );
     assert.match(renewed.coRideCode!, /^\d{4}$/);
     assert.notEqual(renewed.coRideCode, lockedCode);
-    assert.throws(() => confirmCoRideCode(h.db, flow.published.sessionToken, id, lockedCode, later), /CO_RIDE_CODE_INVALID/);
+    assert.throws(
+      () =>
+        confirmCoRideCode(
+          h.db,
+          flow.published.sessionToken,
+          id,
+          lockedCode,
+          later,
+        ),
+      /CO_RIDE_CODE_INVALID/,
+    );
     assert.equal(
       confirmCoRideCode(
         h.db,
@@ -518,7 +627,14 @@ test("pickup renewal rolls back code and audit together when the audit write fai
     try {
       const flow = sessions(h);
       const id = flow.published.ride.rideId;
-      decideRequest(h.db, flow.published.sessionToken, id, flow.requested.ride.request!.requestId, "ACCEPT", baseTime);
+      decideRequest(
+        h.db,
+        flow.published.sessionToken,
+        id,
+        flow.requested.ride.request!.requestId,
+        "ACCEPT",
+        baseTime,
+      );
       const later = new Date(+baseTime + 61000);
       const read = () => ({
         ride: h.db.prepare("SELECT * FROM rides WHERE public_id = ?").get(id),
@@ -526,22 +642,40 @@ test("pickup renewal rolls back code and audit together when the audit write fai
       });
       const before = read();
       const oldCode = getRide(h.db, id, flow.rider, later).coRideCode;
-      h.db.exec(`CREATE TEMP TRIGGER fail_renewal ${timing} INSERT ON ride_events
+      h.db
+        .exec(`CREATE TEMP TRIGGER fail_renewal ${timing} INSERT ON ride_events
         WHEN NEW.event = 'PICKUP_CODE_RENEWED'
         BEGIN SELECT RAISE(ABORT, 'TEST_AUDIT_FAILURE'); END`);
-      assert.throws(() => renewPickupCode(h.db, flow.requested.sessionToken, id, later), /TEST_AUDIT_FAILURE/);
+      assert.throws(
+        () => renewPickupCode(h.db, flow.requested.sessionToken, id, later),
+        /TEST_AUDIT_FAILURE/,
+      );
       assert.deepEqual(read(), before);
       assert.equal(getRide(h.db, id, flow.rider, later).coRideCode, oldCode);
       h.db.exec("DROP TRIGGER fail_renewal");
-      const renewed = renewPickupCode(h.db, flow.requested.sessionToken, id, later);
+      const renewed = renewPickupCode(
+        h.db,
+        flow.requested.sessionToken,
+        id,
+        later,
+      );
       assert.notEqual(renewed.coRideCode, oldCode);
-      const eventCount = h.db.prepare("SELECT count(*) AS n FROM ride_events WHERE event = 'PICKUP_CODE_RENEWED'").get() as { n: number };
+      const eventCount = h.db
+        .prepare(
+          "SELECT count(*) AS n FROM ride_events WHERE event = 'PICKUP_CODE_RENEWED'",
+        )
+        .get() as { n: number };
       assert.equal(eventCount.n, 1);
       const committed = read();
-      assert.throws(() => renewPickupCode(h.db, flow.requested.sessionToken, id, later), /CO_RIDE_CODE_RATE_LIMITED/);
+      assert.throws(
+        () => renewPickupCode(h.db, flow.requested.sessionToken, id, later),
+        /CO_RIDE_CODE_RATE_LIMITED/,
+      );
       assert.deepEqual(read(), committed);
       assert.equal(renewed.payId, undefined);
-    } finally { h.close(); }
+    } finally {
+      h.close();
+    }
   }
 });
 

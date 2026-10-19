@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 function updated() {
   window.dispatchEvent(new Event("cocowheels:ride-updated"));
@@ -10,9 +11,13 @@ function updated() {
 }
 
 export function Message({ text, close }: { text: string; close: () => void }) {
+  const dialog = useRef<HTMLElement | null>(null);
+  useDialogFocus(dialog, close);
   return (
     <div className="cancel-prompt-backdrop">
       <section
+        ref={dialog}
+        tabIndex={-1}
         className="cancel-prompt"
         role="dialog"
         aria-modal="true"

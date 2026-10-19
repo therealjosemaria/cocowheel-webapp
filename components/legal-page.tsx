@@ -4,10 +4,12 @@ export default function LegalPage({
   title,
   children,
   updated,
+  revision,
 }: {
   title: string;
   children: ReactNode;
   updated?: boolean;
+  revision?: { date: string; label: string };
 }) {
   return (
     <section className="activity-page">
@@ -16,8 +18,13 @@ export default function LegalPage({
         <div className="legal-content">
           <p className="legal-updated">
             Last updated:{" "}
-            <time dateTime={updated ? "2026-10-19" : "2026-10-16"}>
-              {updated ? "19 October 2026" : "16 October 2026"}
+            <time
+              dateTime={
+                revision?.date ?? (updated ? "2026-10-19" : "2026-10-16")
+              }
+            >
+              {revision?.label ??
+                (updated ? "19 October 2026" : "16 October 2026")}
             </time>
           </p>
           {children}

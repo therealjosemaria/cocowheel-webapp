@@ -5,7 +5,10 @@ export const metadata: Metadata = { title: "Privacy | GUMWHEEL" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated>
+    <LegalPage
+      title="Privacy policy"
+      revision={{ date: "2026-10-20", label: "20 October 2026" }}
+    >
       <p>
         This notice explains how the GUMWHEEL university carpool pilot handles
         your information. For privacy questions, contact{" "}
@@ -71,6 +74,18 @@ export default function PrivacyPage() {
         possibility of inferring a score from changes in an average. Rating
         records are retained with ride history, without an automatic deletion
         schedule.
+      </p>
+      <h2>Private messages</h2>
+      <p>
+        Optional messages are stored with their request, sender, timestamps and
+        read position to help participants arrange the ride. Only that driver
+        and rider can access the conversation through the app while their
+        request or ride is open. Either can stop further messages without
+        cancelling the ride. Conversations disappear from participant access
+        when the request or ride ends; they are retained on our server without
+        an automatic deletion schedule. They are not end-to-end encrypted;
+        authorised operators may access stored records for support and safety.
+        Avoid sharing sensitive information or login codes in messages.
       </p>
       <h2>Service providers</h2>
       <p>

@@ -2808,6 +2808,31 @@ p {
   gap: 16px;
 }
 .university-form > button { margin: 0; }
+.ride-messages { border: 1px solid var(--line); border-radius: var(--radius-control); margin: 16px 0; background: var(--surface); }
+.ride-messages > summary { padding: 12px 16px; min-height: 44px; cursor: pointer; font-size: var(--text-small); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.ride-message-body { padding: 0 16px 16px; display: grid; gap: 12px; }
+.ride-message-body p { margin: 0; font-size: var(--text-small); }
+.ride-message-body form, .ride-message-body label { display: grid; gap: 8px; }
+.ride-message-body form > button { margin: 0; min-height: 44px; }
+.ride-message-body textarea { width: 100%; resize: vertical; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); }
+.message-suggestion { font-weight: var(--weight-regular); font-size: var(--text-small); }
+.message-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; max-height: 320px; overflow-y: auto; }
+.message-list li { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); overflow-wrap: anywhere; }
+.message-list .message-mine { background: var(--surface-subtle); }
+.message-list p { white-space: pre-wrap; margin: 4px 0; }
+.message-read-marker { display: block; height: 1px; }
+.message-list span, .message-list time { font-size: var(--text-caption); color: var(--muted); }
+.ride-report { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 8px 16px; font-size: var(--text-caption); }
+.ride-report a { min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; }
+.ride-report span { color: var(--muted); }
+.message-ride-actions { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--text-small); text-decoration: underline; }
+.message-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.message-actions button { flex: 1 1 150px; }
+.message-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.message-footer .ride-report { margin: 0; }
+.guest-identity-row .profile-verification { grid-column: 1 / -1; }
+.message-stop-dialog { margin: auto; border: 1px solid var(--line); }
+.message-stop-dialog::backdrop { background: rgb(17 24 39 / 0.4); }
 .university-form .secondary:disabled {
   opacity: 1;
   background: var(--line);

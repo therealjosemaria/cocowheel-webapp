@@ -2,6 +2,7 @@
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
+import RideMessages, { ReportConcern } from "./ride-messages";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 
 import { participantStatusLabel } from "@/lib/ride-status";
@@ -863,6 +864,20 @@ export default function RidePreviewClient({
               />
             ) : null}
             <div className="ride-preview-summary">
+              {privateRide?.conversations
+                ?.filter(
+                  (c) =>
+                    !driverOwned ||
+                    c.requestId === acceptedDriverRequest?.requestId,
+                )
+                .map((c) => (
+                  <RideMessages
+                    key={c.requestId}
+                    rideId={rideId}
+                    summary={c}
+                    rider={!driverOwned}
+                  />
+                ))}
               <dl className="ride-preview-fields">
                 <div>
                   <dt>
@@ -1017,6 +1032,8 @@ export default function RidePreviewClient({
                 {!readOnly &&
                 !["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status) ? (
                   <div
+                    id="ride-actions"
+                    tabIndex={-1}
                     className={`preview-field-action${
                       !driverOwned ? " preview-field-action-wide" : ""
                     }`}
@@ -1080,6 +1097,7 @@ export default function RidePreviewClient({
                 </dl>
               ) : null}
             </div>
+            {privateRide ? <ReportConcern rideId={rideId} /> : null}
             {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
                 <h2>Rider requests</h2>
@@ -1228,6 +1246,16 @@ export default function RidePreviewClient({
                         </dd>
                       </div>
                     </dl>
+                    {privateRide?.conversations
+                      ?.filter((c) => c.requestId === request.requestId)
+                      .map((c) => (
+                        <RideMessages
+                          key={c.requestId}
+                          rideId={rideId}
+                          summary={c}
+                          rider={false}
+                        />
+                      ))}
                   </article>
                 ))}
               </section>

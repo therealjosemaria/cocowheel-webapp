@@ -2,6 +2,22 @@
 
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
+Optional [private messaging](docs/MESSAGING.md) connects a driver and each
+requesting rider before and after acceptance. Only participants can read/send;
+request/ride closure removes access without deleting stored conversations.
+Unread counts reuse Profile's active-ride card and existing visible-page polling.
+No attachments, typing indicators, push delivery or new retention cleanup.
+Either participant can stop messages independently of withdrawing/cancelling.
+Ride details also offer a clearly labelled email-based Report a concern link.
+Profile verification copy is “University email verified” (approved email/guest
+exceptions: “Email verified”), not identity, licence or enrolment verification.
+Schema/API activation is separate from frontend deployment; see the
+[dated implementation checks](docs/MESSAGING_CHECK_2026-10-20.md).
+Messaging API/schema activated on 20 October 2026 at 03:24 AEDT after a protected
+SQLite backup and zero-active-ride preflight. Local/public-proxy health and
+unauthenticated messaging denial verified; production two-party exchange and
+frontend rollout remain separate checks.
+
 Mutual [ride ratings](docs/RATINGS.md) are optional after a completed,
 pickup-verified real ride, with a seven-day submission window. Only averages and
 counts are shared, after ten released ratings in each role; individual scores

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { rideUpdates } from "@/lib/ride-updates";
+import { conversationTarget } from "@/lib/messaging-types";
 import RideUpdateNotice, { readSeen } from "./ride-update-notice";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { requestJson } from "@/lib/api-transport";
@@ -26,6 +27,9 @@ export default function AppNavigation() {
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
+  const messageThreads =
+    activeRide?.ride.conversations?.filter((c) => c.unread > 0) ?? [];
+  const messageCount = messageThreads.reduce((n, c) => n + c.unread, 0);
   const updates = useMemo(
     () => rideUpdates(activeRide).filter((u) => !seen.includes(u.key)),
     [activeRide, seen],
@@ -153,11 +157,13 @@ export default function AppNavigation() {
     const timer = window.setInterval(refresh, 10_000);
     window.addEventListener("focus", refresh);
     window.addEventListener("cocowheels:identity-changed", refresh);
+    window.addEventListener("cocowheels:messages-updated", refresh);
     return () => {
       window.clearTimeout(initial);
       window.clearInterval(timer);
       window.removeEventListener("focus", refresh);
       window.removeEventListener("cocowheels:identity-changed", refresh);
+      window.removeEventListener("cocowheels:messages-updated", refresh);
     };
   }, [loadIdentities]);
 
@@ -277,7 +283,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Profile: ${identityLabel}${updates.length ? `, ${updates.length} unread ride update${updates.length === 1 ? "" : "s"}` : ""}`}
+          aria-label={`Profile: ${identityLabel}${updates.length + messageCount ? `, ${updates.length + messageCount} unread updates` : ""}`}
           onClick={() => {
             clearTimeout(identityCloseTimer.current);
             setOpen(false);
@@ -292,9 +298,11 @@ export default function AppNavigation() {
             <circle cx="12" cy="8" r="3.5" />
             <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
           </svg>
-          {updates.length > 0 && (
+          {updates.length + messageCount > 0 && (
             <span className="profile-update-badge" aria-hidden="true">
-              {updates.length > 99 ? "99+" : updates.length}
+              {updates.length + messageCount > 99
+                ? "99+"
+                : updates.length + messageCount}
             </span>
           )}
         </button>
@@ -308,6 +316,11 @@ export default function AppNavigation() {
             <div className="guest-identity-row">
               <span>UniKey</span>
               <b>{guestName}</b>
+              <span className="profile-verification">
+                {/^[a-z]{4}\d{4}$/.test(guestName)
+                  ? "University email verified"
+                  : "Email verified"}
+              </span>
             </div>
           ) : (
             <>
@@ -342,12 +355,26 @@ export default function AppNavigation() {
               item={activeRide}
               compact
               notification={
-                updates[0]?.driver
-                  ? `${updates.length} new rider request${updates.length === 1 ? "" : "s"}`
-                  : updates[0]?.message
+                messageCount
+                  ? `${messageCount} unread message${messageCount === 1 ? "" : "s"}`
+                  : updates[0]?.driver
+                    ? `${updates.length} new rider request${updates.length === 1 ? "" : "s"}`
+                    : updates[0]?.message
               }
-              notificationTarget={updates[0]?.target}
-              onClick={() => setIdentityOpen(false)}
+              notificationTarget={
+                messageThreads[0]
+                  ? conversationTarget(messageThreads[0].requestId)
+                  : updates[0]?.target
+              }
+              onClick={() => {
+                setIdentityOpen(false);
+                if (messageThreads[0])
+                  window.dispatchEvent(
+                    new CustomEvent("cocowheels:open-conversation", {
+                      detail: conversationTarget(messageThreads[0].requestId),
+                    }),
+                  );
+              }}
             />
           )}
           {guestName && (

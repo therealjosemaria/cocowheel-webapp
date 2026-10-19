@@ -6,6 +6,12 @@ import {
 import type { Db } from "./core";
 import { ratingSummary, submitRating } from "./ratings";
 import {
+  readConversation,
+  sendMessage,
+  markMessagesRead,
+  stopMessages,
+} from "./messaging";
+import {
   beginRide,
   renewPickupCode,
   advanceSampleRide,
@@ -131,7 +137,17 @@ function errorStatus(error: unknown) {
     ["UNIVERSITY_VERIFICATION_REQUIRED", "VERIFICATION_INVALID"].includes(code)
   )
     return 401;
-  if (code === "VERIFICATION_RATE_LIMITED") return 429;
+  if (code === "VERIFICATION_RATE_LIMITED" || code === "MESSAGE_RATE_LIMITED")
+    return 429;
+  if (
+    [
+      "CONVERSATION_CLOSED",
+      "MESSAGING_STOPPED",
+      "MESSAGE_CONFLICT",
+      "CONVERSATION_FULL",
+    ].includes(code)
+  )
+    return 409;
   if (["EMAIL_NOT_CONFIGURED", "EMAIL_SEND_FAILED"].includes(code)) return 503;
   if (["ADMIN_SESSION_REQUIRED", "ADMIN_LOGIN_INVALID"].includes(code))
     return 401;
@@ -476,6 +492,54 @@ export function createApiServer(
       }
       const parts = pathParts(request.url);
       const token = requestToken(request);
+      if (
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "conversations" &&
+        [5, 6].includes(parts.length)
+      ) {
+        const session = requireUniversitySession(database, token);
+        if (request.method === "GET" && parts.length === 5)
+          writeJson(
+            response,
+            200,
+            readConversation(database, parts[2], parts[4], session.id),
+            cors,
+          );
+        else if (request.method === "POST") {
+          const body = await readJson(request);
+          // Recheck after awaiting the body: logout/expiry may have happened.
+          requireUniversitySession(database, token);
+          if (parts.length === 5)
+            writeJson(
+              response,
+              200,
+              sendMessage(
+                database,
+                parts[2],
+                parts[4],
+                session.id,
+                body.text,
+                body.clientId,
+              ),
+              cors,
+            );
+          else if (parts[5] === "read") {
+            markMessagesRead(
+              database,
+              parts[2],
+              parts[4],
+              session.id,
+              body.lastId,
+            );
+            writeJson(response, 200, { ok: true }, cors);
+          } else if (parts[5] === "stop") {
+            stopMessages(database, parts[2], parts[4], session.id);
+            writeJson(response, 200, { ok: true }, cors);
+          } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        } else writeJson(response, 405, { error: "METHOD_NOT_ALLOWED" }, cors);
+        return;
+      }
       if (
         request.method === "POST" &&
         parts.length === 4 &&
@@ -1049,8 +1113,13 @@ export function createApiServer(
         });
       }
       if (error instanceof VerificationRateLimitError) {
-        response.setHeader('Retry-After', String(error.retryAfterSeconds));
-        writeJson(response, errorStatus(error), { error: code, retryAfterSeconds: error.retryAfterSeconds }, cors);
+        response.setHeader("Retry-After", String(error.retryAfterSeconds));
+        writeJson(
+          response,
+          errorStatus(error),
+          { error: code, retryAfterSeconds: error.retryAfterSeconds },
+          cors,
+        );
       } else writeJson(response, errorStatus(error), { error: code }, cors);
     }
   });

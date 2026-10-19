@@ -145,3 +145,16 @@ Sample payments: Town Hall uses Mobile `0491 570 006` (an [ACMA fictional-use nu
 - Test both roles, mobile and desktop, pending/accepted/picked-up/terminal states and missing/stale data for relevant changes.
 - Keep status wording in `lib/ride-status.ts`; reuse `PoorFitPrompt`, `CancelPrompt` and journey controls.
 - Run relevant tests, lint and build. Commit and push requested changes, and report actual deployment status rather than assuming a successful push means deployment completed.
+# Private messages — 20 October 2026 addition
+
+Request-scoped chat uses a native expandable section and existing small text,
+surface/line/radius tokens. Body text stays regular; only the summary is semibold.
+Messages are plain text; no read receipts, typing animations or extra colour
+palette. Send/Stop reuse primary/secondary buttons with at least 44px targets;
+they wrap on narrow screens. Report and Ride actions remain explicit links.
+Stop confirmation uses the shared cancel-prompt styling and native dialog focus
+handling, with KEEP MESSAGING before STOP MESSAGING.
+Existing cancellation/error modals retain their layout with keyboard focus
+containment, idle Escape dismissal and focus return to the trigger.
+No automatic page scrolling on arrival; only an explicit Profile/anchor action navigates. Use the accurate
+“University email verified”, not “Verified driver/student”. See MESSAGING.md.
