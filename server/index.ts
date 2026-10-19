@@ -4,6 +4,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import type { Db } from "./core";
+import { ratingSummary, submitRating } from "./ratings";
 import {
   beginRide,
   renewPickupCode,
@@ -121,6 +122,9 @@ async function readJson(request: IncomingMessage): Promise<Json> {
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (code === "RATING_WINDOW_CLOSED") return 410;
+  if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
+    return 409;
   if (
     ["UNIVERSITY_VERIFICATION_REQUIRED", "VERIFICATION_INVALID"].includes(code)
   )
@@ -468,6 +472,32 @@ export function createApiServer(
       }
       const parts = pathParts(request.url);
       const token = requestToken(request);
+      if (
+        request.method === "POST" &&
+        parts.length === 4 &&
+        parts[0] === "api" &&
+        parts[1] === "rides" &&
+        parts[3] === "ratings"
+      ) {
+        response.setHeader("Cache-Control", "private, no-store");
+        const session = requireUniversitySession(database, token);
+        const body = await readJson(request);
+        writeJson(
+          response,
+          200,
+          {
+            rating: submitRating(
+              database,
+              parts[2],
+              session.id,
+              body.score,
+              now,
+            ),
+          },
+          cors,
+        );
+        return;
+      }
       if (parts[0] === "api" && parts[1] === "university") {
         response.setHeader("Cache-Control", "private, no-store");
         if (request.method === "GET" && parts[2] === "session") {
@@ -478,6 +508,10 @@ export function createApiServer(
             {
               unikey: session.unikey,
               canAdmin: session.unikey === ADMIN_UNIKEY,
+              ratings: {
+                driver: ratingSummary(database, session.id, "DRIVER", now),
+                rider: ratingSummary(database, session.id, "RIDER", now),
+              },
             },
             cors,
           );

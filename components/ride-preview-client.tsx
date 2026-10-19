@@ -1,4 +1,5 @@
 "use client";
+import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 
@@ -39,6 +40,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  driverRating?: Ride["driverRating"];
   isSample?: boolean;
   driverLocation?: Ride["driverLocation"];
   rideId: string;
@@ -77,6 +79,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
     isSample: ride.isSample,
     driverLocation: ride.driverLocation,
     driverAlias: ride.driverAlias,
+    driverRating: ride.driverRating,
     priceAud: ride.priceAud,
     scheduledDepartureAt: ride.scheduledDepartureAt,
     expiresAt: ride.expiresAt,
@@ -841,6 +844,13 @@ export default function RidePreviewClient({
             {!readOnly && privateRide ? (
               <PickupConfirmation ride={privateRide} driver={driverOwned} />
             ) : null}
+            {privateRide ? (
+              <RideRating
+                key={privateRide.rideId}
+                rideId={privateRide.rideId}
+                state={privateRide.rating}
+              />
+            ) : null}
             <div className="ride-preview-summary">
               <dl className="ride-preview-fields">
                 <div>
@@ -896,7 +906,16 @@ export default function RidePreviewClient({
                       {driverOwned ? "Estimated duration" : "Driver"}
                     </RideFieldLabel>
                   </dt>
-                  <dd>{driverOwned ? estimatedDuration : ride.driverAlias}</dd>
+                  <dd>
+                    {driverOwned ? (
+                      estimatedDuration
+                    ) : (
+                      <>
+                        {ride.driverAlias}{" "}
+                        <RatingBadge summary={ride.driverRating} />
+                      </>
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt>
@@ -1063,7 +1082,10 @@ export default function RidePreviewClient({
                         <dt>
                           <RideFieldLabel icon="rider">Rider</RideFieldLabel>
                         </dt>
-                        <dd>{request.riderAlias}</dd>
+                        <dd>
+                          {request.riderAlias}{" "}
+                          <RatingBadge summary={request.rating} />
+                        </dd>
                       </div>
                       <div>
                         <dt>

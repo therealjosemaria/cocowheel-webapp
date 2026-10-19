@@ -1,0 +1,59 @@
+# Mutual ride ratings
+
+Implemented in the ratings commit series based on `fe0a53d` (19 October 2026).
+Production API activation is separate: a frontend push does not migrate/restart
+the Pi API. Existing trips must not be interrupted to activate ratings.
+
+## Rules
+
+- Optional integer 1–5 stars; no comments, edits or automatic sanctions.
+- Only the driver and accepted rider of a completed, pickup-verified, non-sample
+  ride can rate each other. Cancelled/expired rides, unsuccessful requests and
+  samples are ineligible. Samples never contribute to reputation.
+- One score per participant per ride, keyed by stable account principal, not
+  device/session token. Server derives recipient and role, ignoring supplied IDs.
+- Window: completion inclusive to completion + seven days exclusive. Same-score
+  retries are idempotent even after expiry; different-score retries cannot edit.
+- Scores enter aggregates when both submit, or seven days after completion.
+  Mutual release is transactional; deadline release is timestamp-based on reads,
+  requiring no scheduled worker.
+- **Ten released ratings received per role**, not merely ten completed rides,
+  are required to reveal any average/count. Unrated rides do not count. Driver and
+  rider averages are separate. All released scores have equal weight; display one
+  decimal and count. No below-threshold progress/count is exposed.
+- No individual score/author endpoint or score in shared ride events. This reduces
+  attribution risk; it cannot guarantee anonymity from aggregate changes or repeat
+  partners. Anti-farming/collusion detection is not implemented.
+
+## Storage/API
+
+`ride_ratings`: ride, rater/recipient principals, recipient role, score, submission
+and release timestamps. Unique constraints enforce one rater and recipient role
+per ride; indexed by recipient/role/release. Schema initialization is additive and
+idempotent. Database backups include ratings. Retained with history, no new
+automatic deletion schedule or admin rating inspector.
+
+`POST /api/rides/:publicId/ratings` accepts `{ "score": 1..5 }`, requires verified
+university authentication, existing origin checks and participant authorization.
+Returns own `{ rating: { canRate, submitted, targetRole, closesAt } }`, no score,
+with no-store. Invalid score: 400; unverified: 401; nonparticipant: 403;
+already-submitted/ineligible: 409; window closed: 410.
+
+Participant ride responses add own eligibility/submission state. Discovery and
+preview responses include driver summaries; driver request cards include rider
+summaries. University session adds `ratings.driver` and `ratings.rider`. Summary
+is `null` below threshold, otherwise `{ average, count }`.
+
+## UI/failures
+
+Shared completed-ride view: optional form below map legend, above details; native
+radio stars with 44px targets, keyboard navigation and separate submit button.
+Selection is not submission. Shared transport/error modal preserves selection
+for retry. Success becomes acknowledgement; reload reads server state. Expired,
+unrated windows have no form. Chooser/request/profile summaries share one compact
+badge. Profile uses “Not enough ratings yet” below threshold. Reuse existing
+colour, type and button tokens, no competing bold body or new colour palette.
+
+See [dated checks](RATINGS_CHECK_2026-10-19.md). Previous capacity tests predate
+the new indexed aggregate queries; production history-scale performance remains
+unbenchmarked. Real-device Safari and production deployment checks are separate.

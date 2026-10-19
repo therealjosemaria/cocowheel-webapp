@@ -9,6 +9,8 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
+import { ratingSummary, rideRatingState } from "./ratings";
+import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
 import {
   atDropoff,
@@ -162,6 +164,7 @@ type LocationRow = {
 };
 
 export type Candidate = {
+  driverRating?: RatingSummary;
   isSample?: boolean;
   driverLocation?: PublicLocation;
   rideId: string;
@@ -178,6 +181,7 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type AvailabilityOffer = {
+  driverRating?: RatingSummary;
   rideId: string;
   driverAlias: string;
   priceAud: number;
@@ -189,6 +193,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  driverRating?: RatingSummary;
   paymentMethod?: "PAYID" | "CASH";
   isSample?: boolean;
   driverLocation?: PublicLocation;
@@ -203,6 +208,8 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  driverRating?: RatingSummary;
+  rating?: RideRatingState;
   paymentMethod?: "PAYID" | "CASH";
   pickupEstablished?: boolean;
   tracking?: {
@@ -223,6 +230,7 @@ export type RideView = {
   request?: RiderRequestView;
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
+    rating?: RatingSummary;
     alias: string;
     pickup: Pin;
     destination: Pin;
@@ -230,6 +238,7 @@ export type RideView = {
     directionFit: DirectionFit;
   };
   requests?: Array<{
+    rating?: RatingSummary;
     requestId: string;
     riderAlias: string;
     pickup: Pin;
@@ -1057,6 +1066,9 @@ export function searchRides(
         isSample: Boolean(row.is_sample),
         driverLocation: locationFor(db, row.id, "DRIVER", now),
         driverAlias: row.driver_alias,
+        driverRating: row.is_sample
+          ? null
+          : ratingSummary(db, row.driver_session_id, "DRIVER", now),
         priceAud: row.price_aud,
         scheduledDepartureAt: row.scheduled_departure_at,
         expiresAt: rideOfferExpiryAt(row),
@@ -1119,6 +1131,7 @@ export function availableRides(
   ).map((ride) => ({
     rideId: ride.public_id,
     driverAlias: ride.driver_alias,
+    driverRating: ratingSummary(db, ride.driver_session_id, "DRIVER", now),
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
     expiresAt: rideOfferExpiryAt(ride),
@@ -1161,6 +1174,9 @@ export function publicRidePreview(
   return {
     rideId: ride.public_id,
     driverAlias: ride.driver_alias,
+    driverRating: ride.is_sample
+      ? null
+      : ratingSummary(db, ride.driver_session_id, "DRIVER", now),
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
     expiresAt: rideOfferExpiryAt(ride),
@@ -1971,6 +1987,9 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
       : locationFor(db, row.id, "DRIVER", now),
     status: row.status,
     driverAlias: row.driver_alias,
+    driverRating: row.is_sample
+      ? null
+      : ratingSummary(db, row.driver_session_id, "DRIVER", now),
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
     expiresAt: rideOfferExpiryAt(row),
@@ -1990,6 +2009,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     rider: selected
       ? {
           alias: selected.rider_alias,
+          rating: ratingSummary(db, selected.rider_session_id, "RIDER", now),
           pickup: {
             latitude: selected.pickup_latitude,
             longitude: selected.pickup_longitude,
@@ -2007,6 +2027,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     requests: requests.map((request) => ({
       requestId: request.id,
       riderAlias: request.rider_alias,
+      rating: ratingSummary(db, request.rider_session_id, "RIDER", now),
       pickup: {
         latitude: request.pickup_latitude,
         longitude: request.pickup_longitude,
@@ -2058,6 +2079,9 @@ function riderView(
     rideId: row.public_id,
     status: row.status,
     driverAlias: row.driver_alias,
+    driverRating: row.is_sample
+      ? null
+      : ratingSummary(db, row.driver_session_id, "DRIVER", now),
     priceAud: row.price_aud,
     scheduledDepartureAt: row.scheduled_departure_at,
     expiresAt: rideOfferExpiryAt(row),
@@ -2131,6 +2155,14 @@ function withTracking(
   now: Date,
 ): RideView {
   view.paymentMethod = row.driver_payid ? "PAYID" : "CASH";
+  if (row.status === "COMPLETED" && row.accepted_request_id) {
+    const principal =
+      role === "DRIVER"
+        ? row.driver_session_id
+        : acceptedRequest(db, row)?.rider_session_id;
+    if (principal)
+      view.rating = rideRatingState(db, row.public_id, principal, now);
+  }
   view.pickupEstablished = Boolean(row.co_ride_started_at);
   if (!["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(row.status))
     return view;

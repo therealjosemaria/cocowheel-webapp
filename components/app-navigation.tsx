@@ -1,4 +1,6 @@
 "use client";
+import { RatingBadge } from "./ride-rating";
+import type { RatingSummary } from "@/lib/rating-types";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +17,10 @@ export default function AppNavigation() {
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
   const [canAdmin, setCanAdmin] = useState(false);
+  const [ratings, setRatings] = useState<{
+    driver: RatingSummary;
+    rider: RatingSummary;
+  } | null>(null);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
@@ -70,9 +76,11 @@ export default function AppNavigation() {
       const result = await cocowheelsApi<{
         unikey: string;
         canAdmin: boolean;
+        ratings?: { driver: RatingSummary; rider: RatingSummary };
       }>("/api/university/session");
       setGuestName(result.unikey);
       setCanAdmin(result.canAdmin === true);
+      setRatings(result.ratings ?? null);
       const activity = await cocowheelsApi<{
         current: ActiveRide | null;
         currents: ActiveRide[];
@@ -87,6 +95,7 @@ export default function AppNavigation() {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
         setCanAdmin(false);
+        setRatings(null);
         setActiveRide(null);
         window.dispatchEvent(
           new CustomEvent("cocowheels:current-updated", { detail: [] }),
@@ -266,6 +275,18 @@ export default function AppNavigation() {
                 Verify UniKey
               </button>
             </>
+          )}
+          {guestName && ratings && (
+            <div className="profile-ratings">
+              <div>
+                As a driver <RatingBadge summary={ratings.driver} />
+                {!ratings.driver && <span>Not enough ratings yet</span>}
+              </div>
+              <div>
+                As a rider <RatingBadge summary={ratings.rider} />
+                {!ratings.rider && <span>Not enough ratings yet</span>}
+              </div>
+            </div>
           )}
           {guestName && activeRide && (
             <ActiveRideLink

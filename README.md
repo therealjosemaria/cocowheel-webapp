@@ -2,6 +2,13 @@
 
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
+Mutual [ride ratings](docs/RATINGS.md) are optional after a completed,
+pickup-verified real ride, with a seven-day submission window. Only averages and
+counts are shared, after ten released ratings in each role; individual scores
+remain hidden from participants. Both submit or the window closes before release.
+See [rating checks](docs/RATINGS_CHECK_2026-10-19.md) for tested scope and deployment
+limitations. Ratings require the updated API/schema, not just a frontend push.
+
 Drivers publish fixed-price rides; riders request to join; the driver accepts one rider and confirms pickup with a four-digit code. Payments are cashless PayID, not processed or verified by the app. Pickup codes have no time-based expiry while the ride remains eligible, but are single-use and invalidated by renewal or closure.
 
 This repository is intentionally independent from other projects: it has its own API, SQLite database, guest-session cookies, deployment configuration, tunnel target, and environment variables.

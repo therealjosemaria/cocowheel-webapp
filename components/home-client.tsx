@@ -1,4 +1,5 @@
 "use client";
+import { RatingBadge } from "./ride-rating";
 import { Message } from "./ride-journey-controls";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
@@ -1852,7 +1853,10 @@ function RideSelection({
                     </svg>
                   </span>
                   <span className="ride-option-main">
-                    <strong>{candidate.driverAlias}</strong>
+                    <strong>
+                      {candidate.driverAlias}{" "}
+                      <RatingBadge summary={candidate.driverRating} />
+                    </strong>
                     <small>
                       {pickupMinutes !== null
                         ? `${pickupMinutes} min away`

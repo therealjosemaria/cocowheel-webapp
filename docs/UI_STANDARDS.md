@@ -4,6 +4,18 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+### Mutual rating controls (19 October 2026)
+
+Use the shared completed-ride rating form below the map legend and above details.
+Five native radio stars have 44px touch targets, visible keyboard focus and a
+separate Submit rating button. Heading uses section/semibold; explanatory copy
+uses small/regular; colours and controls reuse existing tokens. Errors use the
+existing Message modal. Never expose individual received scores or counts below
+the threshold; use the shared RatingBadge for visible averages in chooser,
+requests and profile. See [ratings](RATINGS.md) for eligibility/privacy rules.
+Profile panel width also reserves space for the adjacent mobile menu button so
+the panel stays within the 320px viewport; desktop remains capped at 280px.
+
 - Route legends list Your route before Driver route. All ongoing status values use regular-weight text with the same near-black → grey → near-black pulse over three seconds and a restrained 3px, 20%-opacity shadow at its midpoint. No bold, strong glow, fading, movement or changing font weight. Reserve blue/orange for routes, not statuses. Status text can be activated to pause/resume animation and respects reduced-motion settings. Completed and all other terminal states remain static dark grey. Keep the wording visible; never communicate status by colour alone.
 - Destination flags retain their true coordinates: driver orange ring, rider blue ring, matching the routes. Overlapping finish markers use the same transparency as overlapping car/person markers, never side-by-side displacement. Labels prefer their existing above-marker placement, choosing another side when needed to reduce collisions or edge clipping; shifted labels have subtle location connectors and retain the joined ETA/address design.
 - Maps use shared route styles: rider blue, driver dark orange, both 7px with identical opacity; legends use the same CSS colour tokens. Car, person and checkered-finish markers are matching 32px black circles with 21px white symbols. Preserve labelled legends and overlapping-marker transparency.

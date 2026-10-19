@@ -154,3 +154,18 @@ CREATE TABLE IF NOT EXISTS location_sources (
   token_hash TEXT NOT NULL,
   PRIMARY KEY (ride_id, participant, principal_id)
 );
+
+CREATE TABLE IF NOT EXISTS ride_ratings (
+  ride_id TEXT NOT NULL REFERENCES rides(id),
+  rater_id TEXT NOT NULL REFERENCES guest_sessions(id),
+  recipient_id TEXT NOT NULL REFERENCES guest_sessions(id),
+  recipient_role TEXT NOT NULL CHECK (recipient_role IN ('DRIVER', 'RIDER')),
+  score INTEGER NOT NULL CHECK (typeof(score) = 'integer' AND score BETWEEN 1 AND 5),
+  created_at TEXT NOT NULL,
+  release_at TEXT NOT NULL,
+  PRIMARY KEY (ride_id, rater_id),
+  UNIQUE (ride_id, recipient_role),
+  CHECK (rater_id <> recipient_id)
+);
+CREATE INDEX IF NOT EXISTS ride_ratings_recipient_index
+  ON ride_ratings(recipient_id, recipient_role, release_at);

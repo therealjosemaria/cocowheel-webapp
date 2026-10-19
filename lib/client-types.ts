@@ -1,3 +1,4 @@
+import type { RatingSummary, RideRatingState } from "./rating-types";
 export type Pin = {
   latitude: number;
   longitude: number;
@@ -26,6 +27,7 @@ export type Location = {
   stale: boolean;
 };
 export type Candidate = {
+  driverRating?: RatingSummary;
   isSample?: boolean;
   driverLocation?: Location;
   rideId: string;
@@ -42,6 +44,8 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type Ride = {
+  driverRating?: RatingSummary;
+  rating?: RideRatingState;
   paymentMethod?: "PAYID" | "CASH";
   pickupEstablished?: boolean;
   tracking?: {
@@ -72,6 +76,7 @@ export type Ride = {
   };
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
+    rating?: RatingSummary;
     alias: string;
     pickup: Pin;
     destination: Pin;
@@ -79,6 +84,7 @@ export type Ride = {
     directionFit: "GOOD" | "POOR";
   };
   requests?: Array<{
+    rating?: RatingSummary;
     requestId: string;
     riderAlias: string;
     pickup: Pin;
