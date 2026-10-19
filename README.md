@@ -116,6 +116,13 @@ email or encryption credentials. See [.env.example](.env.example).
 
 ## Account, session and authorization model
 
+Login rate-limit messages now report the server's remaining wait for the rejecting
+limit rather than always saying 15 minutes. All sending/verification limits remain
+unchanged; old APIs without retry metadata receive neutral wait wording. See
+[login rules](UNIVERSITY-LOGIN.md) for response fields and deployment dependency.
+The API update was activated at 00:28 AEDT on 20 October 2026 with no active rides;
+local/proxied health passed. See [message checks](docs/LOGIN_WAIT_MESSAGES_2026-10-20.md).
+
 See [UNIVERSITY-LOGIN.md](UNIVERSITY-LOGIN.md) for precise OTP rules and delivery.
 Inbox verification proves mailbox access, not enrolment, identity or driver fitness.
 

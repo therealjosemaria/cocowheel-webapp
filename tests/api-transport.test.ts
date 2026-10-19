@@ -10,6 +10,13 @@ import {
 } from "../lib/api-transport";
 
 const originalFetch = globalThis.fetch;
+test('verification retry metadata survives transport without guessing a wait', async () => {
+  for (const value of [55, 780, undefined, -1, '60']) {
+    globalThis.fetch = async () => Response.json({error: 'VERIFICATION_RATE_LIMITED', retryAfterSeconds: value}, {status:429});
+    await assert.rejects(requestJson('/api/university/code'), (e: unknown) =>
+      e instanceof ApiError && e.retryAfterSeconds === (typeof value === 'number' && value > 0 ? value : undefined));
+  }
+});
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });

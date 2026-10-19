@@ -68,6 +68,16 @@ and 100 sends globally per hour. Global limits deliberately avoid trusting
 spoofable forwarded IP headers. Provider acceptance does not guarantee inbox
 delivery; perform a real inbox test after sender configuration.
 
+Rate-limit responses retain HTTP 429 and `VERIFICATION_RATE_LIMITED`, now with
+`retryAfterSeconds` and `Retry-After`, rounded up from the rejecting bucket's
+remaining lifetime. The dialog shows seconds below one minute and rounded-up
+minutes otherwise, instead of a blanket 15-minute wait. This is a snapshot at
+rejection, not a live countdown. If an older API omits metadata, use “Please wait
+a little before trying again.” No limits, code expiry or resend rules changed.
+When multiple buckets are exhausted, the existing check order is preserved;
+a later retry can encounter a different limit. API deployment/restart is needed
+for precise times; the updated frontend safely handles older API responses.
+
 Tests inject an in-memory mail sender, covering the HTTP verification flow,
 expiry, replay/guess limits, cookie transport, API gating, shared roles/history,
 and the allowlisted email with identical account-wide role restrictions.

@@ -37,6 +37,7 @@ import {
 import db from "./db";
 import {
   requestUniversityCode,
+  VerificationRateLimitError,
   ADMIN_UNIKEY,
   verifyUniversityCode,
   requireUniversitySession,
@@ -1047,7 +1048,10 @@ export function createApiServer(
           code: /^[A-Z][A-Z0-9_]{0,79}$/.test(code) ? code : "INTERNAL_ERROR",
         });
       }
-      writeJson(response, errorStatus(error), { error: code }, cors);
+      if (error instanceof VerificationRateLimitError) {
+        response.setHeader('Retry-After', String(error.retryAfterSeconds));
+        writeJson(response, errorStatus(error), { error: code, retryAfterSeconds: error.retryAfterSeconds }, cors);
+      } else writeJson(response, errorStatus(error), { error: code }, cors);
     }
   });
   let sampleTimer: ReturnType<typeof setInterval> | undefined;

@@ -1,4 +1,5 @@
 "use client";
+import { verificationWaitMessage } from '@/lib/verification-message';
 import { useEffect, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
@@ -75,7 +76,7 @@ export default function UniversityVerification() {
         VERIFICATION_INVALID:
           "That code is invalid or expired. Try again or request a new code.",
         VERIFICATION_RATE_LIMITED:
-          "Too many attempts. Please try again in 15 minutes.",
+          verificationWaitMessage(reason instanceof ApiError ? reason.retryAfterSeconds : undefined),
         EMAIL_NOT_CONFIGURED:
           "Email verification isn’t available yet. Please try again later.",
         EMAIL_SEND_FAILED:

@@ -26,12 +26,17 @@ function codeHash(id: string, code: string) {
     .update(`university:${id}:${code}`)
     .digest("hex");
 }
+export class VerificationRateLimitError extends Error {
+  constructor(readonly retryAfterSeconds: number) {
+    super('VERIFICATION_RATE_LIMITED');
+  }
+}
 function limit(db: Db, key: string, max: number, window: number, now: number) {
   const row = db
     .prepare("SELECT count, reset_at FROM university_limits WHERE bucket = ?")
     .get(key) as { count: number; reset_at: number } | undefined;
   if (row && row.reset_at > now && row.count >= max)
-    throw new Error("VERIFICATION_RATE_LIMITED");
+    throw new VerificationRateLimitError(Math.max(1, Math.ceil((row.reset_at - now) / 1000)));
   db.prepare("INSERT OR REPLACE INTO university_limits VALUES (?, ?, ?)").run(
     key,
     row && row.reset_at > now ? row.count + 1 : 1,

@@ -92,3 +92,10 @@ Production deployment and real-device intermittent networks require separate che
   screen and every individual lifecycle button were not browser-exercised; shared
   transport tests and existing authorization/lifecycle tests cover their common
   paths. A push does not verify deployment.
+# Verification throttling metadata — 20 October 2026
+
+HTTP 429 `VERIFICATION_RATE_LIMITED` adds optional `retryAfterSeconds` and a
+`Retry-After` header. The shared ApiError preserves a finite positive numeric
+duration; the UniKey dialog formats it in seconds/minutes. Missing/invalid metadata
+uses neutral wording, never an invented 15-minute cooldown. No retry is automated,
+no error-modal layout or security threshold changes. See UNIVERSITY-LOGIN.md.

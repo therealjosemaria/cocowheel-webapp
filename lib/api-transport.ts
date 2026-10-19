@@ -6,6 +6,7 @@ export class ApiError extends Error {
   constructor(
     readonly code: string,
     readonly status: number,
+    readonly retryAfterSeconds?: number,
   ) {
     super(code);
   }
@@ -58,7 +59,7 @@ export async function requestJson<T>(
     const gateway = [502, 503, 504, 520, 521, 522, 523, 524].includes(
       response.status,
     );
-    let payload: T & { error?: string };
+    let payload: T & { error?: string; retryAfterSeconds?: number };
     try {
       payload = await response.json();
     } catch (error) {
@@ -80,7 +81,9 @@ export async function requestJson<T>(
       throw new ApiError("SERVICE_UNAVAILABLE", response.status);
     report(false, started);
     if (!response.ok)
-      throw new ApiError(payload?.error ?? "REQUEST_FAILED", response.status);
+      throw new ApiError(payload?.error ?? "REQUEST_FAILED", response.status,
+        typeof payload?.retryAfterSeconds === 'number' && Number.isFinite(payload.retryAfterSeconds) && payload.retryAfterSeconds > 0
+          ? Math.ceil(payload.retryAfterSeconds) : undefined);
     if (!payload || typeof payload !== "object")
       throw new ApiError("INVALID_RESPONSE", response.status);
     return payload;
