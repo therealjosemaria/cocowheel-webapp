@@ -26,11 +26,11 @@ export default function RootLayout({
               GUMWHEEL
               <span className="brand-art" aria-hidden="true">
                 <Image
-                  src="/brand/gumwheel-bubble-wheel.png"
+                  src="/brand/gumwheel-logo.png"
                   alt=""
-                  width={80}
-                  height={40}
-                  sizes="80px"
+                  width={15}
+                  height={15}
+                  sizes="15px"
                 />
               </span>
             </span>

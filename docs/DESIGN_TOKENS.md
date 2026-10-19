@@ -49,7 +49,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 - Help role cards reuse route colours via `--help-role-accent`: 6% accent mixed with `--surface` for backgrounds, full accent for decorative icons, `--ink` for text. Both use 16px padding and `--radius-control` corners, without shadows. This is a role-identification use of the map palette, not a new brand palette.
 - Eligibility copy appears immediately above Verify UniKey in the signed-out Profile popover, using its existing muted 14px paragraph styling and 8px vertical margins. Help has no sign-in/eligibility introduction; the earlier two-line hierarchy is superseded.
 - Header wordmark: 16px (`--text-body`) below 700px; retain 12px (`--text-caption`) at wider sizes. Weight and letter spacing are unchanged; this brand exception is not a section-heading size.
-- Header artwork: a 6px wordmark gap, then the generated pink bubble and black/silver tyre together in a 48×32px window (60×30px image, left −6px, top 0px below 700px and 0.5px otherwise). The optical offsets align the icons with uppercase letterforms rather than the font line box. This reduces the original icons by 25%; 18px trailing brand padding preserves the original header footprint and navigation positions. Preserve wordmark typography and approved raster artwork. Empty alt text and an aria-hidden wrapper make these decorative; the brand remains non-clickable.
+- Header artwork: single combined pink gum/tyre transparent PNG, 15×15px image in the unchanged 48×32px window; left −0.8px, top 7.35px below 700px and 7.85px otherwise. This offsets transparent padding to preserve the 6px visible wordmark gap and optical centreline. Visible artwork is approximately 13.4px high, matching the previous icons. Keep 18px trailing brand padding and wordmark typography unchanged. Empty alt text and an aria-hidden wrapper make the logo decorative; the brand remains non-clickable.
 - Map symbols: `--icon-map`, 21px, within `--marker-size`, 32px circles. Profile/menu controls and the logo are navigation/brand exceptions, not cell icons.
 - Use the existing shared primary/secondary/danger button selectors and dialog/action groups. Equal actions must have equal dimensions; minimum 44px hit targets, 10px corners for action/dialog controls. Home CTAs remain larger deliberate exceptions.
 - Responsive shell: retain the 680px mobile/tablet cap below 1000px; from 1000px use `clamp(960px, 66.667vw, 1360px)`. Desktop navigation starts at 1000px and remains one row, including Admin; narrower screens use the drawer. Home CTAs retain mobile dimensions below 700px; above that they are equal, centred, max 360px wide and min 64px high. Hero size remains unchanged.
@@ -74,12 +74,9 @@ when explanatory text is removed. Help steps and numbers are 14px regular;
 role headings remain 18px semibold. Keep colours and spacing supportive rather
 than adding emphasis to every element. Include a visual review, not only tests.
 
-Header icon refinement: apply `scale(0.586181640625)` with `transform-origin: 6px center` on both
-mobile and desktop, in addition to the framing above. This reduces the icon
-pair by four successive 12.5% reductions, preserving its optical centreline and layout footprint.
-The horizontal origin anchors the visible bubble edge, not the padded image centre,
-so the wordmark gap stays at 6px instead of growing as the icons shrink;
-do not resize the wordmark or navigation controls with it.
+The former paired-artwork scale of 0.586181640625 is superseded by the single
+logo sizing above (19 October 2026). Do not reapply the old scale or resize the
+wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance.
 
 1. Pick an existing semantic role/token before adding a selector; no inline font sizes or new raw font declarations.
 2. Compare the equivalent control in Offer, Find, Activity, ride details, Profile and Admin. Do not globally resize maps or the home hero to fix one form.

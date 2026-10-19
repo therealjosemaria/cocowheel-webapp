@@ -212,15 +212,12 @@ button:disabled {
 }
 .brand-art img {
   position: absolute;
-  width: 60px;
-  height: 30px;
+  width: 15px;
+  height: 15px;
   max-width: none;
-  left: -6px;
+  left: -0.8px;
   /* Optical centring against the uppercase letterforms, not their line box. */
-  top: 0.5px;
-  transform: scale(0.586181640625);
-  /* Anchor at the visible bubble edge, excluding the PNG's left padding. */
-  transform-origin: 6px center;
+  top: 7.85px;
 }
 .desktop-navigation {
   display: none;
@@ -1018,7 +1015,7 @@ p {
     font-size: var(--text-body);
   }
   .brand-art img {
-    top: 0;
+    top: 7.35px;
   }
   .driver-location-summary:has(.rider-origin-heading) {
     grid-template-columns: minmax(0, 1fr);
