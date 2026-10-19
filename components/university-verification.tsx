@@ -1,5 +1,8 @@
 "use client";
-import { verificationWaitMessage } from "@/lib/verification-message";
+import {
+  codeCooldownLabel,
+  verificationWaitMessage,
+} from "@/lib/verification-message";
 import { useCodeCooldown } from "@/lib/use-code-cooldown";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
@@ -173,13 +176,13 @@ export default function UniversityVerification() {
         >
           {busy ? "Please wait…" : challenge ? "Verify" : "Send code"}
           {!busy && !challenge && cooldown.remaining > 0 && (
-            <span className="code-cooldown">{` in ${cooldown.remaining}s`}</span>
+            <span className="code-cooldown">{` in ${codeCooldownLabel(cooldown.remaining)}`}</span>
           )}
         </button>
         {challenge && (
           <button
             type="button"
-            className="secondary university-resend"
+            className="secondary"
             disabled={busy || cooldown.remaining > 0}
             onClick={() => {
               setChallenge("");
@@ -189,7 +192,7 @@ export default function UniversityVerification() {
           >
             Request a new code
             {cooldown.remaining > 0 && (
-              <span className="code-cooldown">{` in ${cooldown.remaining}s`}</span>
+              <span className="code-cooldown">{` in ${codeCooldownLabel(cooldown.remaining)}`}</span>
             )}
           </button>
         )}

@@ -68,3 +68,22 @@ the harness to await its response before advancing, and all viewport cases passe
 Sandboxed dev/build attempts were denied local port binding; retried with the
 required permission; production build passed. Physical mobile Safari and live
 deployment remain unverified.
+
+## Follow-up: restore button and human-readable long waits
+
+Baseline `316de72`. The user preferred the original bordered secondary resend
+button; the borderless experiment above is superseded. Keep the corrected 16px
+gaps. Both sending buttons now use `in N min` at 60 seconds or more (rounded up),
+and `in Ns` below 60. Example: 500 seconds displays 9 min; 60 displays 1 min;
+59 displays 59s. At zero the suffix disappears and the button enables. The
+underlying second-resolution deadline, server limits and no-polling behaviour
+are unchanged.
+
+Five focused unit/HTTP checks passed, including 500/780/61/60/59/1 boundaries.
+Both browser scripts passed: 320×800, 390×844, 844×390, 1440×900 countdown checks
+and 390/1440px fallback checks. Added assertions for bordered resend, constant
+16px gaps, 13 min → 1 min → 59s → enabled transitions and unchanged request count.
+Visually reviewed portrait/landscape/desktop screenshots: existing button
+hierarchy restored, compact minute copy fits, landscape scroll preserved.
+Lint and production build passed. No backend change, production emails or live-trip testing.
+Physical-device and deployed verification remain outstanding.

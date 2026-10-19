@@ -15,7 +15,7 @@ with sync_playwright() as p:
         page.goto('http://127.0.0.1:3090/help',wait_until='networkidle')
         page.get_by_role('button',name='Profile:',exact=False).click()
         page.get_by_role('button',name='Verify UniKey',exact=True).click()
-        for index,(seconds,message) in enumerate([(55,'Send code in 55s'),(780,'Send code in 780s'),(None,'Please wait a little before trying again.')]):
+        for index,(seconds,message) in enumerate([(55,'Send code in 55s'),(780,'Send code in 13 min'),(None,'Please wait a little before trying again.')]):
             state['seconds']=seconds
             page.get_by_role('textbox',name='UniKey',exact=True).fill(f'abcd{index:04d}')
             page.get_by_role('button',name='Send code',exact=True).click()

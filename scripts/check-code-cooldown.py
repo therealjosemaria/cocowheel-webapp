@@ -31,18 +31,18 @@ with sync_playwright() as p:
         boxes=[controls.nth(i).bounding_box() for i in range(3)]
         for previous,current in zip(boxes,boxes[1:]):
             assert abs(current['y']-previous['y']-previous['height']-16)<1
-        assert resend.evaluate('(e)=>getComputedStyle(e).borderTopWidth')=='0px'
+        assert resend.evaluate('(e)=>getComputedStyle(e).borderTopWidth')=='1px'
         assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='none'
         assert resend.bounding_box()['height']>=44
         page.screenshot(path=f'/tmp/code-cooldown-{width}-resend.png')
         page.clock.fast_forward(45000)
         expect(resend).to_be_enabled()
-        assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='underline'
+        assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='none'
         page.screenshot(path=f'/tmp/code-cooldown-{width}-ready.png')
         # Reset the clock to test persistence of a fresh cooldown through closure.
         resend.click()
         page.get_by_role('button',name='Send code',exact=True).click()
-        expect(resend).to_have_text('Request a new code in 60s')
+        expect(resend).to_have_text('Request a new code in 1 min')
         page.clock.fast_forward(15000)
         page.get_by_role('button',name='Cancel',exact=True).click()
         open_dialog()
@@ -63,9 +63,16 @@ with sync_playwright() as p:
         state['mode']='limited'
         send.click()
         expect(send).to_be_disabled()
-        expect(send).to_have_text('Send code in 780s')
+        expect(send).to_have_text('Send code in 13 min')
         expect(page.locator('.university-dialog [role="alert"]')).to_have_count(0)
         page.screenshot(path=f'/tmp/code-cooldown-{width}-limited.png')
+        page.clock.fast_forward(720000)
+        expect(send).to_have_text('Send code in 1 min')
+        page.clock.fast_forward(1000)
+        expect(send).to_have_text('Send code in 59s')
+        page.clock.fast_forward(59000)
+        expect(send).to_have_text('Send code')
+        expect(send).to_be_enabled()
         assert state['sends']==3
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         print('PASS',width,height,flush=True)

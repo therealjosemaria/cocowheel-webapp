@@ -81,11 +81,14 @@ for precise times; the updated frontend safely handles older API responses.
 ### Local resend countdown (20 October 2026)
 
 After successful sending, the browser starts a conservative 60-second cooldown
-from receipt of success. Existing “Request a new code” gains ` in Ns` and is
+from receipt of success. Existing “Request a new code” gains a compact wait suffix and is
 disabled; closing/reopening the dialog shows the same suffix on “Send code”.
 No names or navigation steps are changed. Code input and Verify remain usable.
-Resend is a borderless, regular-weight text button, underlined only when enabled.
-It retains its disabled state, keyboard semantics and full-width touch target.
+Resend uses the shared bordered secondary button, superseding the borderless
+experiment. Both sending controls show rounded-up minutes at 60 seconds or more
+(500 seconds → `in 9 min`), and seconds below 60 (`in 59s`). At zero, the suffix
+disappears and sending re-enables. Only presentation changes; deadlines and server
+enforcement are unchanged. Keyboard semantics and full-width touch targets remain.
 The form uses consistent 16px gaps, overriding secondary-button outer margins.
 A send-side 429 with retry metadata replaces the local deadline with that server
 wait, displayed inside the button rather than a duplicate message. Verification

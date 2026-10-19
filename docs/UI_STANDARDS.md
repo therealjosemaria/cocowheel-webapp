@@ -31,14 +31,15 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Dialogs and actions
 
-- UniKey code sending preserves existing labels and appends only ` in Ns` while
+- UniKey code sending preserves existing labels and appends ` in Ns` below one
+  minute or rounded-up ` in N min` at 60 seconds or longer while
   unavailable (for example “Send code in 45s”). Disable only code-sending controls
   during that cooldown, never the code-entry verification action. Countdown lives
   inside the existing button, without another label, layout or automatic send.
   Use tabular numerals; check portrait, landscape and desktop wrapping.
-  UniKey resend is a deliberate borderless text-button exception: regular weight,
-  underline when enabled, no underline during countdown. Retain the touch target
-  and native button semantics. This form uses 16px grid gaps with zero outer button
+  UniKey resend uses the shared bordered secondary button (the borderless experiment
+  is superseded). Retain the touch target and native button semantics.
+  This form uses 16px grid gaps with zero outer button
   margins, not stacked generic secondary margins. Verify/Cancel styling is unchanged.
 
 - API outage copy is shared: “We can’t reach the server. Please try again shortly.”

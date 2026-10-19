@@ -122,11 +122,12 @@ unchanged; old APIs without retry metadata receive neutral wait wording. See
 [login rules](UNIVERSITY-LOGIN.md) for response fields and deployment dependency.
 The API update was activated at 00:28 AEDT on 20 October 2026 with no active rides;
 local/proxied health passed. See [message checks](docs/LOGIN_WAIT_MESSAGES_2026-10-20.md).
-Code-sending buttons now append ` in Ns` during a local cooldown and are disabled
+Code-sending buttons append ` in Ns` below one minute or ` in N min` (rounded up)
+at one minute or longer during a local cooldown and are disabled
 until it ends. Existing button names, code entry and verification remain unchanged.
 The countdown makes no requests; the API still checks every actual submission.
-The resend control is borderless text (underlined when available), retaining its
-button semantics and touch target. Login controls use one 16px grid gap without
+The resend control retains the shared bordered secondary-button appearance.
+Login controls use one 16px grid gap without
 additional secondary-button margins; Verify and Cancel keep their existing styles.
 
 See [UNIVERSITY-LOGIN.md](UNIVERSITY-LOGIN.md) for precise OTP rules and delivery.
