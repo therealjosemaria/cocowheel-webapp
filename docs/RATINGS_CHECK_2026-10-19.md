@@ -1,5 +1,22 @@
 # Mutual ratings verification — 19 October 2026
 
+## Minimal prompt follow-up
+
+Frontend-only change based on `f1566c9`: prompt now contains just the role-specific
+heading and five star buttons. Tap/click/Enter/Space submits immediately; no helper
+copy or separate submit button. Backend rules are unchanged; no API restart needed.
+The original radio/explicit-submit evidence below is historical and superseded.
+
+Retest: 90/90 suite, lint and production build passed. Updated
+`scripts/check-ratings.py` passed driver/rider at 320/390/1440px with mocked API:
+focus alone sends nothing; tap/Enter submits the chosen score; error modal and
+same-star retry work; reload shows acknowledgement; removed copy/button absent;
+44px targets and no horizontal overflow. Initial narrow-phone check caught flex
+shrinking stars; fixed 44px flex basis and 8px horizontal panel padding, then all
+six cases passed. Whole-screen mobile/desktop screenshots reviewed for heading
+emphasis, star alignment and reduced spacing. External map tiles remain blocked;
+real-device Safari and deployed frontend rendering not verified in this follow-up.
+
 ## Production activation follow-up — 21:14 AEDT
 
 With explicit user approval, restarted only `cocowheels-api` to activate

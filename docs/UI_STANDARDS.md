@@ -7,9 +7,11 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 ### Mutual rating controls (19 October 2026)
 
 Use the shared completed-ride rating form below the map legend and above details.
-Five native radio stars have 44px touch targets, visible keyboard focus and a
-separate Submit rating button. Heading uses section/semibold; explanatory copy
-uses small/regular; colours and controls reuse existing tokens. Errors use the
+Show only the role-specific heading and five native star buttons with 44px touch
+targets and visible keyboard focus. Clicking/tapping or Enter/Space submits that
+star's score immediately; focusing alone does not. No helper copy or separate
+Submit rating button (supersedes the initial radio/select-then-submit design).
+Heading uses section/semibold; colours and controls reuse existing tokens. Errors use the
 existing Message modal. Never expose individual received scores or counts below
 the threshold; use the shared RatingBadge for visible averages in chooser,
 requests and profile. See [ratings](RATINGS.md) for eligibility/privacy rules.

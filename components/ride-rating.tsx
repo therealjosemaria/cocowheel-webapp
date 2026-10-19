@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { RatingSummary, RideRatingState } from "@/lib/rating-types";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { Message } from "./ride-journey-controls";
@@ -28,16 +28,20 @@ export default function RideRating({
   const id = useId();
   const [score, setScore] = useState(0);
   const [busy, setBusy] = useState(false);
+  const sending = useRef(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (!state || (!state.canRate && !state.submitted && !submitted)) return null;
-  async function submit() {
-    if (!score || busy) return;
+  async function submit(value: number) {
+    if (sending.current || submitted || state?.submitted || !state?.canRate)
+      return;
+    sending.current = true;
+    setScore(value);
     setBusy(true);
     try {
       await cocowheelsApi(`/api/rides/${encodeURIComponent(rideId)}/ratings`, {
         method: "POST",
-        body: JSON.stringify({ score }),
+        body: JSON.stringify({ score: value }),
       });
       setSubmitted(true);
       window.dispatchEvent(new Event("cocowheels:ride-updated"));
@@ -58,6 +62,7 @@ export default function RideRating({
         ),
       );
     } finally {
+      sending.current = false;
       setBusy(false);
     }
   }
@@ -66,47 +71,28 @@ export default function RideRating({
       {submitted || state.submitted ? (
         <p role="status">Thanks for rating your ride.</p>
       ) : (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void submit();
-          }}
-        >
-          <fieldset disabled={busy}>
-            <legend>
-              How was your {state.targetRole === "DRIVER" ? "driver" : "rider"}?
-            </legend>
-            <div className="rating-stars">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <label
-                  key={value}
-                  className={
-                    value <= score ? "rating-star selected" : "rating-star"
-                  }
-                >
-                  <input
-                    type="radio"
-                    name={id}
-                    value={value}
-                    checked={score === value}
-                    onChange={() => setScore(value)}
-                    aria-label={`${value} ${value === 1 ? "star" : "stars"}`}
-                  />
-                  <span aria-hidden="true">★</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <p className="rating-note">
-            Optional · Submit within 7 days. Ratings are final.
-          </p>
-          <button className="primary" disabled={!score || busy}>
-            {busy ? "Submitting…" : "Submit rating"}
-          </button>
-          <p className="rating-note">
-            Only averages are shared, after 10 ratings in each role.
-          </p>
-        </form>
+        <div role="group" aria-labelledby={id} aria-busy={busy}>
+          <h2 id={id}>
+            How was your {state.targetRole === "DRIVER" ? "driver" : "rider"}?
+          </h2>
+          <div className="rating-stars">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                key={value}
+                type="button"
+                disabled={busy}
+                onClick={() => void submit(value)}
+                aria-label={`Rate ${value} ${value === 1 ? "star" : "stars"}`}
+                aria-pressed={score === value}
+                className={
+                  value <= score ? "rating-star selected" : "rating-star"
+                }
+              >
+                <span aria-hidden="true">★</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
       {error && <Message text={error} close={() => setError(null)} />}
     </section>

@@ -49,10 +49,15 @@ is `null` below threshold, otherwise `{ average, count }`.
 
 ## UI/failures
 
-Shared completed-ride view: optional form below map legend, above details; native
-radio stars with 44px targets, keyboard navigation and separate submit button.
-Selection is not submission. Shared transport/error modal preserves selection
-for retry. Success becomes acknowledgement; reload reads server state. Expired,
+Shared completed-ride view: only “How was your driver/rider?” and five native star
+buttons below the map legend, above details. Each has a 44px target and keyboard
+focus. Tap/click or Enter/Space submits immediately; focus alone does not submit.
+This supersedes the initial radio controls and separate submit button. Removed
+helper copy does not change the seven-day window, immutable scores or threshold.
+Controls disable while sending, with an immediate duplicate-submission guard.
+Shared transport/error modal preserves the attempted score; tapping it again
+retries, including the same-score idempotent retry after a lost response.
+Success becomes acknowledgement; reload reads server state. Expired,
 unrated windows have no form. Chooser/request/profile summaries share one compact
 badge. Profile uses “Not enough ratings yet” below threshold. Reuse existing
 colour, type and button tokens, no competing bold body or new colour palette.
