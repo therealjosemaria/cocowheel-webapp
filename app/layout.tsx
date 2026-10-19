@@ -27,6 +27,7 @@ export default function RootLayout({
               <span className="brand-art" aria-hidden="true">
                 <Image
                   src="/brand/gumwheel-original.png"
+                  unoptimized
                   alt=""
                   width={15}
                   height={15}

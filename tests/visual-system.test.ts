@@ -36,7 +36,7 @@ test("header artwork stays decorative beside the non-clickable brand", () => {
   const layout = readFileSync("app/layout.tsx", "utf8");
   assert.match(layout, /<span className="brand">\s*GUMWHEEL/);
   assert.match(layout, /className="brand-art" aria-hidden="true"/);
-  assert.match(layout, /src="\/brand\/gumwheel-original\.png"\s+alt=""/);
+  assert.match(layout, /src="\/brand\/gumwheel-original\.png"\s+unoptimized\s+alt=""/);
   assert.match(css, /\.brand-art\s*\{[^}]*width: 48px;[^}]*height: 32px;/);
   assert.match(css, /\.brand-art img\s*\{[^}]*width: 15px;[^}]*height: 15px;/);
   assert.match(css, /\.brand-art img\s*\{[^}]*left: -0\.8px;[^}]*top: 7\.85px;/);

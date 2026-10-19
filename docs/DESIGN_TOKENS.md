@@ -74,6 +74,10 @@ when explanatory text is removed. Help steps and numbers are 14px regular;
 role headings remain 18px semibold. Keep colours and spacing supportive rather
 than adding emphasis to every element. Include a visual review, not only tests.
 
+Serve the original header PNG with Next Image `unoptimized`: no resized or
+recompressed variants. Its full 1254×1254 pixels remain available for mobile
+pinch zoom while CSS dimensions and positioning stay unchanged.
+
 The former paired-artwork scale of 0.586181640625 is superseded by the single
 logo sizing above (19 October 2026). Do not reapply the old scale or resize the
 wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance.

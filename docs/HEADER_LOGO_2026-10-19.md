@@ -2,6 +2,21 @@
 
 ## Original asset replacement
 
+### Full-resolution delivery refinement
+
+Next Image now uses `unoptimized` for this logo only, serving the exact original
+1254×1254 PNG rather than a small optimized variant selected by `sizes="15px"`.
+This deliberately trades a larger image download (1,309,146 bytes) for retained
+detail under mobile zoom. CSS size, position and all header controls are unchanged.
+PNG is still raster; this does not promise unlimited vector-like magnification.
+
+Delivery checks: local Chromium at 390px (3× device scale) and 1440px reports
+naturalWidth 1254, displayed width 15, no srcset, and the direct original asset
+URL. HTTP response bytes match the repository PNG exactly. Full Home screenshots
+were reviewed at both widths; size, alignment and hierarchy remain unchanged.
+Visual-system regression tests passed 5/5 and lint passed. Actual phone pinch
+zoom/Safari and live deployment remain unverified; no production API was used.
+
 The user rejected the generated cutout below and supplied
 `gumwheel-transparent-original.zip`. Its `gumwheel-transparent.png` is copied
 byte-for-byte to `public/brand/gumwheel-original.png`, without AI processing,

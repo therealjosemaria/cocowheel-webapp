@@ -265,8 +265,9 @@ for service operations.
 - The wordmark is followed by a 6px visible gap and the single combined pink
   gum/tyre logo in `public/brand/gumwheel-original.png`, copied unchanged from the
   user's transparent-original ZIP (superseding the generated cutout). It supersedes the separate
-  icon pair; the old asset is retained. Next Image serves the transparent PNG
-  at 15×15px (approximately 13.4px visible artwork height, matching the old icons).
+  icon pair; the old asset is retained. Next Image bypasses optimization to serve
+  the original 1254×1254 transparent PNG directly for crisp mobile zoom. CSS keeps
+  it at 15×15px (approximately 13.2px visible artwork height, matching the old icons).
   The 48×32px framing and 18px trailing spacer preserve navigation positions.
   Optical offsets preserve alignment with uppercase letters. Wordmark typography,
   Profile and menu controls are unchanged; artwork remains decorative.
