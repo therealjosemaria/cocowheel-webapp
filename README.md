@@ -125,6 +125,9 @@ local/proxied health passed. See [message checks](docs/LOGIN_WAIT_MESSAGES_2026-
 Code-sending buttons now append ` in Ns` during a local cooldown and are disabled
 until it ends. Existing button names, code entry and verification remain unchanged.
 The countdown makes no requests; the API still checks every actual submission.
+The resend control is borderless text (underlined when available), retaining its
+button semantics and touch target. Login controls use one 16px grid gap without
+additional secondary-button margins; Verify and Cancel keep their existing styles.
 
 See [UNIVERSITY-LOGIN.md](UNIVERSITY-LOGIN.md) for precise OTP rules and delivery.
 Inbox verification proves mailbox access, not enrolment, identity or driver fitness.

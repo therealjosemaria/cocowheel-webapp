@@ -2807,6 +2807,17 @@ p {
   display: grid;
   gap: 16px;
 }
+.university-form > button { margin: 0; }
+.university-form .university-resend {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-weight: var(--weight-regular);
+}
+.university-form .university-resend:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .university-form h2 {
   margin: 0;
   font-size: var(--text-subheading);

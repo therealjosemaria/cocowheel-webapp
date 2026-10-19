@@ -46,3 +46,25 @@ storage-denied fallback have not been browser-tested. Their code paths are prese
 server enforcement remains independent of browser storage, clock or disabled state.
 The initial success wait starts at receipt (conservatively later than server send).
 No API restart required. A push is not verification of frontend deployment.
+
+## Follow-up: resend styling and spacing
+
+Baseline `bb08835`. Generic secondary-button 12px top/bottom margins were stacking
+with the form's 16px grid gap: Verify→resend had 28px and resend→Cancel 40px.
+The form now overrides button margins to zero for consistent 16px layout gaps.
+The existing primary shadow remains, so its visible edge extends slightly into
+that gap. Resend uses regular-weight borderless text, underlined when available;
+button semantics, target dimensions and all countdown/authentication rules remain.
+
+Extended `scripts/check-code-cooldown.py` passes at all four viewport sizes above,
+asserting both 16px action gaps, no resend border, minimum 44px target, disabled
+plain text and enabled underline, plus existing cooldown/request-count checks.
+Whole-dialog screenshots reviewed at 320px/390px portrait, 844px landscape and
+1440px desktop: hierarchy is quieter, countdown fits at 320px, Cancel retains
+its border, no horizontal clipping. Landscape retains vertical dialog scrolling.
+Four focused cooldown/HTTP/message regressions and lint passed. Initial browser
+extension advanced the clock before the second mocked send completed; corrected
+the harness to await its response before advancing, and all viewport cases passed.
+Sandboxed dev/build attempts were denied local port binding; retried with the
+required permission; production build passed. Physical mobile Safari and live
+deployment remain unverified.

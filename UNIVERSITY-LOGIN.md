@@ -84,6 +84,9 @@ After successful sending, the browser starts a conservative 60-second cooldown
 from receipt of success. Existing “Request a new code” gains ` in Ns` and is
 disabled; closing/reopening the dialog shows the same suffix on “Send code”.
 No names or navigation steps are changed. Code input and Verify remain usable.
+Resend is a borderless, regular-weight text button, underlined only when enabled.
+It retains its disabled state, keyboard semantics and full-width touch target.
+The form uses consistent 16px gaps, overriding secondary-button outer margins.
 A send-side 429 with retry metadata replaces the local deadline with that server
 wait, displayed inside the button rather than a duplicate message. Verification
 errors remain separate; they do not disable resending. Older/malformed metadata

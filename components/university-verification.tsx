@@ -179,7 +179,7 @@ export default function UniversityVerification() {
         {challenge && (
           <button
             type="button"
-            className="secondary"
+            className="secondary university-resend"
             disabled={busy || cooldown.remaining > 0}
             onClick={() => {
               setChallenge("");

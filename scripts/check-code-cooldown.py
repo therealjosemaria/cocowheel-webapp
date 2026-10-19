@@ -27,14 +27,30 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Verify',exact=True)).to_be_enabled()
         page.clock.fast_forward(15000)
         expect(resend).to_have_text('Request a new code in 45s')
+        controls=page.locator('.university-form > button')
+        boxes=[controls.nth(i).bounding_box() for i in range(3)]
+        for previous,current in zip(boxes,boxes[1:]):
+            assert abs(current['y']-previous['y']-previous['height']-16)<1
+        assert resend.evaluate('(e)=>getComputedStyle(e).borderTopWidth')=='0px'
+        assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='none'
+        assert resend.bounding_box()['height']>=44
         page.screenshot(path=f'/tmp/code-cooldown-{width}-resend.png')
+        page.clock.fast_forward(45000)
+        expect(resend).to_be_enabled()
+        assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='underline'
+        page.screenshot(path=f'/tmp/code-cooldown-{width}-ready.png')
+        # Reset the clock to test persistence of a fresh cooldown through closure.
+        resend.click()
+        page.get_by_role('button',name='Send code',exact=True).click()
+        expect(resend).to_have_text('Request a new code in 60s')
+        page.clock.fast_forward(15000)
         page.get_by_role('button',name='Cancel',exact=True).click()
         open_dialog()
         send=page.locator('.university-form .primary')
         expect(send).to_be_disabled()
         expect(send).to_have_text('Send code in 45s')
         page.locator('.university-form').dispatch_event('submit')
-        assert state['sends']==1
+        assert state['sends']==2
         page.reload(wait_until='networkidle')
         open_dialog()
         page.get_by_role('textbox',name='UniKey',exact=True).fill('abcd1234')
@@ -43,14 +59,14 @@ with sync_playwright() as p:
         page.clock.fast_forward(46000)
         expect(send).to_be_enabled()
         expect(send).to_have_text('Send code')
-        assert state['sends']==1 # timer never sends or polls
+        assert state['sends']==2 # timer never sends or polls
         state['mode']='limited'
         send.click()
         expect(send).to_be_disabled()
         expect(send).to_have_text('Send code in 780s')
         expect(page.locator('.university-dialog [role="alert"]')).to_have_count(0)
         page.screenshot(path=f'/tmp/code-cooldown-{width}-limited.png')
-        assert state['sends']==2
+        assert state['sends']==3
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         print('PASS',width,height,flush=True)
         context.close()

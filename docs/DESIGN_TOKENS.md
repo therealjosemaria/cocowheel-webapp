@@ -65,6 +65,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 Code cooldown suffixes inherit button typography and use tabular numerals. Keep
 existing full-width controls, padding and minimum heights; do not shrink text or
 add a separate countdown label. Existing labels return unchanged at zero.
+UniKey form controls have zero outer margins and a single 16px grid gap. The resend
+control keeps its existing target size with no border/background/shadow, regular
+weight and an enabled-state underline; Verify and Cancel retain shared styling.
 
 Ride notifications reuse ink/surface for the 18px Profile count badge, caption
 text, and a 44px-minimum secondary notice button. Profile update copy uses small

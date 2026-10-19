@@ -36,6 +36,10 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   during that cooldown, never the code-entry verification action. Countdown lives
   inside the existing button, without another label, layout or automatic send.
   Use tabular numerals; check portrait, landscape and desktop wrapping.
+  UniKey resend is a deliberate borderless text-button exception: regular weight,
+  underline when enabled, no underline during countdown. Retain the touch target
+  and native button semantics. This form uses 16px grid gaps with zero outer button
+  margins, not stacked generic secondary margins. Verify/Cancel styling is unchanged.
 
 - API outage copy is shared: “We can’t reach the server. Please try again shortly.”
   User actions reuse existing dialogs; verification/profile keep errors in their
