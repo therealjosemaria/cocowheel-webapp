@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { Ride } from "@/lib/client-types";
 
@@ -34,7 +34,24 @@ export function PickupConfirmation({
   ride: Ride;
   driver: boolean;
 }) {
-  const [code, setCode] = useState("");
+  const [digits, setDigits] = useState(["", "", "", ""]);
+  const inputs = useRef<Array<HTMLInputElement | null>>([]);
+  const codeId = useId();
+  const code = digits.join("");
+  function enterDigits(index: number, value: string) {
+    const numbers = value.replace(/\D/g, "").slice(0, 4 - index);
+    if (value && !numbers) return;
+    setDigits((previous) => {
+      const next = [...previous];
+      if (!numbers) next[index] = "";
+      else
+        [...numbers].forEach((digit, offset) => {
+          next[index + offset] = digit;
+        });
+      return next;
+    });
+    if (numbers) inputs.current[Math.min(index + numbers.length, 3)]?.focus();
+  }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (
@@ -43,7 +60,8 @@ export function PickupConfirmation({
   )
     return null;
   async function submit() {
-    if (busy) return;
+    if (busy || (driver && !digits.every((digit) => /^[0-9]$/.test(digit))))
+      return;
     setBusy(true);
     try {
       await cocowheelsApi(
@@ -53,7 +71,7 @@ export function PickupConfirmation({
           body: JSON.stringify(driver ? { code } : {}),
         },
       );
-      setCode("");
+      setDigits(["", "", "", ""]);
       updated();
     } catch (reason) {
       const messages: Record<string, string> = {
@@ -84,29 +102,65 @@ export function PickupConfirmation({
             void submit();
           }}
         >
-          <label className="pickup-code-instruction" htmlFor="pickup-code">
+          <label className="pickup-code-instruction" htmlFor={`${codeId}-0`}>
             Enter the rider’s pickup code.
           </label>
           <div className="pickup-code-entry">
-            <div className="pickup-code-input">
-              <strong className="pickup-code-display" aria-hidden="true">
-                {Array.from({ length: 4 }, (_, index) => (
-                  <span key={index}>{code[index] ?? ""}</span>
-                ))}
-              </strong>
-              <input
-                id="pickup-code"
-                aria-label="Four-digit pickup code"
-                inputMode="numeric"
-                autoComplete="off"
-                pattern="[0-9]{4}"
-                maxLength={4}
-                required
-                value={code}
-                onChange={(event) =>
-                  setCode(event.target.value.replace(/\D/g, "").slice(0, 4))
-                }
-              />
+            <div
+              className="pickup-code-input"
+              role="group"
+              aria-label="Four-digit pickup code"
+            >
+              {Array.from({ length: 4 }, (_, index) => (
+                <input
+                  key={index}
+                  ref={(element) => {
+                    inputs.current[index] = element;
+                  }}
+                  id={`${codeId}-${index}`}
+                  aria-label={`Pickup code digit ${index + 1}`}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  pattern="[0-9]"
+                  maxLength={4}
+                  required
+                  disabled={busy}
+                  value={digits[index]}
+                  onFocus={(event) => event.currentTarget.select()}
+                  onClick={(event) => event.currentTarget.select()}
+                  onChange={(event) => enterDigits(index, event.target.value)}
+                  onPaste={(event) => {
+                    event.preventDefault();
+                    enterDigits(index, event.clipboardData.getData("text"));
+                  }}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Backspace" &&
+                      !digits[index] &&
+                      index > 0
+                    ) {
+                      event.preventDefault();
+                      enterDigits(index - 1, "");
+                      inputs.current[index - 1]?.focus();
+                    } else if (
+                      event.key === "ArrowLeft" ||
+                      event.key === "ArrowRight"
+                    ) {
+                      event.preventDefault();
+                      inputs.current[
+                        Math.max(
+                          0,
+                          Math.min(
+                            3,
+                            index + (event.key === "ArrowLeft" ? -1 : 1),
+                          ),
+                        )
+                      ]?.focus();
+                    }
+                  }}
+                />
+              ))}
             </div>
             <button className="primary" disabled={busy || code.length !== 4}>
               {busy ? "CONFIRMING…" : "CONFIRM PICKUP"}

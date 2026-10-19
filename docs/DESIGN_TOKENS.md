@@ -55,6 +55,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 - Responsive shell: retain the 680px mobile/tablet cap below 1000px; from 1000px use `clamp(960px, 66.667vw, 1360px)`. Desktop navigation starts at 1000px and remains one row, including Admin; narrower screens use the drawer. Home CTAs retain mobile dimensions below 700px; above that they are equal, centred, max 360px wide and min 64px high. Hero size remains unchanged.
 - Use existing spacing families: 4/8px for tightly related content, 12/16px for fields and panel padding, 24px for section separation. Preserve established map and mobile-sheet layouts rather than changing geometry during typography edits.
 - Never reduce input size to match its label. “You receive” and “Your PayID” must have identical computed family, size, weight and colour.
+- Driver pickup digits use four visible 44×48px inputs, 8px gaps/corners, centred
+  `--text-code` numerals and a per-cell focus outline. Retain the rider's matching
+  display-box dimensions. Never cover those cells with an invisible shared input.
+  Driver own-PayID text retains the rider value typography without a Copy control.
 
 ## Extension checklist
 

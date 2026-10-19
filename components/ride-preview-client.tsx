@@ -1045,7 +1045,7 @@ export default function RidePreviewClient({
                           ? "Email"
                           : "Other"}
                     </span>
-                    <CopyPayId value={ride.payId} />
+                    <code className="payid-value">{ride.payId}</code>
                   </dd>
                 </dl>
               ) : null}

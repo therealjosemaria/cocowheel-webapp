@@ -74,7 +74,8 @@ with sync_playwright() as p:
    assert page.locator('.ride-selection-map').is_visible()
    if role=='RIDER': page.get_by_role('button',name='NEW CODE',exact=True).click()
    else:
-    page.get_by_role('textbox',name='Four-digit pickup code').fill('1234')
+    for index,digit in enumerate('1234',1):
+     page.get_by_role('textbox',name=f'Pickup code digit {index}',exact=True).fill(digit)
     page.get_by_role('button',name='CONFIRM PICKUP',exact=True).click()
    page.locator('.cancel-prompt p').wait_for()
    assert page.locator('.cancel-prompt p').inner_text()==MESSAGE

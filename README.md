@@ -275,8 +275,13 @@ for service operations.
 - Driver directions reuse Google Maps link styling. History addresses are plain text;
   phones may independently detect them as links.
 - Pickup code appears below the map with consistent centred four-digit styling.
+  Driver entry uses four real 44×48px numeric-keyboard text inputs, not an invisible
+  overlay. Tapping selects a digit for replacement; typing advances, empty-cell
+  Backspace returns to the previous digit, and paste distributes digits. Confirmation
+  remains explicit and requires all four digits; polling preserves unfinished entry.
 - Locked payment text is **Visible after pickup confirmation**; details are copyable
-  once available. Completion is unavailable before pairing.
+  by the rider once available. The driver's own PayID remains visible without a
+  Copy button, including history. Completion is unavailable before pairing.
 - Only relevant actions are displayed. Mobile-first and desktop must both be reviewed.
   Reuse the linked typography, map, modal, spacing and button standards.
 

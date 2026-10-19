@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-19 | Driver pickup-input / role-specific Copy | Mocked Chromium touch/desktop 320/390/1440 pass; 87 regression tests, lint/build pass; physical mobile keyboards and deployment unverified | [Checks and reproduction](PICKUP_INPUT_CHECK_2026-10-19.md) |
 | 2026-10-16 | Isolated GPS/polling load | 5–160-trip ramp and 80/120/160-trip soaks; pressure at 160, not a certified user ceiling | [Initial results](BACKEND_LOAD_RESULTS_2026-10-16.md) |
 | 2026-10-16 | Burst timing and history/discovery load | Separate workloads; GPS burst sensitivity and history workload memory guardrail | [Overnight report](OVERNIGHT_CAPACITY_2026-10-16.md) |
 | 2026-10-16 | Frontend connection errors | Shared timeout/errors; 82-test baseline and mocked mobile/desktop recovery checks; production outage not induced | [API failure contract](API_FAILURES.md) |
