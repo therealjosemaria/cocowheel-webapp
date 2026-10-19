@@ -52,6 +52,13 @@ project.
 
 ## Verification
 
+Sample rides are now opt-in through `createApiServer` test options; normal API
+startup disables replenishment and retires available sample offers transactionally.
+It retains history and records `SAMPLE_OFFER_RETIRED` / `SAMPLES_DISABLED`, discarding
+pending requests. Real offers and accepted journeys are not cancelled. Existing
+accepted sample simulations may finish without replacements. No environment,
+cookie, provider or database-path changes are needed.
+
 Frontend pushes and backend deployments are separate. After tested backend/env
 changes, restart only the dedicated API and confirm health:
 

@@ -5,13 +5,51 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { openDatabase } from "../server/db";
-import { createGuestSession } from "../server/core";
+import {
+  createGuestSession,
+  initializeCoreSchema,
+  ensureSampleRides,
+} from "../server/core";
 import { createApiServer } from "../server/index";
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
 );
 const inbox = new Map<string, string>();
+test("default API retires existing sample offers and never creates replacements on reads", async () => {
+  const database = openDatabase(":memory:");
+  initializeCoreSchema(database);
+  ensureSampleRides(database);
+  const api = createApiServer(database);
+  api.listen(0, "127.0.0.1");
+  await once(api, "listening");
+  const address = api.address();
+  assert.ok(address && typeof address !== "string");
+  try {
+    for (let i = 0; i < 3; i++) {
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/api/availability`,
+      );
+      assert.equal(response.status, 200);
+      assert.deepEqual((await response.json()).rides, []);
+    }
+    assert.equal(
+      (
+        database
+          .prepare(
+            "SELECT count(*) n FROM rides WHERE is_sample = 1 AND status = 'CANCELLED'",
+          )
+          .get() as { n: number }
+      ).n,
+      3,
+    );
+  } finally {
+    api.close();
+    api.closeAllConnections();
+    await once(api, "close");
+    database.close();
+  }
+});
 const sendUniversityCode = async (email: string, code: string) => {
   inbox.set(email, code);
 };
@@ -56,7 +94,10 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
     path.join(os.tmpdir(), "cocowheels-sample-api-"),
   );
   const database = openDatabase(path.join(directory, "test.db"));
-  const api = createApiServer(database, { sendUniversityCode });
+  const api = createApiServer(database, {
+    sendUniversityCode,
+    sampleRides: true,
+  });
   api.listen(0, "127.0.0.1");
   await once(api, "listening");
   const address = api.address();

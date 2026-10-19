@@ -19,6 +19,7 @@ import {
   decideRequest,
   expireStaleRides,
   ensureSampleRides,
+  retireSampleOffers,
   findSession,
   getRide,
   guestAlias,
@@ -397,7 +398,9 @@ export function createApiServer(
   initializeCoreSchema(database);
   initializeAdmin(database);
   pruneProviderCache(database);
-  const sampleRidesEnabled = options.sampleRides ?? true;
+  // Production defaults to real offers only. Isolated tests explicitly opt in.
+  const sampleRidesEnabled = options.sampleRides ?? false;
+  if (!sampleRidesEnabled) retireSampleOffers(database);
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     if (!originAllowed(origin)) {
@@ -466,8 +469,8 @@ export function createApiServer(
       }
       const now = new Date();
       expireStaleRides(database, now);
+      advanceSampleSimulations(database, now);
       if (sampleRidesEnabled) {
-        advanceSampleSimulations(database, now);
         ensureSampleRides(database, now);
       }
       const parts = pathParts(request.url);
@@ -1049,13 +1052,22 @@ export function createApiServer(
   });
   let sampleTimer: ReturnType<typeof setInterval> | undefined;
   server.on("listening", () => {
-    if (!sampleRidesEnabled) return;
+    // Let any previously accepted sample finish, without replenishing it.
+    if (
+      !sampleRidesEnabled &&
+      !database
+        .prepare(
+          "SELECT 1 FROM rides WHERE is_sample = 1 AND status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') LIMIT 1",
+        )
+        .get()
+    )
+      return;
     sampleTimer = setInterval(() => {
       try {
         const now = new Date();
         expireStaleRides(database, now);
         advanceSampleSimulations(database, now);
-        ensureSampleRides(database, now);
+        if (sampleRidesEnabled) ensureSampleRides(database, now);
       } catch {
         console.error("Sample simulation tick failed");
       }

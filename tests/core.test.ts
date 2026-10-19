@@ -20,6 +20,7 @@ import {
   currentOpenRides,
   decideRequest,
   ensureSampleRides,
+  retireSampleOffers,
   expireStaleRides,
   findSession,
   getRide,
@@ -302,6 +303,28 @@ const riderInput = {
   },
   requestedDepartureAt: departure,
 };
+
+test("retiring samples preserves history and real offers, rejects joins, and is idempotent", () => {
+  const h = harness();
+  try {
+    ensureSampleRides(h.db, baseTime);
+    const samples = availableRides(h.db, baseTime);
+    assert.equal(samples.length, 3);
+    const real = publishRide(h.db, null, driverInput, baseTime);
+    const pending = requestRide(h.db, null, samples[0].rideId, riderInput, baseTime);
+    const rider = findSession(h.db, pending.sessionToken, baseTime)!;
+    const before = h.db.prepare("SELECT count(*) n FROM rides").get();
+    assert.equal(retireSampleOffers(h.db, baseTime), 3);
+    assert.deepEqual(h.db.prepare("SELECT count(*) n FROM rides").get(), before);
+    assert.deepEqual(availableRides(h.db, baseTime).map(r => r.rideId), [real.ride.rideId]);
+    assert.equal(getRide(h.db, samples[0].rideId, rider, baseTime).request?.status, "DISCARDED");
+    assert.equal(privateHistory(h.db, pending.sessionToken, baseTime).rider.length, 1);
+    assert.throws(() => publicRidePreview(h.db, samples[1].rideId, baseTime), /RIDE_UNAVAILABLE/);
+    assert.throws(() => requestRide(h.db, null, samples[1].rideId, riderInput, baseTime), /RIDE_UNAVAILABLE/);
+    assert.equal(retireSampleOffers(h.db, baseTime), 0);
+    assert.equal((h.db.prepare("SELECT count(*) n FROM ride_events WHERE event = 'SAMPLE_OFFER_RETIRED'").get() as {n:number}).n, 3);
+  } finally { h.close(); }
+});
 
 function sessions(h: ReturnType<typeof harness>) {
   const published = publishRide(h.db, null, driverInput, baseTime);

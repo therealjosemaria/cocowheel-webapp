@@ -887,6 +887,29 @@ const sampleRides = [
   },
 ] as const;
 
+/** Retire discovery fixtures without deleting rides, requests or history. */
+export function retireSampleOffers(db: Db, now = new Date()) {
+  return db
+    .transaction(() => {
+      const rows = db
+        .prepare(
+          "SELECT id FROM rides WHERE is_sample = 1 AND status IN ('PUBLISHED', 'REQUESTED')",
+        )
+        .all() as Array<{ id: string }>;
+      for (const row of rows) {
+        db.prepare(
+          "UPDATE rides SET status = 'CANCELLED', cancelled_at = ?, cancellation_reason = 'SAMPLES_DISABLED', last_activity_at = ? WHERE id = ?",
+        ).run(iso(now), iso(now), row.id);
+        db.prepare(
+          "UPDATE ride_requests SET status = 'DISCARDED', decided_at = ? WHERE ride_id = ? AND status = 'PENDING'",
+        ).run(iso(now), row.id);
+        event(db, row.id, "SAMPLE_OFFER_RETIRED", "SYSTEM", now);
+      }
+      return rows.length;
+    })
+    .immediate();
+}
+
 export function ensureSampleRides(db: Db, now = new Date()) {
   expireStaleRides(db, now);
   const timestamp = iso(now);

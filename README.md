@@ -299,6 +299,17 @@ for service operations.
 
 ## Samples and unimplemented proposals
 
+Production samples are disabled by default in code (19 October 2026); activation
+awaits an approved API restart. See [verification](docs/SAMPLE_RETIREMENT_2026-10-19.md).
+At API startup,
+available synthetic offers are closed as CANCELLED with reason SAMPLES_DISABLED
+and an audit event; pending requests become DISCARDED. No ride/request/history
+records are deleted and real offers are untouched. Discovery, previews and joins
+exclude these closed offers. No automatic replenishment runs. Already accepted
+sample journeys, if any, may finish without replacement. Isolated tests can opt
+in with `createApiServer(db, { sampleRides: true })`; production does not opt in.
+The simulation description below is retained for test-only behaviour/history.
+
 Three synthetic routes cover Town Hall → South Coogee, Airport → Watsons Bay,
 and Newtown → Bondi Icebergs. Simulation accepts requests after about five seconds,
 approaches pickup, pairs and completes. Used samples are unavailable to concurrent
