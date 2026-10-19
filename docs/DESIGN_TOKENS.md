@@ -62,6 +62,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Extension checklist
 
+Code cooldown suffixes inherit button typography and use tabular numerals. Keep
+existing full-width controls, padding and minimum heights; do not shrink text or
+add a separate countdown label. Existing labels return unchanged at zero.
+
 Ride notifications reuse ink/surface for the 18px Profile count badge, caption
 text, and a 44px-minimum secondary notice button. Profile update copy uses small
 regular text and a 4px gap below status; a request-card highlight uses only

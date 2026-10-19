@@ -122,6 +122,9 @@ unchanged; old APIs without retry metadata receive neutral wait wording. See
 [login rules](UNIVERSITY-LOGIN.md) for response fields and deployment dependency.
 The API update was activated at 00:28 AEDT on 20 October 2026 with no active rides;
 local/proxied health passed. See [message checks](docs/LOGIN_WAIT_MESSAGES_2026-10-20.md).
+Code-sending buttons now append ` in Ns` during a local cooldown and are disabled
+until it ends. Existing button names, code entry and verification remain unchanged.
+The countdown makes no requests; the API still checks every actual submission.
 
 See [UNIVERSITY-LOGIN.md](UNIVERSITY-LOGIN.md) for precise OTP rules and delivery.
 Inbox verification proves mailbox access, not enrolment, identity or driver fitness.

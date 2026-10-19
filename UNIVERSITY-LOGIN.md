@@ -78,6 +78,26 @@ When multiple buckets are exhausted, the existing check order is preserved;
 a later retry can encounter a different limit. API deployment/restart is needed
 for precise times; the updated frontend safely handles older API responses.
 
+### Local resend countdown (20 October 2026)
+
+After successful sending, the browser starts a conservative 60-second cooldown
+from receipt of success. Existing “Request a new code” gains ` in Ns` and is
+disabled; closing/reopening the dialog shows the same suffix on “Send code”.
+No names or navigation steps are changed. Code input and Verify remain usable.
+A send-side 429 with retry metadata replaces the local deadline with that server
+wait, displayed inside the button rather than a duplicate message. Verification
+errors remain separate; they do not disable resending. Older/malformed metadata
+keeps the existing neutral error fallback.
+
+Only a timestamp is persisted in `cocowheels:code-cooldown:v1:<normalized UniKey>`.
+The deadline survives reload/dialog closure; same-origin tabs receive storage
+events. Storage failure uses in-memory state until reload. Different UniKeys use
+separate deadlines. The display computes elapsed wall time locally each second,
+including after backgrounding; it does not poll, retry or send automatically.
+Native disabled buttons and a submit-handler guard block ordinary premature sends.
+Manipulating local storage/time or changing browsers never bypasses server checks.
+All server quotas/OTP rules are unchanged; no API restart is needed for this layer.
+
 Tests inject an in-memory mail sender, covering the HTTP verification flow,
 expiry, replay/guess limits, cookie transport, API gating, shared roles/history,
 and the allowlisted email with identical account-wide role restrictions.

@@ -31,6 +31,12 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Dialogs and actions
 
+- UniKey code sending preserves existing labels and appends only ` in Ns` while
+  unavailable (for example “Send code in 45s”). Disable only code-sending controls
+  during that cooldown, never the code-entry verification action. Countdown lives
+  inside the existing button, without another label, layout or automatic send.
+  Use tabular numerals; check portrait, landscape and desktop wrapping.
+
 - API outage copy is shared: “We can’t reach the server. Please try again shortly.”
   User actions reuse existing dialogs; verification/profile keep errors in their
   existing surfaces. Background failures use one fixed neutral, non-interactive

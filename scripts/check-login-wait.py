@@ -15,11 +15,16 @@ with sync_playwright() as p:
         page.goto('http://127.0.0.1:3090/help',wait_until='networkidle')
         page.get_by_role('button',name='Profile:',exact=False).click()
         page.get_by_role('button',name='Verify UniKey',exact=True).click()
-        page.get_by_role('textbox',name='UniKey',exact=True).fill('abcd1234')
-        for seconds,message in [(55,'Please try again in 55 seconds.'),(780,'Please try again in 13 minutes.'),(None,'Please wait a little before trying again.')]:
+        for index,(seconds,message) in enumerate([(55,'Send code in 55s'),(780,'Send code in 780s'),(None,'Please wait a little before trying again.')]):
             state['seconds']=seconds
+            page.get_by_role('textbox',name='UniKey',exact=True).fill(f'abcd{index:04d}')
             page.get_by_role('button',name='Send code',exact=True).click()
-            expect(page.locator('.university-dialog [role="alert"]')).to_have_text(message)
+            if seconds is not None:
+                expect(page.locator('.university-form .primary')).to_have_text(message)
+                expect(page.locator('.university-form .primary')).to_be_disabled()
+                expect(page.locator('.university-dialog [role="alert"]')).to_have_count(0)
+            else:
+                expect(page.locator('.university-dialog [role="alert"]')).to_have_text(message)
             page.screenshot(path=f'/tmp/login-wait-{width}-{seconds}.png')
         print('PASS',width,flush=True)
         page.close()

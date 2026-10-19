@@ -1,5 +1,6 @@
 "use client";
-import { verificationWaitMessage } from '@/lib/verification-message';
+import { verificationWaitMessage } from "@/lib/verification-message";
+import { useCodeCooldown } from "@/lib/use-code-cooldown";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
@@ -13,6 +14,8 @@ export default function UniversityVerification() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const cooldown = useCodeCooldown(unikey);
+  const sending = useRef(false);
   useEffect(() => {
     const requests = pending.current;
     const open = (event: Event) => {
@@ -36,6 +39,8 @@ export default function UniversityVerification() {
   };
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (sending.current || (!challenge && cooldown.remaining > 0)) return;
+    sending.current = true;
     setBusy(true);
     setError("");
     try {
@@ -54,6 +59,7 @@ export default function UniversityVerification() {
         ),
       });
       if (!challenge) {
+        cooldown.start(60);
         setChallenge(result.challengeId);
         setDeliveryAddress(result.deliveryAddress);
         setCode("");
@@ -71,12 +77,23 @@ export default function UniversityVerification() {
         setCode("");
       }
     } catch (reason) {
+      if (
+        !challenge &&
+        reason instanceof ApiError &&
+        reason.code === "VERIFICATION_RATE_LIMITED" &&
+        reason.retryAfterSeconds
+      ) {
+        cooldown.start(reason.retryAfterSeconds);
+        setError("");
+        return;
+      }
       const messages: Record<string, string> = {
         INVALID_UNIKEY: "Enter your UniKey, for example abcd1234.",
         VERIFICATION_INVALID:
           "That code is invalid or expired. Try again or request a new code.",
-        VERIFICATION_RATE_LIMITED:
-          verificationWaitMessage(reason instanceof ApiError ? reason.retryAfterSeconds : undefined),
+        VERIFICATION_RATE_LIMITED: verificationWaitMessage(
+          reason instanceof ApiError ? reason.retryAfterSeconds : undefined,
+        ),
         EMAIL_NOT_CONFIGURED:
           "Email verification isn’t available yet. Please try again later.",
         EMAIL_SEND_FAILED:
@@ -92,6 +109,7 @@ export default function UniversityVerification() {
         ),
       );
     } finally {
+      sending.current = false;
       setBusy(false);
     }
   }
@@ -149,14 +167,20 @@ export default function UniversityVerification() {
           </>
         )}
         {error && <p role="alert">{error}</p>}
-        <button className="primary" disabled={busy}>
+        <button
+          className="primary"
+          disabled={busy || (!challenge && cooldown.remaining > 0)}
+        >
           {busy ? "Please wait…" : challenge ? "Verify" : "Send code"}
+          {!busy && !challenge && cooldown.remaining > 0 && (
+            <span className="code-cooldown">{` in ${cooldown.remaining}s`}</span>
+          )}
         </button>
         {challenge && (
           <button
             type="button"
             className="secondary"
-            disabled={busy}
+            disabled={busy || cooldown.remaining > 0}
             onClick={() => {
               setChallenge("");
               setCode("");
@@ -164,6 +188,9 @@ export default function UniversityVerification() {
             }}
           >
             Request a new code
+            {cooldown.remaining > 0 && (
+              <span className="code-cooldown">{` in ${cooldown.remaining}s`}</span>
+            )}
           </button>
         )}
         <button

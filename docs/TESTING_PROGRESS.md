@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-20 | Login resend countdown | 100/100 regression tests, lint/build; mocked portrait/landscape/desktop checks passed; no automatic polling or sends; physical devices/deployment unverified | [Checks and reproduction](CODE_COOLDOWN_2026-10-20.md) |
 | 2026-10-19 | Disable production samples | 92/92 tests, lint/build pass. Activated 21:55 AEDT: zero public samples, all 112 ride records retained, real rides unchanged, API healthy. | [Sample retirement](SAMPLE_RETIREMENT_2026-10-19.md) |
 | 2026-10-19 | Mutual ratings | 90/90 suite; isolated HTTP/account/threshold checks; driver/rider Chromium at 320/390/1440px. Production activation and new-query load tests pending. | [Ratings verification](RATINGS_CHECK_2026-10-19.md) |
 | 2026-10-19 | Driver pickup-input / role-specific Copy | Mocked Chromium touch/desktop 320/390/1440 pass; 87 regression tests, lint/build pass; physical mobile keyboards and deployment unverified | [Checks and reproduction](PICKUP_INPUT_CHECK_2026-10-19.md) |

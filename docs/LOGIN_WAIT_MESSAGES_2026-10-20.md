@@ -1,5 +1,9 @@
 # Login wait wording — 20 October 2026
 
+The sending-wait alert presentation below is superseded by the later
+[local button countdown](CODE_COOLDOWN_2026-10-20.md). Server metadata and limits
+remain unchanged; the older results are preserved as historical evidence.
+
 Source baseline: `261072d`, with this message-only policy-preserving change.
 Previously every verification rate limit said “15 minutes”, including the
 60-second resend cooldown. Server now reports the rejecting bucket's remaining

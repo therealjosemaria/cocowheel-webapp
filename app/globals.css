@@ -202,6 +202,7 @@ button:disabled {
   letter-spacing: 0.08em;
   text-decoration: none;
 }
+.code-cooldown { font-variant-numeric: tabular-nums; }
 .brand-art {
   position: relative;
   display: block;
