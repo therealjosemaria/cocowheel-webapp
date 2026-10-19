@@ -1,5 +1,22 @@
 # Mutual ratings verification — 19 October 2026
 
+## Production activation follow-up — 21:14 AEDT
+
+With explicit user approval, restarted only `cocowheels-api` to activate
+`055670a`. Before restart: no accepted/in-progress rides, one real published
+offer and three published samples; ratings table absent. Took a restricted-mode
+SQLite backup using the online backup API in `data/backups` and verified
+`quick_check = ok`. No record deletion or test trips.
+
+After restart: service active/running, zero automatic restarts; ratings table
+present; database quick check passed; the same four offers remain. Local and
+`https://www.gumwheel.com/api/health` returned 200/ok. Both local and live-proxy
+availability responses returned four offers, all with the new `driverRating`
+field. An initial Node fetch probe failed; subsequent curl probes passed and
+service logs confirmed startup without a crash. Authenticated production rating
+submission was not performed, to avoid manufacturing real reputation data.
+Historical pending-deployment notes below describe the pre-activation checks.
+
 Source: ratings commit series on top of `fe0a53d`; no production API restart or
 deployment verification. Isolated in-memory/temporary SQLite databases, loopback
 HTTP servers, stubbed email sender. No real accounts, email, location or live rides.

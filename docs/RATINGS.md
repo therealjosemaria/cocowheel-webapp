@@ -3,6 +3,9 @@
 Implemented in the ratings commit series based on `fe0a53d` (19 October 2026).
 Production API activation is separate: a frontend push does not migrate/restart
 the Pi API. Existing trips must not be interrupted to activate ratings.
+Activated on the Pi at 21:14 AEDT, 19 October 2026, with approved restart and
+backup; local/live-proxy health, schema and rating response fields verified.
+See the dated check report for scope; no live rating was submitted as a test.
 
 ## Rules
 

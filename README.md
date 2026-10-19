@@ -8,6 +8,8 @@ counts are shared, after ten released ratings in each role; individual scores
 remain hidden from participants. Both submit or the window closes before release.
 See [rating checks](docs/RATINGS_CHECK_2026-10-19.md) for tested scope and deployment
 limitations. Ratings require the updated API/schema, not just a frontend push.
+The ratings API/schema was activated on 19 October 2026 at 21:14 AEDT; local and
+Gumwheel-proxied health and rating fields were verified without changing rides.
 
 Drivers publish fixed-price rides; riders request to join; the driver accepts one rider and confirms pickup with a four-digit code. Payments are cashless PayID, not processed or verified by the app. Pickup codes have no time-based expiry while the ride remains eligible, but are single-use and invalidated by renewal or closure.
 
