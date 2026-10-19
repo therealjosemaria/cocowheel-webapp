@@ -263,7 +263,8 @@ for service operations.
 - The header wordmark is 16px on phones (below 700px), retaining its existing
   12px size on larger screens; it remains non-clickable.
 - The wordmark is followed by a 6px visible gap and the single combined pink
-  gum/tyre logo in `public/brand/gumwheel-logo.png`. It supersedes the separate
+  gum/tyre logo in `public/brand/gumwheel-original.png`, copied unchanged from the
+  user's transparent-original ZIP (superseding the generated cutout). It supersedes the separate
   icon pair; the old asset is retained. Next Image serves the transparent PNG
   at 15×15px (approximately 13.4px visible artwork height, matching the old icons).
   The 48×32px framing and 18px trailing spacer preserve navigation positions.

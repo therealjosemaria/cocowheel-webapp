@@ -1,5 +1,24 @@
 # Combined header logo — 19 October 2026
 
+## Original asset replacement
+
+The user rejected the generated cutout below and supplied
+`gumwheel-transparent-original.zip`. Its `gumwheel-transparent.png` is copied
+byte-for-byte to `public/brand/gumwheel-original.png`, without AI processing,
+redrawing or image edits. The new filename avoids reuse of the old optimized
+image URL. It is a 1254×1254 RGBA PNG with transparent corners; alpha >128 bounds
+are x75–1182, y90–1194. Existing 15px CSS sizing and all header geometry remain
+unchanged (approximately 13.2px visible artwork height). Previous assets remain
+available for history but are no longer referenced by the header.
+
+Replacement verification: visual-system tests 5/5 and lint passed. Full Home
+screens were reviewed in local Chromium at 320/390/1440px with mocked APIs;
+original image loads, no horizontal overflow, alignment and overall hierarchy
+remain unchanged. No real-device or live deployment verification; the earlier
+build result below belongs to the generated-cutout revision.
+
+## Superseded generated cutout
+
 The user-supplied combined pink gum/black tyre logo replaces the two separate
 header icons. Source was the attached Photo 1.jpg; built-in imagegen produced
 `public/brand/gumwheel-logo.png`, a 1254×1254 RGBA PNG, not an SVG.
