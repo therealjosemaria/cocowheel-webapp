@@ -41,6 +41,9 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   is superseded). Retain the touch target and native button semantics.
   This form uses 16px grid gaps with zero outer button
   margins, not stacked generic secondary margins. Verify/Cancel styling is unchanged.
+  Disabled secondary controls in this dialog retain the same opaque border, shape
+  and typography as enabled controls; use `--line` fill and `--muted` text instead
+  of global opacity fading. No hover/pressed motion or shadow while disabled.
 
 - API outage copy is shared: “We can’t reach the server. Please try again shortly.”
   User actions reuse existing dialogs; verification/profile keep errors in their

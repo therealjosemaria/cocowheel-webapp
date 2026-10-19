@@ -90,6 +90,9 @@ experiment. Both sending controls show rounded-up minutes at 60 seconds or more
 disappears and sending re-enables. Only presentation changes; deadlines and server
 enforcement are unchanged. Keyboard semantics and full-width touch targets remain.
 The form uses consistent 16px gaps, overriding secondary-button outer margins.
+Disabled secondary controls keep the normal opaque border and shape; `--line`
+fill and `--muted` text replace whole-button fading. Enabled controls remain white.
+No countdown, sending or verification rules change with this presentation.
 A send-side 429 with retry metadata replaces the local deadline with that server
 wait, displayed inside the button rather than a duplicate message. Verification
 errors remain separate; they do not disable resending. Older/malformed metadata

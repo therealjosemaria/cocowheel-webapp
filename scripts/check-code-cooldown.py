@@ -32,11 +32,20 @@ with sync_playwright() as p:
         for previous,current in zip(boxes,boxes[1:]):
             assert abs(current['y']-previous['y']-previous['height']-16)<1
         assert resend.evaluate('(e)=>getComputedStyle(e).borderTopWidth')=='1px'
+        cancel=page.get_by_role('button',name='Cancel',exact=True)
+        for prop in ['borderTopColor','borderRadius','fontSize','padding']:
+            assert resend.evaluate('(e,p)=>getComputedStyle(e)[p]',prop)==cancel.evaluate('(e,p)=>getComputedStyle(e)[p]',prop)
+        assert resend.evaluate('(e)=>getComputedStyle(e).opacity')=='1'
+        assert resend.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(226, 232, 240)'
+        assert resend.evaluate('(e)=>getComputedStyle(e).color')=='rgb(100, 116, 139)'
+        resend.hover()
+        assert resend.evaluate('(e)=>getComputedStyle(e).transform')=='none'
         assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='none'
         assert resend.bounding_box()['height']>=44
         page.screenshot(path=f'/tmp/code-cooldown-{width}-resend.png')
         page.clock.fast_forward(45000)
         expect(resend).to_be_enabled()
+        assert resend.evaluate('(e)=>getComputedStyle(e).backgroundColor')==cancel.evaluate('(e)=>getComputedStyle(e).backgroundColor')
         assert resend.evaluate('(e)=>getComputedStyle(e).textDecorationLine')=='none'
         page.screenshot(path=f'/tmp/code-cooldown-{width}-ready.png')
         # Reset the clock to test persistence of a fresh cooldown through closure.

@@ -127,6 +127,8 @@ at one minute or longer during a local cooldown and are disabled
 until it ends. Existing button names, code entry and verification remain unchanged.
 The countdown makes no requests; the API still checks every actual submission.
 The resend control retains the shared bordered secondary-button appearance.
+During cooldown it keeps its opaque border, with a light-grey fill and muted text
+to distinguish it from enabled Cancel; it returns to white when available.
 Login controls use one 16px grid gap without
 additional secondary-button margins; Verify and Cancel keep their existing styles.
 

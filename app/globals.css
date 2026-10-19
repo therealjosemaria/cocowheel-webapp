@@ -2808,6 +2808,13 @@ p {
   gap: 16px;
 }
 .university-form > button { margin: 0; }
+.university-form .secondary:disabled {
+  opacity: 1;
+  background: var(--line);
+  color: var(--muted);
+  box-shadow: none;
+  transform: none;
+}
 .university-form h2 {
   margin: 0;
   font-size: var(--text-subheading);

@@ -70,6 +70,10 @@ and Cancel use shared bordered secondary styling; Verify keeps primary styling.
 Wait suffixes use rounded-up minutes (`in 9 min`) at 60 seconds or longer, seconds
 below that (`in 59s`), and disappear at zero. The borderless resend experiment is
 superseded; maintain button dimensions and shared typography.
+Disabled UniKey secondary controls use opacity 1, `--line` fill and `--muted` text,
+with their existing border unchanged, no shadow and no transform. This scoped
+exception avoids fading the border into a label-like appearance; enabled controls
+retain their white background. Other buttons are not restyled.
 
 Ride notifications reuse ink/surface for the 18px Profile count badge, caption
 text, and a 44px-minimum secondary notice button. Profile update copy uses small

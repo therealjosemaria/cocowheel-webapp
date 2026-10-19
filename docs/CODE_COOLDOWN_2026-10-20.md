@@ -87,3 +87,21 @@ Visually reviewed portrait/landscape/desktop screenshots: existing button
 hierarchy restored, compact minute copy fits, landscape scroll preserved.
 Lint and production build passed. No backend change, production emails or live-trip testing.
 Physical-device and deployed verification remain outstanding.
+
+## Follow-up: clearer disabled state
+
+Baseline `99e488b`. Global disabled opacity (0.58) faded the resend border as well
+as its text, making it appear different from Cancel. UniKey secondary buttons now
+retain opacity 1 and the same border/shape/type/padding, with `--line` grey fill
+and `--muted` text when disabled. Enabled appearance remains white; no transform
+or shadow while disabled. This is scoped to this dialog, not a global redesign.
+
+Extended the same browser command to compare border colour, radius, font size and
+padding against Cancel; assert disabled fill/text/opacity, no hover transform and
+restored white background after expiry. All four viewport cases pass, alongside
+five focused countdown/HTTP/message tests, lint and production build. Visually reviewed full dialog
+screenshots on narrow mobile, portrait, landscape and desktop: disabled control
+is visibly a button, spacing is retained, primary Verify remains prominent.
+At 320px the longer label wraps without clipping; landscape keeps dialog scrolling.
+No authentication or server policy changes. Physical devices and deployment are
+not verified by these local mocked-browser checks.
