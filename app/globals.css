@@ -2836,7 +2836,8 @@ p {
 .message-read-marker { display: block; height: 1px; }
 .message-list span, .message-list time { font-size: var(--text-caption); color: var(--muted); }
 .ride-report { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 8px 16px; font-size: var(--text-caption); }
-.ride-report a { min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; }
+.ride-report a { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; text-decoration: underline; }
+.ride-report-icon { width: var(--icon-label); height: var(--icon-label); flex: none; }
 .message-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .message-actions button { flex: 1 1 150px; }
 .guest-identity-row .profile-verification { grid-column: 1 / -1; }

@@ -159,6 +159,10 @@ Sample payments: Town Hall uses Mobile `0491 570 006` (an [ACMA fictional-use nu
 - Run relevant tests, lint and build. Commit and push requested changes, and report actual deployment status rather than assuming a successful push means deployment completed.
 # Private messages — 20 October 2026 addition
 
+Concern links use a small decorative WhatsApp outline icon to the left of the
+text. Keep messaging summaries unchanged, with their disclosure arrow only;
+do not add a competing chat icon. Support retains its 44px touch target.
+
 Request-scoped chat uses a native expandable section and existing small text,
 surface/line/radius tokens. Body text stays regular; only the summary is semibold.
 Messages are plain text; no read receipts, typing animations or extra colour

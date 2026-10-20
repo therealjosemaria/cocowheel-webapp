@@ -22,7 +22,21 @@ export function ReportConcern({ rideId }: { rideId: string }) {
         target="_blank"
         rel="noopener noreferrer"
       >
-        {SUPPORT_LABEL}
+        <svg
+          className="ride-report-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M20.5 11.7a8.5 8.5 0 0 1-12.6 7.5L3 20.5l1.3-4.8A8.5 8.5 0 1 1 20.5 11.7Z" />
+          <path d="m8.1 7.5 1.5-.2 1 2.4-1.1 1.1a7.2 7.2 0 0 0 3.7 3.7l1.1-1.1 2.4 1-.2 1.5c-.1.7-.8 1.1-1.5 1-4.2-.6-7.4-3.8-8-8-.1-.7.4-1.3 1.1-1.4Z" />
+        </svg>
+        <span>{SUPPORT_LABEL}</span>
       </a>
     </div>
   );

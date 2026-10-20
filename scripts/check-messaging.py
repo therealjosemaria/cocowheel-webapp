@@ -111,6 +111,11 @@ with sync_playwright() as p:
             expect(textbox).to_be_enabled()
             expect(chat.get_by_role('link', name='Report a concern via WhatsApp')).to_have_count(0)
             expect(page.get_by_role('link', name='Report a concern via WhatsApp')).to_have_count(1)
+            support_icon = page.locator('.ride-report-icon')
+            expect(support_icon).to_have_attribute('aria-hidden', 'true')
+            expect(support_icon).to_have_attribute('focusable', 'false')
+            assert support_icon.bounding_box()['width'] == 14
+            assert support_icon.bounding_box()['height'] == 14
             assert page.get_by_role('link', name='Report a concern via WhatsApp').get_attribute('href').startswith('https://wa.me/61452340432?text=')
             page.screenshot(path=f'/tmp/messaging-{width}-{driver}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

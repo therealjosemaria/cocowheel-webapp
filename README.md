@@ -17,8 +17,10 @@ ride details with messaging expanded and an editable starter for an empty
 conversation; nothing is sent automatically. Normal visits remain collapsed.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details offer “Report a concern via WhatsApp” once below the ride
-details/actions, not inside conversations. The external link uses the creator’s
-personal account and includes only an editable ride-reference draft; nothing is
+details/actions, not inside conversations. A decorative 14px monochrome WhatsApp
+outline icon sits on the left; messaging summaries keep their disclosure arrow
+only. The external link uses the creator’s personal account and includes only an
+editable ride-reference draft; nothing is
 sent automatically. Privacy/support email remains available in the legal pages.
 Messaging contains only messaging controls, with no Ride actions link. Single-purpose
 section boundaries are an explicit rule in docs/UI_STANDARDS.md.

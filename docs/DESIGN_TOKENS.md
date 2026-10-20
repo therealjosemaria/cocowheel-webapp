@@ -112,6 +112,8 @@ Ride-details panels use 12px top separation. Map legends keep `--text-caption`,
 Below 600px the location-age item spans a separate centred row. Do not shrink
 fonts to fit long update ages. Creator support is a single ride-level link,
 “Report a concern via WhatsApp”, using the same caption size as legal links.
+Its decorative outline icon uses `--icon-label` (14px), current text colour and
+an 8px gap, vertically centred without shrinking. No badge or new colour.
 
 No new colour/font tokens. Messages use `--text-small`, `--text-caption`,
 `--weight-regular`, `--weight-semibold`, `--surface`, `--surface-subtle`, `--line`

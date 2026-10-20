@@ -38,3 +38,23 @@ All eight driver/rider messaging checks passed at 320/390/844/1440px. Lint passe
 No actual external chat was opened or sent. Deployment not performed.
 Real WhatsApp app/web handoff and recipient identity must be checked by the owner;
 automated checks do not verify the number's registration or delivery.
+
+## Outline icon follow-up
+
+Baseline `7f030d5`: the shared concern link now has a decorative inline WhatsApp
+outline SVG before the unchanged label. It uses the existing 14px icon token,
+current text colour, 8px gap and centred alignment. No SDK, extra request, badge
+or chat-summary icon was added. The SVG is hidden from assistive technology and
+cannot receive focus; the labelled link and its 44px target remain unchanged.
+
+Reproduction: run the isolated frontend and `scripts/check-messaging.py` as above,
+then `npm run lint`, `node --import tsx --test tests/support.test.ts` and
+`npm run build`. Eight mocked browser cases passed for both roles at
+320/390/844/1440px, including 14px icon dimensions, accessibility attributes,
+unchanged link destination and no overflow. Lint and support URL test passed.
+Production build/TypeScript and `git diff --check` also passed.
+Whole-screen mobile driver (390px) and desktop rider (1440px) screenshots were
+reviewed: the icon stays subordinate to text, the chat heading retains its arrow,
+and support remains separate from chat. Map tiles were intentionally blocked.
+Physical-device WhatsApp handoff and live deployment are not verified by these
+checks; no real messages were sent or backend services changed.
