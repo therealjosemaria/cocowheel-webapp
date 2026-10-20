@@ -162,16 +162,15 @@ Sample payments: Town Hall uses Mobile `0491 570 006` (an [ACMA fictional-use nu
 Request-scoped chat uses a native expandable section and existing small text,
 surface/line/radius tokens. Body text stays regular; only the summary is semibold.
 Messages are plain text; no read receipts, typing animations or extra colour
-palette. Send/Stop reuse primary/secondary buttons with at least 44px targets;
-they wrap on narrow screens. No ride-action navigation inside chat; Contact us on
-WhatsApp appears once below ride details/actions, never in conversations.
+palette. Send message is the sole composer action, using the shared primary
+button with a 44px minimum target. No ride-action navigation inside chat; Report a concern via WhatsApp appears once below ride details/actions, never in conversations.
 Keep 12px above the enclosing ride-details panel. Shared map legends retain
 caption size and role colours: location copy uses “Updated”, not “Last updated”,
 and minutes use “min”. Below 600px, location age occupies its own centred row;
 route names remain unbroken with non-shrinking swatches. Wider legends can wrap
 whole items rather than shrink text.
-Stop confirmation uses the shared cancel-prompt styling and native dialog focus
-handling, with KEEP MESSAGING before STOP MESSAGING.
+The former Stop messaging button/dialog is removed. Messaging closes with the
+request/ride lifecycle; previously stopped conversations remain stopped.
 Existing cancellation/error modals retain their layout with keyboard focus
 containment, idle Escape dismissal and focus return to the trigger.
 No automatic page scrolling on arrival; only an explicit Profile/anchor action navigates. Use the accurate

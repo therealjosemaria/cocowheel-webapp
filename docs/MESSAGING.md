@@ -46,6 +46,7 @@ Base: `/api/rides/:publicRideId/conversations/:requestId`
 - POST `/stop`: `{}` irreversibly stops sending by either participant in that
   request; existing messages remain accessible while the ride/request is open.
   Unread notices stop. Does **not** withdraw, decline or cancel a ride.
+  Retained for older-client compatibility only; the current UI no longer calls it.
 
 Max 20 successfully inserted messages per account per rolling minute across all
 threads (429); max 500 messages total per conversation (409). Duplicates do not
@@ -95,8 +96,11 @@ Existing Action cell and shared confirmation retain withdraw/cancel behaviour.
 Existing cancellation/error dialogs now contain keyboard focus, return focus to
 the triggering control on close, and allow Escape when no action is in flight.
 Ride actions remain in their own Action section, not in conversation content.
-Stop messaging uses matching positive-first/negative-second confirmation styling.
-“Contact us on WhatsApp” opens an external chat with the creator’s
+The composer offers only Send message. The separate Stop messaging button,
+handler and confirmation dialog were removed; cancellation/withdrawal and pickup
+confirmations are unchanged. Existing stop records still prevent messaging and
+are never reopened automatically. Server lifecycle/authorization gates remain.
+“Report a concern via WhatsApp” opens an external chat with the creator’s
 personal account, including an editable ride-reference draft. It does not send
 automatically, submit a server report, promise monitoring or emergency response.
 The link appears once below participant ride details/actions, including history;
@@ -107,6 +111,9 @@ Signed-in Profile says University email verified for UniKeys; approved exception
 say Email verified. This does not verify student status, identity or licence.
 
 ## Checks and deployment
+
+The send-only composer and concern-link revision is covered in
+[simplification checks](MESSAGING_SIMPLIFICATION_2026-10-20.md); it needs no API restart.
 
 See [dated messaging checks](MESSAGING_CHECK_2026-10-20.md) for reproducible commands,
 failed baselines, screenshots reviewed and untested boundaries. Schema/API changes

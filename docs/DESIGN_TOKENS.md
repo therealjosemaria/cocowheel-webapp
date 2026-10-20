@@ -111,11 +111,11 @@ Ride-details panels use 12px top separation. Map legends keep `--text-caption`,
 8px row / 16px column gaps, non-shrinking colour swatches and unbroken route names.
 Below 600px the location-age item spans a separate centred row. Do not shrink
 fonts to fit long update ages. Creator support is a single ride-level link,
-“Contact us on WhatsApp”, using the same caption size as legal links.
+“Report a concern via WhatsApp”, using the same caption size as legal links.
 
 No new colour/font tokens. Messages use `--text-small`, `--text-caption`,
 `--weight-regular`, `--weight-semibold`, `--surface`, `--surface-subtle`, `--line`
-and `--radius-control`. Send/Stop use the shared `ride-action-buttons` sizing,
-wrapping with an 8px gap; body/list gaps 12px, panel padding 16px. Plain message
+and `--radius-control`. Send message alone uses the shared `ride-action-buttons`
+sizing, full available width; body/list gaps 12px, panel padding 16px. Plain message
 body remains regular weight. Verification helper spans both Profile identity
 columns. See UI_STANDARDS.md and MESSAGING_CHECK_2026-10-20.md for review evidence.

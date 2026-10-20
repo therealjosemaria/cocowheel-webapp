@@ -72,7 +72,9 @@ with sync_playwright() as p:
             textbox = chat.get_by_role('textbox', name='Message', exact=True)
             expect(textbox).to_be_visible()
             heights = chat.locator('.message-actions button').evaluate_all('(buttons)=>buttons.map(b=>b.getBoundingClientRect().height)')
-            assert len(heights) == 2 and min(heights) >= 44 and abs(heights[0]-heights[1]) < 1, heights
+            assert len(heights) == 1 and heights[0] >= 44, heights
+            expect(chat.get_by_role('button', name='Stop messaging', exact=True)).to_have_count(0)
+            expect(page.get_by_role('dialog', name='Stop messaging')).to_have_count(0)
             if not driver:
                 chat.get_by_role('button', name='Hi! Where should we meet', exact=False).click()
                 expect(textbox).to_have_value('Hi! Where should we meet, and what’s your car’s number plate?')
@@ -106,14 +108,10 @@ with sync_playwright() as p:
             expect(keep).to_have_count(0)
             expect(action).to_be_focused()
             chat.locator('summary').scroll_into_view_if_needed()
-            chat.get_by_role('button', name='Stop messaging', exact=True).click()
-            expect(page.get_by_role('dialog', name='Stop messaging')).to_be_visible()
-            page.screenshot(path=f'/tmp/messaging-dialog-{width}-{driver}.png')
-            page.get_by_role('button', name='KEEP MESSAGING', exact=True).click()
             expect(textbox).to_be_enabled()
-            expect(chat.get_by_role('link', name='Contact us on WhatsApp')).to_have_count(0)
-            expect(page.get_by_role('link', name='Contact us on WhatsApp')).to_have_count(1)
-            assert page.get_by_role('link', name='Contact us on WhatsApp').get_attribute('href').startswith('https://wa.me/61452340432?text=')
+            expect(chat.get_by_role('link', name='Report a concern via WhatsApp')).to_have_count(0)
+            expect(page.get_by_role('link', name='Report a concern via WhatsApp')).to_have_count(1)
+            assert page.get_by_role('link', name='Report a concern via WhatsApp').get_attribute('href').startswith('https://wa.me/61452340432?text=')
             page.screenshot(path=f'/tmp/messaging-{width}-{driver}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             # Unread metadata updates the existing single Profile card and links to chat.
@@ -148,8 +146,9 @@ with sync_playwright() as p:
             with page.expect_response(lambda response: '/conversations/req0/read' in response.url):
                 chat.locator('.message-read-marker').scroll_into_view_if_needed()
             assert state['unread'] == 0
-            chat.get_by_role('button', name='Stop messaging', exact=True).click()
-            page.get_by_role('button', name='STOP MESSAGING', exact=True).click()
+            # Previously stopped conversations remain stopped, without any new stop UI.
+            state['stopped'] = True
+            page.evaluate("window.dispatchEvent(new Event('cocowheels:ride-updated'))")
             expect(chat).to_contain_text('Messaging has been stopped. Your ride is unchanged.')
             expect(chat.get_by_role('textbox')).to_have_count(0)
             assert state['stopped']

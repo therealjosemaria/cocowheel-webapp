@@ -55,9 +55,9 @@ export default function TermsPage() {
       <p>
         Optional private messages help the driver and requesting rider arrange
         their trip. Do not send abusive, unsolicited promotional or misleading
-        messages. Either participant can stop messaging; this does not withdraw
-        a request or cancel a ride. Messaging ends when the request or ride
-        closes. Contact us on WhatsApp opens the creator’s personal
+        messages. You can withdraw your request or cancel your ride using the
+        available ride controls. Messaging ends when the request or ride
+        closes. Report a concern via WhatsApp opens the creator’s personal
         WhatsApp account, not an in-app or emergency response service. Messages
         and reports are not guaranteed to be read immediately.
       </p>

@@ -57,7 +57,6 @@ export default function RideMessages({
   const controller = useRef<AbortController | null>(null);
   const lastRead = useRef(0);
   const tail = useRef<HTMLSpanElement | null>(null);
-  const confirm = useRef<HTMLDialogElement | null>(null);
   const path = `/api/rides/${encodeURIComponent(rideId)}/conversations/${encodeURIComponent(summary.requestId)}`;
   const target = conversationTarget(summary.requestId);
   const unavailable = closed || summary.stopped || data?.stopped;
@@ -141,7 +140,6 @@ export default function RideMessages({
       pending.current = null;
       lastRead.current = 0;
       setClosed(true);
-      confirm.current?.close();
     };
     window.addEventListener("hashchange", follow);
     window.addEventListener("cocowheels:open-conversation", requested);
@@ -246,36 +244,6 @@ export default function RideMessages({
       setBusy(false);
     }
   }
-  async function stop() {
-    if (sending.current) return;
-    sending.current = true;
-    setBusy(true);
-    const currentGeneration = generation.current;
-    try {
-      await chatApi(path + "/stop", { method: "POST", body: "{}" });
-      if (generation.current !== currentGeneration) return;
-      confirm.current?.close();
-      setData((previous) =>
-        previous
-          ? { ...previous, stopped: true }
-          : { messages: [], stopped: true },
-      );
-      setDraft("");
-      refreshNotices();
-    } catch (reason) {
-      if (generation.current !== currentGeneration) return;
-      confirm.current?.close();
-      setError(
-        apiErrorMessage(
-          reason,
-          "We couldn’t stop messaging. Please try again.",
-        ),
-      );
-    } finally {
-      sending.current = false;
-      setBusy(false);
-    }
-  }
   return (
     <details
       id={target}
@@ -363,14 +331,6 @@ export default function RideMessages({
                     >
                       {busy ? "Sending…" : "Send message"}
                     </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      disabled={busy}
-                      onClick={() => confirm.current?.showModal()}
-                    >
-                      Stop messaging
-                    </button>
                   </div>
                 </form>
               )}
@@ -378,32 +338,6 @@ export default function RideMessages({
           )}
         </div>
       ) : null}
-      <dialog
-        ref={confirm}
-        className="cancel-prompt message-stop-dialog"
-        aria-label="Stop messaging"
-        onCancel={(e) => {
-          if (busy) e.preventDefault();
-        }}
-      >
-        <p>Stop messages for this request? Your ride will stay unchanged.</p>
-        <div className="cancel-prompt-actions">
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() => confirm.current?.close()}
-          >
-            KEEP MESSAGING
-          </button>
-          <button
-            className="danger"
-            disabled={busy}
-            onClick={() => void stop()}
-          >
-            STOP MESSAGING
-          </button>
-        </div>
-      </dialog>
       {error ? <Message text={error} close={() => setError(null)} /> : null}
     </details>
   );

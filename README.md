@@ -7,13 +7,16 @@ requesting rider before and after acceptance. Only participants can read/send;
 request/ride closure removes access without deleting stored conversations.
 Unread counts reuse Profile's active-ride card and existing visible-page polling.
 No attachments, typing indicators, push delivery or new retention cleanup.
-Either participant can stop messages independently of withdrawing/cancelling.
+Messaging closes with the request/ride lifecycle; the composer has only Send
+message, without a separate Stop messaging button/dialog. Previously stopped
+conversations stay stopped; historical records and backend compatibility remain.
+See [send-only messaging checks](docs/MESSAGING_SIMPLIFICATION_2026-10-20.md).
 Discovery and public ride previews keep Request to join unchanged, with a quiet
 “You can message the driver after requesting.” hint. Successful requests open
 ride details with messaging expanded and an editable starter for an empty
 conversation; nothing is sent automatically. Normal visits remain collapsed.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
-Ride details offer “Contact us on WhatsApp” once below the ride
+Ride details offer “Report a concern via WhatsApp” once below the ride
 details/actions, not inside conversations. The external link uses the creator’s
 personal account and includes only an editable ride-reference draft; nothing is
 sent automatically. Privacy/support email remains available in the legal pages.

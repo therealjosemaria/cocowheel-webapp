@@ -80,8 +80,7 @@ export default function PrivacyPage() {
         Optional messages are stored with their request, sender, timestamps and
         read position to help participants arrange the ride. Only that driver
         and rider can access the conversation through the app while their
-        request or ride is open. Either can stop further messages without
-        cancelling the ride. Conversations disappear from participant access
+        request or ride is open. Conversations disappear from participant access
         when the request or ride ends; they are retained on our server without
         an automatic deletion schedule. They are not end-to-end encrypted;
         authorised operators may access stored records for support and safety.
@@ -103,7 +102,7 @@ export default function PrivacyPage() {
         handling is also governed by their own privacy policies.
       </p>
       <p>
-        Contact us on WhatsApp opens an external conversation with the
+        Report a concern via WhatsApp opens an external conversation with the
         creator’s personal account. The link includes your ride reference in an
         editable draft, not your route, PayID or login codes. Opening the link
         passes that draft to WhatsApp; you choose whether to send it. WhatsApp

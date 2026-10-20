@@ -2840,8 +2840,6 @@ p {
 .message-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .message-actions button { flex: 1 1 150px; }
 .guest-identity-row .profile-verification { grid-column: 1 / -1; }
-.message-stop-dialog { margin: auto; border: 1px solid var(--line); }
-.message-stop-dialog::backdrop { background: rgb(17 24 39 / 0.4); }
 .university-form .secondary:disabled {
   opacity: 1;
   background: var(--line);

@@ -6,7 +6,7 @@ The owner authorized their personal Australian WhatsApp number for public suppor
 digits-only form (61 followed by the mobile number without its leading zero).
 This is an intentionally public contact destination, not a secret/API credential.
 
-One “Contact us on WhatsApp” link stays below participant ride details,
+One “Report a concern via WhatsApp” link stays below participant ride details,
 including history; none inside chat. Caption font (12px default), regular weight
 and 44px minimum tap height remain. New tab uses noopener/noreferrer to leave the
 ride view available and avoid a referrer. No WhatsApp SDK, Business API or account
