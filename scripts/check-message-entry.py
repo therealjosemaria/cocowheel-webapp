@@ -1,5 +1,6 @@
 """Mocked request-to-message checks. Isolated Next server on :3090."""
 import json
+from datetime import datetime, timedelta, timezone
 from playwright.sync_api import sync_playwright, expect
 
 pin = {'latitude': -33.87, 'longitude': 151.21, 'label': 'Town Hall'}
@@ -7,7 +8,7 @@ end = {'latitude': -33.92, 'longitude': 151.25, 'label': 'Coogee'}
 starter = 'Hi! Where should we meet, and what’s your car’s number plate?'
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
-    for width in [320, 390, 1440]:
+    for width in [320, 393, 1440]:
         for preview in [False, True]:
             context = browser.new_context(viewport={'width': width, 'height': 900})
             page = context.new_page()
@@ -16,6 +17,7 @@ with sync_playwright() as p:
             state = {'requested': False, 'fail': True, 'sends': 0}
             req = {'requestId': 'req0', 'riderAlias': 'ride1234', 'status': 'PENDING', 'pickup': pin, 'destination': end, 'createdAt': '2026-10-20T00:00:00Z', 'requestedDepartureAt': '2026-10-20T00:00:00Z', 'directionFit': 'GOOD'}
             base = {'rideId': 'test-ride', 'driverAlias': 'driv1234', 'status': 'PUBLISHED', 'priceAud': 5, 'scheduledDepartureAt': '2026-10-20T00:00:00Z', 'expiresAt': '2099-10-20T00:00:00Z', 'plannedRoute': {'origin': pin, 'destination': end}, 'paymentMethod': 'PAYID', 'pickupEstablished': False}
+            base['driverLocation'] = dict(pin, capturedAt=(datetime.now(timezone.utc)-timedelta(minutes=57)).isoformat(), moving=False, stale=True, accuracyMeters=10)
             def respond(route):
                 path = route.request.url.split('/api/')[-1].split('?')[0]
                 ride = dict(base)
@@ -47,6 +49,12 @@ with sync_playwright() as p:
             expect(hint).to_be_visible()
             button = page.get_by_role('button', name='REQUEST TO JOIN', exact=True)
             expect(button).to_be_enabled()
+            expect(page.locator('.driver-location-age')).to_contain_text('Driver · Updated 57 min ago')
+            labels = page.locator('.ride-selection-route-key > span')
+            for label in labels.all():
+                assert label.evaluate('(el) => el.getBoundingClientRect().height <= 20')
+            if width < 600:
+                assert page.locator('.driver-location-age').bounding_box()['y'] < labels.first.bounding_box()['y']
             page.screenshot(path=f'/tmp/message-entry-{width}-{preview}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             button.click()
@@ -58,6 +66,11 @@ with sync_playwright() as p:
             expect(textbox).to_have_value(starter)
             assert 'request=req0' in page.url and 'compose=' not in page.url
             assert state['sends'] == 0
+            expect(page.get_by_role('link', name='Report a concern')).to_have_count(1)
+            expect(page.locator('#messages-req0').get_by_role('link', name='Report a concern')).to_have_count(0)
+            legend = page.locator('.ride-selection-route-key').bounding_box()
+            summary = page.locator('.ride-preview-summary').bounding_box()
+            assert summary['y'] - (legend['y'] + legend['height']) >= 12
             assert page.evaluate('window.scrollY') < 100
             textbox.fill('Where should I wait?')
             page.evaluate("window.dispatchEvent(new Event('cocowheels:current-updated'))")

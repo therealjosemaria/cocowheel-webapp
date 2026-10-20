@@ -110,7 +110,9 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/messaging-dialog-{width}-{driver}.png')
             page.get_by_role('button', name='KEEP MESSAGING', exact=True).click()
             expect(textbox).to_be_enabled()
-            assert chat.get_by_role('link', name='Report a concern').get_attribute('href').startswith('mailto:')
+            expect(chat.get_by_role('link', name='Report a concern')).to_have_count(0)
+            expect(page.get_by_role('link', name='Report a concern')).to_have_count(1)
+            assert page.get_by_role('link', name='Report a concern').get_attribute('href').startswith('mailto:')
             page.screenshot(path=f'/tmp/messaging-{width}-{driver}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             # Unread metadata updates the existing single Profile card and links to chat.

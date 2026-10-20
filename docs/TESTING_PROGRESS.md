@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-20 | Legend/chat layout | 109 regression tests, six entry/layout and eight role/viewport checks passed; single report link, 57-minute-old location and iPhone 14 Pro CSS width checked without production mutations. | [Evidence](LEGEND_CHAT_LAYOUT_2026-10-20.md) |
 | 2026-10-20 | Request-to-message entry | 109 regression tests; six mocked request-entry and eight messaging role/viewport checks passed. No production mutations; frontend deployment separate. | [Checks and failed baselines](MESSAGE_ENTRY_CHECK_2026-10-20.md) |
 | 2026-10-20 | Login resend countdown | 100/100 regression tests, lint/build; mocked portrait/landscape/desktop checks passed; no automatic polling or sends; physical devices/deployment unverified | [Checks and reproduction](CODE_COOLDOWN_2026-10-20.md) |
 | 2026-10-19 | Disable production samples | 92/92 tests, lint/build pass. Activated 21:55 AEDT: zero public samples, all 112 ride records retained, real rides unchanged, API healthy. | [Sample retirement](SAMPLE_RETIREMENT_2026-10-19.md) |

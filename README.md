@@ -14,6 +14,10 @@ ride details with messaging expanded and an editable starter for an empty
 conversation; nothing is sent automatically. Normal visits remain collapsed.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details also offer a clearly labelled email-based Report a concern link.
+That link appears once below the ride details/actions, not inside conversations.
+Details have a 12px top gap below the map/pickup area. Shared map legends retain
+caption typography, use “Driver · Updated 57 min ago” style wording, and put
+location age on its own row below 600px so route labels remain unbroken.
 Profile verification copy is “University email verified” (approved email/guest
 exceptions: “Email verified”), not identity, licence or enrolment verification.
 Schema/API activation is separate from frontend deployment; see the

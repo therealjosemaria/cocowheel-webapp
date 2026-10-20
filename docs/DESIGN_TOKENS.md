@@ -107,6 +107,11 @@ wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance
 5. Run the visual-system regression test, relevant browser checks, lint and build. Update this document and UI standards for agreed exceptions.
 ## Private messaging (20 October 2026)
 
+Ride-details panels use 12px top separation. Map legends keep `--text-caption`,
+8px row / 16px column gaps, non-shrinking colour swatches and unbroken route names.
+Below 600px the location-age item spans a separate centred row. Do not shrink
+fonts to fit long update ages. Report a concern is a single ride-level link.
+
 No new colour/font tokens. Messages use `--text-small`, `--text-caption`,
 `--weight-regular`, `--weight-semibold`, `--surface`, `--surface-subtle`, `--line`
 and `--radius-control`. Send/Stop use the shared `ride-action-buttons` sizing,

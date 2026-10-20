@@ -378,7 +378,6 @@ export default function RideMessages({
             <a className="message-ride-actions" href="#ride-actions">
               Ride actions
             </a>
-            <ReportConcern rideId={rideId} />
           </div>
         </div>
       ) : null}

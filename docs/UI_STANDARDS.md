@@ -157,7 +157,13 @@ Request-scoped chat uses a native expandable section and existing small text,
 surface/line/radius tokens. Body text stays regular; only the summary is semibold.
 Messages are plain text; no read receipts, typing animations or extra colour
 palette. Send/Stop reuse primary/secondary buttons with at least 44px targets;
-they wrap on narrow screens. Report and Ride actions remain explicit links.
+they wrap on narrow screens. Ride actions remains an explicit chat link; Report a
+concern appears once below ride details/actions, never duplicated in conversations.
+Keep 12px above the enclosing ride-details panel. Shared map legends retain
+caption size and role colours: location copy uses “Updated”, not “Last updated”,
+and minutes use “min”. Below 600px, location age occupies its own centred row;
+route names remain unbroken with non-shrinking swatches. Wider legends can wrap
+whole items rather than shrink text.
 Stop confirmation uses the shared cancel-prompt styling and native dialog focus
 handling, with KEEP MESSAGING before STOP MESSAGING.
 Existing cancellation/error modals retain their layout with keyboard focus

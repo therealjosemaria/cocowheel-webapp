@@ -38,15 +38,14 @@ export default function LocationAge({
     seconds < 60
       ? `${seconds}s`
       : seconds < 3600
-        ? `${Math.floor(seconds / 60)}m`
+        ? `${Math.floor(seconds / 60)} min`
         : `${Math.floor(seconds / 3600)}h`;
-  const stale = seconds > (location.moving ? 30 : 60);
   return (
     <small
       className="driver-location-age"
       title={new Date(location.capturedAt).toLocaleString()}
     >
-      {label} · {stale ? "Last updated" : "Updated"} {age} ago
+      {label} · Updated {age} ago
     </small>
   );
 }

@@ -98,7 +98,9 @@ Chat offers a Ride actions anchor so a long conversation does not hide the exit.
 Stop messaging uses matching positive-first/negative-second confirmation styling.
 Report a concern opens an email to support with the ride ID; it does not submit a
 server report, promise monitoring or claim emergency response. A mail handler is
-needed. Link/helper also remain on participant ride details, including history.
+needed. One link/helper remains below participant ride details/actions, including
+history; the duplicate inside each conversation is removed. Chat retains its
+Ride actions anchor. The enclosing details panel has a 12px top gap.
 Signed-in Profile says University email verified for UniKeys; approved exceptions
 say Email verified. This does not verify student status, identity or licence.
 
