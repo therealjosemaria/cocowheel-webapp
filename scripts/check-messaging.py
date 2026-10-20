@@ -57,6 +57,10 @@ with sync_playwright() as p:
             page.goto('http://127.0.0.1:3090/activity/test-ride')
             chat = page.locator('#messages-req0')
             expect(chat).not_to_have_attribute('open', '')
+            if driver:
+                accordion = page.locator('.driver-request-accordion').first
+                expect(accordion).not_to_have_attribute('open', '')
+                accordion.locator(':scope > summary').click()
             if not driver:
                 page.goto('http://127.0.0.1:3090/activity/test-ride?request=req0&compose=1')
                 expect(chat).to_have_attribute('open', '')

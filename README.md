@@ -312,6 +312,19 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Driver pending requests are independent, initially collapsed native accordions
+  inside a labelled Rider requests section. Summaries show rider identity and
+  request status; several may remain open for comparison. Polling preserves
+  disclosure state. Explicit request/message notification navigation opens the
+  relevant enclosing accordion before revealing its content; closed request
+  details are not acknowledged merely because the summary is visible.
+- Detail grids keep pickup/origin above destination in the right column, with
+  identity/status and timing on the left. Driver fare and own PayID share a row;
+  ride actions span both columns at the bottom. Request status remains visible
+  in expanded details, followed by the existing Decline/Accept action area.
+  Long PayIDs wrap; existing rider payment disclosure and Copy rules are unchanged.
+  See [accordion checks](docs/REQUEST_ACCORDIONS_2026-10-20.md).
+
 - Ride updates reuse the existing Profile active-ride card with an unread count
   on the Profile icon. Drivers see new pending requests; the accepted rider sees
   “[driver UniKey] accepted your request”. Driver ride details show a non-blocking

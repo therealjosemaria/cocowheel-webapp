@@ -44,6 +44,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Pending request accordions use the shared surface/line/control radius, 12px
+  section and summary padding, 8px section gap, 14px semibold identity and 12px
+  regular muted status. Native disclosure markers and 44px minimum summary targets
+  remain keyboard accessible. Ride Action spans both columns; driver PayID shares
+  the Fare row and wraps long values. No new fonts, colours or shadows.
 - Cell-label and Copy icons: `--icon-label`, 14px; field/location icons: `--icon-field`, 18px.
 - Help role headings scope `--icon-label` to `--icon-field` (18px) beside the 18px H2 text, with an 8px gap and centred alignment. This does not resize ordinary field labels. Help spacing: 12px heading-to-list, 8px between concise steps (superseding 16px for the former longer explanations), 24px between sections; keep wrapped lines within each step closer than neighbouring steps.
 - Help role cards reuse route colours via `--help-role-accent`: 6% accent mixed with `--surface` for backgrounds, full accent for decorative icons, `--ink` for text. Both use 16px padding and `--radius-control` corners, without shadows. This is a role-identification use of the map palette, not a new brand palette.

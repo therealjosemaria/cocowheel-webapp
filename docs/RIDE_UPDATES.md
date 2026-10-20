@@ -2,6 +2,13 @@
 
 ## Implemented scope
 
+20 October accordion refinement: pending request details start collapsed. The
+identity cell remains the acknowledgement target, so a visible closed summary
+does not clear the request. Explicit notice/Profile anchor navigation opens its
+enclosing disclosure before focus/scroll. Toggle/hash events rescan visibility;
+ordinary polling does not open or collapse accordions. Message navigation also
+opens the enclosing request. See REQUEST_ACCORDIONS_2026-10-20.md for retests.
+
 The original 19 October request/acceptance behaviour below remains. The
 20 October [messaging extension](MESSAGING.md) additionally carries server-owned
 unread metadata in the same current poll, fetches open conversations and adds

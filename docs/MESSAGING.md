@@ -58,6 +58,8 @@ retry/full; 400 invalid content/cursor. Session is rechecked after body parsing.
 ## UI, notifications and exit controls
 
 Native expandable Messages section: each pending driver request has its own;
+that section sits inside the independently collapsible request card. Explicit
+unread-message navigation reveals its enclosing request as well as the chat.
 rider/accepted driver see theirs in ride details below the pickup area. No extra
 tab or historical chat inbox. Rider can insert an editable starter asking where
 to meet and the number plate; never sent automatically. No media, calls, typing

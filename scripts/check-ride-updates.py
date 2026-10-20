@@ -25,7 +25,10 @@ with sync_playwright() as p:
                 ride = {'rideId': 'test-ride', 'driverAlias': 'driver1234', 'status': 'REQUESTED' if driver or not state['accepted'] else 'ACCEPTED',
                         'priceAud': 5, 'scheduledDepartureAt': '2026-10-19T00:00:00Z', 'expiresAt': '2099-10-19T00:00:00Z',
                         'plannedRoute': {'origin': pin, 'destination': end}, 'paymentMethod': 'PAYID', 'pickupEstablished': False}
-                if driver: ride['requests'] = requests
+                if driver:
+                    ride['requests'] = requests
+                    ride['payId'] = 'long.driver.payment.address.for.wrapping@example.com'
+                    ride['payIdType'] = 'EMAIL'
                 else:
                     ride['request'] = dict(requests[0], status='ACCEPTED' if state['accepted'] else 'PENDING')
                     if state['accepted']: ride['coRideCode'] = '1234'
@@ -56,12 +59,47 @@ with sync_playwright() as p:
             if driver:
                 notice = page.get_by_role('button',name='New rider request',exact=False)
                 expect(notice).to_be_visible()
+                accordions = page.locator('.driver-request-accordion')
+                expect(accordions).to_have_count(2)
+                assert page.locator('.driver-request-accordion[open]').count() == 0
+                payment = page.locator('.preview-driver-payment').bounding_box()
+                fields = page.locator('.ride-preview-fields').bounding_box()
+                action_bounds = page.locator('#ride-actions').bounding_box()
+                assert abs(action_bounds['width'] - fields['width']) < 2
+                assert payment['width'] < fields['width'] * .6
                 assert page.evaluate('scrollY') == 0
                 page.screenshot(path=f'/tmp/updates-notice-{width}.png',full_page=True)
                 notice.click()
                 expect(page.locator('#request-req0')).to_be_in_viewport()
+                expect(accordions.nth(0)).to_have_attribute('open', '')
+                expect(accordions.nth(1)).not_to_have_attribute('open', '')
                 page.wait_for_function("JSON.parse(localStorage.getItem('cocowheels:seen-updates:v1:driver1234') || '[]').some(k=>k.includes(':req0:'))")
+                accordions.nth(1).locator(':scope > summary').click()
+                expect(accordions.nth(0)).to_have_attribute('open', '')
                 page.locator('#request-req1').scroll_into_view_if_needed()
+                # Independent disclosure state survives polling, and route controls do not scroll.
+                page.evaluate("window.dispatchEvent(new Event('cocowheels:ride-updated'))")
+                expect(page.locator('.driver-request-accordion[open]')).to_have_count(2)
+                request_fields = accordions.nth(1).locator('.driver-request-fields > div')
+                identity, origin, requested, destination = [request_fields.nth(i).bounding_box() for i in range(4)]
+                assert origin['x'] > identity['x'] and destination['x'] == origin['x']
+                assert requested['x'] == identity['x'] and destination['y'] > origin['y']
+                route_button = accordions.nth(1).get_by_role('button', name='Show route', exact=True)
+                route_button.scroll_into_view_if_needed()
+                before = page.evaluate('scrollY')
+                route_button.click()
+                expect(accordions.nth(1).get_by_role('button', name='Hide route')).to_be_visible()
+                assert abs(page.evaluate('scrollY') - before) < 2
+                # Keyboard toggle leaves the other request open, and polling retains it.
+                first_summary = accordions.nth(0).locator(':scope > summary')
+                first_summary.focus()
+                page.keyboard.press('Enter')
+                expect(accordions.nth(0)).not_to_have_attribute('open', '')
+                expect(accordions.nth(1)).to_have_attribute('open', '')
+                with page.expect_response(lambda response: '/api/rides/test-ride' in response.url):
+                    page.evaluate("window.dispatchEvent(new Event('cocowheels:ride-updated'))")
+                expect(accordions.nth(0)).not_to_have_attribute('open', '')
+                expect(accordions.nth(1)).to_have_attribute('open', '')
                 expect(page.locator('.profile-update-badge')).to_have_count(0)
                 expect(page.locator('.ride-update-notice')).to_have_count(0)
                 assert page.locator('.request-arrived').count() == 2
@@ -79,6 +117,7 @@ with sync_playwright() as p:
                 page.get_by_role('button',name='Profile:',exact=False).click()
                 page.locator('.profile-active-ride').click()
                 expect(page.locator('#request-req2')).to_be_in_viewport()
+                expect(accordions.nth(2)).to_have_attribute('open', '')
                 expect(page.locator('.profile-update-badge')).to_have_count(0)
                 # Authentication loss removes private unread information.
                 page.goto('http://127.0.0.1:3090/help')

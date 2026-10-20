@@ -9,6 +9,7 @@ import {
 } from "@/lib/messaging-types";
 import { Message } from "./ride-journey-controls";
 import { SUPPORT_LABEL, supportWhatsAppUrl } from "@/lib/support";
+import { revealDetailsAncestors } from "@/lib/reveal-details";
 
 // Never replay a private message after signing in as a different account.
 const chatApi = <T,>(path: string, init: RequestInit = {}) =>
@@ -121,7 +122,11 @@ export default function RideMessages({
   }, [open, closed, load]);
   useEffect(() => {
     const follow = () => {
-      if (location.hash === `#${target}`) setOpen(true);
+      if (location.hash === `#${target}`) {
+        const element = document.getElementById(target);
+        if (element) revealDetailsAncestors(element);
+        setOpen(true);
+      }
       const url = new URL(location.href);
       if (
         rider &&
@@ -137,7 +142,11 @@ export default function RideMessages({
       }
     };
     const requested = (event: Event) => {
-      if ((event as CustomEvent<string>).detail === target) setOpen(true);
+      if ((event as CustomEvent<string>).detail === target) {
+        const element = document.getElementById(target);
+        if (element) revealDetailsAncestors(element);
+        setOpen(true);
+      }
     };
     const initial = setTimeout(follow, 0);
     const clear = () => {

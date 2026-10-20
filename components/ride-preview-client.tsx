@@ -1032,14 +1032,29 @@ export default function RidePreviewClient({
                     </dd>
                   </div>
                 ) : null}
+                {driverOwned && ride.payId ? (
+                  <div className="preview-driver-payment">
+                    <dt>
+                      <RideFieldLabel icon="payid">Your PayID</RideFieldLabel>
+                    </dt>
+                    <dd className="preview-payid">
+                      <span>
+                        {ride.payIdType === "MOBILE"
+                          ? "Mobile"
+                          : ride.payIdType === "EMAIL"
+                            ? "Email"
+                            : "Other"}
+                      </span>
+                      <code className="payid-value">{ride.payId}</code>
+                    </dd>
+                  </div>
+                ) : null}
                 {!readOnly &&
                 !["COMPLETED", "CANCELLED", "EXPIRED"].includes(ride.status) ? (
                   <div
                     id="ride-actions"
                     tabIndex={-1}
-                    className={`preview-field-action${
-                      !driverOwned ? " preview-field-action-wide" : ""
-                    }`}
+                    className="preview-field-action preview-field-action-wide"
                   >
                     <dt>
                       <RideFieldLabel icon="action">Action</RideFieldLabel>
@@ -1089,32 +1104,26 @@ export default function RidePreviewClient({
                   </div>
                 ) : null}
               </dl>
-              {driverOwned && ride.payId ? (
-                <dl className="driver-payment-details">
-                  <dt>
-                    <RideFieldLabel icon="payid">Your PayID</RideFieldLabel>
-                  </dt>
-                  <dd className="preview-payid">
-                    <span>
-                      {ride.payIdType === "MOBILE"
-                        ? "Mobile"
-                        : ride.payIdType === "EMAIL"
-                          ? "Email"
-                          : "Other"}
-                    </span>
-                    <code className="payid-value">{ride.payId}</code>
-                  </dd>
-                </dl>
-              ) : null}
             </div>
             {pendingRiderRequests.length ? (
-              <section className="driver-request-stack">
-                <h2>Rider requests</h2>
+              <section
+                className="driver-request-stack driver-request-section"
+                aria-labelledby="rider-requests-heading"
+              >
+                <h2 id="rider-requests-heading">Rider requests</h2>
                 {pendingRiderRequests.map((request) => (
-                  <article
-                    className="driver-request-card"
+                  <details
+                    className="driver-request-card driver-request-accordion"
                     key={request.requestId}
                   >
+                    <summary>
+                      <RideFieldLabel icon="rider">
+                        {request.riderAlias}
+                      </RideFieldLabel>
+                      <span className="request-summary-status">
+                        {requestStatusLabel(request.status)}
+                      </span>
+                    </summary>
                     <dl className="driver-request-fields">
                       <div id={requestTarget(request.requestId)}>
                         <dt>
@@ -1123,18 +1132,6 @@ export default function RidePreviewClient({
                         <dd>
                           {request.riderAlias}{" "}
                           <RatingBadge summary={request.rating} />
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>
-                          <RideFieldLabel icon="requested">
-                            Requested
-                          </RideFieldLabel>
-                        </dt>
-                        <dd>
-                          {prettyTime(
-                            request.createdAt ?? request.requestedDepartureAt,
-                          )}
                         </dd>
                       </div>
                       <div>
@@ -1161,6 +1158,18 @@ export default function RidePreviewClient({
                             </svg>
                             Google Maps
                           </a>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>
+                          <RideFieldLabel icon="requested">
+                            Requested
+                          </RideFieldLabel>
+                        </dt>
+                        <dd>
+                          {prettyTime(
+                            request.createdAt ?? request.requestedDepartureAt,
+                          )}
                         </dd>
                       </div>
                       <div>
@@ -1207,7 +1216,7 @@ export default function RidePreviewClient({
                           </a>
                         </dd>
                       </div>
-                      <div>
+                      <div className="request-detail-status-wide">
                         <dt>
                           <RideFieldLabel icon="request-status">
                             Request status
@@ -1265,7 +1274,7 @@ export default function RidePreviewClient({
                           rider={false}
                         />
                       ))}
-                  </article>
+                  </details>
                 ))}
               </section>
             ) : null}

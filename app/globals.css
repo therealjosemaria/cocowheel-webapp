@@ -2123,6 +2123,7 @@ p {
 }
 .ride-preview-fields > div {
   display: grid;
+  align-content: start;
   gap: 4px;
   min-width: 0;
   padding: 10px 14px;
@@ -2140,6 +2141,10 @@ p {
   grid-column: span 2;
   border-right: 0;
   border-bottom: 0;
+}
+.ride-preview-fields > div:nth-child(odd):has(+ .preview-field-action-wide) {
+  grid-column: 1 / -1;
+  border-right: 0;
 }
 .ride-preview-fields .preview-field-payment {
   grid-column: 1 / -1;
@@ -2253,6 +2258,33 @@ p {
 .driver-request-stack > h2 {
   margin: 0 2px;
 }
+.driver-request-section {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  gap: 8px;
+}
+.driver-request-accordion > summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+.driver-request-accordion > summary .ride-field-label { display: inline-flex; vertical-align: middle; }
+.request-summary-status {
+  display: block;
+  padding-left: 22px;
+  margin-top: 4px;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
+  color: var(--muted);
+}
+.driver-request-accordion[open] > summary { border-bottom: 1px solid var(--line); }
+.driver-request-accordion > summary:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
+.driver-request-fields > .request-detail-status-wide { grid-column: 1 / -1; border-right: 0; }
+.preview-driver-payment .payid-value { overflow-wrap: anywhere; white-space: normal; }
 .driver-request-card {
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -2266,6 +2298,7 @@ p {
 }
 .driver-request-fields > div {
   display: grid;
+  align-content: start;
   gap: 4px;
   min-width: 0;
   padding: 10px 12px;

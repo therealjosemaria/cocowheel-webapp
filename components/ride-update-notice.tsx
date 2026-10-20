@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { RideUpdate } from "@/lib/ride-updates";
+import { revealDetailsAncestors } from "@/lib/reveal-details";
 
 // No personal/location/payment data is persisted: only opaque event keys.
 export function readSeen(account: string): string[] {
@@ -26,6 +27,7 @@ export default function RideUpdateNotice({
 }) {
   const [target, setTarget] = useState<RideUpdate | null>(null);
   const followedHash = useRef("");
+  const followedElement = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const timers = new Map<Element, ReturnType<typeof setTimeout>>();
     const observer = new IntersectionObserver(
@@ -42,7 +44,11 @@ export default function RideUpdateNotice({
               entry.target,
               setTimeout(() => {
                 timers.delete(entry.target);
-                if (document.visibilityState !== "visible") return;
+                if (
+                  document.visibilityState !== "visible" ||
+                  entry.target.closest("details:not([open])")
+                )
+                  return;
                 if (update.driver) {
                   const card = entry.target.closest(".driver-request-card");
                   if (card) {
@@ -73,17 +79,22 @@ export default function RideUpdateNotice({
           observed.add(element);
         }
         if (
-          followedHash.current !== location.hash &&
+          (followedHash.current !== location.hash ||
+            followedElement.current !== element) &&
           location.hash === `#${update.target}`
         ) {
           followedHash.current = location.hash;
+          followedElement.current = element;
+          revealDetailsAncestors(element);
           element.scrollIntoView({ block: "center", behavior: "instant" });
         }
         const box = element.getBoundingClientRect();
         if (
           update.driver &&
           !first &&
-          (box.top < 0 || box.bottom > innerHeight)
+          (element.closest("details:not([open])") ||
+            box.top < 0 ||
+            box.bottom > innerHeight)
         )
           first = update;
       }
@@ -101,6 +112,8 @@ export default function RideUpdateNotice({
     document.addEventListener("visibilitychange", visibility);
     window.addEventListener("scroll", scan, { passive: true });
     window.addEventListener("resize", scan);
+    window.addEventListener("hashchange", scan);
+    document.addEventListener("toggle", scan, true);
     scan();
     return () => {
       observer.disconnect();
@@ -108,6 +121,8 @@ export default function RideUpdateNotice({
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("scroll", scan);
       window.removeEventListener("resize", scan);
+      window.removeEventListener("hashchange", scan);
+      document.removeEventListener("toggle", scan, true);
       timers.forEach(clearTimeout);
       // Animation finishes naturally even after acknowledgement removes the notice.
     };
@@ -121,6 +136,7 @@ export default function RideUpdateNotice({
         onClick={() => {
           const element = document.getElementById(target.target);
           if (element) {
+            revealDetailsAncestors(element);
             element.tabIndex = -1;
             element.focus({ preventScroll: true });
           }

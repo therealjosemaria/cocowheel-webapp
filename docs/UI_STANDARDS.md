@@ -110,7 +110,22 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 ## Ride information
 
 - Use Where from?, Where to?, Fare and Google Maps. Directions include the existing navigation icon.
-- Ride details reuse the shared preview. Keep pickup/drop-off in the same column where possible, Fare and Action on the same row. Prioritise the accepted rider's pickup/drop-off for the driver; do not repeat the driver's own identity unnecessarily.
+- Ride details reuse the shared preview. Keep origin/pickup then destination/drop-off
+  in the right column, with identity/status and timing on the left. Driver Fare
+  and Your PayID share a row; Action spans both columns at the bottom (supersedes
+  the former Fare/Action pairing). Preserve rider payment privacy and Copy rules.
+  Long identifiers wrap without widening the grid. A genuinely unpaired final
+  field spans both columns, including one immediately before full-width Action.
+  Prioritise the accepted rider's pickup/drop-off for the driver; do not repeat
+  the driver's own identity unnecessarily.
+- Rider requests form a labelled section with 8px heading/card spacing and 12px
+  padding. Each pending request is a native independent accordion, initially
+  collapsed, with rider icon/UniKey, regular caption status and disclosure marker.
+  Keep existing fields/actions/chat inside; addresses stack on the right,
+  identity/timing on the left, then full-width request status and Action.
+  Notification navigation opens the relevant accordion before scrolling; incoming
+  updates do not open, collapse or scroll requests. Several may remain open.
+  Keep support after the whole section, never inside individual accordions.
 - Ordinary views hide administrative route ID, departure, expiry, fit and acceptance/request timestamps where previously agreed; retain the underlying records/admin information. Do not restore the old discovery matrix: ride selection uses the map and compact selectable ride cards.
 - Keep summaries succinct: driver, pickup estimate, arrival estimate and fare where relevant. Ride details use estimated duration to avoid stale planned arrival times.
 - Maps share driver/rider route colours, identifiable icons and compact address labels. The pickup minute badge is flush beside the address, not surrounded by another visible shell. Do not show pickup ETA after pickup or in history. Preserve required attribution, and keep it below navigation overlays.

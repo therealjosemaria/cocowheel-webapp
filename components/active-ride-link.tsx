@@ -7,6 +7,7 @@ import { cocowheelsApi } from "@/lib/api-client";
 import LocationAge from "./location-age";
 import type { Ride } from "@/lib/client-types";
 import RideFieldLabel from "./ride-field-label";
+import { revealDetailsAncestors } from "@/lib/reveal-details";
 
 export type ActiveRide = { role: "DRIVER" | "RIDER"; ride: Ride };
 
@@ -99,7 +100,19 @@ export default function ActiveRideLink({
       className={
         compact ? "secondary profile-active-ride" : "home-current-ride"
       }
-      onClick={onClick}
+      onClick={(event) => {
+        onClick?.();
+        if (
+          notificationTarget &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.shiftKey &&
+          !event.altKey
+        ) {
+          const target = document.getElementById(notificationTarget);
+          if (target) revealDetailsAncestors(target);
+        }
+      }}
     >
       <strong>
         <RideFieldLabel icon={role === "DRIVER" ? "driver" : "rider"}>
