@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import {
   conversationTarget,
+  MESSAGE_STARTER,
   type Conversation,
   type ConversationSummary,
 } from "@/lib/messaging-types";
@@ -39,6 +40,8 @@ export default function RideMessages({
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Conversation | null>(null);
   const [draft, setDraft] = useState("");
+  const suggestOnLoad = useRef(false);
+  const draftTouched = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState(false);
@@ -67,6 +70,15 @@ export default function RideMessages({
       if (!abort.signal.aborted) {
         setData(result);
         setReadError(false);
+        if (suggestOnLoad.current) {
+          suggestOnLoad.current = false;
+          if (
+            !draftTouched.current &&
+            !result.stopped &&
+            !result.messages.length
+          )
+            setDraft(MESSAGE_STARTER);
+        }
       }
     } catch (reason) {
       if (abort.signal.aborted) return;
@@ -99,6 +111,19 @@ export default function RideMessages({
   useEffect(() => {
     const follow = () => {
       if (location.hash === `#${target}`) setOpen(true);
+      const url = new URL(location.href);
+      if (
+        rider &&
+        !summary.stopped &&
+        url.searchParams.get("compose") === "1" &&
+        (!url.searchParams.has("request") ||
+          url.searchParams.get("request") === summary.requestId)
+      ) {
+        suggestOnLoad.current = true;
+        setOpen(true);
+        url.searchParams.delete("compose");
+        window.history.replaceState(window.history.state, "", url);
+      }
     };
     const requested = (event: Event) => {
       if ((event as CustomEvent<string>).detail === target) setOpen(true);
@@ -106,6 +131,7 @@ export default function RideMessages({
     const initial = setTimeout(follow, 0);
     const clear = () => {
       invalidate();
+      suggestOnLoad.current = false;
       controller.current?.abort();
       setData(null);
       setDraft("");
@@ -125,7 +151,7 @@ export default function RideMessages({
       window.removeEventListener("cocowheels:open-conversation", requested);
       window.removeEventListener("cocowheels:identity-changed", clear);
     };
-  }, [target, invalidate]);
+  }, [target, invalidate, rider, summary.requestId, summary.stopped]);
   const latest = data?.messages.at(-1)?.id ?? 0;
   useEffect(() => {
     if (
@@ -309,14 +335,9 @@ export default function RideMessages({
                     <button
                       type="button"
                       className="secondary message-suggestion"
-                      onClick={() =>
-                        setDraft(
-                          "Hi! Where should we meet, and what’s your car’s number plate?",
-                        )
-                      }
+                      onClick={() => setDraft(MESSAGE_STARTER)}
                     >
-                      Hi! Where should we meet, and what’s your car’s number
-                      plate?
+                      {MESSAGE_STARTER}
                     </button>
                   ) : null}
                   <label>
@@ -326,7 +347,10 @@ export default function RideMessages({
                       maxLength={1000}
                       rows={3}
                       required
-                      onChange={(e) => setDraft(e.target.value)}
+                      onChange={(e) => {
+                        draftTouched.current = true;
+                        setDraft(e.target.value);
+                      }}
                       disabled={busy}
                     />
                   </label>

@@ -4,6 +4,12 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Request-to-message discovery uses one centred helper line above the existing
+Request to join button (`--text-caption`, `--muted`, `--weight-regular`, 8px
+separation). Preserve the button's label, size and hierarchy. Do not introduce
+another competing action or an explanatory modal. The post-request composer can
+open in place; never auto-scroll, auto-focus or auto-send the suggested draft.
+
 ### Mutual rating controls (19 October 2026)
 
 Use the shared completed-ride rating form below the map legend and above details.

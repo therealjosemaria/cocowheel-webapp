@@ -56,6 +56,18 @@ with sync_playwright() as p:
             page.route('**/api/**', respond)
             page.goto('http://127.0.0.1:3090/activity/test-ride')
             chat = page.locator('#messages-req0')
+            expect(chat).not_to_have_attribute('open', '')
+            if not driver:
+                page.goto('http://127.0.0.1:3090/activity/test-ride?request=req0&compose=1')
+                expect(chat).to_have_attribute('open', '')
+                expect(chat.get_by_role('textbox', name='Message', exact=True)).to_have_value('Hi! Where should we meet, and what’s your car’s number plate?')
+                assert 'compose=' not in page.url
+                assert not state['bodies']
+                page.screenshot(path=f'/tmp/messaging-compose-{width}.png', full_page=True)
+                chat.get_by_role('textbox', name='Message', exact=True).fill('')
+                page.evaluate("window.dispatchEvent(new Event('cocowheels:current-updated'))")
+                expect(chat.get_by_role('textbox', name='Message', exact=True)).to_have_value('')
+                chat.locator('summary').click()
             chat.locator('summary').click()
             textbox = chat.get_by_role('textbox', name='Message', exact=True)
             expect(textbox).to_be_visible()
@@ -127,7 +139,9 @@ with sync_playwright() as p:
             state['messages'].append({'id': 3, 'mine': False, 'text': 'x'*1000, 'createdAt': '2026-10-20T00:02:00Z'})
             state['unread'] = 1
             page.evaluate("window.dispatchEvent(new Event('cocowheels:current-updated'))")
-            expect(chat.locator('.message-list li')).to_have_count(3)
+            # A current-update during an in-flight load is intentionally coalesced;
+            # allow the normal 10-second poll to deliver the next snapshot.
+            expect(chat.locator('.message-list li')).to_have_count(3, timeout=15000)
             with page.expect_response(lambda response: '/conversations/req0/read' in response.url):
                 chat.locator('.message-read-marker').scroll_into_view_if_needed()
             assert state['unread'] == 0

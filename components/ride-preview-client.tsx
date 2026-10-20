@@ -1,4 +1,5 @@
 "use client";
+import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
@@ -478,7 +479,7 @@ export default function RidePreviewClient({
     setJoining(true);
     try {
       const draft = riderSearchDraft();
-      await cocowheelsApi<{ ride: unknown }>(
+      const result = await cocowheelsApi<{ ride: Ride }>(
         `/api/rides/${encodeURIComponent(ride.rideId)}/requests`,
         {
           method: "POST",
@@ -491,7 +492,9 @@ export default function RidePreviewClient({
           }),
         },
       );
-      window.location.assign(`/activity/${encodeURIComponent(ride.rideId)}`);
+      window.location.assign(
+        requestedRideUrl(ride.rideId, result.ride.request?.requestId),
+      );
     } catch (reason) {
       if (
         reason instanceof ApiError &&
@@ -1041,7 +1044,14 @@ export default function RidePreviewClient({
                     <dt>
                       <RideFieldLabel icon="action">Action</RideFieldLabel>
                     </dt>
-                    <dd className="ride-action-buttons">
+                    <dd
+                      className={`ride-action-buttons${!readOnly && !activityRequest && !driverOwned ? " request-action" : ""}`}
+                    >
+                      {!readOnly && !activityRequest && !driverOwned ? (
+                        <p className="request-message-hint">
+                          {REQUEST_MESSAGE_HINT}
+                        </p>
+                      ) : null}
                       {!readOnly &&
                       privateRide &&
                       (driverOwned || activityRequest?.status === "ACCEPTED") &&

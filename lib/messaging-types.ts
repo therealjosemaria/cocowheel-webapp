@@ -13,3 +13,13 @@ export type ChatMessage = {
 export type Conversation = { messages: ChatMessage[]; stopped: boolean };
 export const conversationTarget = (id: string) =>
   `messages-${encodeURIComponent(id)}`;
+
+export const MESSAGE_STARTER =
+  "Hi! Where should we meet, and what’s your car’s number plate?";
+export const REQUEST_MESSAGE_HINT =
+  "You can message the driver after requesting.";
+export const requestedRideUrl = (rideId: string, requestId?: string) =>
+  `/activity/${encodeURIComponent(rideId)}?${new URLSearchParams({
+    ...(requestId ? { request: requestId } : {}),
+    compose: "1",
+  })}`;

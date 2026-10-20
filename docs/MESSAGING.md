@@ -62,6 +62,22 @@ tab or historical chat inbox. Rider can insert an editable starter asking where
 to meet and the number plate; never sent automatically. No media, calls, typing
 indicators, photos, age or identity-verification claims were added.
 
+### Request entry and discovery
+
+The chooser and public preview place the same muted caption above the unchanged
+Request to join button: “You can message the driver after requesting.” No extra
+modal, pre-request chat or How It Works copy. On successful request only, the
+response's request ID is carried to details with `compose=1`: a presentation hint,
+not authorization. The rider's matching conversation opens without scrolling or
+focusing the textarea. History replacement removes the hint so reloads do not
+reopen it. After an authorized read of an empty, unstopped conversation, the draft
+is filled once with “Hi! Where should we meet, and what’s your car’s number plate?”
+Typing or clearing before that response prevents prefilling; polling never
+overwrites edits. Existing conversations are not prefilled. The rider must press
+Send message. Failed requests do not navigate; normal visits and driver views
+retain collapsed behaviour. No new storage, API or database change.
+See [request-entry verification](MESSAGE_ENTRY_CHECK_2026-10-20.md).
+
 Existing visible-page `/api/current` polling (10 seconds) carries unread metadata.
 An expanded conversation fetches on those updates and visibility return; no
 separate chat interval or closed-browser push. Requests are single-flight and

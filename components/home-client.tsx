@@ -1,4 +1,5 @@
 "use client";
+import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
 import { Message } from "./ride-journey-controls";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
@@ -800,7 +801,7 @@ export default function HomeClient({
         riderPins.destination,
         candidate.directionFit,
       );
-      await cocowheelsApi<{ ride: Ride }>(
+      const result = await cocowheelsApi<{ ride: Ride }>(
         `/api/rides/${encodeURIComponent(candidate.rideId)}/requests`,
         {
           method: "POST",
@@ -814,7 +815,9 @@ export default function HomeClient({
         },
       );
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
-      router.push(`/activity/${encodeURIComponent(candidate.rideId)}`);
+      router.push(
+        requestedRideUrl(candidate.rideId, result.ride.request?.requestId),
+      );
     } catch (reason) {
       if (
         reason instanceof ApiError &&
@@ -1882,6 +1885,7 @@ function RideSelection({
         )}
       </section>
       <div className="ride-selection-action">
+        <p className="request-message-hint">{REQUEST_MESSAGE_HINT}</p>
         <button
           type="button"
           className="primary"

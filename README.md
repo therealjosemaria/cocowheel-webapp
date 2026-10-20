@@ -8,6 +8,11 @@ request/ride closure removes access without deleting stored conversations.
 Unread counts reuse Profile's active-ride card and existing visible-page polling.
 No attachments, typing indicators, push delivery or new retention cleanup.
 Either participant can stop messages independently of withdrawing/cancelling.
+Discovery and public ride previews keep Request to join unchanged, with a quiet
+“You can message the driver after requesting.” hint. Successful requests open
+ride details with messaging expanded and an editable starter for an empty
+conversation; nothing is sent automatically. Normal visits remain collapsed.
+See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details also offer a clearly labelled email-based Report a concern link.
 Profile verification copy is “University email verified” (approved email/guest
 exceptions: “Email verified”), not identity, licence or enrolment verification.
