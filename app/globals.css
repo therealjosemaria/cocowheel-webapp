@@ -348,6 +348,19 @@ button:disabled {
   color: var(--muted);
   font-size: var(--text-small);
 }
+.profile-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.profile-actions > .secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+}
 .menu-toggle {
   position: relative;
   z-index: 2001;

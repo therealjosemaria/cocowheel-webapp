@@ -94,6 +94,12 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Navigation and layout
 
+- Profile navigation links and account buttons share one action group: 12px
+  above/between controls, equal full widths/heights and shared secondary styling.
+  Button-styled links must use a block/flex box, never inline padding that can
+  overlap preceding ratings. Review the entry popover as well as the destination
+  whenever adding navigation, including both driver/rider missing-rating labels.
+
 - Profile ride notifications extend the one existing active-ride link, never add
   duplicate destinations. Show a compact neutral unread-count badge and regular
   update copy below the existing status. Driver notice text is exactly “New rider

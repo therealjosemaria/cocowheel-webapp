@@ -327,6 +327,11 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Profile account actions use a single 12px-spaced grid below ratings/current
+  ride. Navigation links and buttons reserve equal full-width button boxes;
+  inline links must not paint over rating copy. See
+  [Profile layout checks](docs/PROFILE_LAYOUT_2026-10-21.md).
+
 - Driver pending requests are independent, initially collapsed native accordions
   inside a labelled Rider requests section. Summaries show rider identity and
   request status; several may remain open for comparison. Polling preserves

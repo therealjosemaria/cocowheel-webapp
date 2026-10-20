@@ -378,43 +378,47 @@ export default function AppNavigation() {
             />
           )}
           {guestName && (
-            <Link className="secondary" href="/usual-route" onClick={() => setIdentityOpen(false)}>
-              My usual route
-            </Link>
-          )}
-          {guestName && (
-            <button
-              className="secondary"
-              disabled={signingOut}
-              onClick={async () => {
-                setSigningOut(true);
-                setLogoutError(null);
-                try {
-                  await requestJson("/api/university/logout", {
-                    method: "POST",
-                    headers: { "X-Cocowheels-Auth": "1" },
-                    credentials: "same-origin",
-                  });
+            <div className="profile-actions">
+              <Link
+                className="secondary"
+                href="/usual-route"
+                onClick={() => setIdentityOpen(false)}
+              >
+                My usual route
+              </Link>
+              <button
+                className="secondary"
+                disabled={signingOut}
+                onClick={async () => {
+                  setSigningOut(true);
+                  setLogoutError(null);
                   try {
-                    sessionStorage.removeItem("cocowheels:guest-session");
-                  } catch {
-                    /* Cookies remain authoritative. */
+                    await requestJson("/api/university/logout", {
+                      method: "POST",
+                      headers: { "X-Cocowheels-Auth": "1" },
+                      credentials: "same-origin",
+                    });
+                    try {
+                      sessionStorage.removeItem("cocowheels:guest-session");
+                    } catch {
+                      /* Cookies remain authoritative. */
+                    }
+                    window.location.assign("/");
+                  } catch (reason) {
+                    setLogoutError(
+                      apiErrorMessage(
+                        reason,
+                        "We couldn’t sign you out. Please try again.",
+                      ),
+                    );
+                  } finally {
+                    setSigningOut(false);
                   }
-                  window.location.assign("/");
-                } catch (reason) {
-                  setLogoutError(
-                    apiErrorMessage(
-                      reason,
-                      "We couldn’t sign you out. Please try again.",
-                    ),
-                  );
-                } finally {
-                  setSigningOut(false);
-                }
-              }}
-            >
-              Sign out
-            </button>
+                }}
+              >
+                Sign out
+              </button>
+            </div>
           )}
           {logoutError ? <p role="alert">{logoutError}</p> : null}
         </div>
