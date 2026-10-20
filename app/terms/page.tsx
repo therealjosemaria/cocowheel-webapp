@@ -14,8 +14,8 @@ export default function TermsPage() {
         These terms describe participation in the GUMWHEEL carpool pilot. Please
         read them alongside our <Link href="/privacy">Privacy policy</Link>{" "}
         before offering or requesting a ride. Questions can be sent to{" "}
-        <a href="mailto:jmos0905@uni.sydney.edu.au">
-          jmos0905@uni.sydney.edu.au
+        <a href="mailto:jose@gumwheel.com">
+          jose@gumwheel.com
         </a>
         .
       </p>

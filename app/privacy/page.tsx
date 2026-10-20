@@ -12,8 +12,8 @@ export default function PrivacyPage() {
       <p>
         This notice explains how the GUMWHEEL university carpool pilot handles
         your information. For privacy questions, contact{" "}
-        <a href="mailto:jmos0905@uni.sydney.edu.au">
-          jmos0905@uni.sydney.edu.au
+        <a href="mailto:jose@gumwheel.com">
+          jose@gumwheel.com
         </a>
         .
       </p>

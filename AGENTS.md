@@ -29,6 +29,13 @@ URLs, cookies, storage keys, IDs and services unless migration is explicitly ask
 Keep authorization server-side and preserve trip history. Never stress-test live
 trips. A push is not a verified deployment; frontend deploys do not restart the API.
 
+Before every commit and push, inspect git status and the full source/staged diff.
+Confirm every changed file and hunk is intended, review tests and documentation,
+and exclude unrelated edits or generated artifacts. Production safety requires
+checking the actual diff, not trusting a replacement command or passing tests
+alone. Contact-copy changes must not alter login identities, permissions,
+delivery configuration or backend identifiers without explicit authorization.
+
 Design mobile-first and review desktop too. Reuse shared views, maps, modals,
 buttons and typography tokens. Backend changes need relevant regression tests;
 role-specific UI must be reviewed for both driver and rider.

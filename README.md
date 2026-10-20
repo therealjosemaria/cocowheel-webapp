@@ -71,7 +71,9 @@ How it works now starts directly with two role-specific four-step
 paths (Find a ride first, Offer a ride second), and four native FAQ
 accordions (payment, pickup code, location and cancellation), and a separate
 **Have a suggestion?** section. Its **Email us** link opens the user's mail handler
-addressed to `jmos0905@uni.sydney.edu.au` with subject `GUMWHEEL suggestion`.
+addressed to `jose@gumwheel.com` with subject `GUMWHEEL suggestion`.
+Privacy and Terms use the same public inbox; authentication/UniKey delivery stays
+separate and unchanged. See [contact audit](docs/CONTACT_EMAIL_2026-10-20.md).
 The user writes and sends the message themselves; the app neither submits nor
 stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
@@ -461,7 +463,7 @@ participant-scoped requests, PayID disclosure after pairing, retained pickup
 snapshots/history, browser caches, provider processing, direct payments, and
 synthetic rides. It does not promise current-enrolment checks, automatic account
 deletion, guaranteed safety, or verified payment. Support/privacy contact is the
-owner's university inbox. Contact requests require manual handling; this change
+owner's `jose@gumwheel.com` inbox. Contact requests require manual handling; this change
 does not implement a deletion or complaints workflow.
 
 The privacy notice explicitly explains that PayID is stored to enable ride payment,

@@ -49,7 +49,7 @@ export default function HelpPage() {
         <section className="help-section" aria-labelledby="suggestion-heading">
           <h2 id="suggestion-heading">Have a suggestion?</h2>
           <p>We’d love to hear how we can improve GUMWHEEL.</p>
-          <a className="help-email" href="mailto:jmos0905@uni.sydney.edu.au?subject=GUMWHEEL%20suggestion">Email us</a>
+          <a className="help-email" href="mailto:jose@gumwheel.com?subject=GUMWHEEL%20suggestion">Email us</a>
         </section>
       </div>
     </section>
