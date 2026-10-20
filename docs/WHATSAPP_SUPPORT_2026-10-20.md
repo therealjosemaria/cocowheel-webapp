@@ -46,16 +46,19 @@ is visible in the public link and personal/support chats share the owner's inbox
 
 ## Prefilled-message readability follow-up
 
-The greeting, concern sentence and reference now occupy three short paragraphs,
-separated by blank lines encoded as `%0A%0A`. The draft remains editable and is
+The earlier greeting and three-paragraph draft is superseded: the concern sentence
+is followed immediately by the reference on the next line, using one `%0A`,
+without a greeting or blank line. The draft remains editable and is
 never sent automatically. `COCO-` is the existing public ride-ID prefix generated
 by `server/core.ts`, not accidental branding in the message; it is preserved
 exactly for lookup/history compatibility. No backend migration or ID change.
 The app link, icon, messaging heading and screen layout are unchanged.
 Reproduce checks with `node --import tsx --test tests/support.test.ts` and
-`npm run lint`. Tests cover exact decoded paragraphs, encoded newlines, legacy
+`npm run lint`. Tests cover the exact two-line draft, one encoded newline, legacy
 reference preservation and unusual reference characters. Actual WhatsApp mobile
 and desktop draft rendering remains unverified; no external message is sent.
+The compact two-line revision was checked from baseline `bae4d60`: both support
+tests, lint and diff whitespace checks passed. No app layout or backend changes.
 
 ## Checks
 

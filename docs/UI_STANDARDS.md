@@ -7,8 +7,9 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 **Care in every detail:** review the whole interaction, including external
 handoffs and prefilled messages, not just the app screen. Aim for effortless,
 welcoming use through clear wording, restrained emphasis and deliberate spacing.
-Separate a prefilled message's greeting, purpose and reference into short
-paragraphs with blank lines; preserve exact identifiers. Do not trade readability
+Keep short prefilled messages direct: the concern sentence followed by the
+reference on the next line, without a greeting or blank line. Preserve exact
+identifiers; add paragraph gaps only when the content needs separation. Do not trade readability
 for compactness or add decorative clutter. Verify encoded line breaks and record
 when the receiving app's mobile/desktop rendering remains untested.
 

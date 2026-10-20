@@ -21,8 +21,8 @@ details/actions and all driver rider-request/detail cards, not inside conversati
 A decorative 14px monochrome Bootstrap WhatsApp
 icon sits on the left; messaging summaries keep their disclosure arrow
 only. The external link uses the creator’s personal account and includes only an
-editable ride-reference draft with separate greeting, concern and reference
-paragraphs. Legacy `COCO-` ride references remain unchanged; nothing is
+editable two-line draft: concern sentence, then reference directly below, without
+a greeting or blank line. Legacy `COCO-` ride references remain unchanged; nothing is
 sent automatically. Privacy/support email remains available in the legal pages.
 Messaging contains only messaging controls, with no Ride actions link. Single-purpose
 section boundaries are an explicit rule in docs/UI_STANDARDS.md.

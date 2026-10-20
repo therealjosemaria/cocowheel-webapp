@@ -3,6 +3,6 @@
 export const SUPPORT_LABEL = "Report a concern via WhatsApp";
 export function supportWhatsAppUrl(rideId: string) {
   return `https://wa.me/61452340432?text=${encodeURIComponent(
-    `Hi José,\n\nI’d like to report a concern about my GUMWHEEL ride.\n\nReference: ${rideId}`,
+    `I’d like to report a concern about my GUMWHEEL ride.\nReference: ${rideId}`,
   )}`;
 }
