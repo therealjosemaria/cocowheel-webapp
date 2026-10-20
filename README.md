@@ -17,8 +17,9 @@ ride details with messaging expanded and an editable starter for an empty
 conversation; nothing is sent automatically. Normal visits remain collapsed.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details offer “Report a concern via WhatsApp” once below the ride
-details/actions, not inside conversations. A decorative 14px monochrome WhatsApp
-outline icon sits on the left; messaging summaries keep their disclosure arrow
+details/actions and all driver rider-request/detail cards, not inside conversations.
+A decorative 14px monochrome Bootstrap WhatsApp
+icon sits on the left; messaging summaries keep their disclosure arrow
 only. The external link uses the creator’s personal account and includes only an
 editable ride-reference draft with separate greeting, concern and reference
 paragraphs. Legacy `COCO-` ride references remain unchanged; nothing is

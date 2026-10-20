@@ -1107,7 +1107,6 @@ export default function RidePreviewClient({
                 </dl>
               ) : null}
             </div>
-            {privateRide ? <ReportConcern rideId={rideId} /> : null}
             {pendingRiderRequests.length ? (
               <section className="driver-request-stack">
                 <h2>Rider requests</h2>
@@ -1299,6 +1298,7 @@ export default function RidePreviewClient({
                 </article>
               </section>
             ) : null}
+            {privateRide ? <ReportConcern rideId={rideId} /> : null}
             {poorFitPromptOpen ? (
               <PoorFitPrompt
                 close={() => setPoorFitPromptOpen(false)}

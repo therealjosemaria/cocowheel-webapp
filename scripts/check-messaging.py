@@ -116,6 +116,11 @@ with sync_playwright() as p:
             expect(support_icon).to_have_attribute('focusable', 'false')
             assert support_icon.bounding_box()['width'] == 14
             assert support_icon.bounding_box()['height'] == 14
+            support = page.locator('.ride-report')
+            assert support.locator('a').bounding_box()['height'] >= 44
+            for card in page.locator('.driver-request-stack').all():
+                bounds = card.bounding_box()
+                assert support.bounding_box()['y'] >= bounds['y'] + bounds['height']
             assert page.get_by_role('link', name='Report a concern via WhatsApp').get_attribute('href').startswith('https://wa.me/61452340432?text=')
             page.screenshot(path=f'/tmp/messaging-{width}-{driver}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

@@ -1,5 +1,29 @@
 # Creator WhatsApp support — 20 October 2026
 
+## Current placement and icon refinement
+
+Baseline `915799e`: support now follows all driver request/detail cards, matching
+the rider's end-of-details placement. Vertical outer margins are reduced from
+8px to zero; the 44px tap target, 16px horizontal margins, 12px regular text and
+8px icon gap remain. No border, badge or green attention treatment.
+Bootstrap Icons v1.13.1 `whatsapp.svg` replaces the custom outline, rendered
+monochrome at 14px with its original vector geometry. Source:
+https://icons.getbootstrap.com/icons/whatsapp/ . MIT notice retained in
+`docs/licenses/bootstrap-icons.txt`; this is a library icon, not a claim of
+WhatsApp endorsement. No dependency, external asset fetch or backend change.
+The messaging summary/disclosure arrow and WhatsApp destination/draft are unchanged.
+Eight isolated mocked browser cases passed via `scripts/check-messaging.py`
+at 320/390/844/1440px for driver and rider, including icon dimensions, a minimum
+44px link height, no overflow and support below every driver request stack.
+Both roles were visually reviewed in full-screen screenshots at 390 and 1440px:
+the new silhouette is clearer at actual size, support stays subordinate to ride
+actions, and neither chat nor page headings gain competing emphasis. External
+map tiles are intentionally blocked in fixtures. Lint and both support URL tests
+passed. React checklist review found no hook, authorization or fetching changes;
+the shared link and decorative SVG semantics remain intact. Actual WhatsApp
+handoff and deployed frontend remain unverified; no real messages were sent.
+`npm run build` (including TypeScript) and `git diff --check` also passed.
+
 Supersedes the email destination described in SINGLE_PURPOSE_SECTIONS_2026-10-20.md.
 The owner authorized their personal Australian WhatsApp number for public support.
 `lib/support.ts` converts the supplied national number to the wa.me international
