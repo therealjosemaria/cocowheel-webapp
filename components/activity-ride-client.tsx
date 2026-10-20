@@ -242,7 +242,7 @@ function RideView({ ride }: { ride: Ride }) {
     <section className="activity-record">
       <div className="activity-record-header">
         <strong>
-          {riderView ? "Rider · ride request" : "Driver · published ride"}
+          {riderView ? "Rider · ride request" : "Driver · ride offered"}
         </strong>
         <span>
           {ride.request?.status === "CANCELLED"

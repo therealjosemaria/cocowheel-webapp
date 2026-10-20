@@ -23,7 +23,7 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.match(css, /\.how-it-works-steps li::marker\s*\{[^}]*font-weight: var\(--weight-regular\);/);
   assert.deepEqual(steps, [
     ["Choose your destination.", "Request to join a ride.", "Meet your driver.", "Pay your driver."],
-    ["Publish your route.", "Accept a rider.", "Meet your rider.", "Receive payment."],
+    ["Offer a ride.", "Accept a rider.", "Meet your rider.", "Receive payment."],
   ]);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
   assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 8px;/);

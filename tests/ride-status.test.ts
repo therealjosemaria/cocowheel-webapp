@@ -3,8 +3,8 @@ import test from "node:test";
 import { participantStatusLabel, rideStatusLabel } from "../lib/ride-status";
 
 test("requests do not change the published ride label", () => {
-  assert.equal(rideStatusLabel("PUBLISHED"), "Published");
-  assert.equal(rideStatusLabel("REQUESTED"), "Published");
+  assert.equal(rideStatusLabel("PUBLISHED"), "Ride offered");
+  assert.equal(rideStatusLabel("REQUESTED"), "Ride offered");
   assert.equal(
     participantStatusLabel("REQUESTED", "PENDING"),
     "Request pending",

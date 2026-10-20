@@ -192,7 +192,7 @@ function ActivityCard({
     ride.status,
     role === "RIDER" ? ride.request?.status : undefined,
   );
-  const showStatus = status !== "Published";
+  const showStatus = status !== "Ride offered";
   const statusClass = [
     "Cancelled",
     "Declined",

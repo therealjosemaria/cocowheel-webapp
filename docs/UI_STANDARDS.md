@@ -4,6 +4,16 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Usual routes (21 October): one private Profile destination, no additional main
+tab. Reuse the activity panel/H1, place search, role icons, payment selectors,
+departure selector and shared modal shell. Weekdays are multi-select buttons
+with `aria-pressed`, a 44px target and visible selected state; one labelled time
+input serves all selected days. Show the computed Sydney-time ±1-hour window.
+Email consent is explicit, initially off, with Enable/Mute on the saved view.
+Offer a ride / Ride offered replace participant-facing publish wording; internal
+states remain unchanged. Saved-route details, rider alerts and offering are
+separate sections. Do not imply a saved route is an active ride or public profile.
+
 **Care in every detail:** review the whole interaction, including external
 handoffs and prefilled messages, not just the app screen. Aim for effortless,
 welcoming use through clear wording, restrained emphasis and deliberate spacing.
@@ -140,7 +150,7 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 - Pickup verification (13 October 2026): GPS proximity is audit-only, never a gate. Atomically retain both latest reported GPS fixes, capture/receipt times, accuracy, verification time and measured separation in an admin-only immutable pickup snapshot. Within 250 metres is Yes/No when both fixes exist, Unknown otherwise; stale or inaccurate fixes are not proof of physical proximity. Snapshots survive live-location cleanup. No retrospective evidence is fabricated for historical rides.
 - Pickup codes have no independent time expiry. They remain valid while awaiting pickup until replaced by the rider, consumed once, or the ride closes. Keep wrong-code attempt limits and renewal throttling. Existing ride inactivity expiry remains unchanged; this policy does not apply to email verification codes.
 
-- Published is the driver's available offer; a pending request does not change the public offer into an accepted ride.
+- Ride offered (formerly Published) is the driver's available offer; a pending request does not change the public offer into an accepted ride.
 - Participant labels: Request pending → Awaiting pickup → Ride in progress → Completed. ACCEPTED and legacy RIDE_ACTIVE mean Awaiting pickup; only verified pickup (CO_RIDE_ACTIVE) means Ride in progress. Cancellation, withdrawal, decline and expiry retain distinct outcomes.
 - Acceptance issues the rider's four-digit pickup code. Only the driver verifies it. Before verification, riders may see the PayID preference but not private PayID values/types. Server responses enforce this, not CSS. New offers require PayID (Mobile, Email or Other/ABN); there is no cash option. Historical cash records are retained.
 - Either participant can cancel. Complete is hidden and server-blocked until the driver verifies the pickup code; no override bypasses this. After verification, either participant can complete. A fresh accurate position from either device near rider drop-off avoids an arrival warning; otherwise a concise confirmation permits completion. Completion does not verify payment.

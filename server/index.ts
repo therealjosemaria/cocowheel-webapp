@@ -54,6 +54,7 @@ import { initializeAdmin, adminDashboard, adminInspector } from "./admin";
 import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
+import { readUsualRoute, saveUsualRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -769,6 +770,47 @@ export function createApiServer(
         );
         return;
       }
+      if (parts[0] === "api" && parts[1] === "usual-route") {
+        const session = requireUniversitySession(database, token);
+        if (parts.length === 2 && request.method === "GET") {
+          writeJson(response, 200, { route: readUsualRoute(database, session.id), alertsAvailable: alertsConfigured() }, cors);
+          return;
+        }
+        if (request.method === "POST") {
+          const body = await readJson(request);
+          const owner = requireUniversitySession(database, token);
+          if (parts.length === 2) {
+            writeJson(response, 200, { route: saveUsualRoute(database, owner.id, body) }, cors);
+            return;
+          }
+          if (parts.length === 3 && parts[2] === "remove") {
+            removeUsualRoute(database, owner.id);
+            writeJson(response, 200, { ok: true }, cors);
+            return;
+          }
+          if (parts.length === 3 && parts[2] === "offer") {
+            const saved = readUsualRoute(database, owner.id);
+            if (!saved) throw new Error("USUAL_ROUTE_REQUIRED");
+            if (![0, 30, 60].includes(body.departureMinutes as number)) throw new Error("INVALID_DEPARTURE_TIME");
+            // The browser must obtain a fresh GPS fix; never silently reuse the saved origin.
+            const captured = Date.parse(asString(body.capturedAt));
+            if (!Number.isFinite(captured) || Math.abs(Date.now() - captured) > 30000 ||
+                !Number.isFinite(body.accuracyMeters) || asNumber(body.accuracyMeters) < 0)
+              throw new Error("LOCATION_UNAVAILABLE");
+            const origin = await pinWithPublishedLabel(body.origin, database);
+            requireUniversitySession(database, token);
+            const result = publishRide(database, token, {
+              origin, destination: saved.destination,
+              scheduledDepartureAt: new Date(Date.now() + (body.departureMinutes as number)*60000).toISOString(),
+              priceAud: saved.priceAud, payId: saved.payId, payIdType: saved.payIdType,
+            });
+            writeJson(response, 201, { ride: result.ride }, cors);
+            return;
+          }
+        }
+        writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
+      }
       if (request.method === "POST" && parts.join("/") === "api/rides") {
         requireUniversitySession(database, token);
         const body = await readJson(request);
@@ -783,6 +825,7 @@ export function createApiServer(
           pinWithPublishedLabel(body.origin, database),
           pinWithPublishedLabel(body.destination, database),
         ]);
+        requireUniversitySession(database, token);
         const result = publishRide(database, token, {
           origin: rideOrigin,
           destination: rideDestination,
@@ -1124,6 +1167,19 @@ export function createApiServer(
     }
   });
   let sampleTimer: ReturnType<typeof setInterval> | undefined;
+  let alertTimer: ReturnType<typeof setInterval> | undefined;
+  let delivering = false;
+  server.on("listening", () => {
+    alertTimer = setInterval(() => {
+      if (delivering || !alertsConfigured()) return;
+      delivering = true;
+      void deliverRouteAlerts(database).catch(() => {
+        console.error("Route alert worker failed");
+      }).finally(() => { delivering = false; });
+    }, 15000);
+    alertTimer.unref();
+  });
+  server.on("close", () => clearInterval(alertTimer));
   server.on("listening", () => {
     // Let any previously accepted sample finish, without replenishing it.
     if (

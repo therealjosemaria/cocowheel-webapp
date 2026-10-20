@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-20", label: "20 October 2026" }}
+      revision={{ date: "2026-10-21", label: "21 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL university carpool pilot handles
@@ -36,6 +36,17 @@ export default function PrivacyPage() {
         pickup is confirmed.
       </p>
       <h2>Location and pickup records</h2>
+      <p>
+        If you save a usual route, we store its endpoints, optional driver
+        payment settings, and your selected travel days and time for rider
+        alerts. The routine is private to your account, not displayed to other
+        participants. Offering a ride makes that ride’s route visible under
+        the usual ride-sharing rules. With your opt-in, we send matching-offer
+        emails to your verified account inbox through Resend. You can mute
+        future alerts or remove the saved route in Profile. An email already
+        being sent cannot be recalled. We retain delivery records and inactive
+        saved-route data; removing a route does not erase trip history.
+      </p>
       <p>
         With browser permission, we collect location fixes, accuracy and
         timestamps to show positions and estimate routes. Updates may pause when

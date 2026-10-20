@@ -2,8 +2,8 @@ import type { RequestStatus, RideStatus } from "./client-types";
 
 export function rideStatusLabel(status: RideStatus): string {
   return {
-    PUBLISHED: "Published",
-    REQUESTED: "Published",
+    PUBLISHED: "Ride offered",
+    REQUESTED: "Ride offered",
     ACCEPTED: "Awaiting pickup",
     RIDE_ACTIVE: "Awaiting pickup",
     CO_RIDE_ACTIVE: "Ride in progress",

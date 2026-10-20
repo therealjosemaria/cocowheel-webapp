@@ -18,7 +18,7 @@ export default function HelpPage() {
           <section className="help-role help-role-driver" aria-labelledby="driver-steps-heading">
             <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Offer a ride</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li>Publish your route.</li>
+              <li>Offer a ride.</li>
               <li>Accept a rider.</li>
               <li>Meet your rider.</li>
               <li>Receive payment.</li>

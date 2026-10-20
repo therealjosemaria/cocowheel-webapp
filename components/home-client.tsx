@@ -1,4 +1,5 @@
 "use client";
+import DepartureChoice from "./departure-choice";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
 import { Message } from "./ride-journey-controls";
@@ -197,7 +198,7 @@ const humanError = (error: unknown) => {
     CO_RIDE_CODE_RATE_LIMITED:
       "Please wait a moment before another code attempt.",
     PAYID_UNAVAILABLE: "PayID details are not available.",
-    PAYID_REQUIRED: "Enter your PayID before publishing.",
+    PAYID_REQUIRED: "Enter your PayID before offering a ride.",
     INVALID_PAYID: "Check your PayID format and length.",
     INVALID_FIXED_PRICE: "Enter a whole-dollar amount from A$5 to A$10,000.",
     REQUEST_TIME_INCOMPATIBLE:
@@ -249,6 +250,7 @@ export default function HomeClient({
   }>({});
   const [pinTarget, setPinTarget] = useState<PinTarget>(null);
   const [price, setPrice] = useState("5");
+  const [departureMinutes, setDepartureMinutes] = useState(0);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -677,7 +679,7 @@ export default function HomeClient({
         body: JSON.stringify({
           origin: canonicalPin(driverPins.origin),
           destination: canonicalPin(driverPins.destination),
-          scheduledDepartureAt: new Date().toISOString(),
+          scheduledDepartureAt: new Date(Date.now() + departureMinutes * 60000).toISOString(),
           priceAud: Number(price),
           payId,
           payIdType,
@@ -962,6 +964,8 @@ export default function HomeClient({
           setDestination={(pin) => setPinForTarget("destination", pin)}
           price={price}
           setPrice={setPrice}
+          departureMinutes={departureMinutes}
+          setDepartureMinutes={setDepartureMinutes}
           payId={payId}
           setPayId={setPayId}
           payIdType={payIdType}
@@ -1323,6 +1327,8 @@ function DriverForm(props: {
   setDestination: (pin: Pin) => void;
   price: string;
   setPrice: (value: string) => void;
+  departureMinutes: number;
+  setDepartureMinutes: (value: number) => void;
   payId: string;
   setPayId: (value: string) => void;
   payIdType: PayIdType;
@@ -1407,6 +1413,7 @@ function DriverForm(props: {
           autoFocus={!props.allowManualDeparture}
           choose={props.setDestination}
         />
+        <DepartureChoice value={props.departureMinutes} onChange={props.setDepartureMinutes} />
         <label className="field">
           You receive
           <div className="money">
@@ -1482,7 +1489,7 @@ function DriverForm(props: {
           />
         </fieldset>
         <button className="primary" disabled={props.busy} onClick={submit}>
-          {props.busy ? "Publishing…" : "PUBLISH RIDE"}
+          {props.busy ? "Offering…" : "OFFER A RIDE"}
         </button>
       </div>
     </div>
@@ -1689,7 +1696,8 @@ function RideSelection({
         );
         return {
           rideId: candidate.rideId,
-          pickupSeconds: route.durationSeconds,
+          pickupSeconds: route.durationSeconds === null ? null :
+            route.durationSeconds + Math.max(0, (Date.parse(candidate.scheduledDepartureAt) - calculatedAt) / 1000),
         };
       }),
     ).then((results) => {
@@ -1898,7 +1906,7 @@ function RideSelection({
     </div>
   );
 }
-function PlaceSearch({
+export function PlaceSearch({
   bias,
   countryCode,
   choose,
@@ -2079,7 +2087,7 @@ function RideStatus({
   return (
     <div className="status-page">
       <h1 className="page-title">
-        {driver ? "Your published ride" : "Your ride request"}
+        {driver ? "Your offered ride" : "Your ride request"}
       </h1>
       {statusTitle ? <h2 className="status-heading">{statusTitle}</h2> : null}
       <div className="ride-summary">

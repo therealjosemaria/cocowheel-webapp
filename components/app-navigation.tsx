@@ -378,6 +378,11 @@ export default function AppNavigation() {
             />
           )}
           {guestName && (
+            <Link className="secondary" href="/usual-route" onClick={() => setIdentityOpen(false)}>
+              My usual route
+            </Link>
+          )}
+          {guestName && (
             <button
               className="secondary"
               disabled={signingOut}

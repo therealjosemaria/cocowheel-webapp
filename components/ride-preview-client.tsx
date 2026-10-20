@@ -5,6 +5,7 @@ import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
 import RideMessages, { ReportConcern } from "./ride-messages";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
+import { departureLabel } from "@/lib/usual-route";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
@@ -245,6 +246,7 @@ export default function RidePreviewClient({
   } | null>(null);
 
   const privateRide = participantRide ?? activityRide;
+  const [previewClock, setPreviewClock] = useState(() => Date.now());
   const ride = useMemo<PreviewRide | null>(() => {
     if (!privateRide) return publicRide;
     const next = previewFromActivity(privateRide);
@@ -274,6 +276,7 @@ export default function RidePreviewClient({
         .then((result) => {
           if (!cancelled) {
             setPublicRide(result.ride);
+            setPreviewClock(Date.parse(result.serverNow) || Date.now());
             setError(null);
           }
         })
@@ -431,6 +434,9 @@ export default function RidePreviewClient({
   );
   const pickupMinutes =
     !rideIsActive ||
+    (ride &&
+      ["PUBLISHED", "REQUESTED"].includes(ride.status) &&
+      Date.parse(ride.scheduledDepartureAt) > previewClock) ||
     privateRide?.pickupEstablished ||
     pickupDurationSeconds === null
       ? null
@@ -867,6 +873,9 @@ export default function RidePreviewClient({
               />
             ) : null}
             <div className="ride-preview-summary">
+              {["PUBLISHED", "REQUESTED"].includes(ride.status) && (
+                <p className="usual-route-hint">{departureLabel(ride.scheduledDepartureAt)} · Sydney time</p>
+              )}
               {privateRide?.conversations
                 ?.filter(
                   (c) =>

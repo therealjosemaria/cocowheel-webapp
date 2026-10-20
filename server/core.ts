@@ -11,6 +11,7 @@ import path from "node:path";
 import type Database from "better-sqlite3";
 import { ratingSummary, rideRatingState } from "./ratings";
 import { conversationSummaries } from "./messaging";
+import { initializeUsualRoutes, queueRouteAlerts } from "./usual-routes";
 import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
@@ -340,6 +341,7 @@ export function initializeCoreSchema(db: Db) {
   db.exec(
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
+  initializeUsualRoutes(db);
   const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
   }>;
@@ -1059,6 +1061,7 @@ export function publishRide(
       timestamp,
     );
     event(db, rideId, "RIDE_PUBLISHED", "DRIVER", now);
+    queueRouteAlerts(db, rideId, session.id, input.origin, input.destination, departure.toISOString(), now);
   })();
   return {
     sessionToken: created?.token ?? null,

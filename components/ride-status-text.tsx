@@ -7,7 +7,7 @@ export default function RideStatusText({ label }: { label: string }) {
   const ongoing = [
     "Request pending",
     "Awaiting pickup",
-    "Published",
+    "Ride offered",
     "Ride in progress",
   ].includes(label);
   if (!ongoing) return <span className="ride-status-finished">{label}</span>;

@@ -2,6 +2,16 @@
 
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
+Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
+from Profile. Drivers offer it from fresh GPS using Now/In 30 min/In 1 hour;
+riders opt into matching emails for selected days and one Sydney-time ±1-hour
+window. Publication queues matching alerts once; GPS updates never notify.
+Optional alert delivery is separately enabled and budgeted; login email rules
+are unchanged. See [checks and user walkthrough](docs/USUAL_ROUTES_CHECK_2026-10-21.md)
+for activation status. API/schema activation is required independently of a push.
+Visible publishing controls now say Offer a ride / Ride offered; legacy internal
+PUBLISHED identifiers remain. Driver-location obfuscation remains deferred.
+
 Optional [private messaging](docs/MESSAGING.md) connects a driver and each
 requesting rider before and after acceptance. Only participants can read/send;
 request/ride closure removes access without deleting stored conversations.

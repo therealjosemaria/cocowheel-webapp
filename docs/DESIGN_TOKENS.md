@@ -44,6 +44,12 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Usual-route settings reuse the 680px compact panel, standard page title,
+  16px field gaps and 12px related-content gaps. Role headings use section/
+  semibold, helpers small/muted. Day buttons wrap with 8px gaps, minimum 44px
+  targets, and ink/surface selected state; four equal columns on phones and seven
+  from 600px avoid a single oversized Sunday button. No new palette or animation.
+
 - Pending request accordions use the shared surface/line/control radius, 12px
   section and summary padding, 8px section gap, 14px semibold identity and 12px
   regular muted status. Native disclosure markers and 44px minimum summary targets

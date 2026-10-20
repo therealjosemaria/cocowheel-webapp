@@ -23,7 +23,7 @@ export default function LocationAge({
   if (!location)
     return (
       <small className="driver-location-age">
-        {label} · Published location
+        {label} · Starting location
       </small>
     );
   const seconds = Math.max(

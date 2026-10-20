@@ -9,7 +9,7 @@ test("only ongoing status labels pulse and offer a pause control", () => {
     "Request pending",
     "Awaiting pickup",
     "Ride in progress",
-    "Published",
+    "Ride offered",
   ]) {
     const html = renderToStaticMarkup(createElement(RideStatusText, { label }));
     assert.match(html, /Pause status animation/);

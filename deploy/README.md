@@ -52,6 +52,14 @@ project.
 
 ## Verification
 
+Usual routes require the new API/schema before frontend use. The additive
+tables initialize at service restart; take the consistent backup described below.
+Matching emails additionally require `COCOWHEELS_ROUTE_ALERTS_ENABLED=1` on the
+API host (default off). Review Resend quota first: alert attempts are capped at
+20/hour and 50/day and share provider capacity with authentication. Do not enable
+real email delivery in synthetic tests. See [usual routes](../docs/USUAL_ROUTES.md)
+and the dated verification guide for activation status and the manual checklist.
+
 Sample rides are now opt-in through `createApiServer` test options; normal API
 startup disables replenishment and retires available sample offers transactionally.
 It retains history and records `SAMPLE_OFFER_RETIRED` / `SAMPLES_DISABLED`, discarding
