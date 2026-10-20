@@ -63,3 +63,18 @@ Production build/TypeScript and `git diff --check` passed.
 
 Physical Safari/VoiceOver, real WhatsApp handoff and deployed frontend are outside
 these local checks. No claim of production deployment follows merely from push.
+
+## Follow-up: messages first within pending requests
+
+On 20 October, the existing shared `RideMessages` component moved directly below
+each pending request summary and above its detail grid. Fields and actions remain
+siblings outside chat, so collapsing messages never hides them. Accepted-driver
+and rider placement is unchanged; no CSS, backend, permissions or polling changes.
+
+Repeated the commands above: all eight messaging browser cases and six
+notification/layout cases passed. Messaging now asserts sibling order, geometry,
+and visible request controls with chat both collapsed and expanded. The three
+targeted Node test files, lint and production build passed. Whole-screen 390px/1440px screenshots
+for both roles were visually reviewed for hierarchy, spacing, wrapping and
+separate support/actions; map tiles were blocked by the test fixture.
+Physical-device Safari and production deployment remain unverified.

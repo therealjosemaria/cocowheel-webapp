@@ -1124,6 +1124,16 @@ export default function RidePreviewClient({
                         {requestStatusLabel(request.status)}
                       </span>
                     </summary>
+                    {privateRide?.conversations
+                      ?.filter((c) => c.requestId === request.requestId)
+                      .map((c) => (
+                        <RideMessages
+                          key={c.requestId}
+                          rideId={rideId}
+                          summary={c}
+                          rider={false}
+                        />
+                      ))}
                     <dl className="driver-request-fields">
                       <div id={requestTarget(request.requestId)}>
                         <dt>
@@ -1264,16 +1274,6 @@ export default function RidePreviewClient({
                         </dd>
                       </div>
                     </dl>
-                    {privateRide?.conversations
-                      ?.filter((c) => c.requestId === request.requestId)
-                      .map((c) => (
-                        <RideMessages
-                          key={c.requestId}
-                          rideId={rideId}
-                          summary={c}
-                          rider={false}
-                        />
-                      ))}
                   </details>
                 ))}
               </section>

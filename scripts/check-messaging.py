@@ -61,6 +61,11 @@ with sync_playwright() as p:
                 accordion = page.locator('.driver-request-accordion').first
                 expect(accordion).not_to_have_attribute('open', '')
                 accordion.locator(':scope > summary').click()
+                # Chat and request fields are siblings: collapsing chat must
+                # never hide ride information/actions underneath it.
+                assert chat.evaluate("(el) => el.nextElementSibling?.matches('.driver-request-fields')")
+                expect(accordion.locator('.driver-request-fields')).to_be_visible()
+                assert chat.bounding_box()['y'] < accordion.locator('.driver-request-fields').bounding_box()['y']
             if not driver:
                 page.goto('http://127.0.0.1:3090/activity/test-ride?request=req0&compose=1')
                 expect(chat).to_have_attribute('open', '')
@@ -75,6 +80,9 @@ with sync_playwright() as p:
             chat.locator('summary').click()
             textbox = chat.get_by_role('textbox', name='Message', exact=True)
             expect(textbox).to_be_visible()
+            if driver:
+                assert chat.bounding_box()['y'] + chat.bounding_box()['height'] <= accordion.locator('.driver-request-fields').bounding_box()['y']
+                expect(accordion.get_by_role('button', name='ACCEPT RIDER', exact=True)).to_be_visible()
             heights = chat.locator('.message-actions button').evaluate_all('(buttons)=>buttons.map(b=>b.getBoundingClientRect().height)')
             assert len(heights) == 1 and heights[0] >= 44, heights
             expect(chat.get_by_role('button', name='Stop messaging', exact=True)).to_have_count(0)

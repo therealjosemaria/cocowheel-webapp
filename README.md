@@ -6,6 +6,9 @@ Optional [private messaging](docs/MESSAGING.md) connects a driver and each
 requesting rider before and after acceptance. Only participants can read/send;
 request/ride closure removes access without deleting stored conversations.
 Unread counts reuse Profile's active-ride card and existing visible-page polling.
+Both roles reuse the same messaging accordion above their corresponding details.
+Within each pending driver request, messages sit directly below its summary,
+followed by sibling request fields/actions; collapsing chat leaves those visible.
 No attachments, typing indicators, push delivery or new retention cleanup.
 Messaging closes with the request/ride lifecycle; the composer has only Send
 message, without a separate Stop messaging button/dialog. Previously stopped

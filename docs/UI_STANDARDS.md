@@ -198,6 +198,10 @@ breathing room. Keep identical placement rules for both roles.
 
 Request-scoped chat uses a native expandable section and existing small text,
 surface/line/radius tokens. Body text stays regular; only the summary is semibold.
+It is
+placed before its associated detail grid in both roles. Pending driver cards
+put chat immediately after their parent summary; fields/actions are siblings
+below it, never nested inside messaging.
 Messages are plain text; no read receipts, typing animations or extra colour
 palette. Send message is the sole composer action, using the shared primary
 button with a 44px minimum target. No ride-action navigation inside chat; Report a concern via WhatsApp appears once below ride details/actions, never in conversations.
