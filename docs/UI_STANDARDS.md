@@ -4,6 +4,14 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+**Care in every detail:** review the whole interaction, including external
+handoffs and prefilled messages, not just the app screen. Aim for effortless,
+welcoming use through clear wording, restrained emphasis and deliberate spacing.
+Separate a prefilled message's greeting, purpose and reference into short
+paragraphs with blank lines; preserve exact identifiers. Do not trade readability
+for compactness or add decorative clutter. Verify encoded line breaks and record
+when the receiving app's mobile/desktop rendering remains untested.
+
 **Single-purpose sections:** each section contains only information and controls
 for its own task. Messaging contains conversation and messaging controls, not
 ride actions or support links. Ride actions belong in Action; creator support

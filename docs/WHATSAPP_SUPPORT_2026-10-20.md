@@ -20,6 +20,19 @@ No immediate response/emergency service is promised. Privacy and Terms describe
 the destination; their email contact remains an alternative. The personal number
 is visible in the public link and personal/support chats share the owner's inbox.
 
+## Prefilled-message readability follow-up
+
+The greeting, concern sentence and reference now occupy three short paragraphs,
+separated by blank lines encoded as `%0A%0A`. The draft remains editable and is
+never sent automatically. `COCO-` is the existing public ride-ID prefix generated
+by `server/core.ts`, not accidental branding in the message; it is preserved
+exactly for lookup/history compatibility. No backend migration or ID change.
+The app link, icon, messaging heading and screen layout are unchanged.
+Reproduce checks with `node --import tsx --test tests/support.test.ts` and
+`npm run lint`. Tests cover exact decoded paragraphs, encoded newlines, legacy
+reference preservation and unusual reference characters. Actual WhatsApp mobile
+and desktop draft rendering remains unverified; no external message is sent.
+
 ## Checks
 
 Reproduce browser checks with the isolated frontend commands in
