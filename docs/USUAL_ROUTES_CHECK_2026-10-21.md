@@ -86,7 +86,20 @@ the existing configured mail sender and `https://www.gumwheel.com` public origin
 No login configuration, secret or delivery address changed. The switch remains
 off in the example environment; actual provider quota/headroom and inbox delivery
 are not certified by these checks. Only explicitly opted-in real accounts can
-generate sends. Frontend rollout is checked separately after push.
+generate sends.
+
+Frontend feature commit `5e3a33a4c4a83dca56d5a4e0eb1da7ab37d53ba7` was pushed
+to main. GitHub's Vercel commit status reported success (“Deployment has
+completed”), deployment `E7MdHoPtZaa3NdvscrEkUo2ieqQT`. The first public page
+probe during rollout returned 404; the subsequent probe returned 200 and
+contained “My usual route”. Public `/api/health` returned `{"status":"ok"}`;
+public `/api/usual-route` returned 401 without authentication.
+
+The Vercel connector could discover the project but deployment listing returned
+403 for its team scope; no Vercel CLI was installed. Verification therefore used
+the GitHub deployment status and public HTTP checks, not Vercel runtime logs.
+An authenticated production browser journey and real email delivery are not
+claimed verified.
 
 Physical iPhone/Safari and Android GPS, native time pickers, real two-account
 email inbox delivery and live map-provider coverage remain manual checks.
