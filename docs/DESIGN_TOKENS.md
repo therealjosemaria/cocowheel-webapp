@@ -110,7 +110,8 @@ wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance
 Ride-details panels use 12px top separation. Map legends keep `--text-caption`,
 8px row / 16px column gaps, non-shrinking colour swatches and unbroken route names.
 Below 600px the location-age item spans a separate centred row. Do not shrink
-fonts to fit long update ages. Report a concern is a single ride-level link.
+fonts to fit long update ages. Creator support is a single ride-level link,
+“Contact us on WhatsApp”, using the same caption size as legal links.
 
 No new colour/font tokens. Messages use `--text-small`, `--text-caption`,
 `--weight-regular`, `--weight-semibold`, `--surface`, `--surface-subtle`, `--line`

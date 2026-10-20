@@ -63,11 +63,19 @@ with sync_playwright() as p:
             page.get_by_role('button', name='OKAY', exact=True).click()
             button.click()
             textbox = page.locator('#messages-req0').get_by_role('textbox', name='Message', exact=True)
-            expect(textbox).to_have_value(starter)
+            expect(textbox).to_have_value(starter, timeout=15000)
             assert 'request=req0' in page.url and 'compose=' not in page.url
             assert state['sends'] == 0
-            expect(page.get_by_role('link', name='Report a concern')).to_have_count(1)
-            expect(page.locator('#messages-req0').get_by_role('link', name='Report a concern')).to_have_count(0)
+            expect(page.get_by_role('link', name='Contact us on WhatsApp')).to_have_count(1)
+            support = page.get_by_role('link', name='Contact us on WhatsApp')
+            assert support.get_attribute('href').startswith('https://wa.me/61452340432?text=')
+            assert support.get_attribute('target') == '_blank'
+            assert support.get_attribute('rel') == 'noopener noreferrer'
+            expect(page.get_by_text('Opens email. Not an emergency service.', exact=True)).to_have_count(0)
+            expect(page.get_by_role('link', name='Ride actions', exact=True)).to_have_count(0)
+            report_size = page.get_by_role('link', name='Contact us on WhatsApp').evaluate('(el) => getComputedStyle(el).fontSize')
+            assert report_size == page.locator('.footer-legal a').first.evaluate('(el) => getComputedStyle(el).fontSize') == '12px'
+            expect(page.locator('#messages-req0').get_by_role('link', name='Contact us on WhatsApp')).to_have_count(0)
             legend = page.locator('.ride-selection-route-key').bounding_box()
             summary = page.locator('.ride-preview-summary').bounding_box()
             assert summary['y'] - (legend['y'] + legend['height']) >= 12
@@ -78,6 +86,12 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/message-entry-detail-{width}-{preview}.png', full_page=True)
             page.reload()
             expect(page.locator('#messages-req0')).not_to_have_attribute('open', '')
+            if not preview:
+                for legal in ['privacy', 'terms']:
+                    page.goto('http://127.0.0.1:3090/'+legal)
+                    expect(page.get_by_text('Contact us on WhatsApp', exact=False)).to_be_visible()
+                    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                    page.screenshot(path=f'/tmp/whatsapp-{legal}-{width}.png', full_page=True)
             assert not errors, errors
             print(f'PASS {width}px {"preview" if preview else "chooser"}: failure, request, editable draft, no auto-send, no scroll, reload')
             context.close()

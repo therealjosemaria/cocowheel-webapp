@@ -8,6 +8,7 @@ import {
   type ConversationSummary,
 } from "@/lib/messaging-types";
 import { Message } from "./ride-journey-controls";
+import { SUPPORT_LABEL, supportWhatsAppUrl } from "@/lib/support";
 
 // Never replay a private message after signing in as a different account.
 const chatApi = <T,>(path: string, init: RequestInit = {}) =>
@@ -17,11 +18,12 @@ export function ReportConcern({ rideId }: { rideId: string }) {
   return (
     <div className="ride-report">
       <a
-        href={`mailto:jmos0905@uni.sydney.edu.au?subject=${encodeURIComponent(`GUMWHEEL ride concern: ${rideId}`)}`}
+        href={supportWhatsAppUrl(rideId)}
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        Report a concern
+        {SUPPORT_LABEL}
       </a>
-      <span>Opens email. Not an emergency service.</span>
     </div>
   );
 }
@@ -374,11 +376,6 @@ export default function RideMessages({
               )}
             </>
           )}
-          <div className="message-footer">
-            <a className="message-ride-actions" href="#ride-actions">
-              Ride actions
-            </a>
-          </div>
         </div>
       ) : null}
       <dialog

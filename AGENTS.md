@@ -33,6 +33,11 @@ Design mobile-first and review desktop too. Reuse shared views, maps, modals,
 buttons and typography tokens. Backend changes need relevant regression tests;
 role-specific UI must be reviewed for both driver and rider.
 
+Keep sections single-purpose. Messaging contains only conversation and messaging
+controls; ride actions and support belong in their own sections. Reusing a shared
+component is not permission to duplicate unrelated controls or destinations.
+Check section responsibilities alongside typography and spacing on every UI edit.
+
 After every UI or copy change, visually review the whole affected screen on mobile
 and desktop for competing emphasis: headings versus body, text weights, icon
 prominence, colours and spacing. Reassess existing bold formatting when shortening

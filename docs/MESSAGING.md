@@ -94,13 +94,15 @@ Other request/acceptance notification acknowledgment stays unchanged/local.
 Existing Action cell and shared confirmation retain withdraw/cancel behaviour.
 Existing cancellation/error dialogs now contain keyboard focus, return focus to
 the triggering control on close, and allow Escape when no action is in flight.
-Chat offers a Ride actions anchor so a long conversation does not hide the exit.
+Ride actions remain in their own Action section, not in conversation content.
 Stop messaging uses matching positive-first/negative-second confirmation styling.
-Report a concern opens an email to support with the ride ID; it does not submit a
-server report, promise monitoring or claim emergency response. A mail handler is
-needed. One link/helper remains below participant ride details/actions, including
-history; the duplicate inside each conversation is removed. Chat retains its
-Ride actions anchor. The enclosing details panel has a 12px top gap.
+“Contact us on WhatsApp” opens an external chat with the creator’s
+personal account, including an editable ride-reference draft. It does not send
+automatically, submit a server report, promise monitoring or emergency response.
+The link appears once below participant ride details/actions, including history;
+neither support nor ride navigation is duplicated inside chat. The old mailto link
+and helper sentence are superseded. Legal pages retain the privacy email option.
+The enclosing details panel has a 12px top gap. See WHATSAPP_SUPPORT_2026-10-20.md.
 Signed-in Profile says University email verified for UniKeys; approved exceptions
 say Email verified. This does not verify student status, identity or licence.
 

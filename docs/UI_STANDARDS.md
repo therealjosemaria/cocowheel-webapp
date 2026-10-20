@@ -4,6 +4,12 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+**Single-purpose sections:** each section contains only information and controls
+for its own task. Messaging contains conversation and messaging controls, not
+ride actions or support links. Ride actions belong in Action; creator support
+belongs once below ride details. Reuse shared implementations without duplicating
+destinations across unrelated sections. Check this boundary on every UI review.
+
 Request-to-message discovery uses one centred helper line above the existing
 Request to join button (`--text-caption`, `--muted`, `--weight-regular`, 8px
 separation). Preserve the button's label, size and hierarchy. Do not introduce
@@ -157,8 +163,8 @@ Request-scoped chat uses a native expandable section and existing small text,
 surface/line/radius tokens. Body text stays regular; only the summary is semibold.
 Messages are plain text; no read receipts, typing animations or extra colour
 palette. Send/Stop reuse primary/secondary buttons with at least 44px targets;
-they wrap on narrow screens. Ride actions remains an explicit chat link; Report a
-concern appears once below ride details/actions, never duplicated in conversations.
+they wrap on narrow screens. No ride-action navigation inside chat; Contact us on
+WhatsApp appears once below ride details/actions, never in conversations.
 Keep 12px above the enclosing ride-details panel. Shared map legends retain
 caption size and role colours: location copy uses “Updated”, not “Last updated”,
 and minutes use “min”. Below 600px, location age occupies its own centred row;

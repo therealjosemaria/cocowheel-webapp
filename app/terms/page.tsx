@@ -57,9 +57,9 @@ export default function TermsPage() {
         their trip. Do not send abusive, unsolicited promotional or misleading
         messages. Either participant can stop messaging; this does not withdraw
         a request or cancel a ride. Messaging ends when the request or ride
-        closes. Report a concern opens an email to our support address, not an
-        in-app or emergency response service. Messages and reports are not
-        guaranteed to be read immediately.
+        closes. Contact us on WhatsApp opens the creator’s personal
+        WhatsApp account, not an in-app or emergency response service. Messages
+        and reports are not guaranteed to be read immediately.
       </p>
       <p>
         Drivers are responsible for holding the licences, registration,

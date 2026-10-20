@@ -91,7 +91,8 @@ with sync_playwright() as p:
             assert state['bodies'][0]['clientId'] == state['bodies'][1]['clientId']
             assert chat.locator('.message-list img').count() == 0
             assert len(state['messages']) == 1
-            chat.get_by_role('link', name='Ride actions', exact=True).click()
+            expect(chat.get_by_role('link', name='Ride actions', exact=True)).to_have_count(0)
+            page.locator('#ride-actions').scroll_into_view_if_needed()
             expect(page.locator('#ride-actions')).to_be_in_viewport()
             # Existing withdrawal/cancellation uses the established confirmation UI.
             action = page.locator('#ride-actions').get_by_role('button', name='CANCEL RIDE' if driver else 'WITHDRAW REQUEST', exact=True)
@@ -110,9 +111,9 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/messaging-dialog-{width}-{driver}.png')
             page.get_by_role('button', name='KEEP MESSAGING', exact=True).click()
             expect(textbox).to_be_enabled()
-            expect(chat.get_by_role('link', name='Report a concern')).to_have_count(0)
-            expect(page.get_by_role('link', name='Report a concern')).to_have_count(1)
-            assert page.get_by_role('link', name='Report a concern').get_attribute('href').startswith('mailto:')
+            expect(chat.get_by_role('link', name='Contact us on WhatsApp')).to_have_count(0)
+            expect(page.get_by_role('link', name='Contact us on WhatsApp')).to_have_count(1)
+            assert page.get_by_role('link', name='Contact us on WhatsApp').get_attribute('href').startswith('https://wa.me/61452340432?text=')
             page.screenshot(path=f'/tmp/messaging-{width}-{driver}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             # Unread metadata updates the existing single Profile card and links to chat.

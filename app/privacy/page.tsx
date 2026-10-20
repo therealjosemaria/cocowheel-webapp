@@ -102,6 +102,16 @@ export default function PrivacyPage() {
         login or card number, process transfers or verify payment. Provider
         handling is also governed by their own privacy policies.
       </p>
+      <p>
+        Contact us on WhatsApp opens an external conversation with the
+        creator’s personal account. The link includes your ride reference in an
+        editable draft, not your route, PayID or login codes. Opening the link
+        passes that draft to WhatsApp; you choose whether to send it. WhatsApp
+        handles your information under its own privacy policy. Messages you send
+        and your WhatsApp contact information are received by the creator and are
+        not automatically recorded in GUMWHEEL’s ride history. Email remains
+        available for privacy questions.
+      </p>
       <h2>Storage and retention</h2>
       <p>
         Sign-in cookies last up to 30 days. Browser storage can reuse recent GPS

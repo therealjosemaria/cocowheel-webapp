@@ -13,8 +13,12 @@ Discovery and public ride previews keep Request to join unchanged, with a quiet
 ride details with messaging expanded and an editable starter for an empty
 conversation; nothing is sent automatically. Normal visits remain collapsed.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
-Ride details also offer a clearly labelled email-based Report a concern link.
-That link appears once below the ride details/actions, not inside conversations.
+Ride details offer “Contact us on WhatsApp” once below the ride
+details/actions, not inside conversations. The external link uses the creator’s
+personal account and includes only an editable ride-reference draft; nothing is
+sent automatically. Privacy/support email remains available in the legal pages.
+Messaging contains only messaging controls, with no Ride actions link. Single-purpose
+section boundaries are an explicit rule in docs/UI_STANDARDS.md.
 Details have a 12px top gap below the map/pickup area. Shared map legends retain
 caption typography, use “Driver · Updated 57 min ago” style wording, and put
 location age on its own row below 600px so route labels remain unbroken.
