@@ -96,3 +96,16 @@ which correctly returned Home; the test now uses the actual Find entry URL.
 Physical Safari/Android keyboards, real email delivery, real two-device trips,
 production migration/backup restoration and deployment remain unverified.
 No general reliability/capacity claim follows from these feature checks.
+
+## Production activation — 21 October 2026
+
+Following owner authorization, API revision `caf788a` was activated before the
+frontend release. No active offers or journeys were present (115 terminal rides).
+A restricted, on-Pi SQLite online backup was completed and verified before
+restarting only `cocowheels-api`. After restart, all 23 table snapshots matched
+the backup exactly, the zero-fare CHECK was present, `integrity_check` returned
+ok and `foreign_key_check` returned no violations. Local and public-domain
+`/api/health` returned ok. No live test rides or emails were created.
+This supersedes the earlier unverified production migration statement, but is
+not an off-Pi recovery test. Frontend release verification is recorded below
+when complete; real device/provider boundaries above remain unverified.
