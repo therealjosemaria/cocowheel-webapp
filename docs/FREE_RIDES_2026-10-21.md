@@ -109,3 +109,13 @@ ok and `foreign_key_check` returned no violations. Local and public-domain
 This supersedes the earlier unverified production migration statement, but is
 not an off-Pi recovery test. Frontend release verification is recorded below
 when complete; real device/provider boundaries above remain unverified.
+
+Frontend revision `032e270` reached READY as production deployment
+`dpl_81XmpMtiZiRnG74ue9vqcixu26nG`, assigned to www.gumwheel.com and gumwheel.com.
+Read-only production Chromium checks at 390px and 1440px verified Free initially,
+the contribution checkbox revealing PayID fields, and no horizontal overflow;
+whole-screen screenshots were visually reviewed. No form was submitted.
+An initial check ran while Vercel was still building and correctly saw the old
+form; rerunning after READY passed both widths. This supersedes the earlier
+unverified frontend deployment statement. The 125-test suite and build results
+above apply to the unchanged application source; this follow-up records evidence.
