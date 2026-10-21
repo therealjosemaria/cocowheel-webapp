@@ -6,21 +6,25 @@ scope and activation status; code presence is not verified deployment.
 
 ## Product contract
 
-- Profile → My usual route opens `/usual-route`, not another main-menu tab.
+- Account menu → Profile opens `/usual-route`, with My usual route as a section,
+  not another main-menu tab. URLs and API names remain unchanged.
 - One private saved route per verified principal, across browsers. Saving does
   not reserve a ride, publish automatically or change the one-active-role rule.
 - Origin and destination are explicitly chosen from the existing place search.
   The pilot filters new searches to Australia and biases destination by origin.
 - Riders select one or more weekdays and one shared wall-clock time. The window
   is inclusive ±60 minutes, using `Australia/Sydney` including DST. A window
-  around Monday midnight includes late Sunday; the UI labels midnight crossings.
+  around Monday midnight includes late Sunday; the saved summary labels crossings.
   Days/time must be supplied together. They are mandatory for email opt-in.
   Drivers may omit both; there is no unrestricted all-day rider-alert mode.
-- Email opt-in is unchecked initially. Enable/Mute controls affect future queued
+- New drafts preselect matching emails when delivery is configured; Save route
+  explicitly persists the visible selection. Existing saved choices stay unchanged.
+  Turning off in the draft or saved view requires confirmation; Escape/Go back
+  leaves it on. No schedule is invented. Enable/Mute controls affect future queued
   sends; no automatic historical search/fan-out occurs on enabling or saving.
 - Newly saved routes default to free (fare 0), with no stored PayID value.
   Drivers can check Ask for a contribution in the shared Fare accordion to save
-  an integer AUD 5–10,000 fare; existing PayID validation applies. Paid offers
+  an AUD 1–10,000 fare with up to two decimal places; PayID validation applies. Paid offers
   require PayID before offering. Existing saved paid settings are preserved;
   changes require Save payment preferences and affect future offers only.
   New replacement routes default to free. No bidding.

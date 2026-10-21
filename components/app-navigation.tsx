@@ -384,7 +384,7 @@ export default function AppNavigation() {
                 href="/usual-route"
                 onClick={() => setIdentityOpen(false)}
               >
-                My usual route
+                Profile
               </Link>
               <button
                 className="secondary"

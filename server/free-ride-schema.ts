@@ -7,7 +7,7 @@ export function allowFreeRideFares(db: Database.Database) {
       "SELECT sql FROM sqlite_master WHERE type='table' AND name='rides'",
     )
     .get() as { sql: string };
-  const oldCheck = /CHECK\s*\(\s*price_aud\s*>=\s*5\s*\)/i;
+  const oldCheck = /CHECK\s*\(\s*(?:price_aud\s*=\s*0\s+OR\s+)?price_aud\s*>=\s*5\s*\)/i;
   if (!oldCheck.test(table.sql)) return;
   const foreignKeys = db.pragma("foreign_keys", { simple: true });
   const objects = db
@@ -29,7 +29,7 @@ export function allowFreeRideFares(db: Database.Database) {
             /^CREATE TABLE\s+"?rides"?/i,
             "CREATE TABLE rides_free_migration",
           )
-          .replace(oldCheck, "CHECK (price_aud = 0 OR price_aud >= 5)"),
+          .replace(oldCheck, "CHECK (price_aud = 0 OR price_aud >= 1)"),
       );
       db.exec(
         `INSERT INTO rides_free_migration (rowid,${columns}) SELECT rowid,${columns} FROM rides`,

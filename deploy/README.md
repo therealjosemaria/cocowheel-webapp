@@ -52,6 +52,12 @@ project.
 
 ## Verification
 
+Profile/contribution update (22 October) lowers the paid minimum to AUD 1 and
+allows cents. Restart the tested API before releasing its frontend. The existing
+transactional fare migration now handles both >=5 and free-or->=5 CHECKs, changing
+them to free-or->=1 without converting existing fares. Back up first and verify
+table preservation/integrity/FKs. See [checks](../docs/PROFILE_POLISH_2026-10-22.md).
+
 Free-ride support requires the API before the free-default frontend. Startup
 transactionally rebuilds legacy `rides` tables to permit fare 0 alongside the
 existing >=5 constraint, preserving every column/row and explicit index/trigger.

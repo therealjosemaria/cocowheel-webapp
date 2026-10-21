@@ -2,6 +2,7 @@
 import json
 from datetime import datetime, timezone
 from playwright.sync_api import sync_playwright, expect
+expect.set_options(timeout=15000)  # Allow dev compilation on the shared Pi.
 
 origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney'}
 destination = {'latitude': -33.88, 'longitude': 151.25, 'label': 'University of Sydney'}
@@ -45,6 +46,7 @@ with sync_playwright() as p:
         page.goto('http://127.0.0.1:3090/?start=driver')
         expect(page.locator('.contribution-choice > summary')).to_have_text('Fare · Free')
         expect(page.get_by_label('Your PayID mobile', exact=True)).to_have_count(0)
+        page.wait_for_timeout(300)  # Let the initial form transition settle before capture.
         page.screenshot(path=f'/tmp/free-offer-{width}.png',full_page=True)
         page.locator('.contribution-choice > summary').click()
         checkbox = page.get_by_label('Ask for a contribution', exact=True)
@@ -72,9 +74,10 @@ with sync_playwright() as p:
         assert state['writes'][-1]['priceAud']==0 and state['writes'][-1]['payId']==''
         page.get_by_role('button',name='OKAY',exact=True).click()
         checkbox.check()
+        page.get_by_label('You receive', exact=True).fill('1.50')
         page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
         expect(page.get_by_role('dialog')).to_be_visible()
-        assert state['writes'][-1]['priceAud']==5 and state['writes'][-1]['payId']=='driver@example.com'
+        assert state['writes'][-1]['priceAud']==1.5 and state['writes'][-1]['payId']=='driver@example.com'
         for role in ['RIDER','DRIVER']:
             for status in ['ACCEPTED','CO_RIDE_ACTIVE','COMPLETED']:
                 state.update(role=role,status=status,fare=0)

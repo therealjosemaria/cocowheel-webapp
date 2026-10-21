@@ -1,7 +1,8 @@
 "use client";
 import DepartureChoice from "./departure-choice";
 import ContributionChoice from "./contribution-choice";
-import { fareLabel } from "@/lib/fare";
+import PaymentFields from "./payment-fields";
+import { fareLabel, validFare, CONTRIBUTION_ERROR } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
 import { Message } from "./ride-journey-controls";
@@ -17,7 +18,6 @@ import PoorFitPrompt from "./poor-fit-prompt";
 import CopyPayId from "./copy-payid";
 import LocationAge from "./location-age";
 import {
-  PAYID_MAX_LENGTH,
   SEARCH_MAX_LENGTH,
   payIdInputError,
   searchInputError,
@@ -202,7 +202,7 @@ const humanError = (error: unknown) => {
     PAYID_UNAVAILABLE: "PayID details are not available.",
     PAYID_REQUIRED: "Enter your PayID before offering a ride.",
     INVALID_PAYID: "Check your PayID format and length.",
-    INVALID_FIXED_PRICE: "Enter a whole-dollar amount from A$5 to A$10,000.",
+    INVALID_FIXED_PRICE: CONTRIBUTION_ERROR,
     REQUEST_TIME_INCOMPATIBLE:
       "That requested time is not compatible with the driver’s planned departure.",
   };
@@ -1346,6 +1346,10 @@ function DriverForm(props: {
   const payIdRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const submit = () => {
+    priceRef.current?.setCustomValidity(
+      Number(props.price) > 0 && validFare(Number(props.price))
+        ? "" : CONTRIBUTION_ERROR,
+    );
     payIdRef.current?.setCustomValidity(
       payIdInputError(props.payId, props.payIdType) ?? "",
     );
@@ -1425,80 +1429,12 @@ function DriverForm(props: {
         />
         <DepartureChoice value={props.departureMinutes} onChange={props.setDepartureMinutes} />
         <ContributionChoice checked={props.contribution} onChange={props.setContribution} fare={props.price}>
-        <label className="field">
-          You receive
-          <div className="money">
-            <b>A$</b>
-            <input
-              ref={priceRef}
-              required
-              inputMode="numeric"
-              type="number"
-              min="5"
-              max="10000"
-              step="1"
-              value={props.price}
-              onChange={(event) => props.setPrice(event.target.value)}
-            />
-          </div>
-        </label>
-        <fieldset className="payid-field">
-          <legend>Your PayID</legend>
-          <div
-            className="payid-type-options"
-            role="radiogroup"
-            aria-label="PayID type"
-          >
-            {(["MOBILE", "EMAIL", "OTHER"] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                role="radio"
-                aria-checked={props.payIdType === type}
-                className={props.payIdType === type ? "active" : undefined}
-                onClick={() => props.setPayIdType(type)}
-              >
-                {type === "MOBILE"
-                  ? "Mobile"
-                  : type === "EMAIL"
-                    ? "Email"
-                    : "Other"}
-              </button>
-            ))}
-          </div>
-          <input
-            ref={payIdRef}
-            required
-            type={
-              props.payIdType === "EMAIL"
-                ? "email"
-                : props.payIdType === "MOBILE"
-                  ? "tel"
-                  : "text"
-            }
-            maxLength={PAYID_MAX_LENGTH[props.payIdType]}
-            aria-label={`Your PayID ${props.payIdType.toLowerCase()}`}
-            inputMode={
-              props.payIdType === "MOBILE"
-                ? "tel"
-                : props.payIdType === "EMAIL"
-                  ? "email"
-                  : "text"
-            }
-            placeholder={
-              props.payIdType === "MOBILE"
-                ? "04xx xxx xxx"
-                : props.payIdType === "EMAIL"
-                  ? "name@example.com"
-                  : "ABN or organisation identifier"
-            }
-            value={props.payId}
-            onChange={(event) => {
-              event.target.setCustomValidity("");
-              props.setPayId(event.target.value);
-            }}
+          <PaymentFields
+            fare={props.price} setFare={props.setPrice}
+            payId={props.payId} setPayId={props.setPayId}
+            type={props.payIdType} setType={props.setPayIdType}
+            priceRef={priceRef} payIdRef={payIdRef}
           />
-        </fieldset>
         </ContributionChoice>
         <button className="primary" disabled={props.busy} onClick={submit}>
           {props.busy ? "Offering…" : "OFFER A RIDE"}

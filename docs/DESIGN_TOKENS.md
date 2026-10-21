@@ -44,6 +44,12 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Profile field labels use small/bold, while its My usual route section retains
+  section/semibold. Native time inputs and their grid parents have min-width: 0;
+  time inputs use border-box and 100%/max-width:100% to contain mobile intrinsic
+  sizing. Keep native pickers and 16px input text. PaymentFields is shared between
+  Profile and Offer; retain the existing 16px field gap and payment selectors.
+
 - Contribution settings reuse a native details/summary accordion: surface/line,
   control radius, 12px inset/gap, small text and semibold summary with a 44px
   target. The explicit checkbox reuses the usual-route email checkbox sizing.

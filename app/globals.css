@@ -2875,10 +2875,14 @@ p {
 .usual-route-body .field,
 .usual-route-body .payid-field { margin: 0; }
 .usual-route-body .place-search { margin-top: 0; }
+.usual-route-body > *, .usual-route-body .field { min-width: 0; }
+.usual-route-body input[type="time"] { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; display: block; }
+.usual-route-body input[type="time"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
+.profile-field-label { font-size: var(--text-small); font-weight: var(--weight-bold); }
 .usual-route-body > details > summary, .usual-route-section > details > summary { min-height: 44px; cursor: pointer; padding-block: 12px; font-size: var(--text-small); }
 .usual-route-hint { color: var(--muted); font-size: var(--text-small); line-height: 1.5; }
 .usual-route-section { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
-.usual-payment { display: grid; gap: 16px; padding-block: 12px; }
+.usual-payment { display: grid; gap: 16px; padding-block: 12px; min-width: 0; }
 .usual-days { border: 0; padding: 0; min-width: 0; margin: 0; }
 .usual-days legend { font-size: var(--text-small); margin-bottom: 8px; }
 .usual-days > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }

@@ -1,6 +1,7 @@
 "use client";
 import ContributionChoice from "./contribution-choice";
-import { fareLabel } from "@/lib/fare";
+import PaymentFields from "./payment-fields";
+import { fareLabel, validFare, CONTRIBUTION_ERROR } from "@/lib/fare";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useRouter } from "next/navigation";
@@ -11,7 +12,7 @@ import {
   saveRiderPreviewRoute,
   saveRiderSearchDraft,
 } from "@/lib/ride-preview-cache";
-import { payIdInputError, PAYID_MAX_LENGTH } from "@/lib/input-validation";
+import { payIdInputError } from "@/lib/input-validation";
 import { PlaceSearch } from "./home-client";
 import DepartureChoice from "./departure-choice";
 import { Message } from "./ride-journey-controls";
@@ -24,7 +25,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [destination, setDestination] = useState<Pin>();
   const [days, setDays] = useState<number[]>([]);
   const [minute, setMinute] = useState("");
-  const [alerts, setAlerts] = useState(false);
+  const [alerts, setAlerts] = useState(true);
   const [fare, setFare] = useState("5");
   const [contribution, setContribution] = useState(false);
   const [payId, setPayId] = useState("");
@@ -38,6 +39,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [available, setAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [confirmMute, setConfirmMute] = useState(false);
   const [generation] = useState(() => ({ value: 0 }));
   useEffect(() => {
     let live = true;
@@ -46,6 +48,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setLoading(true);
       setLoadFailed(false);
       setConfirmRemove(false);
+      setConfirmMute(false);
       setVerified(false);
       setSaved(null);
       setOrigin(undefined);
@@ -53,7 +56,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setPayId("");
       setDays([]);
       setMinute("");
-      setAlerts(false);
+      setAlerts(true);
       setFare("5");
       setContribution(false);
       setPayIdType("MOBILE");
@@ -70,6 +73,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               setPayId(result.route.payId);
               setPayIdType(result.route.payIdType);
             }
+            setAlerts(result.route?.alerts ?? result.alertsAvailable);
             setAvailable(result.alertsAvailable);
             setVerified(true);
           }
@@ -148,13 +152,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setError(payError);
       return;
     }
-    if (
-      contribution &&
-      (!Number.isInteger(Number(fare)) ||
-        Number(fare) < 5 ||
-        Number(fare) > 10000)
-    ) {
-      setError("Use a whole-dollar fare from $5 to $10,000.");
+    if (contribution && (Number(fare) <= 0 || !validFare(Number(fare)))) {
+      setError(CONTRIBUTION_ERROR);
       return;
     }
     setBusy(true);
@@ -281,8 +280,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   return (
     <section className="activity-page">
       <div className="activity-panel usual-route-panel">
-        <h1 className="page-title">My usual route</h1>
+        <h1 className="page-title">Profile</h1>
         <div className="usual-route-body">
+          <h2>My usual route</h2>
           {loading ? (
             <p>Loading…</p>
           ) : loadFailed ? (
@@ -353,6 +353,10 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                       className="secondary"
                       disabled={busy || (!saved.alerts && !available)}
                       onClick={async () => {
+                        if (saved.alerts) {
+                          setConfirmMute(true);
+                          return;
+                        }
                         setBusy(true);
                         try {
                           await persist({ ...saved, alerts: !saved.alerts });
@@ -411,13 +415,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                         }
                         if (
                           contribution &&
-                          (!Number.isInteger(Number(fare)) ||
-                            Number(fare) < 5 ||
-                            Number(fare) > 10000)
+                          (Number(fare) <= 0 || !validFare(Number(fare)))
                         ) {
-                          setError(
-                            "Use a whole-dollar fare from $5 to $10,000.",
-                          );
+                          setError(CONTRIBUTION_ERROR);
                           return;
                         }
                         setBusy(true);
@@ -479,6 +479,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                       );
                       if (current === generation.value) {
                         setSaved(null);
+                        setAlerts(available);
                         setContribution(false);
                         setFare("5");
                         setPayId("");
@@ -496,13 +497,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           ) : (
             <>
-              <p className="usual-route-hint">
-                Save one route. Use it to offer a ride or receive matching-ride
-                emails.
-              </p>
-              <h2>
+              <div className="profile-field-label">
                 <RideFieldLabel icon="from">Where from?</RideFieldLabel>
-              </h2>
+              </div>
               <PlaceSearch
                 placeholder="Search origin"
                 countryCode="au"
@@ -511,9 +508,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               {origin && (
                 <p className="usual-route-hint">Selected: {origin.label}</p>
               )}
-              <h2>
+              <div className="profile-field-label">
                 <RideFieldLabel icon="to">Where to?</RideFieldLabel>
-              </h2>
+              </div>
               <PlaceSearch
                 placeholder="Search destination"
                 countryCode="au"
@@ -525,8 +522,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   Selected: {destination.label}
                 </p>
               )}
-              <fieldset className="usual-days">
-                <legend>Rider travel days</legend>
+              <fieldset className="usual-days" aria-label="Travel days">
                 <div>
                   {WEEKDAYS.map((day, i) => (
                     <button
@@ -547,10 +543,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   ))}
                 </div>
               </fieldset>
-              <p className="usual-route-hint">
-                Days and time are required for rider alerts, not for offering
-                rides.
-              </p>
               <label className="field">
                 Around{" "}
                 <input
@@ -559,27 +551,22 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   onChange={(e) => setMinute(e.target.value)}
                 />
               </label>
-              {minute && (
-                <p className="usual-route-hint">
-                  {scheduleWindow(
-                    Number(minute.slice(0, 2)) * 60 + Number(minute.slice(3)),
-                  )}
-                </p>
-              )}
               <label className="usual-alert-choice">
                 <input
                   type="checkbox"
                   checked={alerts}
                   disabled={!available}
-                  onChange={(e) => setAlerts(e.target.checked)}
+                  onChange={(e) =>
+                    e.target.checked ? setAlerts(true) : setConfirmMute(true)
+                  }
                 />
                 Email me matching rides
               </label>
-              <p className="usual-route-hint">
-                {available
-                  ? "Alerts require days and a time. One email per matching offer; delivery may be delayed. Mute anytime."
-                  : "Matching emails aren’t available yet. You can save your route and enable alerts later."}
-              </p>
+              {!available && (
+                <p className="usual-route-hint">
+                  Matching emails aren’t available yet.
+                </p>
+              )}
               <ContributionChoice
                 checked={contribution}
                 onChange={setContribution}
@@ -604,11 +591,69 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           )}
         </div>
+        {confirmMute && (
+          <MuteAlertsPrompt
+            busy={busy}
+            close={() => setConfirmMute(false)}
+            confirm={async () => {
+              setBusy(true);
+              try {
+                if (saved) await persist({ ...saved, alerts: false });
+                else setAlerts(false);
+                setConfirmMute(false);
+              } catch (reason) {
+                fail(reason);
+                setConfirmMute(false);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        )}
         {error && <Message text={error} close={() => setError(null)} />}
       </div>
     </section>
   );
 }
+function MuteAlertsPrompt({
+  busy,
+  close,
+  confirm,
+}: {
+  busy: boolean;
+  close: () => void;
+  confirm: () => Promise<void>;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  useDialogFocus(ref, close, busy);
+  return (
+    <div className="cancel-prompt-backdrop">
+      <section
+        ref={ref}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Turn off matching emails"
+        className="cancel-prompt"
+      >
+        <p>You won’t receive matching ride emails while this is off.</p>
+        <div className="cancel-prompt-actions">
+          <button
+            className="primary"
+            disabled={busy}
+            onClick={() => void confirm()}
+          >
+            TURN OFF EMAILS
+          </button>
+          <button className="secondary" disabled={busy} onClick={close}>
+            GO BACK
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function RemoveRoutePrompt({
   busy,
   close,
@@ -647,65 +692,6 @@ function RemoveRoutePrompt({
           </button>
         </div>
       </section>
-    </div>
-  );
-}
-function PaymentFields({
-  fare,
-  setFare,
-  payId,
-  setPayId,
-  type,
-  setType,
-}: {
-  fare: string;
-  setFare: (s: string) => void;
-  payId: string;
-  setPayId: (s: string) => void;
-  type: UsualRoute["payIdType"];
-  setType: (s: UsualRoute["payIdType"]) => void;
-}) {
-  return (
-    <div className="usual-payment">
-      <label className="field">
-        Fare (A$)
-        <input
-          type="number"
-          min="5"
-          max="10000"
-          step="1"
-          value={fare}
-          onChange={(e) => setFare(e.target.value)}
-        />
-      </label>
-      <fieldset className="payid-field">
-        <legend>Your PayID</legend>
-        <div
-          className="payid-type-options"
-          role="radiogroup"
-          aria-label="PayID type"
-        >
-          {(["MOBILE", "EMAIL", "OTHER"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="radio"
-              aria-checked={type === t}
-              className={type === t ? "active" : undefined}
-              onClick={() => setType(t)}
-            >
-              {t === "MOBILE" ? "Mobile" : t === "EMAIL" ? "Email" : "Other"}
-            </button>
-          ))}
-        </div>
-        <input
-          aria-label="Your PayID"
-          value={payId}
-          maxLength={PAYID_MAX_LENGTH[type]}
-          type={type === "EMAIL" ? "email" : type === "MOBILE" ? "tel" : "text"}
-          onChange={(e) => setPayId(e.target.value)}
-        />
-      </fieldset>
     </div>
   );
 }

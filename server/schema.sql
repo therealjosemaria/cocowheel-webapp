@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS rides (
   offer_expires_at TEXT,
   is_sample INTEGER NOT NULL DEFAULT 0 CHECK (is_sample IN (0, 1)),
   sample_key TEXT,
-  price_aud INTEGER NOT NULL CHECK (price_aud = 0 OR price_aud >= 5),
+  price_aud INTEGER NOT NULL CHECK (price_aud = 0 OR price_aud >= 1),
   driver_payid TEXT,
   driver_payid_type TEXT CHECK (driver_payid_type IN ('MOBILE', 'EMAIL', 'OTHER')),
   accepted_request_id TEXT UNIQUE,

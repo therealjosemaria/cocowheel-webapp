@@ -3,7 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import Database from "better-sqlite3";
 import { allowFreeRideFares } from "../server/free-ride-schema";
-import { fareLabel, validFare } from "../lib/fare";
+import { fareLabel, validFare, validFareDraft } from "../lib/fare";
 import {
   initializeCoreSchema,
   publishRide,
@@ -36,19 +36,54 @@ const input = {
 test("free fares are explicit and paid contribution validation stays unchanged", () => {
   assert.equal(fareLabel(0), "Free");
   assert.equal(fareLabel(5), "A$5");
-  for (const value of [-1, 1, 4, 5.5, 10001, NaN, Infinity])
+  for (const value of [-1, 0.99, 5.555, 10000.01, 10001, NaN, Infinity])
     assert.equal(validFare(value), false);
-  for (const value of [0, 5, 10000]) assert.equal(validFare(value), true);
+  for (const value of [0, 1, 1.01, 4, 5, 5.5, 8.03, 9999.99, 10000])
+    assert.equal(validFare(value), true);
+  assert.equal(fareLabel(5.5), "A$5.50");
+  for (const value of ["", "5.", "5.50", "10000.00"])
+    assert.equal(validFareDraft(value), true);
+  for (const value of ["5.555", "10000.01", "999999", "1e3", "-5", "abc"])
+    assert.equal(validFareDraft(value), false);
 });
 
-test("legacy fare migration preserves every record, FK, index and trigger and is repeatable", () => {
+test("decimal contributions survive SQLite and saved-route round trips", () => {
+  const db = new Database(":memory:");
+  try {
+    initializeCoreSchema(db);
+    const paid = publishRide(db, null, { ...input, priceAud: 1.03 }, now);
+    assert.equal(publicRidePreview(db, paid.ride.rideId, now).priceAud, 1.03);
+    const owner = findSession(db, paid.sessionToken, now)!;
+    const route = validateUsualRoute({
+      origin: input.origin,
+      destination: input.destination,
+      days: [],
+      minute: null,
+      alerts: false,
+      priceAud: 5.5,
+      payId: input.payId,
+      payIdType: "EMAIL",
+    });
+    saveUsualRoute(db, owner.id, route, now);
+    assert.equal(readUsualRoute(db, owner.id)?.priceAud, 5.5);
+    assert.throws(
+      () => validateUsualRoute({ ...route, priceAud: 5.555 }),
+      /INVALID_USUAL_ROUTE/,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+for (const priorCheck of ["CHECK (price_aud >= 5)", "CHECK (price_aud = 0 OR price_aud >= 5)"])
+test(`fare migration preserves records, FK, indexes and triggers from ${priorCheck}`, () => {
   const db = new Database(":memory:");
   db.pragma("foreign_keys = ON");
   try {
     db.exec(
       readFileSync("server/schema.sql", "utf8").replace(
-        "CHECK (price_aud = 0 OR price_aud >= 5)",
-        "CHECK (price_aud >= 5)",
+        "CHECK (price_aud = 0 OR price_aud >= 1)",
+        priorCheck,
       ),
     );
     // Initialize ancillary schemas without upgrading the legacy rides table yet.
@@ -102,6 +137,8 @@ test("legacy fare migration preserves every record, FK, index and trigger and is
     initializeCoreSchema(db);
     const free = publishRide(db, null, { ...input, priceAud: 0 }, now);
     assert.equal(free.ride.priceAud, 0);
+    const smallContribution = publishRide(db, null, { ...input, priceAud: 1.25 }, now);
+    assert.equal(smallContribution.ride.priceAud, 1.25);
     assert.equal(publicRidePreview(db, paid.ride.rideId, now).priceAud, 10);
   } finally {
     db.close();

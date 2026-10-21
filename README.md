@@ -66,8 +66,8 @@ Submission-window, finality and privacy rules remain unchanged on the server.
 
 New offers default to free. A shared Fare accordion contains “Ask for a
 contribution”; checking it reveals fare and PayID fields. Closing the accordion
-does not change the payment choice. Contributions retain whole-dollar AUD
-5–10,000 validation. Existing paid rides and saved preferences are unchanged.
+does not change the payment choice. Contributions accept AUD 1–10,000 with
+up to two decimal places. Existing paid rides and saved preferences are unchanged.
 Free rides show “Free” instead of an amount and omit payment instructions;
 pickup, messaging, completion and rating rules remain the same. See
 [free-ride checks and migration](docs/FREE_RIDES_2026-10-21.md).
@@ -335,6 +335,15 @@ See [ADMIN.md](ADMIN.md) for inspection boundaries and [deployment notes](deploy
 for service operations.
 
 ## Shared UI behaviour
+
+- Profile is the account-menu destination and page title; My usual route is its
+  section. The existing `/usual-route` URL and private route APIs stay unchanged.
+  New route drafts preselect matching emails when delivery is available; nothing
+  is saved or sent until Save route. Existing saved choices are preserved. Turning
+  emails off requires the shared confirmation dialog. Schedule requirements and
+  the Sydney ±1-hour matching window remain unchanged despite simpler copy.
+  Profile and Offer a ride reuse one payment-field component, including PayID
+  examples and decimal validation. See [checks](docs/PROFILE_POLISH_2026-10-22.md).
 
 - Profile account actions use a single 12px-spaced grid below ratings/current
   ride. Navigation links and buttons reserve equal full-width button boxes;

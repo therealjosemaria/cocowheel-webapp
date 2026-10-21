@@ -1,6 +1,7 @@
 """Isolated Chromium UI fixtures on :3090. No production/API/provider emails."""
 from playwright.sync_api import sync_playwright, expect
 import copy
+import re
 from datetime import datetime, timezone
 
 origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney'}
@@ -60,6 +61,23 @@ with sync_playwright() as p:
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.goto('http://127.0.0.1:3090/usual-route')
         expect(page.get_by_role('heading', name='My usual route', exact=True)).to_be_visible()
+        expect(page.get_by_role('heading', name='Profile', exact=True)).to_be_visible()
+        page.get_by_role('button', name=re.compile('^Profile:')).click()
+        expect(page.get_by_role('link', name='Profile', exact=True)).to_be_visible()
+        page.screenshot(path=f'/tmp/profile-menu-{width}.png', full_page=True)
+        page.get_by_role('link', name='Profile', exact=True).click()
+        expect(page.get_by_label('Email me matching rides', exact=True)).to_be_checked()
+        page.get_by_label('Email me matching rides', exact=True).click()
+        expect(page.get_by_role('dialog')).to_contain_text('You won’t receive matching ride emails')
+        page.screenshot(path=f'/tmp/profile-mute-{width}.png', full_page=True)
+        page.keyboard.press('Escape')
+        expect(page.get_by_label('Email me matching rides', exact=True)).to_be_focused()
+        page.get_by_label('Email me matching rides', exact=True).click()
+        page.get_by_role('button', name='GO BACK', exact=True).click()
+        expect(page.get_by_label('Email me matching rides', exact=True)).to_be_checked()
+        page.get_by_label('Email me matching rides', exact=True).click()
+        page.get_by_role('button', name='TURN OFF EMAILS', exact=True).click()
+        expect(page.get_by_label('Email me matching rides', exact=True)).not_to_be_checked()
         page.get_by_placeholder('Search origin').fill('Town Hall')
         page.locator('.place-search').nth(0).get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
@@ -75,7 +93,7 @@ with sync_playwright() as p:
             page.get_by_role('button', name=day, exact=True).click()
             expect(page.get_by_role('button', name=day, exact=True)).to_have_attribute('aria-pressed','true')
         page.get_by_label('Around', exact=True).fill('12:00')
-        expect(page.get_by_text('11:00 am–1:00 pm · Sydney time', exact=True)).to_be_visible()
+        expect(page.get_by_text('11:00 am–1:00 pm · Sydney time', exact=True)).to_have_count(0)
         page.screenshot(path=f'/tmp/usual-route-form-{width}.png', full_page=True)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.get_by_role('button', name='Save route', exact=True).click()
@@ -85,6 +103,7 @@ with sync_playwright() as p:
         page.reload()
         expect(page.get_by_role('button', name='Mute email alerts', exact=True)).to_be_visible()
         page.get_by_role('button', name='Mute email alerts', exact=True).click()
+        page.get_by_role('button', name='TURN OFF EMAILS', exact=True).click()
         expect(page.get_by_role('button', name='Enable email alerts', exact=True)).to_be_visible()
         assert not state['saved']['alerts']
         page.get_by_role('button', name='Enable email alerts', exact=True).click()
@@ -93,14 +112,21 @@ with sync_playwright() as p:
         assert state['saved']['payId'] == ''
         page.locator('.contribution-choice > summary').click()
         page.get_by_label('Ask for a contribution', exact=True).check()
+        expect(page.get_by_placeholder('04xx xxx xxx')).to_be_visible()
+        page.get_by_role('radio', name='Other', exact=True).click()
+        expect(page.get_by_placeholder('ABN or organisation identifier')).to_be_visible()
         page.get_by_role('radio', name='Email', exact=True).click()
-        page.get_by_role('textbox', name='Your PayID', exact=True).fill('driver@example.com')
+        expect(page.get_by_placeholder('name@example.com')).to_be_visible()
+        page.get_by_role('textbox', name='Your PayID email', exact=True).fill('driver@example.com')
+        page.get_by_label('You receive', exact=True).fill('5.50')
+        page.get_by_label('You receive', exact=True).fill('999999')
+        expect(page.get_by_label('You receive', exact=True)).to_have_value('5.50')
         page.get_by_role('button', name='Save payment preferences', exact=True).click()
-        expect(page.get_by_text('A$5 · PayID', exact=True)).to_be_visible()
+        expect(page.get_by_text('A$5.50 · PayID', exact=True)).to_be_visible()
         page.reload()
         page.locator('.contribution-choice > summary').click()
         expect(page.get_by_label('Ask for a contribution', exact=True)).to_be_checked()
-        expect(page.get_by_role('textbox', name='Your PayID', exact=True)).to_have_value('driver@example.com')
+        expect(page.get_by_role('textbox', name='Your PayID email', exact=True)).to_have_value('driver@example.com')
         page.get_by_role('radio', name='In 30 min', exact=True).click()
         page.screenshot(path=f'/tmp/usual-route-saved-{width}.png', full_page=True)
         page.evaluate("""() => { navigator.geolocation.getCurrentPosition = (success, failure) => failure({code:1}); }""")

@@ -242,7 +242,7 @@ test("published drivers can move while offers remain requestable and public loca
 test("publishing rejects invalid payment inputs and treats SQL-like text as data", () => {
   const h = harness();
   try {
-    for (const priceAud of [4, 5.5, 10001, Infinity])
+    for (const priceAud of [0.99, 5.555, 10001, Infinity])
       assert.throws(
         () => publishRide(h.db, null, { ...driverInput, priceAud }, baseTime),
         /INVALID_FIXED_PRICE/,
@@ -918,7 +918,7 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
         publishRide(
           h.db,
           published.sessionToken,
-          { ...driverInput, priceAud: 4 },
+          { ...driverInput, priceAud: 0.99 },
           baseTime,
         ),
       /INVALID_FIXED_PRICE/,

@@ -4,6 +4,22 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Profile polish (22 October): Profile names the menu action and H1; My usual route
+is the H2. Where from?, Where to? and Around are consistent 14px bold field labels,
+not competing section headings. Day buttons retain an accessible group name
+without a visible legend. Remove redundant setup/requirements/window prose from
+the editor, but retain validation messages and the delivery-unavailable notice.
+New drafts preselect matching email alerts only when available; saved preferences
+are never changed by viewing. Confirm turning off with the existing dialog shell,
+TURN OFF EMAILS / GO BACK, Escape and focus restoration. A saved mute persists only
+after a successful response. This supersedes the initially-off editor rule below.
+
+Prefer shared components over copying markup whenever behavior is equivalent.
+Profile and Offer a ride must use PaymentFields for the same placeholders, keyboard
+modes, limits and labels. Review both consumers when changing it. Contributions
+allow cents (maximum two decimal places), with $1–$10,000 bounds and server
+validation. No redundant currency prefix in the input; summaries retain A$.
+
 Free rides (21 October): new offers and newly saved routes default to zero fare.
 Reuse the native disclosure pattern for Fare · Free / Fare · A$amount. Its
 “Ask for a contribution” checkbox, not its open/closed state, determines payment
