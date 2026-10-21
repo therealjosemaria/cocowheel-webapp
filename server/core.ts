@@ -15,6 +15,8 @@ import { initializeUsualRoutes, queueRouteAlerts } from "./usual-routes";
 import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
+import { validFare } from "../lib/fare";
+import { allowFreeRideFares } from "./free-ride-schema";
 import {
   atDropoff,
   journeyEvidence,
@@ -342,6 +344,7 @@ export function initializeCoreSchema(db: Db) {
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
   initializeUsualRoutes(db);
+  allowFreeRideFares(db);
   const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
   }>;
@@ -1008,14 +1011,10 @@ export function publishRide(
     departure.getTime() > now.getTime() + 90 * 24 * 60 * 60 * 1000
   )
     throw new Error("INVALID_DEPARTURE_TIME");
-  if (
-    !Number.isInteger(input.priceAud) ||
-    input.priceAud < 5 ||
-    input.priceAud > 10_000
-  )
+  if (!validFare(input.priceAud))
     throw new Error("INVALID_FIXED_PRICE");
-  const payId = cleanOptional(input.payId, 254, "INVALID_PAYID");
-  if (!payId) throw new Error("PAYID_REQUIRED");
+  const payId = input.priceAud === 0 ? null : cleanOptional(input.payId, 254, "INVALID_PAYID");
+  if (input.priceAud > 0 && !payId) throw new Error("PAYID_REQUIRED");
   const payIdType = payId
     ? (input.payIdType ?? (payId.includes("@") ? "EMAIL" : "OTHER"))
     : null;
@@ -1226,7 +1225,7 @@ export function publicRidePreview(
     destinationLabel:
       ride.destination_label ?? fallbackLocationLabel(destination),
     plannedRoute: { origin, destination },
-    paymentMethod: ride.driver_payid ? "PAYID" : "CASH",
+    paymentMethod: ride.price_aud === 0 ? undefined : ride.driver_payid ? "PAYID" : "CASH",
     isSample: Boolean(ride.is_sample),
     driverLocation: locationFor(db, ride.id, "DRIVER", now),
   };
@@ -1953,6 +1952,7 @@ export function completeCoRide(
     throw new Error("COMPLETION_PICKUP_UNCONFIRMED");
   if (method !== null && method !== "PAYID" && method !== "CASH")
     throw new Error("INVALID_PAYMENT_HANDOFF");
+  if (ride.price_aud === 0) method = null;
   if (method === "PAYID" && !ride.driver_payid)
     throw new Error("PAYID_UNAVAILABLE");
   const request = acceptedRequest(db, ride)!;
@@ -2150,7 +2150,7 @@ function riderView(
       ? locationFor(db, row.id, "RIDER", now)
       : undefined,
     coRideCode: code,
-    paymentMethod: row.driver_payid ? "PAYID" : "CASH",
+    paymentMethod: row.price_aud === 0 ? undefined : row.driver_payid ? "PAYID" : "CASH",
     pickupEstablished: Boolean(row.co_ride_started_at),
     payId:
       request.id === row.accepted_request_id && row.co_ride_started_at

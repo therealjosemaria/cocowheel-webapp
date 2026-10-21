@@ -1,4 +1,6 @@
 "use client";
+import ContributionChoice from "./contribution-choice";
+import { fareLabel } from "@/lib/fare";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useRouter } from "next/navigation";
@@ -24,6 +26,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [minute, setMinute] = useState("");
   const [alerts, setAlerts] = useState(false);
   const [fare, setFare] = useState("5");
+  const [contribution, setContribution] = useState(false);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<UsualRoute["payIdType"]>("MOBILE");
   const [leaving, setLeaving] = useState(0);
@@ -52,6 +55,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setMinute("");
       setAlerts(false);
       setFare("5");
+      setContribution(false);
       setPayIdType("MOBILE");
       void cocowheelsApi<{
         route: UsualRoute | null;
@@ -60,6 +64,12 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
         .then((result) => {
           if (live && current === generation.value) {
             setSaved(result.route);
+            if (result.route) {
+              setContribution(result.route.priceAud > 0);
+              setFare(String(result.route.priceAud || 5));
+              setPayId(result.route.payId);
+              setPayIdType(result.route.payIdType);
+            }
             setAvailable(result.alertsAvailable);
             setVerified(true);
           }
@@ -133,15 +143,16 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       );
       return;
     }
-    const payError = payIdInputError(payId, payIdType);
+    const payError = contribution ? payIdInputError(payId, payIdType) : null;
     if (payError) {
       setError(payError);
       return;
     }
     if (
-      !Number.isInteger(Number(fare)) ||
-      Number(fare) < 5 ||
-      Number(fare) > 10000
+      contribution &&
+      (!Number.isInteger(Number(fare)) ||
+        Number(fare) < 5 ||
+        Number(fare) > 10000)
     ) {
       setError("Use a whole-dollar fare from $5 to $10,000.");
       return;
@@ -155,8 +166,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
         days,
         minute: minute ? h * 60 + m : null,
         alerts,
-        priceAud: Number(fare),
-        payId,
+        priceAud: contribution ? Number(fare) : 0,
+        payId: contribution ? payId : "",
         payIdType,
       });
     } catch (reason) {
@@ -167,7 +178,15 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   }
   async function offer() {
     if (!saved) return;
-    if (!saved.payId) {
+    if (
+      (contribution ? Number(fare) : 0) !== saved.priceAud ||
+      (contribution &&
+        (payId.trim() !== saved.payId || payIdType !== saved.payIdType))
+    ) {
+      setError("Save your payment preferences before offering a ride.");
+      return;
+    }
+    if (saved.priceAud > 0 && !saved.payId) {
       setError("Add your preferred PayID below before offering a ride.");
       return;
     }
@@ -370,32 +389,31 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   Use your current location and saved destination. Offering
                   30–60 minutes ahead gives riders more time to join.
                 </p>
-                {saved.payId ? (
-                  <p>Fare A${saved.priceAud} · PayID</p>
-                ) : (
-                  <details>
-                    <summary>Add fare and PayID</summary>
-                    <PaymentFields
-                      fare={fare}
-                      setFare={setFare}
-                      payId={payId}
-                      setPayId={setPayId}
-                      type={payIdType}
-                      setType={setPayIdType}
-                    />
+                <p>
+                  {fareLabel(saved.priceAud)}
+                  {saved.priceAud > 0 ? " · PayID" : " ride"}
+                </p>
+                <ContributionChoice
+                  checked={contribution}
+                  onChange={setContribution}
+                  fare={fare}
+                  controls={
                     <button
                       className="secondary"
                       disabled={busy}
                       onClick={async () => {
-                        const issue = payIdInputError(payId, payIdType);
-                        if (!payId.trim() || issue) {
+                        const issue = contribution
+                          ? payIdInputError(payId, payIdType)
+                          : null;
+                        if (contribution && (!payId.trim() || issue)) {
                           setError(issue ?? "Enter your PayID.");
                           return;
                         }
                         if (
-                          !Number.isInteger(Number(fare)) ||
-                          Number(fare) < 5 ||
-                          Number(fare) > 10000
+                          contribution &&
+                          (!Number.isInteger(Number(fare)) ||
+                            Number(fare) < 5 ||
+                            Number(fare) > 10000)
                         ) {
                           setError(
                             "Use a whole-dollar fare from $5 to $10,000.",
@@ -406,8 +424,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                         try {
                           await persist({
                             ...saved,
-                            priceAud: Number(fare),
-                            payId,
+                            priceAud: contribution ? Number(fare) : 0,
+                            payId: contribution ? payId : "",
                             payIdType,
                           });
                         } catch (reason) {
@@ -417,10 +435,19 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                         }
                       }}
                     >
-                      Save payment details
+                      Save payment preferences
                     </button>
-                  </details>
-                )}
+                  }
+                >
+                  <PaymentFields
+                    fare={fare}
+                    setFare={setFare}
+                    payId={payId}
+                    setPayId={setPayId}
+                    type={payIdType}
+                    setType={setPayIdType}
+                  />
+                </ContributionChoice>
                 <DepartureChoice value={leaving} onChange={setLeaving} />
                 <button
                   className="primary"
@@ -452,6 +479,10 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                       );
                       if (current === generation.value) {
                         setSaved(null);
+                        setContribution(false);
+                        setFare("5");
+                        setPayId("");
+                        setPayIdType("MOBILE");
                         setConfirmRemove(false);
                       }
                     } catch (reason) {
@@ -549,8 +580,11 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   ? "Alerts require days and a time. One email per matching offer; delivery may be delayed. Mute anytime."
                   : "Matching emails aren’t available yet. You can save your route and enable alerts later."}
               </p>
-              <details>
-                <summary>Driving? Save your fare and PayID</summary>
+              <ContributionChoice
+                checked={contribution}
+                onChange={setContribution}
+                fare={fare}
+              >
                 <PaymentFields
                   fare={fare}
                   setFare={setFare}
@@ -559,7 +593,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   type={payIdType}
                   setType={setPayIdType}
                 />
-              </details>
+              </ContributionChoice>
               <button
                 className="primary"
                 disabled={busy}

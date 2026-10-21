@@ -18,8 +18,12 @@ scope and activation status; code presence is not verified deployment.
   Drivers may omit both; there is no unrestricted all-day rider-alert mode.
 - Email opt-in is unchecked initially. Enable/Mute controls affect future queued
   sends; no automatic historical search/fan-out occurs on enabling or saving.
-- Drivers may save their fare/PayID initially or add them before first use.
-  Fare is integer AUD 5–10,000; existing PayID validation applies. No bidding.
+- Newly saved routes default to free (fare 0), with no stored PayID value.
+  Drivers can check Ask for a contribution in the shared Fare accordion to save
+  an integer AUD 5–10,000 fare; existing PayID validation applies. Paid offers
+  require PayID before offering. Existing saved paid settings are preserved;
+  changes require Save payment preferences and affect future offers only.
+  New replacement routes default to free. No bidding.
 - Offer a ride uses fresh browser GPS, never the saved origin. The server checks
   coordinate bounds, nonnegative accuracy and capture time within 30 seconds.
   These are client-reported fixes, not trusted proof of physical location.
@@ -85,11 +89,15 @@ origin. Default is off. The UI explicitly says alerts are unavailable until
 configured; routines and offering still work. Review provider quota before
 activation. OTP rules, limits and sender configuration are not changed.
 
-One single-flight worker checks one job every 15 seconds. Persistent attempt
-budgets limit optional alerts to 20/hour and 50/rolling day, **including retries**.
-This is a conservative optional-mail guardrail, not a guarantee that login quota
-can never be exhausted: both features still share the provider's actual limits.
-Large fan-outs can be delayed or skipped. No new worker infrastructure or model.
+One single-flight worker checks one job every 15 seconds. The former global
+20/hour and 50/rolling-day attempt caps were removed by owner decision on
+21 October 2026. Attempt auditing remains. Provider quotas still apply; alerts
+and login codes share capacity, with no reserved login allocation. Provider
+exhaustion can therefore affect both; monitor provider usage and adjust the plan
+as needed. Large fan-outs can still be delayed or skipped by the worker cadence
+and deadlines. No new worker infrastructure or model.
+The discussed 2/hour per route and 10/day per account limits are proposals,
+not implemented by this removal. OTP anti-abuse limits remain unchanged.
 
 Before each send: recheck opt-in, active/version, driver offer availability,
 offer expiry, recipient active roles and deadline. Deadline is the earlier of

@@ -34,8 +34,8 @@ const route: UsualRoute = {
   payId: "",
   payIdType: "MOBILE",
 };
-test("optional alert budgets persist across worker calls and suppress active recipients", async () => {
-  for (const count of [20, 50]) {
+test("alert delivery continues beyond former global caps without duplicate sends", async () => {
+  for (const count of [20, 50, 100]) {
     const { db, rider, offer } = setup();
     try {
       saveUsualRoute(db, rider.session.id, route, now);
@@ -48,24 +48,38 @@ test("optional alert budgets persist across worker calls and suppress active rec
         db.prepare(
           "INSERT INTO route_alert_attempts (alert_id, attempted_at) VALUES (?, ?)",
         ).run(job.id, at);
+      let sends = 0;
       for (let i = 0; i < 2; i++)
         await deliverRouteAlerts(
           db,
-          async () => assert.fail("budget must prevent delivery"),
+          async () => {
+            sends++;
+          },
           now,
         );
+      assert.equal(sends, 1);
       assert.equal(
         (
           db.prepare("SELECT attempts FROM route_alerts").get() as {
             attempts: number;
           }
         ).attempts,
-        0,
+        1,
+      );
+      assert.equal(
+        (
+          db
+            .prepare("SELECT count(*) AS n FROM route_alert_attempts")
+            .get() as { n: number }
+        ).n,
+        count + 1,
       );
     } finally {
       db.close();
     }
   }
+});
+test("alerts suppress active recipients", async () => {
   const { db, rider, offer } = setup();
   try {
     saveUsualRoute(db, rider.session.id, route, now);
@@ -393,6 +407,41 @@ test("HTTP saved-route access is owner-scoped; fresh GPS and departure choices e
       (db.prepare("SELECT count(*) n FROM rides").get() as { n: number }).n,
       1,
     );
+    await call("", rider.token, {
+      ...route,
+      alerts: false,
+      priceAud: 0,
+      payId: "",
+    });
+    const freeResult = await call("/offer", rider.token, {
+      departureMinutes: 0,
+      capturedAt: new Date().toISOString(),
+      accuracyMeters: 10,
+      origin: gps,
+      priceAud: 999,
+      payId: "attacker@example.com",
+    });
+    assert.equal(freeResult.status, 201);
+    const freeRide = (await freeResult.json()).ride;
+    assert.equal(freeRide.priceAud, 0);
+    assert.equal(freeRide.payId, null);
+    cancelRide(db, rider.token, freeRide.rideId);
+    const direct = await fetch(`http://127.0.0.1:${address.port}/api/rides`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${rider.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        origin: gps,
+        destination: route.destination,
+        scheduledDepartureAt: new Date().toISOString(),
+        priceAud: 0,
+        payId: "",
+      }),
+    });
+    assert.equal(direct.status, 201);
+    assert.equal((await direct.json()).ride.priceAud, 0);
   } finally {
     api.close();
     api.closeAllConnections();

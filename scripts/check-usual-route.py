@@ -89,11 +89,18 @@ with sync_playwright() as p:
         assert not state['saved']['alerts']
         page.get_by_role('button', name='Enable email alerts', exact=True).click()
         expect(page.get_by_role('button', name='Mute email alerts', exact=True)).to_be_visible()
-        page.get_by_text('Add fare and PayID', exact=True).click()
+        assert state['saved']['priceAud'] == 0
+        assert state['saved']['payId'] == ''
+        page.locator('.contribution-choice > summary').click()
+        page.get_by_label('Ask for a contribution', exact=True).check()
         page.get_by_role('radio', name='Email', exact=True).click()
         page.get_by_role('textbox', name='Your PayID', exact=True).fill('driver@example.com')
-        page.get_by_role('button', name='Save payment details', exact=True).click()
-        expect(page.get_by_text('Fare A$5 · PayID', exact=True)).to_be_visible()
+        page.get_by_role('button', name='Save payment preferences', exact=True).click()
+        expect(page.get_by_text('A$5 · PayID', exact=True)).to_be_visible()
+        page.reload()
+        page.locator('.contribution-choice > summary').click()
+        expect(page.get_by_label('Ask for a contribution', exact=True)).to_be_checked()
+        expect(page.get_by_role('textbox', name='Your PayID', exact=True)).to_have_value('driver@example.com')
         page.get_by_role('radio', name='In 30 min', exact=True).click()
         page.screenshot(path=f'/tmp/usual-route-saved-{width}.png', full_page=True)
         page.evaluate("""() => { navigator.geolocation.getCurrentPosition = (success, failure) => failure({code:1}); }""")

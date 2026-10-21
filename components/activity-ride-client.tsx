@@ -1,4 +1,5 @@
 "use client";
+import { fareLabel } from "@/lib/fare";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
@@ -256,7 +257,7 @@ function RideView({ ride }: { ride: Ride }) {
       </div>
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
-        <strong>A${ride.priceAud}</strong>
+        <strong>{fareLabel(ride.priceAud)}</strong>
         <small>{prettyTime(ride.scheduledDepartureAt)}</small>
       </div>
       {ride.request ? (

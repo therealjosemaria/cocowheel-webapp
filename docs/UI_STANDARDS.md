@@ -4,6 +4,14 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Free rides (21 October): new offers and newly saved routes default to zero fare.
+Reuse the native disclosure pattern for Fare · Free / Fare · A$amount. Its
+“Ask for a contribution” checkbox, not its open/closed state, determines payment
+mode. Reveal existing fare/PayID controls only when checked. Existing paid saved
+preferences stay paid until explicitly changed and saved. Free ride previews,
+cards and history say Free and omit payment controls; pickup confirmation remains
+mandatory. Both How it works paths end with Share the journey, not a payment step.
+
 Usual routes (21 October): one private Profile destination, no additional main
 tab. Reuse the activity panel/H1, place search, role icons, payment selectors,
 departure selector and shared modal shell. Weekdays are multi-select buttons
@@ -158,7 +166,7 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 - Ride offered (formerly Published) is the driver's available offer; a pending request does not change the public offer into an accepted ride.
 - Participant labels: Request pending → Awaiting pickup → Ride in progress → Completed. ACCEPTED and legacy RIDE_ACTIVE mean Awaiting pickup; only verified pickup (CO_RIDE_ACTIVE) means Ride in progress. Cancellation, withdrawal, decline and expiry retain distinct outcomes.
-- Acceptance issues the rider's four-digit pickup code. Only the driver verifies it. Before verification, riders may see the PayID preference but not private PayID values/types. Server responses enforce this, not CSS. New offers require PayID (Mobile, Email or Other/ABN); there is no cash option. Historical cash records are retained.
+- Acceptance issues the rider's four-digit pickup code. Only the driver verifies it. Before verification, riders may see the PayID preference but not private PayID values/types. Server responses enforce this, not CSS. Paid offers require PayID (Mobile, Email or Other/ABN); free offers do not store or reveal payment details. There is no new cash option. Historical cash records are retained.
 - Either participant can cancel. Complete is hidden and server-blocked until the driver verifies the pickup code; no override bypasses this. After verification, either participant can complete. A fresh accurate position from either device near rider drop-off avoids an arrival warning; otherwise a concise confirmation permits completion. Completion does not verify payment.
 - Accepted-trip GPS alternates device slots with single-device fallback; browsers must be open/available. Always retain actual capture age rather than imply stale GPS is live.
 - Keep completed, cancelled, expired, declined and withdrawn history. Ordinary offers last six hours; test samples renew on 24-hour cycles. Never delete history just because an offer expires.

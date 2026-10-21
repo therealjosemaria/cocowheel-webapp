@@ -6,8 +6,9 @@ Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one rou
 from Profile. Drivers offer it from fresh GPS using Now/In 30 min/In 1 hour;
 riders opt into matching emails for selected days and one Sydney-time ±1-hour
 window. Publication queues matching alerts once; GPS updates never notify.
-Optional alert delivery is separately enabled and budgeted; login email rules
-are unchanged. See [checks and user walkthrough](docs/USUAL_ROUTES_CHECK_2026-10-21.md)
+Optional alert delivery is separately enabled, with no app-wide hourly/daily
+alert cap; provider quotas still apply and login email rules are unchanged.
+See [checks and user walkthrough](docs/USUAL_ROUTES_CHECK_2026-10-21.md)
 for activation status. API/schema activation is required independently of a push.
 Visible publishing controls now say Offer a ride / Ride offered; legacy internal
 PUBLISHED identifiers remain. Driver-location obfuscation remains deferred.
@@ -63,7 +64,14 @@ The rating prompt contains only its role-specific heading and five stars. Tappin
 a star submits immediately; there is no separate submit button or helper text.
 Submission-window, finality and privacy rules remain unchanged on the server.
 
-Drivers publish fixed-price rides; riders request to join; the driver accepts one rider and confirms pickup with a four-digit code. Payments are cashless PayID, not processed or verified by the app. Pickup codes have no time-based expiry while the ride remains eligible, but are single-use and invalidated by renewal or closure.
+New offers default to free. A shared Fare accordion contains “Ask for a
+contribution”; checking it reveals fare and PayID fields. Closing the accordion
+does not change the payment choice. Contributions retain whole-dollar AUD
+5–10,000 validation. Existing paid rides and saved preferences are unchanged.
+Free rides show “Free” instead of an amount and omit payment instructions;
+pickup, messaging, completion and rating rules remain the same. See
+[free-ride checks and migration](docs/FREE_RIDES_2026-10-21.md).
+Drivers offer rides; riders request to join; the driver accepts one rider and confirms pickup with a four-digit code. Paid rides use cashless PayID, not processed or verified by the app. Pickup codes have no time-based expiry while the ride remains eligible, but are single-use and invalidated by renewal or closure.
 
 This repository is intentionally independent from other projects: it has its own API, SQLite database, guest-session cookies, deployment configuration, tunnel target, and environment variables.
 
@@ -106,9 +114,9 @@ Role headings reuse the shared rider/person and driver/car SVG labels. Each
 numbered step is a single regular-weight action, without explanatory text. The
 18px semibold role headings stay more prominent than 14px regular steps/numbers.
 Rider steps:
-choose your destination, request to join a ride, meet your driver, pay your driver. Driver
-steps: publish your route, accept a rider, meet your rider, receive payment.
-The unchanged FAQs retain pickup and direct PayID payment explanations.
+choose your destination, request to join a ride, meet your driver, share the journey. Driver
+steps: offer a ride, accept a rider, meet your rider, share the journey.
+The payment FAQ distinguishes free rides from optional paid contributions.
 Help uses 12px heading-to-list spacing, 8px between concise steps and 24px section
 spacing. Role-heading icons use the existing 18px field-icon token alongside
 18px headings with an 8px icon/text gap; ordinary cell-label icons stay 14px.
@@ -209,7 +217,8 @@ Request states: `PENDING`, `ACCEPTED`, `DECLINED`, `DISCARDED`, `CANCELLED`.
 General availability and an individual request status are different concepts;
 UI wording must not be used as a server permission check.
 
-1. Driver publishes origin, destination, fixed AUD fare and PayID preference/details.
+1. Driver offers origin/destination, free by default, or a fixed AUD contribution
+   with PayID preference/details. Existing offers retain their agreed fare.
 2. Riders request to join. Poor fit is advisory, with confirmation rather than a block.
 3. Driver may compare multiple pending requests but accepts one atomically; competing
    requests become discarded. UI moves from **Request pending** to **Awaiting pickup**.

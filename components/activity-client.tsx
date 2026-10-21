@@ -1,4 +1,5 @@
 "use client";
+import { fareLabel } from "@/lib/fare";
 import RideStatusText from "./ride-status-text";
 
 import { participantStatusLabel } from "@/lib/ride-status";
@@ -287,7 +288,7 @@ function ActivityCard({
               {showStatus ? (
                 <RideStatusText label={status} />
               ) : (
-                `A$${ride.priceAud}`
+                fareLabel(ride.priceAud)
               )}
             </dd>
           </div>
@@ -314,7 +315,7 @@ function ActivityCard({
               <dt>
                 <RideFieldLabel icon="price">Fare</RideFieldLabel>
               </dt>
-              <dd>A${ride.priceAud}</dd>
+              <dd>{fareLabel(ride.priceAud)}</dd>
             </div>
           ) : null}
           <div className="activity-card-action">

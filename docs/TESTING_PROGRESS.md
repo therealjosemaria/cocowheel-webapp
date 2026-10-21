@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-21 | Free rides / optional contributions | 125 regression checks passed, including legacy fare migration preservation, free HTTP offering and pickup lifecycle; mocked mobile/desktop free/paid flows. Production migration/deployment not performed. Not a capacity campaign. | [Scope, commands and findings](FREE_RIDES_2026-10-21.md) |
 | 2026-10-21 | Private usual routes / alerts | 120 regression tests, four responsive usual-route and six existing message-entry cases passed; lint/build passed. Approximate matching, bounded opt-in outbox and preserved history; not a capacity campaign. Standalone test type errors retained as a baseline limitation. | [Verification and owner checklist](USUAL_ROUTES_CHECK_2026-10-21.md) |
 | 2026-10-20 | Legend/chat layout | 109 regression tests, six entry/layout and eight role/viewport checks passed; single report link, 57-minute-old location and iPhone 14 Pro CSS width checked without production mutations. | [Evidence](LEGEND_CHAT_LAYOUT_2026-10-20.md) |
 | 2026-10-20 | Request-to-message entry | 109 regression tests; six mocked request-entry and eight messaging role/viewport checks passed. No production mutations; frontend deployment separate. | [Checks and failed baselines](MESSAGE_ENTRY_CHECK_2026-10-20.md) |

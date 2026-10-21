@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Db } from "./core";
 import type { Pin } from "../lib/client-types";
 import { payIdInputError } from "../lib/input-validation";
+import { fareLabel, validFare } from "../lib/fare";
 import { departureLabel, type UsualRoute } from "../lib/usual-route";
 
 export function initializeUsualRoutes(db: Db) {
@@ -64,13 +65,11 @@ export function validateUsualRoute(value: unknown): UsualRoute {
     typeof r.alerts !== "boolean" ||
     (r.alerts && (!r.days.length || r.minute === null)) ||
     r.days.length > 0 !== (r.minute !== null) ||
-    !Number.isInteger(r.priceAud) ||
-    r.priceAud < 5 ||
-    r.priceAud > 10000 ||
+    !validFare(r.priceAud) ||
     !["MOBILE", "EMAIL", "OTHER"].includes(r.payIdType) ||
     typeof r.payId !== "string" ||
     r.payId.length > 254 ||
-    (r.payId && payIdInputError(r.payId, r.payIdType))
+    (r.priceAud > 0 && r.payId && payIdInputError(r.payId, r.payIdType))
   )
     throw new Error("INVALID_USUAL_ROUTE");
   return {
@@ -80,7 +79,7 @@ export function validateUsualRoute(value: unknown): UsualRoute {
     minute: r.minute,
     alerts: r.alerts,
     priceAud: r.priceAud,
-    payId: r.payId.trim(),
+    payId: r.priceAud === 0 ? "" : r.payId.trim(),
     payIdType: r.payIdType,
   };
 }
@@ -244,18 +243,8 @@ export async function deliverRouteAlerts(
   now = new Date(),
 ) {
   if (send === sendRouteAlert && !alertsConfigured()) return;
-  // A small persistent budget bounds optional email use; OTP limits are unchanged.
-  const budget = db
-    .prepare(
-      "SELECT count(*) AS n FROM route_alert_attempts WHERE attempted_at >= ?",
-    )
-    .get(now.getTime() - 3600000) as { n: number };
-  const daily = db
-    .prepare(
-      "SELECT count(*) AS n FROM route_alert_attempts WHERE attempted_at >= ?",
-    )
-    .get(now.getTime() - 86400000) as { n: number };
-  if (budget.n >= 20 || daily.n >= 50) return;
+  // No app-wide alert volume cap. Keep attempt auditing and per-job safeguards;
+  // provider quotas still apply, and OTP rate limits are independent.
   const job = db
     .prepare(
       `SELECT a.*, r.public_id, r.status AS ride_status, r.driver_alias,
@@ -332,7 +321,7 @@ export async function deliverRouteAlerts(
               : `${job.unikey}@uni.sydney.edu.au`,
         ],
         subject: "A ride matches your usual route",
-        text: `${job.driver_alias} has offered a matching ride.\n${departureLabel(job.scheduled_departure_at)} · Sydney time · A$${job.price_aud}\nTimes are flexible. Coordinate pickup in messages.\n\nReview availability and request: ${origin}/usual-route?ride=${encodeURIComponent(job.public_id)}\n\nThis is a suggestion, not a reservation. Your routine is not shared with the driver.\nMute matching emails: ${origin}/usual-route`,
+        text: `${job.driver_alias} has offered a matching ride.\n${departureLabel(job.scheduled_departure_at)} · Sydney time · ${fareLabel(job.price_aud)}\nTimes are flexible. Coordinate pickup in messages.\n\nReview availability and request: ${origin}/usual-route?ride=${encodeURIComponent(job.public_id)}\n\nThis is a suggestion, not a reservation. Your routine is not shared with the driver.\nMute matching emails: ${origin}/usual-route`,
       };
   // Persist the exact payload for provider idempotency across retry/restart.
   const claimed = db.transaction(() => {

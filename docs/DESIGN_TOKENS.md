@@ -44,6 +44,12 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Contribution settings reuse a native details/summary accordion: surface/line,
+  control radius, 12px inset/gap, small text and semibold summary with a 44px
+  target. The explicit checkbox reuses the usual-route email checkbox sizing.
+  Body remains regular; fare and PayID retain shared label/input tokens. Closing
+  the disclosure does not change the checkbox. No new palette or animation.
+
 - Usual-route settings reuse the 680px compact panel, standard page title,
   16px field gaps and 12px related-content gaps. Role headings use section/
   semibold, helpers small/muted. Day buttons wrap with 8px gaps, minimum 44px

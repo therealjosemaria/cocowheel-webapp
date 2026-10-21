@@ -1,4 +1,5 @@
 "use client";
+import { fareLabel } from "@/lib/fare";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import Link from "next/link";
@@ -133,7 +134,7 @@ export default function ActiveRideLink({
               Pickup · {pickupEstimate.minutes} min
             </span>
           ) : null}
-          <span className="active-ride-price">A${ride.priceAud}</span>
+          <span className="active-ride-price">{fareLabel(ride.priceAud)}</span>
           {role === "RIDER" &&
           ride.status === "ACCEPTED" &&
           ride.driverLocation ? (

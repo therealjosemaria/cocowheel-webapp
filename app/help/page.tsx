@@ -12,7 +12,7 @@ export default function HelpPage() {
               <li>Choose your destination.</li>
               <li>Request to join a ride.</li>
               <li>Meet your driver.</li>
-              <li>Pay your driver.</li>
+              <li>Share the journey.</li>
             </ol>
           </section>
           <section className="help-role help-role-driver" aria-labelledby="driver-steps-heading">
@@ -21,7 +21,7 @@ export default function HelpPage() {
               <li>Offer a ride.</li>
               <li>Accept a rider.</li>
               <li>Meet your rider.</li>
-              <li>Receive payment.</li>
+              <li>Share the journey.</li>
             </ol>
           </section>
         </div>
@@ -30,7 +30,7 @@ export default function HelpPage() {
           <div className="help-faq">
             <details>
               <summary>How do I pay?</summary>
-              <p>Pay directly through your bank using the driver’s PayID: mobile number, email, ABN or organisation identifier. Payment details appear after pickup confirmation. GUMWHEEL is cashless and does not process payments. QR payments are planned to make this quicker.</p>
+              <p>Rides are free unless the driver asks for a contribution. The fare is shown before you request. For paid rides, pay directly through your bank using the driver’s PayID: mobile number, email, ABN or organisation identifier. Payment details appear after pickup confirmation. GUMWHEEL does not process payments or support cash. QR payments are planned to make this quicker.</p>
             </details>
             <details>
               <summary>When do I share my pickup code?</summary>

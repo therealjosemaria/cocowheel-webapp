@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      revision={{ date: "2026-10-20", label: "20 October 2026" }}
+      revision={{ date: "2026-10-21", label: "21 October 2026" }}
     >
       <p>
         These terms describe participation in the GUMWHEEL carpool pilot. Please
@@ -76,7 +76,9 @@ export default function TermsPage() {
       </p>
       <h2>Fares and payment</h2>
       <p>
-        Fares are shown in Australian dollars. Payment is cashless and made
+        Rides may be free or have a driver-set contribution, shown before you
+        request. Free rides require no payment. Paid fares are shown in Australian
+        dollars. Payment is cashless and made
         directly through your bank using the driver’s PayID, revealed after
         pickup confirmation. Check the recipient details your bank displays
         before paying. GUMWHEEL does not hold funds, verify transfers, provide

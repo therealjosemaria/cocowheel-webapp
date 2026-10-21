@@ -1,5 +1,7 @@
 "use client";
 import DepartureChoice from "./departure-choice";
+import ContributionChoice from "./contribution-choice";
+import { fareLabel } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
 import { Message } from "./ride-journey-controls";
@@ -250,6 +252,7 @@ export default function HomeClient({
   }>({});
   const [pinTarget, setPinTarget] = useState<PinTarget>(null);
   const [price, setPrice] = useState("5");
+  const [contribution, setContribution] = useState(false);
   const [departureMinutes, setDepartureMinutes] = useState(0);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
@@ -680,8 +683,8 @@ export default function HomeClient({
           origin: canonicalPin(driverPins.origin),
           destination: canonicalPin(driverPins.destination),
           scheduledDepartureAt: new Date(Date.now() + departureMinutes * 60000).toISOString(),
-          priceAud: Number(price),
-          payId,
+          priceAud: contribution ? Number(price) : 0,
+          payId: contribution ? payId : "",
           payIdType,
         }),
       });
@@ -963,6 +966,8 @@ export default function HomeClient({
           }}
           setDestination={(pin) => setPinForTarget("destination", pin)}
           price={price}
+          contribution={contribution}
+          setContribution={setContribution}
           setPrice={setPrice}
           departureMinutes={departureMinutes}
           setDepartureMinutes={setDepartureMinutes}
@@ -1326,6 +1331,8 @@ function DriverForm(props: {
   setOrigin: (pin: Pin) => void;
   setDestination: (pin: Pin) => void;
   price: string;
+  contribution: boolean;
+  setContribution: (value: boolean) => void;
   setPrice: (value: string) => void;
   departureMinutes: number;
   setDepartureMinutes: (value: number) => void;
@@ -1342,9 +1349,12 @@ function DriverForm(props: {
     payIdRef.current?.setCustomValidity(
       payIdInputError(props.payId, props.payIdType) ?? "",
     );
+    if (props.contribution && (!priceRef.current?.checkValidity() || !payIdRef.current?.checkValidity())) {
+      priceRef.current?.closest("details")?.setAttribute("open", "");
+    }
     if (
-      !priceRef.current?.reportValidity() ||
-      !payIdRef.current?.reportValidity()
+      props.contribution && (!priceRef.current?.reportValidity() ||
+      !payIdRef.current?.reportValidity())
     )
       return;
     props.submit();
@@ -1414,6 +1424,7 @@ function DriverForm(props: {
           choose={props.setDestination}
         />
         <DepartureChoice value={props.departureMinutes} onChange={props.setDepartureMinutes} />
+        <ContributionChoice checked={props.contribution} onChange={props.setContribution} fare={props.price}>
         <label className="field">
           You receive
           <div className="money">
@@ -1488,6 +1499,7 @@ function DriverForm(props: {
             }}
           />
         </fieldset>
+        </ContributionChoice>
         <button className="primary" disabled={props.busy} onClick={submit}>
           {props.busy ? "Offering…" : "OFFER A RIDE"}
         </button>
@@ -1881,8 +1893,8 @@ function RideSelection({
                     </small>
                   </span>
                   <span className="ride-option-payment">
-                    <b>A${candidate.priceAud}</b>
-                    <small>PayID</small>
+                    <b>{fareLabel(candidate.priceAud)}</b>
+                    {candidate.priceAud > 0 ? <small>PayID</small> : null}
                   </span>
                 </button>
               );
@@ -2092,7 +2104,7 @@ function RideStatus({
       {statusTitle ? <h2 className="status-heading">{statusTitle}</h2> : null}
       <div className="ride-summary">
         <span>{ride.driverAlias}</span>
-        <strong>A${ride.priceAud}</strong>
+        <strong>{fareLabel(ride.priceAud)}</strong>
         <small>{prettyTime(ride.scheduledDepartureAt)}</small>
       </div>
       {driver && ride.requests?.length ? (
@@ -2230,7 +2242,7 @@ function RideStatus({
           </button>
         </section>
       ) : null}
-      {ride.status === "CO_RIDE_ACTIVE" && !driver ? (
+      {ride.status === "CO_RIDE_ACTIVE" && !driver && ride.priceAud > 0 ? (
         <section className="payment-card">
           <h2>Payment</h2>
           {ride.payId ? (
@@ -2286,7 +2298,7 @@ function RideStatus({
         <section className="complete-card">
           <p>Private completed record</p>
           <strong>
-            {ride.paymentHandoffMethod === "PAYID"
+            {ride.priceAud === 0 ? "Free ride" : ride.paymentHandoffMethod === "PAYID"
               ? "Payment method: PayID"
               : "Payment method: Cash"}
           </strong>

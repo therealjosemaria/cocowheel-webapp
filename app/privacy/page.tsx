@@ -31,7 +31,8 @@ export default function PrivacyPage() {
         your message and contact details to respond.
       </p>
       <p>
-        We store your PayID to enable payment for your ride. Riders can see your
+        For paid rides, we store your PayID to enable payment. Free rides do not
+        store or reveal a ride payment identifier. Riders can see your
         payment preference, but your PayID details remain hidden from them until
         pickup is confirmed.
       </p>

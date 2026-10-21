@@ -52,11 +52,20 @@ project.
 
 ## Verification
 
+Free-ride support requires the API before the free-default frontend. Startup
+transactionally rebuilds legacy `rides` tables to permit fare 0 alongside the
+existing >=5 constraint, preserving every column/row and explicit index/trigger.
+Take a consistent private backup first; verify integrity, foreign keys and row
+counts after activation. Do not restart during live rides without coordination.
+See [free-ride migration checks](../docs/FREE_RIDES_2026-10-21.md). A frontend-only
+deployment against the old API will reject free offers.
+
 Usual routes require the new API/schema before frontend use. The additive
 tables initialize at service restart; take the consistent backup described below.
 Matching emails additionally require `COCOWHEELS_ROUTE_ALERTS_ENABLED=1` on the
-API host (default off). Review Resend quota first: alert attempts are capped at
-20/hour and 50/day and share provider capacity with authentication. Do not enable
+API host (default off). Alert attempts have no app-wide hourly/daily cap and
+share provider capacity with authentication; provider quotas still apply. Monitor
+provider usage because alerts can consume capacity needed by login codes. Do not enable
 real email delivery in synthetic tests. See [usual routes](../docs/USUAL_ROUTES.md)
 and the dated verification guide for activation status and the manual checklist.
 

@@ -1,4 +1,5 @@
 "use client";
+import { fareLabel } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
@@ -993,7 +994,7 @@ export default function RidePreviewClient({
                   <dt>
                     <RideFieldLabel icon="price">Fare</RideFieldLabel>
                   </dt>
-                  <dd>A${ride.priceAud}</dd>
+                  <dd>{fareLabel(ride.priceAud)}</dd>
                 </div>
                 {!driverOwned ? (
                   <div>
@@ -1005,7 +1006,7 @@ export default function RidePreviewClient({
                     <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
-                {!driverOwned &&
+                {!driverOwned && ride.priceAud > 0 &&
                 (ride.payId ||
                   ride.paymentMethod ||
                   (activityRequest && rideIsActive)) ? (
@@ -1041,7 +1042,7 @@ export default function RidePreviewClient({
                     </dd>
                   </div>
                 ) : null}
-                {driverOwned && ride.payId ? (
+                {driverOwned && ride.priceAud > 0 && ride.payId ? (
                   <div className="preview-driver-payment">
                     <dt>
                       <RideFieldLabel icon="payid">Your PayID</RideFieldLabel>

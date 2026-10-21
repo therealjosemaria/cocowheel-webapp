@@ -103,10 +103,33 @@ claimed verified.
 
 Physical iPhone/Safari and Android GPS, native time pickers, real two-account
 email inbox delivery and live map-provider coverage remain manual checks.
-Email delivery is best effort, bounded to 20 attempts/hour and 50/rolling day;
-these are conservative application limits, not verified provider headroom.
+Email delivery is best effort. The original 20 attempts/hour and 50/rolling-day
+application bounds tested above are superseded by the cap-removal change below.
 Login and alerts share Resend. The matcher is an approximate straight-line
 corridor, not a traffic/road-detour guarantee. No location obfuscation is included.
+
+## Global alert cap removal — 21 October 2026
+
+At owner request, removed only the application-wide 20/hour and 50/rolling-day
+matching-email attempt checks. This supersedes the budget assertions in the
+initial verification above. Source baseline: `e994325`, plus this change.
+No login limits, schema, recipient selection, consent, matching, retry limits,
+idempotency, worker interval or history retention changed. The proposed
+per-route/per-account inbox caps are not implemented in this patch.
+
+Verification: `npm test` passed 121/121 with no skips. The replacement regression
+seeds 20, 50 and 100 prior attempts and confirms an eligible alert sends once,
+is not resent on another worker call, and appends its audit record. Active-user
+suppression and existing retry, mute, expiry, ownership and login tests pass.
+Tests use isolated synthetic databases and fake alert senders; no real emails
+or production records were created. Initial sandbox invocation failed before
+tests with tsx IPC `EPERM`; rerunning with local-listener permission passed.
+`npm run lint` and `git diff --check` passed.
+
+Backend-only change: no UI/assets or browser behaviour changed, so no new visual
+review was needed. No API restart, production activation or real inbox delivery
+has been verified for this removal. Provider quotas still apply and are shared
+with login email; removing these application caps does not guarantee delivery.
 
 ## Owner's manual walkthrough
 
@@ -119,7 +142,9 @@ main screens on your phone and desktop.
    Enable matching emails and save. Reload to confirm persistence.
 3. **Saved route → Find a ride:** Mute then Enable email alerts. Replacing the
    route asks confirmation; keeping it or pressing Escape preserves it.
-4. **Saved route → Offer a ride:** add fare/PayID, select Now/In 30 min/In 1 hour.
+4. **Saved route → Offer a ride:** new routes now default to Free. To contribute,
+   open Fare, check Ask for a contribution, add fare/PayID and save preferences.
+   Existing paid preferences stay unchanged. Select Now/In 30 min/In 1 hour.
    Deny GPS once: nothing is offered. Allow GPS: the offer starts at your actual
    location and uses the saved destination, fare and intended departure.
 5. **Normal Offer a ride tab:** check the same Leaving choices and Offer a ride
