@@ -497,22 +497,18 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           ) : (
             <>
-              <div className="profile-field-label">
-                <RideFieldLabel icon="from">Where from?</RideFieldLabel>
-              </div>
               <PlaceSearch
-                placeholder="Search origin"
+                placeholder="Where from?"
+                ariaLabel="Where from?"
                 countryCode="au"
                 choose={setOrigin}
               />
               {origin && (
                 <p className="usual-route-hint">Selected: {origin.label}</p>
               )}
-              <div className="profile-field-label">
-                <RideFieldLabel icon="to">Where to?</RideFieldLabel>
-              </div>
               <PlaceSearch
-                placeholder="Search destination"
+                placeholder="Where to?"
+                ariaLabel="Where to?"
                 countryCode="au"
                 bias={origin}
                 choose={setDestination}
@@ -543,14 +539,14 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   ))}
                 </div>
               </fieldset>
-              <label className="field">
-                Around{" "}
+              <div className="field usual-route-time">
                 <input
                   type="time"
+                  aria-label="Usual departure time"
                   value={minute}
                   onChange={(e) => setMinute(e.target.value)}
                 />
-              </label>
+              </div>
               <label className="usual-alert-choice">
                 <input
                   type="checkbox"

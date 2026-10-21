@@ -5,8 +5,10 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 ## Principles
 
 Profile polish (22 October): Profile names the menu action and H1; My usual route
-is the H2. Where from?, Where to? and Around are consistent 14px bold field labels,
-not competing section headings. Day buttons retain an accessible group name
+is the H2. The editor uses Where from? and Where to? as placeholders instead of
+visible headings; explicit accessible names remain after typing. The native time
+picker has the accessible name Usual departure time, without visible Around copy.
+Saved-route address labels remain unchanged. Day buttons retain an accessible group name
 without a visible legend. Remove redundant setup/requirements/window prose from
 the editor, but retain validation messages and the delivery-unavailable notice.
 New drafts preselect matching email alerts only when available; saved preferences

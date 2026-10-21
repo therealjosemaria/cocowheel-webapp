@@ -78,10 +78,10 @@ with sync_playwright() as p:
         page.get_by_label('Email me matching rides', exact=True).click()
         page.get_by_role('button', name='TURN OFF EMAILS', exact=True).click()
         expect(page.get_by_label('Email me matching rides', exact=True)).not_to_be_checked()
-        page.get_by_placeholder('Search origin').fill('Town Hall')
+        page.get_by_placeholder('Where from?').fill('Town Hall')
         page.locator('.place-search').nth(0).get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
-        page.get_by_placeholder('Search destination').fill('University')
+        page.get_by_placeholder('Where to?').fill('University')
         page.locator('.place-search').nth(1).get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=destination['label'], exact=True).click()
         page.get_by_label('Email me matching rides', exact=True).check()
@@ -92,7 +92,15 @@ with sync_playwright() as p:
         for day in ['Mon','Tue','Wed','Thu']:
             page.get_by_role('button', name=day, exact=True).click()
             expect(page.get_by_role('button', name=day, exact=True)).to_have_attribute('aria-pressed','true')
-        page.get_by_label('Around', exact=True).fill('12:00')
+        time_input = page.get_by_label('Usual departure time', exact=True)
+        time_input.fill('12:00')
+        expect(time_input).to_have_value('12:00')
+        expect(page.get_by_text('Around', exact=True)).to_have_count(0)
+        assert time_input.evaluate('''el => {
+            const input = el.getBoundingClientRect();
+            const parent = el.parentElement.getBoundingClientRect();
+            return input.left >= parent.left && input.right <= parent.right + 1;
+        }''')
         expect(page.get_by_text('11:00 am–1:00 pm · Sydney time', exact=True)).to_have_count(0)
         page.screenshot(path=f'/tmp/usual-route-form-{width}.png', full_page=True)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

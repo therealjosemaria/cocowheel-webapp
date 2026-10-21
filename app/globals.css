@@ -2868,7 +2868,7 @@ p {
 }
 .university-form > button { margin: 0; }
 .usual-route-panel { max-width: 680px; margin-inline: auto; }
-.usual-route-body { display: grid; gap: 16px; padding: 16px; }
+.usual-route-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
 .usual-route-body h2 { margin: 0; font-size: var(--text-section); font-weight: var(--weight-semibold); }
 .usual-route-body p { margin: 0; }
 .usual-route-body .secondary,
@@ -2876,9 +2876,10 @@ p {
 .usual-route-body .payid-field { margin: 0; }
 .usual-route-body .place-search { margin-top: 0; }
 .usual-route-body > *, .usual-route-body .field { min-width: 0; }
-.usual-route-body input[type="time"] { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; display: block; }
+.usual-route-time { width: 100%; max-width: 100%; }
+.usual-route-body input[type="time"] { appearance: none; -webkit-appearance: none; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; display: block; }
+.usual-route-body input[type="time"]::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .usual-route-body input[type="time"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
-.profile-field-label { font-size: var(--text-small); font-weight: var(--weight-bold); }
 .usual-route-body > details > summary, .usual-route-section > details > summary { min-height: 44px; cursor: pointer; padding-block: 12px; font-size: var(--text-small); }
 .usual-route-hint { color: var(--muted); font-size: var(--text-small); line-height: 1.5; }
 .usual-route-section { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }

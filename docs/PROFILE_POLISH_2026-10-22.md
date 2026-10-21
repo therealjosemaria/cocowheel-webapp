@@ -75,3 +75,24 @@ checks at 390/1440px passed for Profile title, restored mobile PayID placeholder
 email delivery was exercised. Private Profile flows use the isolated fixtures
 above, not another person's live account. Deployment-wide runtime log/drain
 auditing was not part of this release check.
+# Follow-up: placeholder-only editor and time containment
+
+22 October 2026, working changes after `fe44ec5`: remove visible origin,
+destination and Around labels in the editor; reuse PlaceSearch's explicit
+accessible-name prop with Where from?/Where to? placeholders. Saved summaries
+are unchanged. Native time keeps an accessible name and its original behavior.
+The owner reported continued phone overflow despite the earlier Chromium pass.
+Add an explicit shrinkable grid track, constrain its wrapper, reset native
+appearance and WebKit edit padding. This is not proof of a physical Safari fix.
+
+Checks: `npm run lint` passed. The isolated command
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-usual-route.py` passed
+at 320, 390, 844 and 1440px, including time-entry preservation, parent-boundary
+and page-overflow assertions and the existing save/mute/payment flows.
+Initial browser launch was blocked by sandbox permissions; the authorized rerun
+passed. Mobile (320px) and desktop (1440px) full-screen screenshots reviewed for
+spacing, hierarchy and containment. No production writes or API restart.
+`npx tsc --noEmit` reported errors in unchanged test files (including API test
+inference, ProcessEnv and request mocks); no errors reported in edited components.
+Physical iPhone Safari/native picker and deployment remain unverified for this
+follow-up. No backend, payment, matching or notification behavior was changed.

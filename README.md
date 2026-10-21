@@ -338,6 +338,8 @@ for service operations.
 
 - Profile is the account-menu destination and page title; My usual route is its
   section. The existing `/usual-route` URL and private route APIs stay unchanged.
+  Its editor uses Where from?/Where to? placeholders with persistent accessible
+  names, and an accessibly named native time picker without a visible Around label.
   New route drafts preselect matching emails when delivery is available; nothing
   is saved or sent until Save route. Existing saved choices are preserved. Turning
   emails off requires the shared confirmation dialog. Schedule requirements and
