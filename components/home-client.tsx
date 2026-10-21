@@ -860,14 +860,14 @@ function Home({
       <h1 className="home-hero">
         <span>Going your way.</span>
       </h1>
-      <button className="role-card" onClick={() => onBegin("DRIVER")}>
-        OFFER A RIDE
-      </button>
       <button
         className="role-card role-card-primary"
         onClick={() => onBegin("RIDER")}
       >
         FIND A RIDE
+      </button>
+      <button className="role-card" onClick={() => onBegin("DRIVER")}>
+        OFFER A RIDE
       </button>
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />

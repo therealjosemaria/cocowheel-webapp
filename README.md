@@ -336,6 +336,9 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Home presents Find a ride first (dark), then Offer a ride (light), in both
+  visual and keyboard order. Menu ordering and role destinations are unchanged.
+
 - Profile's route editor, Offer a ride and Find a ride reuse `RouteFields` and
   `PlaceSearch`: Where from?/Where to? placeholders, explicit search and selectable
   results. Ordinary Offer/Find setup no longer requests GPS or prefills recent GPS;
