@@ -29,7 +29,20 @@ with sync_playwright() as p:
         page.goto('http://127.0.0.1:3090/')
         page.locator('.role-choice > button').nth(1).click()
         expect(page.get_by_role('heading', name='Offer a ride', exact=True)).to_be_visible()
+        mobile = width < 1000
+        if mobile:
+            page.get_by_role('button', name='Open menu', exact=True).click()
+        nav = page.get_by_role('navigation', name='Mobile navigation' if mobile else 'Primary navigation', exact=True)
+        expect(nav.locator('button')).to_have_text(['Find a ride', 'Offer a ride'])
+        page.screenshot(path=f'/tmp/menu-order-{width}.png', full_page=True, animations='disabled')
+        nav.get_by_role('button', name='Find a ride', exact=True).click()
+        expect(page.get_by_role('heading', name='Find a ride', exact=True)).to_be_visible()
+        if mobile:
+            page.get_by_role('button', name='Open menu', exact=True).click()
+        expect(nav.get_by_role('button', name='Find a ride', exact=True)).to_have_attribute('aria-pressed', 'true')
+        nav.get_by_role('button', name='Offer a ride', exact=True).click()
+        expect(page.get_by_role('heading', name='Offer a ride', exact=True)).to_be_visible()
         assert not errors, errors
-        print(f'PASS Home order, colours, keyboard and destinations: {width}px')
+        print(f'PASS Home/menu order, colours, keyboard and destinations: {width}px')
         page.close()
     browser.close()

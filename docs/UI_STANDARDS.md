@@ -148,13 +148,13 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   tap/click. Read acknowledgement requires visible content, not opening Profile.
 
 - Footer navigation contains only Privacy and Terms, centred beneath copyright; no duplicate main menu or large site-map footer. Text remains small with 44px-tall tap targets and visible focus. Public legal pages share the standard panel/H1, 18px H2 hierarchy, readable line length and revision date. Preserve Home footer visibility when adding footer rows. Legal copy must describe real behaviour, not invent guarantees or imply legal certification.
-- Main menu order on mobile and desktop: Home, How it works, Activity, Offer a ride, Find a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
+- Main menu order on mobile and desktop: Home, How it works, Activity, Find a ride, Offer a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with four single regular-weight actions per role and no explanatory text after each action. Numbers also remain regular-weight; reserve stronger emphasis for section headings. Rider step two is “Request to join a ride.” Step three mirrors “Meet your driver.” and “Meet your rider.” Keep required pickup-code verification and PayID explanations in the FAQs and relevant ride screens; simplifying the overview does not change verification requirements.
 - Help starts with the role instructions, with no sign-in/eligibility introduction. Show “For University of Sydney students only.” directly above Verify UniKey in the signed-out Profile popover; preserve its existing controls and mobile menu. Existing authorised testing exceptions are unaffected.
 - The FAQ uses `--surface-subtle`; Help role cards use 6% rider-blue/driver-orange tints mixed with white, corresponding coloured icons and dark text. Keep identical 16px padding and 10px corners, with no shadows or animation. Suggestions remain white. Preserve the larger H1 and matching H2 hierarchy; titles/icons identify roles without relying on colour alone.
 - Help role headings reuse `RideFieldLabel` rider/person and driver/car SVGs at the existing 18px field-icon size, matching 18px H2 text, with an 8px gap and vertical centring; no emoji or icon backgrounds. Keep 12px below headings, 8px between the concise numbered steps and 24px between sections. The earlier 16px step gap suited longer explanations and is superseded. Preserve the actual PayID disclosure gate; PayID remains the only offered payment method.
 - Help structure: Find a ride and Offer a ride paths with four numbered steps each directly below the page heading. Rider comes first in DOM/reading order; stack below 1000px and show two columns at desktop widths, with a 24px gap between tinted cards. Use matching section H2 tokens and concise regular-weight actions; no role tabs hiding instructions. Below both paths, keep four full-width FAQ accordions using native `details`/`summary` (initially closed, independently expandable with keyboard/touch), followed by a separate Have a suggestion? section. Reuse text/colour tokens, 44px targets and visible focus. Email us opens `jose@gumwheel.com` via `mailto`, not an in-app form; future QR payments must be described as planned, not available.
-- Home uses “Going your way”, equally sized FIND A RIDE and OFFER A RIDE buttons; Find is first/top and dark with white text, Offer is second/below and light. DOM and keyboard order match visual order. Main-menu ordering is unchanged. The logo is not a Home link.
+- Home uses “Going your way”, equally sized FIND A RIDE and OFFER A RIDE buttons; Find is first/top and dark with white text, Offer is second/below and light. DOM and keyboard order match visual order. Menus also place Find before Offer. The logo is not a Home link.
 - Desktop shell width is roughly two thirds of the viewport, bounded between 960px and 1360px (from the 1000px breakpoint). Home buttons are centred, 360px wide maximum and at least 64px high from 700px; mobile remains full width. Hero typography is unchanged.
 - Active menu treatment is grey background, not an active shadow or competing call-to-action treatment.
 - Keep equivalent heading sizes, spacing below the header divider and enclosing panels across non-Home screens, including ride details. Keep the Home footer visible without unnecessary overflow.
@@ -221,6 +221,12 @@ colours, no horizontal overflow, both role destinations and no browser exception
 Whole-screen 390/1440px screenshots visually reviewed: hero hierarchy, button
 spacing/sizing, header and footer unchanged. Targeted home-client ESLint passed.
 No backend changes; physical phones and production deployment remain unverified.
+
+Menu follow-up (same date, baseline `f006490`): the same browser command now
+also checks Find-before-Offer in desktop/mobile navigation, correct destinations
+and the rider active state. All four widths passed; 390/1440px whole-screen menu
+captures reviewed for unchanged spacing, typography and active styling. Navigation
+ESLint passed. No CSS, permissions, backend or main-menu items were changed.
 
 Before committing or pushing, review git status, the full diff and the staged
 diff against the requested scope. Check each hunk for unintended changes,

@@ -228,18 +228,6 @@ export default function AppNavigation() {
         <button
           type="button"
           className={
-            activeRideTab === "driver"
-              ? "desktop-navigation-cta active"
-              : "desktop-navigation-cta"
-          }
-          onClick={() => startRide("driver")}
-          aria-pressed={activeRideTab === "driver"}
-        >
-          Offer a ride
-        </button>
-        <button
-          type="button"
-          className={
             activeRideTab === "rider"
               ? "desktop-navigation-cta find active"
               : "desktop-navigation-cta find"
@@ -248,6 +236,18 @@ export default function AppNavigation() {
           aria-pressed={activeRideTab === "rider"}
         >
           Find a ride
+        </button>
+        <button
+          type="button"
+          className={
+            activeRideTab === "driver"
+              ? "desktop-navigation-cta active"
+              : "desktop-navigation-cta"
+          }
+          onClick={() => startRide("driver")}
+          aria-pressed={activeRideTab === "driver"}
+        >
+          Offer a ride
         </button>
         {canAdmin && (
           <Link
@@ -481,19 +481,6 @@ export default function AppNavigation() {
             <button
               type="button"
               className={
-                activeRideTab === "driver"
-                  ? "mobile-navigation-link active"
-                  : "mobile-navigation-link"
-              }
-              onClick={() => startRide("driver")}
-              aria-pressed={activeRideTab === "driver"}
-              tabIndex={open ? undefined : -1}
-            >
-              Offer a ride
-            </button>
-            <button
-              type="button"
-              className={
                 activeRideTab === "rider"
                   ? "mobile-navigation-link active"
                   : "mobile-navigation-link"
@@ -503,6 +490,19 @@ export default function AppNavigation() {
               tabIndex={open ? undefined : -1}
             >
               Find a ride
+            </button>
+            <button
+              type="button"
+              className={
+                activeRideTab === "driver"
+                  ? "mobile-navigation-link active"
+                  : "mobile-navigation-link"
+              }
+              onClick={() => startRide("driver")}
+              aria-pressed={activeRideTab === "driver"}
+              tabIndex={open ? undefined : -1}
+            >
+              Offer a ride
             </button>
             {canAdmin && (
               <Link
