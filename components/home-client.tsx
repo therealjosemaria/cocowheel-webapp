@@ -2,6 +2,7 @@
 import DepartureChoice from "./departure-choice";
 import ContributionChoice from "./contribution-choice";
 import PaymentFields from "./payment-fields";
+import { RouteFields } from "./route-fields";
 import { fareLabel, validFare, CONTRIBUTION_ERROR } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
@@ -17,11 +18,7 @@ import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
 import CopyPayId from "./copy-payid";
 import LocationAge from "./location-age";
-import {
-  SEARCH_MAX_LENGTH,
-  payIdInputError,
-  searchInputError,
-} from "@/lib/input-validation";
+import { payIdInputError } from "@/lib/input-validation";
 import {
   ApiError,
   apiErrorMessage,
@@ -47,7 +44,6 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 type Role = "DRIVER" | "RIDER";
 type FormPin = "origin" | "destination" | "pickup" | "riderDestination";
-type PinTarget = FormPin | null;
 const prettyTime = (value: string) =>
   new Intl.DateTimeFormat("en-AU", {
     hour: "numeric",
@@ -67,10 +63,7 @@ const canonicalPin = (pin: Pin) => ({
 const placeCachePrefix = "cocowheels:place-label:v1:";
 const countryPreferenceKey = "cocowheels:country-preference:v1";
 const countryPreferenceTtlMs = 7 * 24 * 60 * 60 * 1_000;
-const recentDeviceLocationKey = "cocowheels:recent-device-location:v1";
-const recentDeviceLocationTtlMs = 5 * 60 * 1_000;
 type CachedPlace = { label: string; countryCode?: string };
-type RecentDeviceLocation = { pin: Pin; capturedAt: number };
 const placeCacheKey = (pin: Pin) =>
   `${placeCachePrefix}${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
 function cachedPlace(pin: Pin): CachedPlace | null {
@@ -143,47 +136,6 @@ function storeCountryPreference(countryCode: string) {
     // Searching still works if local browser storage is unavailable.
   }
 }
-function recentDeviceLocation(): Pin | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const value: unknown = JSON.parse(
-      window.sessionStorage.getItem(recentDeviceLocationKey) ?? "null",
-    );
-    if (
-      !value ||
-      typeof value !== "object" ||
-      !("pin" in value) ||
-      !("capturedAt" in value) ||
-      typeof value.capturedAt !== "number" ||
-      value.capturedAt + recentDeviceLocationTtlMs <= Date.now() ||
-      !value.pin ||
-      typeof value.pin !== "object" ||
-      !("latitude" in value.pin) ||
-      !("longitude" in value.pin) ||
-      typeof value.pin.latitude !== "number" ||
-      !Number.isFinite(value.pin.latitude) ||
-      typeof value.pin.longitude !== "number" ||
-      !Number.isFinite(value.pin.longitude)
-    ) {
-      window.sessionStorage.removeItem(recentDeviceLocationKey);
-      return null;
-    }
-    return value.pin as Pin;
-  } catch {
-    return null;
-  }
-}
-function storeRecentDeviceLocation(pin: Pin, capturedAt: number) {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(
-      recentDeviceLocationKey,
-      JSON.stringify({ pin, capturedAt } satisfies RecentDeviceLocation),
-    );
-  } catch {
-    // Location setup still works if browser session storage is unavailable.
-  }
-}
 const humanError = (error: unknown) => {
   const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
   const messages: Record<string, string> = {
@@ -250,7 +202,6 @@ export default function HomeClient({
     pickup?: Pin;
     destination?: Pin;
   }>({});
-  const [pinTarget, setPinTarget] = useState<PinTarget>(null);
   const [price, setPrice] = useState("5");
   const [contribution, setContribution] = useState(false);
   const [departureMinutes, setDepartureMinutes] = useState(0);
@@ -259,13 +210,9 @@ export default function HomeClient({
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
-  const [riderMapOpen, setRiderMapOpen] = useState(false);
   const [riderSelectionOpen, setRiderSelectionOpen] = useState(false);
   const [riderTime, setRiderTime] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [locationPromptTarget, setLocationPromptTarget] = useState<
-    "origin" | "pickup" | null
-  >(null);
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
   const [roleChangeTarget, setRoleChangeTarget] = useState<"DRIVER" | "RIDER">(
@@ -273,8 +220,6 @@ export default function HomeClient({
   );
   const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
     useState(false);
-  const [locatingTarget, setLocatingTarget] = useState<FormPin | null>(null);
-  const [allowManualDeparture, setAllowManualDeparture] = useState(false);
   const [riderRoute, setRiderRoute] = useState<{
     coordinates: string;
     points: Pin[];
@@ -294,11 +239,8 @@ export default function HomeClient({
   const begin = useCallback(
     (roleChoice: Role) => {
       if (ride) return;
-      const recentLocation = recentDeviceLocation();
       setRole(roleChoice);
-      setPinTarget(null);
       if (roleChoice === "RIDER") {
-        setRiderMapOpen(false);
         const draft = riderSearchDraft();
         if (draft) {
           setRiderSelectionOpen(true);
@@ -310,16 +252,8 @@ export default function HomeClient({
           setRiderTime(draft.departureAt);
         } else {
           setRiderSelectionOpen(false);
-          setRiderPins(recentLocation ? { pickup: recentLocation } : {});
           setRiderTime(null);
         }
-      }
-      if (roleChoice === "DRIVER") {
-        setAllowManualDeparture(false);
-        if (recentLocation)
-          setDriverPins((state) =>
-            state.origin ? state : { ...state, origin: recentLocation },
-          );
       }
       setScreen(roleChoice === "DRIVER" ? "DRIVER" : "RIDER");
       window.dispatchEvent(
@@ -364,8 +298,6 @@ export default function HomeClient({
     if (!draft) return;
     const timer = window.setTimeout(() => {
       setRole("RIDER");
-      setPinTarget(null);
-      setRiderMapOpen(false);
       setRiderSelectionOpen(true);
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
@@ -385,16 +317,9 @@ export default function HomeClient({
       window.location.pathname,
     );
     const timer = window.setTimeout(() => {
-      const recentLocation = recentDeviceLocation();
       const roleChoice: Role = requested === "driver" ? "DRIVER" : "RIDER";
       setRole(roleChoice);
-      setPinTarget(null);
-      if (roleChoice === "DRIVER") {
-        setAllowManualDeparture(false);
-        if (recentLocation)
-          setDriverPins((state) => ({ ...state, origin: recentLocation }));
-      } else {
-        setRiderMapOpen(false);
+      if (roleChoice === "RIDER") {
         const draft = riderSearchDraft();
         if (draft) {
           setRiderSelectionOpen(true);
@@ -403,9 +328,6 @@ export default function HomeClient({
             destination: draft.destination,
           });
           setRiderTime(draft.departureAt);
-        } else if (recentLocation) {
-          setRiderSelectionOpen(false);
-          setRiderPins({ pickup: recentLocation });
         } else {
           setRiderSelectionOpen(false);
         }
@@ -480,7 +402,7 @@ export default function HomeClient({
     return () => window.clearInterval(timer);
   }, [activeRideId]);
 
-  function setPinForTarget(target: FormPin, pin: Pin) {
+  function setPinForTarget(target: FormPin, pin: Pin | undefined) {
     if (target === "origin")
       setDriverPins((state) => ({ ...state, origin: pin }));
     if (target === "destination")
@@ -598,76 +520,6 @@ export default function HomeClient({
     riderRoute?.coordinates === riderRouteCoordinates
       ? riderRoute.durationSeconds
       : null;
-  function setPin(pin: Pin) {
-    if (!pinTarget) {
-      if (role === "RIDER") {
-        setPinForTarget("pickup", pin);
-        setPinTarget("pickup");
-      }
-      return;
-    }
-    const target = pinTarget;
-    if (target === "origin" && driverPins.origin && !allowManualDeparture) {
-      setPinForTarget("destination", pin);
-      setPinTarget("destination");
-      return;
-    }
-    if (target === "pickup" && riderPins.pickup) {
-      setPinForTarget("riderDestination", pin);
-      setPinTarget("riderDestination");
-      return;
-    }
-    setPinForTarget(target, pin);
-    if (target === "origin") {
-      setAllowManualDeparture(false);
-    }
-  }
-  function requestCurrentLocation(target: FormPin) {
-    setPinTarget(target);
-    setLocatingTarget(target);
-    if (target === "origin") setAllowManualDeparture(false);
-    if (!navigator.geolocation) {
-      setLocatingTarget(null);
-      if (target === "origin") setAllowManualDeparture(true);
-      setError(
-        target === "origin"
-          ? "Location wasn’t available. Search for your starting point instead."
-          : "Location wasn’t available. Search for your pickup instead.",
-      );
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const pin = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        storeRecentDeviceLocation(pin, position.timestamp);
-        if (target === "origin") {
-          setPinForTarget(target, pin);
-          setAllowManualDeparture(false);
-        }
-        if (target === "pickup") {
-          setPinForTarget(target, pin);
-        }
-        setLocatingTarget(null);
-        setBusy(false);
-      },
-      () => {
-        setLocatingTarget(null);
-        if (target === "origin") setAllowManualDeparture(true);
-        setBusy(false);
-        setError(
-          target === "origin"
-            ? "Location wasn’t available. Search for your starting point instead."
-            : "Location wasn’t available. Search for your pickup instead.",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 },
-    );
-  }
   async function publish() {
     if (!driverPins.origin || !driverPins.destination) {
       setError(null);
@@ -908,17 +760,6 @@ export default function HomeClient({
           {serviceError}
         </p>
       ) : null}
-      {locationPromptTarget ? (
-        <LocationPrompt
-          target={locationPromptTarget}
-          confirm={() => {
-            const target = locationPromptTarget;
-            setLocationPromptTarget(null);
-            requestCurrentLocation(target);
-          }}
-          close={() => setLocationPromptTarget(null)}
-        />
-      ) : null}
       {ownOfferPromptOpen ? (
         <OwnOfferPrompt close={() => setOwnOfferPromptOpen(false)} />
       ) : null}
@@ -957,12 +798,8 @@ export default function HomeClient({
         <DriverForm
           pins={driverPins}
           countryPreference={countryPreference}
-          onDepartureRequest={() => setLocationPromptTarget("origin")}
-          locatingDeparture={locatingTarget === "origin"}
-          allowManualDeparture={allowManualDeparture}
           setOrigin={(pin) => {
             setPinForTarget("origin", pin);
-            setAllowManualDeparture(false);
           }}
           setDestination={(pin) => setPinForTarget("destination", pin)}
           price={price}
@@ -980,21 +817,22 @@ export default function HomeClient({
         />
       ) : screen === "RIDER" ? (
         <RiderForm
+          setOrigin={(pin) => {
+            if (!pin) clearRiderSearchDraft();
+            setCandidates([]);
+            setSelected(null);
+            setPinForTarget("pickup", pin);
+          }}
           pins={riderPins}
           countryPreference={countryPreference}
-          target={pinTarget}
-          setTarget={setPinTarget}
-          setPin={setPin}
-          onPickupRequest={() => setLocationPromptTarget("pickup")}
           setDestination={(pin) => {
+            if (!pin) clearRiderSearchDraft();
             setCandidates([]);
             setSelected(null);
             setPinForTarget("riderDestination", pin);
           }}
           routePoints={activeRiderRoute}
           routeDurationSeconds={activeRiderDurationSeconds}
-          mapOpen={riderMapOpen}
-          setMapOpen={setRiderMapOpen}
           candidates={candidates}
           selected={selected}
           setSelected={setSelected}
@@ -1034,42 +872,6 @@ function Home({
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />
       ))}
-    </div>
-  );
-}
-function LocationPrompt({
-  target,
-  confirm,
-  close,
-}: {
-  target: "origin" | "pickup";
-  confirm: () => void;
-  close: () => void;
-}) {
-  const departure = target === "origin";
-  return (
-    <div className="location-prompt-backdrop" role="presentation">
-      <section
-        className="location-prompt"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="location-prompt-title"
-      >
-        <p className="eyebrow">{departure ? "Starting point" : "Pickup"}</p>
-        <h2 id="location-prompt-title">Use your current location?</h2>
-        <p>
-          GUMWHEEL will use your current location as the{" "}
-          {departure ? "starting point" : "pickup location"}.
-        </p>
-        <div className="location-prompt-actions">
-          <button type="button" className="primary" onClick={confirm}>
-            USE CURRENT LOCATION
-          </button>
-          <button type="button" className="secondary" onClick={close}>
-            NOT NOW
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
@@ -1143,193 +945,11 @@ function PublishRouteRequiredPrompt({ close }: { close: () => void }) {
     </div>
   );
 }
-function PinControls({
-  target,
-  setTarget,
-  setPin,
-  onDepartureRequest,
-  onPickupRequest,
-  locatingDeparture,
-  allowManualDeparture,
-  pins,
-  driver,
-  routePoints,
-  mapVisible = true,
-  hideRiderDestination = false,
-}: {
-  target: PinTarget;
-  setTarget: (target: PinTarget) => void;
-  setPin: (pin: Pin) => void;
-  onDepartureRequest: () => void;
-  onPickupRequest?: () => void;
-  locatingDeparture: boolean;
-  allowManualDeparture: boolean;
-  pins: { origin?: Pin; destination?: Pin; pickup?: Pin };
-  driver: boolean;
-  routePoints?: Pin[] | null;
-  mapVisible?: boolean;
-  hideRiderDestination?: boolean;
-}) {
-  const first = driver ? "origin" : "pickup";
-  const second = driver ? "destination" : "riderDestination";
-  const driverMapPoints = [
-    ...(pins.origin ? [{ pin: pins.origin, kind: "departure" as const }] : []),
-    ...(pins.destination
-      ? [{ pin: pins.destination, kind: "destination" as const }]
-      : []),
-  ];
-  const riderMapPoints = [
-    ...(pins.pickup ? [{ pin: pins.pickup, kind: "pickup" as const }] : []),
-    ...(pins.destination
-      ? [{ pin: pins.destination, kind: "destination" as const }]
-      : []),
-  ];
-  const mapPins = driver
-    ? driverMapPoints.map((point) => point.pin)
-    : riderMapPoints.map((point) => point.pin);
-  const markerKinds = driver
-    ? driverMapPoints.map((point) => point.kind)
-    : riderMapPoints.map((point) => point.kind);
-  const startingPoint = driver ? pins.origin : pins.pickup;
-  return (
-    <>
-      {driver ? (
-        <div className="pin-tabs">
-          <button
-            className={target === first ? "active" : ""}
-            disabled={driver && locatingDeparture}
-            onClick={() =>
-              driver ? onDepartureRequest() : onPickupRequest?.()
-            }
-          >
-            {driver ? (
-              <>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="6.5" />
-                </svg>
-                Where from?
-              </>
-            ) : (
-              "Pickup"
-            )}
-          </button>
-          <button
-            className={target === second ? "active" : ""}
-            onClick={() => setTarget(second)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
-              <circle cx="12" cy="10" r="2" />
-            </svg>
-            Where to?
-          </button>
-        </div>
-      ) : null}
-      <div
-        className={`pin-summary ${
-          driver
-            ? "driver-location-summary"
-            : `rider-location-summary${hideRiderDestination ? " rider-location-origin-only" : ""}`
-        }`}
-      >
-        {driver ? (
-          <p>
-            <strong className="location-heading">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="6.5" />
-              </svg>
-              Where from?
-            </strong>
-            {locatingDeparture
-              ? "Finding your current location…"
-              : !pins.origin
-                ? "Select Where from? to use your current location."
-                : locationText(pins.origin)}
-          </p>
-        ) : (
-          <p className="rider-origin-field">
-            <span className="rider-origin-heading">
-              <strong className="location-heading">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="6.5" />
-                </svg>
-                Where from?
-              </strong>
-              <button
-                type="button"
-                className="pickup-location-button"
-                onClick={() => onPickupRequest?.()}
-              >
-                {pins.pickup ? "Update location" : "Use current location"}
-              </button>
-            </span>
-            {pins.pickup ? (
-              <span className="rider-origin-address">
-                {locationText(pins.pickup)}
-              </span>
-            ) : null}
-          </p>
-        )}
-        {driver || !hideRiderDestination ? (
-          <p>
-            <strong className="location-heading">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
-                <circle cx="12" cy="10" r="2" />
-              </svg>
-              Where to?
-            </strong>
-            {pins.destination
-              ? locationText(pins.destination)
-              : driver
-                ? "Select a destination."
-                : null}
-          </p>
-        ) : null}
-      </div>
-      {mapVisible ? (
-        <JourneyMap
-          pins={mapPins}
-          onPick={
-            !target
-              ? driver
-                ? () => onDepartureRequest()
-                : setPin
-              : driver &&
-                  target === "origin" &&
-                  !allowManualDeparture &&
-                  !pins.origin
-                ? undefined
-                : setPin
-          }
-          markerKinds={markerKinds}
-          roadPathAttribution={Boolean(routePoints?.length)}
-          lines={
-            startingPoint && pins.destination
-              ? [
-                  {
-                    points: routePoints?.length
-                      ? routePoints
-                      : [startingPoint, pins.destination],
-                    ...(driver ? DRIVER_ROUTE : RIDER_ROUTE),
-                    muted: !routePoints?.length,
-                  },
-                ]
-              : []
-          }
-        />
-      ) : null}
-    </>
-  );
-}
 function DriverForm(props: {
   pins: { origin?: Pin; destination?: Pin };
   countryPreference: string | null;
-  onDepartureRequest: () => void;
-  locatingDeparture: boolean;
-  allowManualDeparture: boolean;
-  setOrigin: (pin: Pin) => void;
-  setDestination: (pin: Pin) => void;
+  setOrigin: (pin: Pin | undefined) => void;
+  setDestination: (pin: Pin | undefined) => void;
   price: string;
   contribution: boolean;
   setContribution: (value: boolean) => void;
@@ -1367,65 +987,10 @@ function DriverForm(props: {
     <div className="form-page">
       <h1 className="page-title">Offer a ride</h1>
       <div className="form-panel-content">
-        <div className="pin-summary driver-location-summary">
-          <p className="rider-origin-field">
-            <span className="rider-origin-heading">
-              <strong className="location-heading">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="6.5" />
-                </svg>
-                Where from?
-              </strong>
-              {!props.locatingDeparture ? (
-                <button
-                  type="button"
-                  className="pickup-location-button"
-                  onClick={props.onDepartureRequest}
-                >
-                  {props.pins.origin
-                    ? "Update location"
-                    : "Use current location"}
-                </button>
-              ) : null}
-            </span>
-            {props.locatingDeparture || props.pins.origin ? (
-              <span className="rider-origin-address">
-                {props.locatingDeparture
-                  ? "Finding your current location…"
-                  : locationText(props.pins.origin!)}
-              </span>
-            ) : null}
-          </p>
-          <p>
-            <strong className="location-heading">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
-                <circle cx="12" cy="10" r="2" />
-              </svg>
-              Where to?
-            </strong>
-            {props.pins.destination
-              ? locationText(props.pins.destination)
-              : null}
-          </p>
-        </div>
-        {props.allowManualDeparture && !props.pins.origin ? (
-          <PlaceSearch
-            placeholder="Search starting point"
-            autoFocus
-            choose={props.setOrigin}
-          />
-        ) : null}
-        <PlaceSearch
-          bias={props.pins.origin}
-          countryCode={
-            props.pins.origin?.countryCode ??
-            props.countryPreference ??
-            undefined
-          }
-          placeholder="Search destination"
-          autoFocus={!props.allowManualDeparture}
-          choose={props.setDestination}
+        <RouteFields
+          origin={props.pins.origin} destination={props.pins.destination}
+          countryCode={props.countryPreference ?? "au"}
+          setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <DepartureChoice value={props.departureMinutes} onChange={props.setDepartureMinutes} />
         <ContributionChoice checked={props.contribution} onChange={props.setContribution} fare={props.price}>
@@ -1444,17 +1009,12 @@ function DriverForm(props: {
   );
 }
 function RiderForm(props: {
+  setOrigin: (pin: Pin | undefined) => void;
   pins: { pickup?: Pin; destination?: Pin };
   countryPreference: string | null;
-  target: PinTarget;
-  setTarget: (target: PinTarget) => void;
-  setPin: (pin: Pin) => void;
-  onPickupRequest: () => void;
-  setDestination: (pin: Pin) => void;
+  setDestination: (pin: Pin | undefined) => void;
   routePoints?: Pin[] | null;
   routeDurationSeconds?: number | null;
-  mapOpen: boolean;
-  setMapOpen: (open: boolean) => void;
   candidates: Candidate[];
   selected: string | null;
   setSelected: (id: string) => void;
@@ -1486,44 +1046,11 @@ function RiderForm(props: {
     <div className="form-page rider-form-page">
       <h1 className="page-title">Find a ride</h1>
       <div className="form-panel-content">
-        <PinControls
-          target={props.target}
-          setTarget={props.setTarget}
-          setPin={props.setPin}
-          onDepartureRequest={() => undefined}
-          onPickupRequest={props.onPickupRequest}
-          locatingDeparture={false}
-          allowManualDeparture={false}
-          routePoints={props.routePoints}
-          pins={props.pins}
-          driver={false}
-          mapVisible={props.mapOpen}
-          hideRiderDestination
-        />
-        <PlaceSearch
-          bias={props.pins.pickup}
-          countryCode={
-            props.pins.pickup?.countryCode ??
-            props.countryPreference ??
-            undefined
-          }
-          placeholder="Where to?"
-          ariaLabel="Search destination"
-          initialValue={
-            props.pins.destination
-              ? locationText(props.pins.destination)
-              : undefined
-          }
-          autoFocus
-          selectOnFocus={Boolean(props.pins.destination)}
-          destinationIcon
-          inlineResults
-          choose={(pin) => {
-            props.setDestination(pin);
-            props.setTarget("riderDestination");
-            props.setMapOpen(false);
-            props.openSelection();
-          }}
+        <RouteFields
+          origin={props.pins.pickup} destination={props.pins.destination}
+          countryCode={props.countryPreference ?? "au"}
+          setOrigin={props.setOrigin} setDestination={props.setDestination}
+          onComplete={props.openSelection}
         />
       </div>
     </div>
@@ -1851,139 +1378,6 @@ function RideSelection({
           {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
         </button>
       </div>
-    </div>
-  );
-}
-export function PlaceSearch({
-  bias,
-  countryCode,
-  choose,
-  placeholder,
-  ariaLabel,
-  initialValue = "",
-  autoFocus = false,
-  selectOnFocus = false,
-  destinationIcon = false,
-  inlineResults = true,
-}: {
-  bias?: Pin;
-  countryCode?: string;
-  choose: (pin: Pin) => void;
-  placeholder: string;
-  ariaLabel?: string;
-  initialValue?: string;
-  autoFocus?: boolean;
-  selectOnFocus?: boolean;
-  destinationIcon?: boolean;
-  inlineResults?: boolean;
-}) {
-  const [text, setText] = useState(initialValue);
-  const [places, setPlaces] = useState<Pin[]>([]);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (!autoFocus) return;
-    const frame = window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      if (selectOnFocus) inputRef.current?.select();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [autoFocus, selectOnFocus]);
-  const search = () => {
-    inputRef.current?.setCustomValidity(searchInputError(text) ?? "");
-    if (!inputRef.current?.reportValidity()) return;
-    if (text.trim().length < 3) {
-      inputRef.current?.focus();
-      return;
-    }
-    void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
-      method: "POST",
-      body: JSON.stringify({
-        text,
-        ...(bias ? { bias: canonicalPin(bias) } : {}),
-        ...(countryCode ? { countryCode } : {}),
-      }),
-    })
-      .then((result) => {
-        setPlaces(result.places);
-        setSearchError(null);
-      })
-      .catch((reason) => {
-        setPlaces([]);
-        setSearchError(
-          apiErrorMessage(
-            reason,
-            "We couldn’t search destinations. Please try again.",
-          ),
-        );
-      });
-  };
-  return (
-    <div
-      className={`place-search${inlineResults ? " place-search-inline-results" : ""}`}
-    >
-      <div className="place-search-input">
-        {destinationIcon ? (
-          <svg
-            className="place-search-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M12 21s6-5.13 6-11a6 6 0 1 0-12 0c0 5.87 6 11 6 11Z" />
-            <circle cx="12" cy="10" r="2" />
-          </svg>
-        ) : null}
-        <input
-          ref={inputRef}
-          maxLength={SEARCH_MAX_LENGTH}
-          autoFocus={autoFocus}
-          value={text}
-          onChange={(event) => {
-            event.target.setCustomValidity("");
-            setText(event.target.value);
-            setPlaces([]);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              search();
-            }
-          }}
-          placeholder={placeholder}
-          aria-label={ariaLabel ?? placeholder}
-        />
-        <button type="button" onClick={search}>
-          Search
-        </button>
-      </div>
-      {searchError ? (
-        <p className="reconnect" role="alert">
-          {searchError}
-        </p>
-      ) : null}
-      {places.length ? (
-        <div
-          className="place-results"
-          role="region"
-          aria-label="Destination search results"
-          tabIndex={0}
-        >
-          {places.map((place) => (
-            <button
-              type="button"
-              key={`${place.latitude}:${place.longitude}`}
-              onClick={() => {
-                choose(place);
-                setText(place.label ?? "");
-                setPlaces([]);
-              }}
-            >
-              {place.label ??
-                `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}
-            </button>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

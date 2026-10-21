@@ -13,7 +13,8 @@ import {
   saveRiderSearchDraft,
 } from "@/lib/ride-preview-cache";
 import { payIdInputError } from "@/lib/input-validation";
-import { PlaceSearch } from "./home-client";
+import { RouteFields } from "./route-fields";
+import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/profile-draft";
 import DepartureChoice from "./departure-choice";
 import { Message } from "./ride-journey-controls";
 import RideFieldLabel from "./ride-field-label";
@@ -23,6 +24,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [saved, setSaved] = useState<UsualRoute | null>(null);
   const [origin, setOrigin] = useState<Pin>();
   const [destination, setDestination] = useState<Pin>();
+  const [draftText, setDraftText] = useState({ origin: "", destination: "" });
+  const [draftOwner, setDraftOwner] = useState<string | null>(null);
   const [days, setDays] = useState<number[]>([]);
   const [minute, setMinute] = useState("");
   const [alerts, setAlerts] = useState(true);
@@ -46,6 +49,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
     const load = () => {
       const current = ++generation.value;
       setLoading(true);
+      setDraftOwner(null);
+      setDraftText({ origin: "", destination: "" });
       setLoadFailed(false);
       setConfirmRemove(false);
       setConfirmMute(false);
@@ -60,20 +65,30 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setFare("5");
       setContribution(false);
       setPayIdType("MOBILE");
-      void cocowheelsApi<{
+      void Promise.all([cocowheelsApi<{
         route: UsualRoute | null;
         alertsAvailable: boolean;
-      }>("/api/usual-route")
-        .then((result) => {
+      }>("/api/usual-route"), cocowheelsApi<{ unikey: string }>("/api/university/session")])
+        .then(([result, session]) => {
           if (live && current === generation.value) {
+            setDraftOwner(session.unikey);
             setSaved(result.route);
+            const draft = result.route ? null : readProfileDraft(session.unikey);
+            if (result.route) clearProfileDraft(session.unikey);
+            if (draft) {
+              setOrigin(draft.origin);
+              setDestination(draft.destination);
+              setDraftText(draft.text);
+              setDays(draft.days);
+              setMinute(draft.minute);
+            }
             if (result.route) {
               setContribution(result.route.priceAud > 0);
               setFare(String(result.route.priceAud || 5));
               setPayId(result.route.payId);
               setPayIdType(result.route.payIdType);
             }
-            setAlerts(result.route?.alerts ?? result.alertsAvailable);
+            setAlerts(result.route?.alerts ?? (result.alertsAvailable && (draft?.alerts ?? true)));
             setAvailable(result.alertsAvailable);
             setVerified(true);
           }
@@ -106,6 +121,11 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       window.removeEventListener("cocowheels:identity-changed", load);
     };
   }, [generation, reload]);
+  useEffect(() => {
+    if (!loading && verified && draftOwner && !saved) {
+      writeProfileDraft(draftOwner, { origin, destination, text: draftText, days, minute, alerts });
+    }
+  }, [loading, verified, draftOwner, saved, origin, destination, draftText, days, minute, alerts]);
   const fail = (reason: unknown) => {
     const code = reason instanceof ApiError ? reason.code : "";
     setError(
@@ -130,7 +150,10 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       { method: "POST", body: JSON.stringify(route) },
       true,
     );
-    if (current === generation.value) setSaved(result.route);
+    if (current === generation.value) {
+      setSaved(result.route);
+      if (draftOwner) clearProfileDraft(draftOwner);
+    }
   }
   async function save() {
     if (!origin || !destination) {
@@ -497,27 +520,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           ) : (
             <>
-              <PlaceSearch
-                placeholder="Where from?"
-                ariaLabel="Where from?"
-                countryCode="au"
-                choose={setOrigin}
-              />
-              {origin && (
-                <p className="usual-route-hint">Selected: {origin.label}</p>
-              )}
-              <PlaceSearch
-                placeholder="Where to?"
-                ariaLabel="Where to?"
-                countryCode="au"
-                bias={origin}
-                choose={setDestination}
-              />
-              {destination && (
-                <p className="usual-route-hint">
-                  Selected: {destination.label}
-                </p>
-              )}
+              <RouteFields origin={origin} destination={destination}
+                setOrigin={setOrigin} setDestination={setDestination}
+                draftText={draftText} onDraftText={(field, text) => setDraftText((old) => ({ ...old, [field]: text }))} />
               <fieldset className="usual-days" aria-label="Travel days">
                 <div>
                   {WEEKDAYS.map((day, i) => (

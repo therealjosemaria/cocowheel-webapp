@@ -31,7 +31,7 @@ with sync_playwright() as p:
                 item={'role':state['role'],'ride':ride}
                 data = {'current':item if state['current'] else None,'currents':[item] if state['current'] else []}
             elif path == 'history': data = {'driver':[ride] if state['role']=='DRIVER' else [],'rider':[ride] if state['role']=='RIDER' else []}
-            elif path == 'place-search': data = {'places':[destination]}
+            elif path == 'place-search': data = {'places':[origin if 'Town' in r.request.post_data_json['text'] else destination]}
             elif path == 'place-label': data = {'label':origin['label']}
             elif path == 'route-preview': data = {'points':[origin,destination],'durationSeconds':600}
             elif path == 'rides' and r.request.method=='POST':
@@ -61,14 +61,21 @@ with sync_playwright() as p:
         page.locator('.contribution-choice > summary').click()
         checkbox.uncheck()
         expect(page.get_by_label('Your PayID email', exact=True)).to_have_count(0)
-        page.evaluate("() => { navigator.geolocation.getCurrentPosition=(ok)=>ok({coords:{latitude:-33.88,longitude:151.2,accuracy:10},timestamp:Date.now()}); }")
-        page.get_by_role('button',name='Use current location',exact=True).click()
-        # Initial location consent uses the app's existing modal.
-        if page.get_by_role('button',name='USE CURRENT LOCATION',exact=True).count():
-            page.get_by_role('button',name='USE CURRENT LOCATION',exact=True).click()
-        page.get_by_placeholder('Search destination',exact=True).fill('University')
+        expect(page.get_by_role('button',name='Use current location',exact=True)).to_have_count(0)
+        page.get_by_placeholder('Where from?',exact=True).fill('Town Hall')
+        page.locator('.place-search').first.get_by_role('button',name='Search',exact=True).click()
+        page.get_by_role('button',name=origin['label'],exact=True).click()
+        expect(page.get_by_placeholder('Where to?',exact=True)).to_be_focused()
+        page.get_by_placeholder('Where to?',exact=True).fill('University')
         page.locator('.place-search').last.get_by_role('button',name='Search',exact=True).click()
         page.get_by_role('button',name=destination['label'],exact=True).click()
+        page.get_by_placeholder('Where from?',exact=True).fill('Town')
+        page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
+        expect(page.get_by_role('dialog')).to_contain_text('Add your route first')
+        assert not state['writes']
+        page.get_by_role('button',name='OKAY',exact=True).click()
+        page.locator('.place-search').first.get_by_role('button',name='Search',exact=True).click()
+        page.get_by_role('button',name=origin['label'],exact=True).click()
         page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
         expect(page.get_by_role('dialog')).to_be_visible()
         assert state['writes'][-1]['priceAud']==0 and state['writes'][-1]['payId']==''

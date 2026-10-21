@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-22 | Shared Profile/Offer/Find address entry | 128 regression tests, lint/build; mocked four-width flows and private draft restore. No production changes or capacity test. | [Checks and manual walkthrough](SHARED_ROUTE_FIELDS_2026-10-22.md) |
 | 2026-10-22 | Profile / shared contribution fields | 127 regression tests, lint/build and both four-width browser scripts passed; $1 minimum, cents, migration preservation, email-off confirmation and mobile containment. | [Checks and deployment](PROFILE_POLISH_2026-10-22.md) |
 | 2026-10-21 | Free rides / optional contributions | 125 regression checks passed, including legacy fare migration preservation, free HTTP offering and pickup lifecycle; mocked mobile/desktop free/paid flows. Production migration/deployment not performed. Not a capacity campaign. | [Scope, commands and findings](FREE_RIDES_2026-10-21.md) |
 | 2026-10-21 | Private usual routes / alerts | 120 regression tests, four responsive usual-route and six existing message-entry cases passed; lint/build passed. Approximate matching, bounded opt-in outbox and preserved history; not a capacity campaign. Standalone test type errors retained as a baseline limitation. | [Verification and owner checklist](USUAL_ROUTES_CHECK_2026-10-21.md) |

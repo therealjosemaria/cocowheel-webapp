@@ -2868,6 +2868,9 @@ p {
 }
 .university-form > button { margin: 0; }
 .usual-route-panel { max-width: 680px; margin-inline: auto; }
+.route-search-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }
+.route-search-fields .place-search { margin: 0; }
+.form-panel-content > .route-search-fields { margin-bottom: 16px; }
 .usual-route-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
 .usual-route-body h2 { margin: 0; font-size: var(--text-section); font-weight: var(--weight-semibold); }
 .usual-route-body p { margin: 0; }

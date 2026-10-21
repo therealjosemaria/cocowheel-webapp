@@ -239,7 +239,7 @@ UI wording must not be used as a server permission check.
 | Pickup code | No countdown; single-use; renewal invalidates old code; five guesses and attempt throttling |
 | Email login code | Ten minutes, five guesses |
 | Verified login session | 30 days |
-| Recent browser GPS | Five-minute reuse |
+| Profile unfinished route | Account-scoped, same-tab draft; 30-minute restore window; cleared on successful save |
 | Browser country preference | Seven days |
 | Find-a-ride saved search draft | 30 minutes |
 | Server reverse-label / road-route caches | Seven days; capped at 2,000 labels / 250 routes |
@@ -335,6 +335,20 @@ See [ADMIN.md](ADMIN.md) for inspection boundaries and [deployment notes](deploy
 for service operations.
 
 ## Shared UI behaviour
+
+- Profile's route editor, Offer a ride and Find a ride reuse `RouteFields` and
+  `PlaceSearch`: Where from?/Where to? placeholders, explicit search and selectable
+  results. Ordinary Offer/Find setup no longer requests GPS or prefills recent GPS;
+  active-trip tracking and Profile's saved-route offering shortcut still use GPS.
+  Entry focuses the first empty address once; selecting origin moves to an empty
+  destination. Editing a selected address invalidates its coordinates. Find opens
+  the existing map/ride chooser only after both locations are selected, in either
+  order. Departure options retain their accessible Leaving name without a visible
+  legend or flexibility helper sentence.
+  Profile restores unfinished address text, selected places, days/time and email
+  choice in the same tab for 30 minutes, keyed to the authenticated UniKey. It does
+  not cache payment details or save/send anything automatically. A saved server
+  route supersedes and clears that draft. See [checks](docs/SHARED_ROUTE_FIELDS_2026-10-22.md).
 
 - Profile is the account-menu destination and page title; My usual route is its
   section. The existing `/usual-route` URL and private route APIs stay unchanged.

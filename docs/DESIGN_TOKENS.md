@@ -44,6 +44,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Shared RouteFields uses a single minmax(0, 1fr) grid with 16px gaps, zero
+  nested PlaceSearch margins and the existing input/Search/results tokens.
+  Ordinary Offer/Find give the section 16px bottom spacing; Profile's parent
+  grid supplies its spacing. No new typography, colour or button style.
+
 - Profile's route editor uses placeholders and accessible names instead of visible
   origin/destination/time labels; My usual route retains section/semibold.
   Native time inputs and their grid parents have min-width: 0;

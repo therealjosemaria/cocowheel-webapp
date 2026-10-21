@@ -12,6 +12,14 @@ scope and activation status; code presence is not verified deployment.
   not reserve a ride, publish automatically or change the one-active-role rule.
 - Origin and destination are explicitly chosen from the existing place search.
   The pilot filters new searches to Australia and biases destination by origin.
+  RouteFields is shared with ordinary Offer/Find. Entry focuses the first empty
+  address once, with Where from?/Where to? placeholders. A same-tab sessionStorage
+  draft keyed by authenticated UniKey restores unfinished address text, selected
+  places, days/time and email choice for 30 minutes after the latest draft write.
+  PayID/fare are not cached. Loading uses the existing session endpoint alongside
+  usual-route; no server schema changes. Successful save or loading an already
+  saved server route clears the draft. Expired/invalid/inaccessible storage is
+  ignored. No auto-save to the server, offering or email delivery is introduced.
 - Riders select one or more weekdays and one shared wall-clock time. The window
   is inclusive ±60 minutes, using `Australia/Sydney` including DST. A window
   around Monday midnight includes late Sunday; the saved summary labels crossings.

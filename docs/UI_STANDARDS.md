@@ -4,6 +4,18 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Shared address entry (22 October): Profile, Offer and Find reuse RouteFields,
+not copies of its markup. Use Where from?/Where to? placeholders and accessible
+names, 16px gaps, explicit Search and the shared scrollable results. Focus the
+first empty address on entry only; never refocus on each keystroke. Choosing an
+origin advances to an empty destination. Both filled: do not steal focus.
+No setup current-location button or recent-GPS prefill in ordinary Offer/Find;
+this supersedes the former GPS-first setup. Keep active-trip GPS unchanged.
+Find retains its map/ride-selection flow after both valid selections. Editing
+text clears the corresponding selected coordinates until a result is chosen.
+Departure choices keep their accessible name without a visible Leaving legend
+or the former flexibility sentence. Saved-route shortcut GPS remains unchanged.
+
 Profile polish (22 October): Profile names the menu action and H1; My usual route
 is the H2. The editor uses Where from? and Where to? as placeholders instead of
 visible headings; explicit accessible names remain after typing. The native time

@@ -8,8 +8,7 @@ export default function DepartureChoice({
   onChange: (value: number) => void;
 }) {
   return (
-    <fieldset className="payid-field">
-      <legend>Leaving</legend>
+    <fieldset className="payid-field" aria-label="Leaving">
       <div
         className="payid-type-options"
         role="radiogroup"
@@ -28,9 +27,6 @@ export default function DepartureChoice({
           </button>
         ))}
       </div>
-      <p className="usual-route-hint">
-        Times are flexible. Coordinate pickup in messages.
-      </p>
     </fieldset>
   );
 }
