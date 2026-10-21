@@ -58,3 +58,20 @@ decimal offering payloads, both participant roles and preserved paid disclosure.
 Whole-screen editor, saved route, Offer and modal screenshots were visually
 reviewed at mobile/desktop widths; time input and page overflow assertions passed.
 Production activation is recorded separately below when verified.
+
+## Production activation
+
+API revision `c1eb023` activated after a fresh restricted SQLite online backup
+and a zero-active-ride check. All 23 table snapshots matched the backup after
+restart, all 115 ride records remained, the free-or->=1 CHECK was present,
+integrity was ok and foreign-key checks were empty. Local and public proxy health
+passed. No production test ride/email was created. This is an on-Pi backup, not
+an off-Pi disaster-recovery verification. Frontend release follows the API.
+
+Vercel production deployment `dpl_4Te9tNjr9ZPDVUqzZNvUTruSHSsw` reached READY for
+`c1eb023`, with gumwheel.com/www.gumwheel.com assigned. Read-only live Chromium
+checks at 390/1440px passed for Profile title, restored mobile PayID placeholder,
+1.25 decimal entry/summary and no overflow. No login, ride submission or real
+email delivery was exercised. Private Profile flows use the isolated fixtures
+above, not another person's live account. Deployment-wide runtime log/drain
+auditing was not part of this release check.
