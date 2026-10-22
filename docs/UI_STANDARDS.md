@@ -42,6 +42,10 @@ Both roles show Delayed N min using completed elapsed minutes after the existing
 one-minute grace period. No dot separator. Discovery gains no extra time/row;
 its arrival estimate stays unchanged. This is elapsed schedule time, not extra
 waiting time or GPS-confirmed lateness.
+Format departure durations below 60 minutes as N min; from 60 minutes use N hr
+or N hr M min, omitting zero minutes. Apply equally to future and delayed times
+in driver details and rider discovery. Avoid ambiguous colon notation such as
+1:49 min. Future minutes round up; elapsed minutes round down as before.
 Pickup minutes mean driving duration only, excluding departure wait.
 
 Shared address entry (22 October): Profile, Offer and Find reuse RouteFields,

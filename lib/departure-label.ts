@@ -7,12 +7,19 @@ export function departureTone(scheduledAt: string, now: number): "scheduled" | "
   return "delayed";
 }
 
+function departureDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return `${hours} hr${remainder ? ` ${remainder} min` : ""}`;
+}
+
 export function departureLabel(scheduledAt: string, now: number): string {
   const remaining = Date.parse(scheduledAt) - now;
   if (!Number.isFinite(remaining)) return "";
-  if (remaining > 0) return `Departs in ${Math.ceil(remaining / 60000)} min`;
+  if (remaining > 0) return `Departs in ${departureDuration(Math.ceil(remaining / 60000))}`;
   if (remaining > -60000) return "Departing now";
-  return `Delayed ${Math.floor(-remaining / 60000)} min`;
+  return `Delayed ${departureDuration(Math.floor(-remaining / 60000))}`;
 }
 
 const plannedTimeFormatter = new Intl.DateTimeFormat("en-AU", {

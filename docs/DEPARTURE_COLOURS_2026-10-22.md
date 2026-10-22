@@ -46,3 +46,18 @@ Screenshots were reviewed for both screens at both widths: existing layout and
 regular body/caption hierarchy retained; no extra rider time or row added.
 ESLint and production build passed. No API/schema changes or restart required.
 Production deployment remains unverified at commit time.
+
+## Hour/minute duration refinement
+
+Baseline `a9d3684`: the shared formatter now renders durations of 60 or more
+rounded minutes as N hr or N hr M min. Thus 109 minutes becomes 1 hr 49 min
+for future departures and delays in both roles. Zero remaining minutes are
+omitted. Sub-hour display, rounding, colours and lifecycle gates are unchanged.
+No ambiguous colon notation and no changes to arrival clock times.
+
+`npm test`: 140/140 passed, including 59/60/61/109/120/149 minutes, both directions
+and rounding boundaries. Lint and production build passed. The browser command
+above passed at 390px/1440px with 109-minute future and overdue fixtures in both
+roles. Screenshots reviewed: longer labels fit the existing cells/cards without
+new emphasis or rows. Providers remained blocked; no production data changed.
+No API restart needed; live deployment remains a separate unverified step.

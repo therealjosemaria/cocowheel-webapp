@@ -17,6 +17,8 @@ see [design tokens](docs/DESIGN_TOKENS.md). Driver Departure retains the planned
 Sydney time above a smaller coloured countdown; discovery keeps only its existing
 countdown line alongside the unchanged pickup/arrival information. Both show
 Delayed N min (whole elapsed minutes, no separator), not a predicted extra wait.
+Departure countdowns and delays of 60 minutes or more use hours and minutes
+(1 hr, 1 hr 49 min) in both roles, through the same formatter.
 No backend or lifecycle changes.
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
