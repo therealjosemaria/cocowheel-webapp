@@ -1,5 +1,24 @@
 # Profile and shared-route polish — 23 October 2026
 
+## Profile label consistency follow-up
+
+Baseline `0e10124`: saved route labels inherited muted uppercase ride-detail
+captions. Profile now scopes them to the same 14px bold ink, sentence case and
+normal letter spacing as vehicle labels, with no added label/value grid gap.
+Values stay regular; field separation stays 12px. Ride-detail captions, editing,
+consent, APIs and data remain unchanged. No server restart required.
+
+The browser command below passed at 320/390/844/1440px, comparing computed label
+colour, font size/weight/family, case and letter spacing against Number plate,
+plus zero grid gap and existing route/schedule/swap checks. Whole Profile with
+both disclosures open was visually reviewed at 390/1440px. Initial browser run
+had no local dev server (connection refused); starting the isolated server fixed
+the harness setup. ESLint passed. Initial sandboxed build could not bind a
+worker port; the permission-enabled production build passed.
+No production writes or emails. Real-device Safari and deployed UI unverified.
+
+## Original route polish
+
 Baseline: `14085a3`. Frontend-only; no API/schema/restart/retention changes.
 
 - Profile saved addresses are one column, like editing. Removed summary cell

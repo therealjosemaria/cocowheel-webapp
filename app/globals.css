@@ -3070,7 +3070,8 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 
 .usual-route-body { gap: 12px; }
 .profile-route-summary { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-.profile-route-summary > div { padding: 0; border: 0; }
+.profile-route-summary > div { padding: 0; border: 0; gap: 0; }
+.profile-route-summary dt { font-size: var(--text-small); font-weight: var(--weight-bold); color: var(--ink); text-transform: none; letter-spacing: normal; }
 .profile-route-summary > div:nth-child(odd) { border-right: 0; }
 .route-location-actions { align-items: center; gap: 8px; flex-shrink: 0; }
 .place-search .route-location-actions > .secondary { margin: 0; }

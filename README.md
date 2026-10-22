@@ -28,8 +28,10 @@ Profile UI contains no payment controls (including new-route setup); fare and
 PayID are configured in Offer a ride. Legacy saved payment data is preserved.
 The redundant routine-privacy helper is omitted; saved routes remain private.
 Usual route and Matching ride alerts use matching icon-and-heading styling.
-Profile's saved addresses stack in one column with a 12px heading/content gap,
-matching the alerts section. Shared address editors in Profile, Offer and Find
+Profile's saved addresses stack in one column with dark 14px bold labels matching
+vehicle fields, directly above regular-weight values. Fields remain 12px apart;
+this Profile-only treatment leaves ride-map captions unchanged.
+Shared address editors in Profile, Offer and Find
 include Swap addresses beside Use my location, without a separate row; it swaps selected
 pins and draft text without submitting, navigating or saving. Schedule editors
 retain native time inputs with a Choose a time hint when empty and unfocused.

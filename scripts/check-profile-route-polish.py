@@ -33,6 +33,16 @@ with sync_playwright() as p:
         expect(summary).to_be_visible()
         a=summary.locator('> div').nth(0).bounding_box(); b=summary.locator('> div').nth(1).bounding_box()
         assert a['x']==b['x'] and b['y']>a['y']
+        page.locator('.vehicle-details > summary').click()
+        plate = page.locator('.vehicle-details .field').first
+        expect(plate).to_be_visible()
+        style = '(el) => { const s=getComputedStyle(el); return [s.color,s.fontSize,s.fontWeight,s.fontFamily,s.textTransform,s.letterSpacing]; }'
+        for label in summary.locator('dt').all():
+            assert label.evaluate(style) == plate.evaluate(style)
+        for cell in summary.locator('> div').all():
+            label = cell.locator('dt').bounding_box()
+            value = cell.locator('dd').bounding_box()
+            assert abs(value['y'] - label['y'] - label['height']) < 1
         page.screenshot(path=f'/tmp/profile-polish-summary-{width}.png',full_page=True)
         page.get_by_role('button',name='Edit route',exact=True).click()
         def check_swap_alignment():

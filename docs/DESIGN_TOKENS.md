@@ -61,6 +61,8 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 - Profile body uses 12px related-content gaps; saved address summary is one column
   with 12px between fields and no inset/border. Other ride grids are unchanged.
+  Saved address dt labels use --ink, --text-small and --weight-bold, matching
+  vehicle form labels; the label/value grid gap is zero. Values stay regular.
   Shared route swap uses the secondary control border/radius, 44px square target,
   18px monochrome two-arrow SVG beside Use my location with an 8px gap.
   Grid place-items centres the icon on both axes. Group uses inline-flex with

@@ -23,7 +23,10 @@ The rider message starter is “Hi! Where should we meet?”. Do not duplicate p
 questions in chat or imply these self-reported details are verified.
 
 Profile saved addresses stack Where from? then Where to? in one column, matching
-edit order. Heading-to-content spacing is 12px in both route and alert sections;
+edit order. Their labels match vehicle fields: ink, small/bold, directly above
+regular-weight values without an added grid gap. Keep 12px between fields.
+This Profile-only override does not change ride-detail captions or placeholders.
+Heading-to-content spacing is 12px in both route and alert sections;
 remove the saved summary's former cell padding/borders, scoped to Profile only.
 Shared RouteFields includes a 44px secondary Swap addresses icon button beside
 Use my location with an 8px gap, with its arrows centred inside, an accessible
