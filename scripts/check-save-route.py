@@ -31,6 +31,7 @@ with sync_playwright() as p:
                 if body: state['saved']=body
                 data={'route':state['saved'],'alertsAvailable':True}
             elif path=='search': data={'candidates':[]}
+            elif path=='place-search': data={'places':[{**end,'label':'New destination, Sydney','longitude':151.3}]}
             elif path=='route-preview': data={'points':[origin,end],'durationSeconds':600}
             else: data={}
             r.fulfill(json=data)
@@ -102,6 +103,27 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Edit schedule',exact=True)).to_be_visible()
         assert state['saved']['days']==[1] and state['saved']['minute']==600
         assert state['saved']['alerts'] is True and state['saved']['payId']=='driver@example.com'
+        expect(page.get_by_role('heading',name='Matching ride alerts',exact=True)).to_be_visible()
+        expect(page.get_by_role('heading',name='Payment preferences',exact=True)).to_be_visible()
+        expect(page.get_by_role('button',name='OFFER A RIDE',exact=True)).to_have_count(0)
+        expect(page.get_by_role('button',name='Replace saved route',exact=True)).to_have_count(0)
+        before=copy.deepcopy(state['saved'])
+        page.get_by_role('button',name='Edit route',exact=True).click()
+        page.get_by_role('textbox',name='Where to?',exact=True).fill('Unsaved destination')
+        expect(page.get_by_role('button',name='Save route',exact=True)).to_be_disabled()
+        page.get_by_role('button',name='Cancel',exact=True).click()
+        assert state['saved']==before
+        page.get_by_role('button',name='Edit route',exact=True).click()
+        expect(page.get_by_role('textbox',name='Where to?',exact=True)).to_have_value(before['destination']['label'])
+        page.get_by_role('textbox',name='Where to?',exact=True).fill('New destination')
+        page.get_by_role('textbox',name='Where to?',exact=True).press('Enter')
+        page.get_by_role('button',name='New destination, Sydney',exact=True).click()
+        page.screenshot(path=f'/tmp/profile-edit-route-{width}.png',full_page=True)
+        page.get_by_role('button',name='Save route',exact=True).click()
+        expect(page.get_by_role('button',name='Edit route',exact=True)).to_be_visible()
+        assert state['saved']['destination']['longitude']==151.3
+        assert {k:v for k,v in state['saved'].items() if k not in ['origin','destination']}=={k:v for k,v in before.items() if k not in ['origin','destination']}
+        page.screenshot(path=f'/tmp/profile-preferences-{width}.png',full_page=True)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         assert not errors,errors
         print(f'PASS save, consent, replacement, opt-out, conflict, Profile refinement {width}px',flush=True)

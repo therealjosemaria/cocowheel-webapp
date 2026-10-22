@@ -6,6 +6,18 @@ scope and activation status; code presence is not verified deployment.
 
 ## Product contract
 
+22 October Profile refinement supersedes the Profile offering/replacement UI
+described in the original baseline below: Profile now manages saved preferences.
+Edit route uses shared address fields with Save/Cancel and POST /api/usual-route,
+spreading the existing route so schedule, consent and payment are preserved.
+It does not remove the saved record first. Cancel or invalid typed addresses do
+not write. Identity change closes the editor. Schedule and payment remain editable.
+Section headings are Matching ride alerts and Payment preferences. Profile's
+offer button, GPS publishing flow and departure choices are removed. The legacy
+offer/remove endpoints remain for compatibility; no API/schema migration or
+restart is required. Email deep links retain Review matching ride to avoid
+breaking previously delivered notifications. Ordinary Offer/Find are unchanged.
+
 - Account menu → Profile opens `/usual-route`, with My usual route as a section,
   not another main-menu tab. URLs and API names remain unchanged.
 - One private saved route per verified principal, across browsers. Saving does

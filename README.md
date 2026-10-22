@@ -22,8 +22,13 @@ Departure countdowns and delays of 60 minutes or more use hours and minutes
 No backend or lifecycle changes.
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
-from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
-riders opt into matching emails for any day/time or selected days and one
+from Profile. Profile manages preferences only: Edit route changes endpoints in
+place with Save/Cancel, preserving schedule, alerts and payment settings. The
+ride-offering shortcut/departure choices are removed from Profile; offering stays
+in Offer a ride. Matching-email review links remain available when opened from
+an email. Legacy saved-route offer API remains unchanged for compatibility.
+See the [Profile refinement checks](docs/PROFILE_PREFERENCES_2026-10-22.md).
+Riders opt into matching emails for any day/time or selected days and one
 Sydney-time ±1-hour window. Find a ride offers a quiet Save route text button below
 Request to join in the bottom action area, outside ride results. It saves addresses in place, asks before replacement, then
 offers Notify me / Not now for explicit email consent.

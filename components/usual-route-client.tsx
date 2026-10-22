@@ -15,7 +15,6 @@ import {
 import { payIdInputError } from "@/lib/input-validation";
 import { RouteFields } from "./route-fields";
 import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/profile-draft";
-import DepartureChoice from "./departure-choice";
 import { Message } from "./ride-journey-controls";
 import RideFieldLabel from "./ride-field-label";
 import RouteSchedule from "./route-schedule";
@@ -35,7 +34,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [contribution, setContribution] = useState(false);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<UsualRoute["payIdType"]>("MOBILE");
-  const [leaving, setLeaving] = useState(30);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -43,7 +41,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [reload, setReload] = useState(0);
   const [available, setAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [editingRoute, setEditingRoute] = useState(false);
   const [confirmMute, setConfirmMute] = useState(false);
   const [generation] = useState(() => ({ value: 0 }));
   useEffect(() => {
@@ -54,7 +52,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setDraftOwner(null);
       setDraftText({ origin: "", destination: "" });
       setLoadFailed(false);
-      setConfirmRemove(false);
+      setEditingRoute(false);
       setConfirmMute(false);
       setVerified(false);
       setSaved(null);
@@ -201,68 +199,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setBusy(false);
     }
   }
-  async function offer() {
-    if (!saved) return;
-    if (
-      (contribution ? Number(fare) : 0) !== saved.priceAud ||
-      (contribution &&
-        (payId.trim() !== saved.payId || payIdType !== saved.payIdType))
-    ) {
-      setError("Save your payment preferences before offering a ride.");
-      return;
-    }
-    if (saved.priceAud > 0 && !saved.payId) {
-      setError("Add your preferred PayID below before offering a ride.");
-      return;
-    }
-    setBusy(true);
-    const current = generation.value;
-    try {
-      const position = await new Promise<GeolocationPosition>(
-        (resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject(new Error("GPS"));
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 12000,
-          });
-        },
-      ).catch(() => {
-        throw new Error("GPS");
-      });
-      if (current !== generation.value) return;
-      const result = await cocowheelsApi<{ ride: Ride }>(
-        "/api/usual-route/offer",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            origin: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            },
-            capturedAt: new Date(position.timestamp).toISOString(),
-            accuracyMeters: position.coords.accuracy,
-            departureMinutes: leaving,
-          }),
-        },
-        true,
-      );
-      if (current !== generation.value) return;
-      window.dispatchEvent(new Event("cocowheels:ride-updated"));
-      router.push(`/activity/${encodeURIComponent(result.ride.rideId)}`);
-    } catch (reason) {
-      if (reason instanceof Error && reason.message === "GPS")
-        setError(
-          "Location wasn’t available. Allow location access and try again. No ride was offered.",
-        );
-      else fail(reason);
-    } finally {
-      setBusy(false);
-    }
-  }
   async function review() {
     if (!saved || !match) return;
     setBusy(true);
@@ -355,6 +291,32 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   <dd>{saved.destination.label}</dd>
                 </div>
               </dl>
+              {editingRoute ? (
+                <div className="usual-route-section">
+                  <RouteFields origin={origin} destination={destination}
+                    setOrigin={setOrigin} setDestination={setDestination} />
+                  <button className="primary" disabled={busy || !origin || !destination}
+                    onClick={async () => {
+                      if (!origin || !destination) return;
+                      const current = generation.value;
+                      setBusy(true);
+                      try {
+                        await persist({ ...saved, origin, destination });
+                        if (current === generation.value) setEditingRoute(false);
+                      } catch (reason) { fail(reason); }
+                      finally { setBusy(false); }
+                    }}>{busy ? "Saving…" : "Save route"}</button>
+                  <button className="secondary" disabled={busy}
+                    onClick={() => setEditingRoute(false)}>Cancel</button>
+                </div>
+              ) : (
+                <button className="secondary" disabled={busy} onClick={() => {
+                  setOrigin(saved.origin);
+                  setDestination(saved.destination);
+                  setEditingSchedule(false);
+                  setEditingRoute(true);
+                }}>Edit route</button>
+              )}
               {match && (
                 <button
                   className="primary"
@@ -366,7 +328,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               )}
               <section className="usual-route-section">
                 <h2>
-                  <RideFieldLabel icon="rider">Find a ride</RideFieldLabel>
+                  <RideFieldLabel icon="rider">Matching ride alerts</RideFieldLabel>
                 </h2>
                 {saved.anyTime || (saved.minute !== null && saved.days.length) ? (
                   <>
@@ -406,7 +368,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   try { await persist(route); setEditingSchedule(false); }
                   catch (reason) { fail(reason); }
                   finally { setBusy(false); }
-                }} /> : <button className="secondary" disabled={busy} onClick={() => setEditingSchedule(true)}>Edit schedule</button>}
+                }} /> : <button className="secondary" disabled={busy} onClick={() => { setEditingRoute(false); setEditingSchedule(true); }}>Edit schedule</button>}
                 {!available && (
                   <p className="usual-route-hint">
                     Matching emails aren’t available yet. Your route can still
@@ -416,12 +378,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               </section>
               <section className="usual-route-section">
                 <h2>
-                  <RideFieldLabel icon="driver">Offer a ride</RideFieldLabel>
+                  <RideFieldLabel icon="driver">Payment preferences</RideFieldLabel>
                 </h2>
-                <p className="usual-route-hint">
-                  Use your current location and saved destination. Offering
-                  30–60 minutes ahead gives riders more time to join.
-                </p>
                 <p>
                   {fareLabel(saved.priceAud)}
                   {saved.priceAud > 0 ? " · PayID" : " ride"}
@@ -477,52 +435,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                     setType={setPayIdType}
                   />
                 </ContributionChoice>
-                <DepartureChoice value={leaving} onChange={setLeaving} />
-                <button
-                  className="primary"
-                  disabled={busy}
-                  onClick={() => void offer()}
-                >
-                  {busy ? "Please wait…" : "OFFER A RIDE"}
-                </button>
               </section>
-              <button
-                className="secondary"
-                disabled={busy}
-                onClick={() => setConfirmRemove(true)}
-              >
-                Replace saved route
-              </button>
-              {confirmRemove && (
-                <RemoveRoutePrompt
-                  busy={busy}
-                  close={() => setConfirmRemove(false)}
-                  confirm={async () => {
-                    const current = generation.value;
-                    setBusy(true);
-                    try {
-                      await cocowheelsApi(
-                        "/api/usual-route/remove",
-                        { method: "POST", body: "{}" },
-                        true,
-                      );
-                      if (current === generation.value) {
-                        setSaved(null);
-                        setAlerts(false);
-                        setContribution(false);
-                        setFare("5");
-                        setPayId("");
-                        setPayIdType("MOBILE");
-                        setConfirmRemove(false);
-                      }
-                    } catch (reason) {
-                      fail(reason);
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                />
-              )}
             </>
           ) : (
             <>
@@ -654,48 +567,6 @@ function MuteAlertsPrompt({
           </button>
           <button className="secondary" disabled={busy} onClick={close}>
             GO BACK
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function RemoveRoutePrompt({
-  busy,
-  close,
-  confirm,
-}: {
-  busy: boolean;
-  close: () => void;
-  confirm: () => Promise<void>;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  useDialogFocus(ref, close, busy);
-  return (
-    <div className="cancel-prompt-backdrop">
-      <section
-        ref={ref}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Replace saved route"
-        className="cancel-prompt"
-      >
-        <p>
-          Remove this saved route and its alerts? Existing rides and history
-          won’t change.
-        </p>
-        <div className="cancel-prompt-actions">
-          <button className="secondary" disabled={busy} onClick={close}>
-            KEEP IT
-          </button>
-          <button
-            className="danger"
-            disabled={busy}
-            onClick={() => void confirm()}
-          >
-            REMOVE SAVED ROUTE
           </button>
         </div>
       </section>

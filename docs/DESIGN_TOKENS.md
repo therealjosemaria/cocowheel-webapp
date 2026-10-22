@@ -47,6 +47,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Profile's Edit route matches the existing Edit schedule secondary control.
+  Its expanded editor reuses RouteFields and primary Save route / secondary
+  Cancel controls; preferences headings retain the existing section typography.
+  No new spacing, colour or typography tokens are introduced.
+
 - Find's Save route reuses text-button below Request to join, centred with a 4px
   top gap and minimum 44px tap target, no border/fill/shadow, regular small text.
   It remains outside results. Consent/replacement reuse cancel-prompt,

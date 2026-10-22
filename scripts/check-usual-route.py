@@ -77,7 +77,7 @@ with sync_playwright() as p:
         assert state['searches'][-1]['bias'] == {'latitude':destination['latitude'], 'longitude':destination['longitude']}
         expect(page.get_by_role('heading', name='Choose a ride', exact=True)).to_be_visible()
         expect(page.locator('.ride-option')).to_have_count(1)
-        expect(page.locator('.ride-option-departure')).to_have_text('Departs in 60 min')
+        expect(page.locator('.ride-option-departure')).to_have_text('Departs in 1 hr')
         expect(page.locator('.ride-option-main small').first).to_contain_text('10 min away')
         expect(page.locator('.leaflet-container')).to_be_visible()
         expect(page.locator('.ride-selection-route-key .driver-location-age')).to_have_count(0)
@@ -88,7 +88,7 @@ with sync_playwright() as p:
             page.clock.run_for(1100)
             expect(page.locator('.ride-option-departure')).to_have_text('Departing now')
             page.clock.fast_forward(61000)
-            expect(page.locator('.ride-option-departure')).to_have_text('Delayed')
+            expect(page.locator('.ride-option-departure')).to_have_text('Delayed 1 min')
             page.clock.set_system_time(datetime.now(timezone.utc))
         page.get_by_role('button', name='Back to route search', exact=True).click()
         expect(page.get_by_placeholder('Where from?', exact=True)).to_have_value(origin['label'])
@@ -191,19 +191,10 @@ with sync_playwright() as p:
         expect(page.get_by_label('Ask for a contribution', exact=True)).to_be_checked()
         expect(page.get_by_role('textbox', name='Your PayID email', exact=True)).to_have_value('driver@example.com')
         expect(page.get_by_role('radio', name='Now', exact=True)).to_have_count(0)
-        expect(page.get_by_role('radio', name='In 30 min', exact=True)).to_have_attribute('aria-checked','true')
+        expect(page.get_by_role('radio', name='In 30 min', exact=True)).to_have_count(0)
         page.screenshot(path=f'/tmp/usual-route-saved-{width}.png', full_page=True)
-        page.evaluate("""() => { navigator.geolocation.getCurrentPosition = (success, failure) => failure({code:1}); }""")
-        page.get_by_role('button', name='OFFER A RIDE', exact=True).click()
-        expect(page.get_by_role('dialog')).to_contain_text('No ride was offered')
-        page.get_by_role('button', name='OKAY', exact=True).click()
+        expect(page.get_by_role('button', name='OFFER A RIDE', exact=True)).to_have_count(0)
         assert not state['offers']
-        page.evaluate("""() => { navigator.geolocation.getCurrentPosition = (success) => success({coords:{latitude:-33.89,longitude:151.19,accuracy:10},timestamp:Date.now()}); }""")
-        page.get_by_role('button', name='OFFER A RIDE', exact=True).click()
-        expect(page.get_by_role('dialog')).to_contain_text('already have an active ride')
-        assert state['offers'][-1]['departureMinutes'] == 30
-        assert state['offers'][-1]['origin']['longitude'] == 151.19
-        page.get_by_role('button', name='OKAY', exact=True).click()
         page.goto('http://127.0.0.1:3090/usual-route?ride=matching-ride')
         state['missing'] = True
         page.get_by_role('button', name='Review matching ride', exact=True).click()
@@ -213,17 +204,12 @@ with sync_playwright() as p:
         page.get_by_role('button', name='Review matching ride', exact=True).click()
         expect(page).to_have_url('http://127.0.0.1:3090/rides/matching-ride')
         expect(page.get_by_role('button', name='REQUEST TO JOIN', exact=True)).to_be_visible()
-        assert len(state['offers']) == 1
+        assert not state['offers']
         page.goto('http://127.0.0.1:3090/usual-route')
-        page.get_by_role('button', name='Replace saved route', exact=True).click()
-        expect(page.get_by_role('dialog', name='Replace saved route')).to_be_visible()
-        expect(page.get_by_role('button', name='KEEP IT', exact=True)).to_be_focused()
-        page.keyboard.press('Escape')
-        expect(page.get_by_role('dialog')).to_have_count(0)
-        page.get_by_role('button', name='Replace saved route', exact=True).click()
-        page.get_by_role('button', name='REMOVE SAVED ROUTE', exact=True).click()
+        page.get_by_role('button', name='Edit route', exact=True).click()
         expect(page.get_by_role('button', name='Save route', exact=True)).to_be_visible()
-        assert state['saved'] is None
+        page.get_by_role('button', name='Cancel', exact=True).click()
+        assert state['saved'] is not None
         state['fail'] = True
         page.reload()
         expect(page.get_by_role('dialog')).to_be_visible()
@@ -232,7 +218,7 @@ with sync_playwright() as p:
         expect(page.get_by_text('Sign in to save your private route.', exact=True)).to_have_count(0)
         state['fail'] = False
         page.get_by_role('button', name='Try again', exact=True).click()
-        expect(page.get_by_role('button', name='Save route', exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Edit route', exact=True)).to_be_visible()
         state['signed'] = False
         page.evaluate("window.dispatchEvent(new Event('cocowheels:identity-changed'))")
         expect(page.get_by_text('Sign in to save your private route.', exact=True)).to_be_visible()

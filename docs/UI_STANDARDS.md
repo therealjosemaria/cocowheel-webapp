@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Profile is preferences-only. My usual route shows its endpoint summary and an
+Edit route secondary control matching Edit schedule. Editing expands shared
+RouteFields with Save route/Cancel; cancellation discards edits, saving preserves
+schedule, email and payment choices. Use Matching ride alerts and Payment
+preferences section headings, not Find/Offer a ride. No publish/departure controls
+in Profile. Email-linked Review matching ride remains a compatibility exception.
+
 Find's Save route is a centred text-style button below Request to join in the
 bottom action area, separate from ride results/empty-state messaging. No border,
 fill or shadow; reuse small muted regular text and a minimum 44px tap target.
