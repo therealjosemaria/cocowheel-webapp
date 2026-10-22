@@ -4,6 +4,7 @@ import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import {
   conversationTarget,
   MESSAGE_STARTER,
+  DRIVER_MESSAGE_STARTER,
   type Conversation,
   type ConversationSummary,
 } from "@/lib/messaging-types";
@@ -53,8 +54,7 @@ export default function RideMessages({
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Conversation | null>(null);
   const [draft, setDraft] = useState("");
-  const suggestOnLoad = useRef(false);
-  const draftTouched = useRef(false);
+  const starter = rider ? MESSAGE_STARTER : DRIVER_MESSAGE_STARTER;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState(false);
@@ -82,15 +82,6 @@ export default function RideMessages({
       if (!abort.signal.aborted) {
         setData(result);
         setReadError(false);
-        if (suggestOnLoad.current) {
-          suggestOnLoad.current = false;
-          if (
-            !draftTouched.current &&
-            !result.stopped &&
-            !result.messages.length
-          )
-            setDraft(MESSAGE_STARTER);
-        }
       }
     } catch (reason) {
       if (abort.signal.aborted) return;
@@ -135,8 +126,6 @@ export default function RideMessages({
         (!url.searchParams.has("request") ||
           url.searchParams.get("request") === summary.requestId)
       ) {
-        suggestOnLoad.current = true;
-        setOpen(true);
         url.searchParams.delete("compose");
         window.history.replaceState(window.history.state, "", url);
       }
@@ -151,7 +140,6 @@ export default function RideMessages({
     const initial = setTimeout(follow, 0);
     const clear = () => {
       invalidate();
-      suggestOnLoad.current = false;
       controller.current?.abort();
       setData(null);
       setDraft("");
@@ -320,13 +308,13 @@ export default function RideMessages({
                 <p>Messaging has been stopped. Your ride is unchanged.</p>
               ) : (
                 <form onSubmit={send}>
-                  {rider && !draft && !data?.messages.length ? (
+                  {data && !draft && !data.messages.length ? (
                     <button
                       type="button"
                       className="secondary message-suggestion"
-                      onClick={() => setDraft(MESSAGE_STARTER)}
+                      onClick={() => setDraft(starter)}
                     >
-                      {MESSAGE_STARTER}
+                      {starter}
                     </button>
                   ) : null}
                   <label>
@@ -337,7 +325,6 @@ export default function RideMessages({
                       rows={3}
                       required
                       onChange={(e) => {
-                        draftTouched.current = true;
                         setDraft(e.target.value);
                       }}
                       disabled={busy}

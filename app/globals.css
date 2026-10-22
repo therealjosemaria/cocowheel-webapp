@@ -2185,7 +2185,8 @@ p {
   border-right: 0;
   border-bottom: 0;
 }
-.ride-preview-fields > div:nth-child(odd):has(+ .preview-field-action-wide) {
+.ride-preview-fields > div:nth-child(odd):has(+ .preview-field-action-wide),
+.ride-preview-fields > div:nth-child(odd):has(+ .preview-field-payment) {
   grid-column: 1 / -1;
   border-right: 0;
 }

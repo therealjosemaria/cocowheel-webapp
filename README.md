@@ -75,8 +75,10 @@ conversations stay stopped; historical records and backend compatibility remain.
 See [send-only messaging checks](docs/MESSAGING_SIMPLIFICATION_2026-10-20.md).
 Discovery and public ride previews keep Request to join unchanged, with a quiet
 “You can message the driver after requesting.” hint. Successful requests open
-ride details with messaging expanded and an editable starter for an empty
-conversation; nothing is sent automatically. Normal visits remain collapsed.
+ride details with messaging collapsed, matching normal visits and driver views.
+Opening an empty conversation offers a tap-to-insert editable starter for either
+role; nothing is filled or sent automatically. Explicit unread-message links
+still open the targeted conversation.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details offer “Report a concern via WhatsApp” once below the ride
 details/actions and all driver rider-request/detail cards, not inside conversations.
@@ -417,7 +419,9 @@ for service operations.
   remains full width. Driver details show a minute-only Departure countdown while
   offered/awaiting pickup, hidden after pickup or closure. It reuses discovery's
   schedule wording without extra colours; local ticks do not update the map.
-  Rider/public detail copy retains Leaving around without the Sydney time suffix.
+  Rider/public detail copy retains Leaving around without the Sydney time suffix,
+  now in a Departure cell beside Estimated duration for published/requested rides,
+  rather than floating above messages. Fare follows the timing cells.
 
 - New offers default to In 30 min; In 1 hour is the other departure choice in
   both ordinary Offer and the saved-route shortcut. These are intended departure

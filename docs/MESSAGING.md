@@ -71,16 +71,17 @@ indicators, photos, age or identity-verification claims were added.
 
 The chooser and public preview place the same muted caption above the unchanged
 Request to join button: “You can message the driver after requesting.” No extra
-modal, pre-request chat or How It Works copy. On successful request only, the
-response's request ID is carried to details with `compose=1`: a presentation hint,
-not authorization. The rider's matching conversation opens without scrolling or
-focusing the textarea. History replacement removes the hint so reloads do not
-reopen it. After an authorized read of an empty, unstopped conversation, the draft
-is filled once with “Hi! Where should we meet, and what’s your car’s number plate?”
-Typing or clearing before that response prevents prefilling; polling never
-overwrites edits. Existing conversations are not prefilled. The rider must press
-Send message. Failed requests do not navigate; normal visits and driver views
-retain collapsed behaviour. No new storage, API or database change.
+modal, pre-request chat or How It Works copy. Successful requests carry the
+request ID to details without an auto-open hint. Both roles start collapsed,
+including after requesting; legacy compose=1 links are consumed without opening
+or filling a draft. Explicit unread-message navigation still opens its target.
+After opening and loading an empty, unstopped conversation, either role can tap
+an editable starter: rider “Hi! Where should we meet, and what’s your car’s number
+plate?”; driver “Hi! Where would you like me to pick you up?” Nothing is filled
+or sent automatically; Send message remains explicit. Existing conversations
+have no starter, and polling never overwrites edits. Failed requests do not
+navigate. No new storage, API or database change. This supersedes automatic
+post-request expansion and prefilling described in the original entry checks.
 See [request-entry verification](MESSAGE_ENTRY_CHECK_2026-10-20.md).
 
 Existing visible-page `/api/current` polling (10 seconds) carries unread metadata.
@@ -115,6 +116,30 @@ Signed-in Profile says University email verified for UniKeys; approved exception
 say Email verified. This does not verify student status, identity or licence.
 
 ## Checks and deployment
+
+### Collapsed entry and driver starter — 23 October 2026
+
+Run `npx tsx --test tests/messaging-entry.test.ts` and
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-message-entry.py` against
+the isolated :3090 frontend. Entry checks cover chooser/public preview at
+320/393/1440px: failed request, successful collapsed arrival, explicit starter
+insertion, draft preservation, no auto-send, reload and notification hash opening.
+`scripts/check-driver-departure.py` additionally covers the driver's collapsed
+conversation and pickup starter at 390/1440px, plus explicit hash opening.
+All API responses are mocked and external providers blocked; no production data
+is changed. The older entry script's live-location-age assertion was obsolete
+after acceptance-gated GPS privacy; it failed before reaching messaging and was
+removed from this entry-focused check (GPS has its separate privacy tests).
+Whole rider/driver screens reviewed at phone/desktop sizes for typography,
+spacing and unchanged actions. React review confirmed shared role-based starter
+selection, no additional polling/listeners, and no draft writes during refresh.
+Physical devices and deployed production remain unverified. Frontend-only change;
+no API restart is needed.
+Results: focused unit test, targeted ESLint and production build passed. Both
+browser commands passed, including explicit notification-hash opening for both
+roles and collapsed default/reload. The shared component retains ancestor reveal
+for nested driver requests; this run exercised accepted-driver chat rather than
+the nested pending-request notification path.
 
 The send-only composer and concern-link revision is covered in
 [simplification checks](MESSAGING_SIMPLIFICATION_2026-10-20.md); it needs no API restart.

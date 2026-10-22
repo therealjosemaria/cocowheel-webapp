@@ -16,10 +16,11 @@ export const conversationTarget = (id: string) =>
 
 export const MESSAGE_STARTER =
   "Hi! Where should we meet, and what’s your car’s number plate?";
+export const DRIVER_MESSAGE_STARTER =
+  "Hi! Where would you like me to pick you up?";
 export const REQUEST_MESSAGE_HINT =
   "You can message the driver after requesting.";
 export const requestedRideUrl = (rideId: string, requestId?: string) =>
   `/activity/${encodeURIComponent(rideId)}?${new URLSearchParams({
     ...(requestId ? { request: requestId } : {}),
-    compose: "1",
   })}`;

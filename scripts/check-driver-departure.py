@@ -19,14 +19,19 @@ with sync_playwright() as p:
                   'plannedRoute':{'origin':origin,'destination':end},
                   'pickupEstablished':state['status']=='CO_RIDE_ACTIVE','requests':[]}
             if state['role']=='RIDER':
+                ride['conversations']=[{'requestId':'request','peer':'guest','unread':0,'stopped':False}]
                 ride['request']={'requestId':'request','status':'PENDING','pickup':origin,'destination':end,
                                  'riderAlias':'ride1234','createdAt':departure,'requestedDepartureAt':departure}
+            elif state['status']=='ACCEPTED':
+                ride['requests']=[{'requestId':'request','status':'ACCEPTED','pickup':origin,'destination':end,'riderAlias':'ride1234','requestedDepartureAt':departure}]
+                ride['conversations']=[{'requestId':'request','peer':'ride1234','unread':0,'stopped':False}]
             item={'role':state['role'],'ride':ride}
             if path=='university/session': data={'unikey':'driv1234' if state['role']=='DRIVER' else 'ride1234'}
             elif path=='current': data={'current':item,'currents':[item]}
             elif path=='history': data={'driver':[ride] if state['role']=='DRIVER' else [],'rider':[ride] if state['role']=='RIDER' else []}
             elif path=='search': data={'candidates':[{'rideId':f'colour-{minutes}','driverAlias':f'driver{index}','priceAud':0,'directionFit':'GOOD','redactedCorridor':[origin,end],'expiresAt':'2099-01-01T00:00:00Z','pickupDistanceMeters':0,'destinationDistanceMeters':0,'isOwnOffer':False,'departureLabel':origin['label'],'destinationLabel':end['label'],'scheduledDepartureAt':(datetime.now(timezone.utc)+timedelta(minutes=minutes)).isoformat()} for index,minutes in enumerate([109,5,-109])]}
             elif path=='route-preview': data={'points':[origin,end],'durationSeconds':600}
+            elif '/conversations/' in path: data={'messages':[],'stopped':False}
             elif path.startswith('rides/'): data={'ride':ride,'serverNow':datetime.now(timezone.utc).isoformat()}
             else: data={}
             r.fulfill(json=data)
@@ -60,11 +65,42 @@ with sync_playwright() as p:
             page.reload()
             expect(page.locator('.ride-preview-fields')).to_be_visible()
             expect(page.locator('.preview-driver-departure')).to_have_count(0)
+        state['status']='ACCEPTED'
+        page.reload()
+        chat=page.locator('#messages-request')
+        expect(chat).to_be_visible()
+        expect(chat).not_to_have_attribute('open','')
+        chat.locator('summary').click()
+        suggestion=page.get_by_role('button',name='Hi! Where would you like me to pick you up?',exact=True)
+        expect(suggestion).to_be_visible()
+        suggestion.click()
+        expect(chat.get_by_role('textbox',name='Message',exact=True)).to_have_value('Hi! Where would you like me to pick you up?')
+        page.screenshot(path=f'/tmp/driver-message-starter-{width}.png',full_page=True,animations='disabled')
+        chat.locator('summary').click()
+        expect(chat).not_to_have_attribute('open','')
+        page.evaluate("location.hash = 'messages-request'")
+        expect(chat).to_have_attribute('open','')
+        page.evaluate("history.replaceState(history.state, '', location.pathname)")
         state.update(role='RIDER',status='REQUESTED')
+        departure=(datetime.now(timezone.utc)+timedelta(minutes=30)).isoformat()
         page.reload()
         expect(page.locator('.ride-preview-fields')).to_be_visible()
         expect(page.locator('.preview-driver-departure')).to_have_count(0)
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
+        cell=page.locator('.ride-preview-fields .preview-rider-departure')
+        expect(cell.locator('dt')).to_have_text('Departure')
+        expect(cell.locator('dd')).to_contain_text('Leaving around')
+        expect(page.locator('.ride-preview-summary > .usual-route-hint')).to_have_count(0)
+        expect(page.get_by_text('Messages with guest',exact=False)).to_be_visible()
+        duration=page.locator('.ride-preview-fields > div').filter(has=page.get_by_text('Estimated duration',exact=True))
+        assert abs(cell.bounding_box()['y']-duration.bounding_box()['y'])<1
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        page.screenshot(path=f'/tmp/rider-departure-cell-{width}.png',full_page=True,animations='disabled')
+        for status in ['ACCEPTED','CO_RIDE_ACTIVE','COMPLETED']:
+            state['status']=status
+            page.reload()
+            expect(page.locator('.ride-preview-fields')).to_be_visible()
+            expect(page.locator('.preview-rider-departure')).to_have_count(0)
         page.evaluate('draft => sessionStorage.setItem("cocowheels:find-ride-draft:v1", JSON.stringify({...draft,savedAt:Date.now()}))', {'pickup':origin,'destination':end,'departureAt':None})
         page.goto('http://127.0.0.1:3090/?start=rider')
         for tone,colour in [('scheduled','rgb(22, 101, 52)'),('soon','rgb(133, 77, 14)'),('delayed','rgb(180, 35, 24)')]:

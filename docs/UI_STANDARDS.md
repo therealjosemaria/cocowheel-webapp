@@ -147,8 +147,11 @@ destinations across unrelated sections. Check this boundary on every UI review.
 Request-to-message discovery uses one centred helper line above the existing
 Request to join button (`--text-caption`, `--muted`, `--weight-regular`, 8px
 separation). Preserve the button's label, size and hierarchy. Do not introduce
-another competing action or an explanatory modal. The post-request composer can
-open in place; never auto-scroll, auto-focus or auto-send the suggested draft.
+another competing action or an explanatory modal. Messages start collapsed for
+both roles, including after requesting. Explicit unread-message navigation may
+open its target. After opening an empty conversation, offer the role-specific
+tap-to-insert starter with the shared secondary button; never auto-fill,
+auto-scroll, auto-focus or auto-send the suggested draft.
 
 ### Mutual rating controls (19 October 2026)
 
@@ -239,6 +242,13 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 - Preserve route form values when returning from a preview. Empty destination entry receives focus via either Home or menu navigation; search is explicit, not intrusive autocomplete. Long result lists must scroll without clipping.
 
 ## Ride information
+
+- Rider/public published/requested details put Departure beside Estimated duration,
+  below the identity/endpoints rows and before Fare. Keep Leaving around wording,
+  the shared departure icon and normal cell typography; no floating schedule hint
+  above messages. Existing visibility gates and driver countdown are unchanged.
+  A lone Fare cell before full-width Payment spans both columns, like a lone
+  cell before Action; do not leave an empty half-row.
 
 - Opening a driver pending request estimates an Extra driving cell below Requested,
   alongside Request status. Reuse the clock field icon, label/value typography and

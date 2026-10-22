@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requestedRideUrl, MESSAGE_STARTER } from "../lib/messaging-types";
+import { requestedRideUrl, MESSAGE_STARTER, DRIVER_MESSAGE_STARTER } from "../lib/messaging-types";
 
 test("successful request targets its own conversation without a scroll anchor", () => {
   const url = new URL(
@@ -9,8 +9,9 @@ test("successful request targets its own conversation without a scroll anchor", 
   );
   assert.equal(url.pathname, "/activity/ride%2Fa");
   assert.equal(url.searchParams.get("request"), "request&1");
-  assert.equal(url.searchParams.get("compose"), "1");
+  assert.equal(url.searchParams.has("compose"), false);
   assert.equal(url.hash, "");
   assert.equal(url.searchParams.has("text"), false);
   assert.ok(MESSAGE_STARTER.includes("number plate"));
+  assert.equal(DRIVER_MESSAGE_STARTER, "Hi! Where would you like me to pick you up?");
 });

@@ -23,6 +23,31 @@ matching Home CTA/card width, countdown text, driver/rider gating, pickup and
 completion hiding. Whole-screen Home/driver screenshots visually reviewed on
 mobile and desktop for alignment, spacing, type hierarchy and unchanged controls.
 
+## Rider layout refinement — 23 October 2026
+
+The rider/public Leaving around hint is moved from above messages into a normal
+Departure cell beside Estimated duration, before Fare. Its existing PUBLISHED /
+REQUESTED visibility gate is unchanged; no new countdown, timer or API request.
+Driver layout and countdown remain unchanged. Uses the shared departure icon,
+label/value typography and grid spacing. The existing lone-cell spanning rule
+also covers Fare before full-width Payment, avoiding an empty half-row.
+
+Verification command: the same check-driver-departure.py command above now checks
+the rider cell, timing-row alignment, absence of the old floating hint, overflow
+and hiding in accepted/picked-up/completed states. Results recorded below.
+
+Results: mocked browser checks passed at 390/1440px, including existing driver
+countdown and discovery regressions. Whole rider screens visually reviewed at
+both widths: messages remain first, timing cells align, addresses stay stacked,
+and Fare/actions remain clear without competing emphasis or horizontal overflow.
+Targeted ESLint and production build passed. Initial browser attempt had no local
+server; initial sandbox build could not bind a worker port. Starting the isolated
+server and rerunning the build with that permission resolved these test-environment
+failures. No production APIs were exercised; map tiles were deliberately blocked.
+The subsequent messaging-entry checks also exercised the public-preview request
+flow and paid rider details. Physical devices and production deployment are not
+verified. No backend or service restart is needed.
+
 ## Superseded proposal
 
 Find-a-ride shortcut: Save route & email me matches, with explicit Any day, any

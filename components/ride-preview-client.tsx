@@ -878,9 +878,6 @@ export default function RidePreviewClient({
               />
             ) : null}
             <div className="ride-preview-summary">
-              {!driverOwned && ["PUBLISHED", "REQUESTED"].includes(ride.status) && (
-                <p className="usual-route-hint">{departureLabel(ride.scheduledDepartureAt)}</p>
-              )}
               {privateRide?.conversations
                 ?.filter(
                   (c) =>
@@ -1000,12 +997,6 @@ export default function RidePreviewClient({
                     <dd><DepartureCountdown scheduledAt={ride.scheduledDepartureAt} /></dd>
                   </div>
                 ) : null}
-                <div>
-                  <dt>
-                    <RideFieldLabel icon="price">Fare</RideFieldLabel>
-                  </dt>
-                  <dd>{fareLabel(ride.priceAud)}</dd>
-                </div>
                 {!driverOwned ? (
                   <div>
                     <dt>
@@ -1016,6 +1007,18 @@ export default function RidePreviewClient({
                     <dd>{estimatedDuration}</dd>
                   </div>
                 ) : null}
+                {!driverOwned && ["PUBLISHED", "REQUESTED"].includes(ride.status) ? (
+                  <div className="preview-rider-departure">
+                    <dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt>
+                    <dd>{departureLabel(ride.scheduledDepartureAt)}</dd>
+                  </div>
+                ) : null}
+                <div>
+                  <dt>
+                    <RideFieldLabel icon="price">Fare</RideFieldLabel>
+                  </dt>
+                  <dd>{fareLabel(ride.priceAud)}</dd>
+                </div>
                 {!driverOwned && ride.priceAud > 0 &&
                 (ride.payId ||
                   ride.paymentMethod ||

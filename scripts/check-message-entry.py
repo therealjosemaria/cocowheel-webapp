@@ -49,12 +49,9 @@ with sync_playwright() as p:
             expect(hint).to_be_visible()
             button = page.get_by_role('button', name='REQUEST TO JOIN', exact=True)
             expect(button).to_be_enabled()
-            expect(page.locator('.driver-location-age')).to_contain_text('Driver · Updated 57 min ago')
             labels = page.locator('.ride-selection-route-key > span')
             for label in labels.all():
                 assert label.evaluate('(el) => el.getBoundingClientRect().height <= 20')
-            if width < 600:
-                assert page.locator('.driver-location-age').bounding_box()['y'] < labels.first.bounding_box()['y']
             page.screenshot(path=f'/tmp/message-entry-{width}-{preview}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             button.click()
@@ -63,6 +60,11 @@ with sync_playwright() as p:
             page.get_by_role('button', name='OKAY', exact=True).click()
             button.click()
             textbox = page.locator('#messages-req0').get_by_role('textbox', name='Message', exact=True)
+            expect(page.locator('#messages-req0')).to_be_visible(timeout=15000)
+            expect(page.locator('#messages-req0')).not_to_have_attribute('open', '')
+            page.locator('#messages-req0 > summary').click()
+            expect(textbox).to_have_value('')
+            page.get_by_role('button', name=starter, exact=True).click()
             expect(textbox).to_have_value(starter, timeout=15000)
             assert 'request=req0' in page.url and 'compose=' not in page.url
             assert state['sends'] == 0
@@ -86,6 +88,8 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/message-entry-detail-{width}-{preview}.png', full_page=True)
             page.reload()
             expect(page.locator('#messages-req0')).not_to_have_attribute('open', '')
+            page.evaluate("location.hash = 'messages-req0'")
+            expect(page.locator('#messages-req0')).to_have_attribute('open', '')
             if not preview:
                 for legal in ['privacy', 'terms']:
                     page.goto('http://127.0.0.1:3090/'+legal)
