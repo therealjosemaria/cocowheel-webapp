@@ -50,7 +50,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 - Find's Save route reuses text-button below Request to join, centred with a 4px
   top gap and minimum 44px tap target, no border/fill/shadow, regular small text.
   It remains outside results. Consent/replacement reuse cancel-prompt,
-  regular paragraphs and stacked equal actions. Profile schedule editing reuses
+  left-aligned body text; the Profile note uses small/muted/regular tokens after
+  a single line break, with no extra paragraph gap.
+  Keep regular paragraphs and stacked equal actions. Profile schedule editing reuses
   existing checkbox, weekday and native time controls; no new tokens.
 
 - Home active-ride cards use the same min(100%, 360px) width/centering as CTAs

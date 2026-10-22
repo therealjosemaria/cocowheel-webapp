@@ -3051,4 +3051,5 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
   box-shadow: none;
   font-weight: var(--weight-regular);
 }
-.save-route-prompt > p { text-align: center; }
+.save-route-prompt > p { text-align: left; }
+.save-route-profile-note { font-size: var(--text-small); color: var(--muted); font-weight: var(--weight-regular); }

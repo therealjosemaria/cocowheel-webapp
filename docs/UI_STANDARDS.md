@@ -11,10 +11,11 @@ Same addresses become disabled Route saved on that
 button, not a new toast. Different saved addresses require “Replace your saved
 route?” with Replace / Cancel. Saving stays in Find; no Profile navigation.
 If alerts are off and delivery available, follow successful save with “Would you
-like to get notified about matching rides?” and “Receive emails when matching
-rides become available.” Then a single line break, not a paragraph gap, before
-“Change this anytime in Profile.” Centre paragraphs in both save-route modals
-only. Use Notify me / Not now in the shared modal shell.
+like to receive emails when matching rides become available?” Then a single line
+break, not a paragraph gap, before “Change this anytime in Profile.” Use small,
+muted regular helper text for that secondary guidance. Both save-route modals
+are left-aligned, superseding the centred experiment. Use Notify me / Not now
+in the shared modal shell.
 Not now/Escape preserves the saved route and leaves emails off. Already-enabled
 alerts skip consent. No permanent email helper text beside Save route.
 Profile's Edit schedule uses existing day/time/checkbox/button tokens and no

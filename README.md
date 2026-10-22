@@ -26,8 +26,10 @@ from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
 riders opt into matching emails for any day/time or selected days and one
 Sydney-time ±1-hour window. Find a ride offers a quiet Save route text button below
 Request to join in the bottom action area, outside ride results. It saves addresses in place, asks before replacement, then
-offers Notify me / Not now for explicit email consent. Existing schedules,
-payment preferences and email choices are preserved; stale replacement writes
+offers Notify me / Not now for explicit email consent.
+The consent question explicitly asks about emails; its Profile note is smaller
+and muted on the next line. Both save-route modal messages are left-aligned.
+Existing schedules, payment preferences and email choices are preserved; stale replacement writes
 are rejected. Profile supports Edit schedule without retyping addresses.
 See [save-route checks](docs/SAVE_SEARCH_ROUTE_2026-10-22.md).
 Save-route API activated from `cc021be` at 14:50:59 AEDT on 22 October 2026

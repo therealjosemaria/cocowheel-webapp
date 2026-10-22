@@ -12,6 +12,14 @@ Visual review caught map controls overlapping prompts after the move into the
 sticky action bar; body portals resolved it and the flow was retested. No backend
 changes or production data writes. Live deployment is not verified by these checks.
 
+Copy refinement after `b96f12f`: restored left alignment, combined the email
+question and made the Profile note small/muted regular text on the next line.
+Lint/build passed. Mocked browser flow passed at 320/390/844/1440px, including
+left alignment, 14px muted note, single line break and body portal assertions.
+Mobile/desktop consent screenshots visually reviewed. Initial browser attempt
+could not connect because the local test server was stopped; restarting only
+that isolated server resolved it. Production was not restarted or modified.
+
 - A quiet centred Save route text button below Request to join, independent
   of available/empty results. No tab change or inferred weekday/time.
 - Existing identical addresses: Route saved on the same disabled button; no
@@ -20,7 +28,7 @@ changes or production data writes. Live deployment is not verified by these chec
   Cancellation keeps the old route. Replacement changes addresses only, retaining
   schedule, payment and email preferences. Profile edits need no such confirmation.
 - New routes use explicit anyTime mode, free fare and emails off. Successful saves
-  with emails off offer Would you like to get notified about matching rides? / Notify me / Not now.
+  with emails off offer Would you like to receive emails when matching rides become available? / Notify me / Not now.
   Copy explains email delivery and that preferences can be changed in Profile.
   Dismissing, Escape or Not now leaves the route saved, emails off and user in Find.
   Already-enabled alerts skip the prompt. Previously disabled alerts require
@@ -30,8 +38,9 @@ changes or production data writes. Live deployment is not verified by these chec
   automatically under another identity. Errors reuse the existing Message modal.
   Save-route prompts and errors render through a body portal so the sticky bottom
   action area's stacking context cannot put map controls above the overlay.
-  Both prompt messages are centred. The email explanation and Profile note are
-  separated by a single line break, not a paragraph gap. No saving/consent API
+  Both prompt messages are left-aligned (superseding the centred experiment).
+  The single email-consent question and small/muted Profile note are separated
+  by a single line break, not a paragraph gap. No saving/consent API
   behaviour changes; text-button retains a minimum 44px tap target.
 - Profile Edit schedule keeps addresses/payment/consent and supports any day/time
   or selected weekdays and one Sydney ±60-minute window. Existing legacy records

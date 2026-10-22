@@ -42,11 +42,13 @@ with sync_playwright() as p:
             expect(page.get_by_role('button',name='Save route',exact=True)).to_be_visible()
         find()
         page.get_by_role('button',name='Save route',exact=True).click()
-        dialog=page.get_by_role('dialog',name='Would you like to get notified about matching rides?')
+        dialog=page.get_by_role('dialog',name='Would you like to receive emails when matching rides become available?')
         expect(dialog).to_be_visible()
         assert dialog.evaluate("el => el.parentElement.parentElement === document.body")
-        expect(dialog.locator('p').first).to_have_css('text-align','center')
-        assert dialog.locator('p').nth(1).locator('br').count()==1
+        expect(dialog.locator('p').first).to_have_css('text-align','left')
+        assert dialog.locator('p').first.locator('br').count()==1
+        expect(dialog.locator('.save-route-profile-note')).to_have_css('font-size','14px')
+        expect(dialog.locator('.save-route-profile-note')).to_have_css('color','rgb(100, 116, 139)')
         assert state['saved']['alerts'] is False
         expect(dialog.get_by_role('button',name='Notify me',exact=True)).to_be_focused()
         page.screenshot(path=f'/tmp/save-route-consent-{width}.png',full_page=True)

@@ -174,23 +174,20 @@ function SaveRoutePrompt({
         aria-modal="true"
         aria-label={
           notify
-            ? "Would you like to get notified about matching rides?"
+            ? "Would you like to receive emails when matching rides become available?"
             : "Replace your saved route?"
         }
         className="cancel-prompt save-route-prompt"
       >
         <p>
           {notify
-            ? "Would you like to get notified about matching rides?"
+            ? "Would you like to receive emails when matching rides become available?"
             : "Replace your saved route?"}
-        </p>
-        {notify && (
-          <p>
-            Receive emails when matching rides become available.
+          {notify && <>
             <br />
-            Change this anytime in Profile.
-          </p>
-        )}
+            <span className="save-route-profile-note">Change this anytime in Profile.</span>
+          </>}
+        </p>
         <div className="cancel-prompt-actions">
           <button
             type="button"
