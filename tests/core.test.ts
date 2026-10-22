@@ -32,6 +32,7 @@ import {
   renewPickupCode,
   searchRides,
   submitLocation,
+  locationSource,
 } from "../server/core";
 
 function harness() {
@@ -130,113 +131,54 @@ const driverInput = {
   payIdType: "EMAIL" as const,
 };
 
-test("published drivers can move while offers remain requestable and public locations age", () => {
+test("driver GPS starts at acceptance and is private to the accepted rider", () => {
   const h = harness();
   try {
     const published = publishRide(h.db, null, driverInput, baseTime);
-    const later = new Date(baseTime.getTime() + 1000);
-    const fix = {
-      latitude: -33.85,
-      longitude: 151.25,
-      accuracyMeters: 10,
-      capturedAt: later.toISOString(),
-      moving: true,
-    };
-    submitLocation(
-      h.db,
-      published.sessionToken,
-      published.ride.rideId,
-      fix,
-      later,
-    );
-    const preview = publicRidePreview(h.db, published.ride.rideId, later);
-    assert.equal(preview.status, "PUBLISHED");
-    assert.equal(
-      preview.plannedRoute.origin.latitude,
-      driverInput.origin.latitude,
-    );
-    assert.equal(preview.driverLocation?.latitude, fix.latitude);
-    assert.equal(preview.driverLocation?.stale, false);
-    assert.equal(
-      publicRidePreview(
-        h.db,
-        published.ride.rideId,
-        new Date(later.getTime() + 31000),
-      ).driverLocation?.stale,
-      true,
-    );
-    const stranger = createGuestSession(h.db, later);
-    assert.throws(
-      () =>
-        submitLocation(h.db, stranger.token, published.ride.rideId, fix, later),
-      /RIDE_ACCESS_DENIED/,
-    );
-    const requested = requestRide(
-      h.db,
-      stranger.token,
-      published.ride.rideId,
-      { ...riderInput, pickup: { latitude: -34.1, longitude: 151.1 } },
-      later,
-    );
-    assert.equal(requested.ride.request?.status, "PENDING");
-    assert.equal(requested.ride.request?.directionFit, "POOR");
-    assert.throws(
-      () =>
-        submitLocation(h.db, stranger.token, published.ride.rideId, fix, later),
-      /RIDE_ACCESS_DENIED/,
-    );
-    // Late/out-of-order captures must not overwrite a newer position.
-    submitLocation(
-      h.db,
-      published.sessionToken,
-      published.ride.rideId,
-      { ...fix, latitude: -34, capturedAt: baseTime.toISOString() },
-      later,
-    );
-    assert.equal(
-      publicRidePreview(h.db, published.ride.rideId, later).driverLocation
-        ?.latitude,
-      fix.latitude,
-    );
-    const stationaryTime = new Date(later.getTime() + 2000);
-    submitLocation(
-      h.db,
-      published.sessionToken,
-      published.ride.rideId,
-      { ...fix, moving: false, capturedAt: stationaryTime.toISOString() },
-      stationaryTime,
-    );
-    assert.equal(
-      publicRidePreview(
-        h.db,
-        published.ride.rideId,
-        new Date(stationaryTime.getTime() + 31000),
-      ).driverLocation?.stale,
-      false,
-    );
-    assert.equal(
-      publicRidePreview(
-        h.db,
-        published.ride.rideId,
-        new Date(stationaryTime.getTime() + 61000),
-      ).driverLocation?.stale,
-      true,
-    );
-    const expiredTime = new Date(baseTime.getTime() + 6 * 3600000 + 1);
-    assert.throws(
-      () =>
-        submitLocation(
-          h.db,
-          published.sessionToken,
-          published.ride.rideId,
-          { ...fix, capturedAt: expiredTime.toISOString() },
-          expiredTime,
-        ),
-      /LOCATION_NOT_ALLOWED/,
-    );
-  } finally {
-    h.close();
-  }
+    const id = published.ride.rideId;
+    const driver = findSession(h.db, published.sessionToken, baseTime)!;
+    const rider = createGuestSession(h.db, baseTime);
+    const other = createGuestSession(h.db, baseTime);
+    const fix = { latitude: -33.85, longitude: 151.25, accuracyMeters: 10,
+      capturedAt: baseTime.toISOString(), moving: true };
+    assert.throws(() => submitLocation(h.db, published.sessionToken, id, fix, baseTime), /LOCATION_NOT_ALLOWED/);
+    assert.throws(() => locationSource(h.db, published.sessionToken, id, true, baseTime), /LOCATION_NOT_ALLOWED/);
+    // Simulate a position retained from the old published-tracking behavior.
+    h.db.prepare("INSERT INTO live_locations (ride_id, participant, latitude, longitude, accuracy_meters, captured_at, received_at, moving) VALUES (?, 'DRIVER', ?, ?, 10, ?, ?, 1)")
+      .run((h.db.prepare("SELECT id FROM rides WHERE public_id = ?").get(id) as { id: string }).id,
+        fix.latitude, fix.longitude, fix.capturedAt, fix.capturedAt);
+    assert.equal(publicRidePreview(h.db, id, baseTime).driverLocation, undefined);
+    assert.equal(searchRides(h.db, riderInput, baseTime)[0].driverLocation, undefined);
+    assert.equal(getRide(h.db, id, driver, baseTime).driverLocation, undefined);
+    const pending = requestRide(h.db, rider.token, id, riderInput, baseTime);
+    const rejected = requestRide(h.db, other.token, id, riderInput, baseTime);
+    assert.equal(pending.ride.driverLocation, undefined);
+    assert.equal(publicRidePreview(h.db, id, baseTime).driverLocation, undefined);
+    assert.throws(() => submitLocation(h.db, published.sessionToken, id, fix, baseTime), /LOCATION_NOT_ALLOWED/);
+    const acceptedAt = new Date(baseTime.getTime() + 1000);
+    decideRequest(h.db, published.sessionToken, id, pending.ride.request!.requestId, "ACCEPT", acceptedAt);
+    assert.equal(getRide(h.db, id, rider.session, acceptedAt).driverLocation, undefined);
+    assert.throws(() => submitLocation(h.db, published.sessionToken, id, fix, acceptedAt), /LOCATION_NOT_ALLOWED/);
+    const fresh = { ...fix, capturedAt: acceptedAt.toISOString() };
+    submitLocation(h.db, published.sessionToken, id, fresh, acceptedAt);
+    assert.equal(getRide(h.db, id, rider.session, acceptedAt).driverLocation?.latitude, fix.latitude);
+    assert.equal(getRide(h.db, id, driver, acceptedAt).driverLocation?.latitude, fix.latitude);
+    assert.equal(getRide(h.db, id, other.session, acceptedAt, rejected.ride.request!.requestId).driverLocation, undefined);
+    assert.throws(() => submitLocation(h.db, other.token, id, fresh, acceptedAt), /RIDE_ACCESS_DENIED/);
+    assert.throws(() => publicRidePreview(h.db, id, acceptedAt), /RIDE_UNAVAILABLE/);
+    assert.equal(searchRides(h.db, riderInput, acceptedAt).length, 0);
+    const later = new Date(acceptedAt.getTime() + 31000);
+    assert.equal(getRide(h.db, id, rider.session, later).driverLocation?.stale, true);
+    const stationaryAt = new Date(acceptedAt.getTime() + 2000);
+    submitLocation(h.db, published.sessionToken, id, { ...fresh, moving: false, capturedAt: stationaryAt.toISOString() }, stationaryAt);
+    submitLocation(h.db, published.sessionToken, id, { ...fresh, latitude: -34 }, stationaryAt);
+    assert.equal(getRide(h.db, id, rider.session, stationaryAt).driverLocation?.latitude, fix.latitude);
+    assert.equal(getRide(h.db, id, rider.session, later).driverLocation?.stale, false);
+    assert.equal(getRide(h.db, id, rider.session, new Date(stationaryAt.getTime() + 61000)).driverLocation?.stale, true);
+    cancelRide(h.db, published.sessionToken, id, later);
+    assert.equal(getRide(h.db, id, rider.session, later).driverLocation, undefined);
+    assert.throws(() => submitLocation(h.db, published.sessionToken, id, { ...fresh, capturedAt: later.toISOString() }, later), /LOCATION_NOT_ALLOWED/);
+  } finally { h.close(); }
 });
 
 test("publishing rejects invalid payment inputs and treats SQL-like text as data", () => {
@@ -316,6 +258,26 @@ const riderInput = {
   },
   requestedDepartureAt: departure,
 };
+
+test("future offers are discoverable and requestable now without bypassing ownership or expiry", () => {
+  const h = harness();
+  try {
+    const scheduledDepartureAt = new Date(baseTime.getTime() + 3600000).toISOString();
+    const published = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt }, baseTime);
+    const search = { ...riderInput, requestedDepartureAt: baseTime.toISOString() };
+    const candidates = searchRides(h.db, search, baseTime, published.sessionToken);
+    assert.equal(candidates.length, 1);
+    assert.equal(candidates[0].isOwnOffer, true);
+    assert.equal(candidates[0].directionFit, "GOOD");
+    assert.throws(() => requestRide(h.db, published.sessionToken, published.ride.rideId, search, baseTime), /OWN_RIDE_JOIN_NOT_ALLOWED/);
+    const joined = requestRide(h.db, null, published.ride.rideId, search, baseTime);
+    assert.equal(joined.ride.request?.status, "PENDING");
+    assert.equal(joined.ride.request?.requestedDepartureAt, scheduledDepartureAt);
+    const expired = new Date(baseTime.getTime() + 7 * 3600000 + 1);
+    assert.equal(searchRides(h.db, { ...search, requestedDepartureAt: expired.toISOString() }, expired).length, 0);
+    assert.throws(() => requestRide(h.db, null, published.ride.rideId, search, expired), /RIDE_UNAVAILABLE/);
+  } finally { h.close(); }
+});
 
 test("retiring samples preserves history and real offers, rejects joins, and is idempotent", () => {
   const h = harness();

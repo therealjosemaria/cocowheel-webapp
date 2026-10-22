@@ -199,6 +199,10 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 - Acceptance issues the rider's four-digit pickup code. Only the driver verifies it. Before verification, riders may see the PayID preference but not private PayID values/types. Server responses enforce this, not CSS. Paid offers require PayID (Mobile, Email or Other/ABN); free offers do not store or reveal payment details. There is no new cash option. Historical cash records are retained.
 - Either participant can cancel. Complete is hidden and server-blocked until the driver verifies the pickup code; no override bypasses this. After verification, either participant can complete. A fresh accurate position from either device near rider drop-off avoids an arrival warning; otherwise a concise confirmation permits completion. Completion does not verify payment.
 - Accepted-trip GPS alternates device slots with single-device fallback; browsers must be open/available. Always retain actual capture age rather than imply stale GPS is live.
+- Published/requested offers show fixed route endpoints, not live driver GPS or
+  a driver-updated timestamp. Begin live collection only after acceptance; only
+  the accepted rider sees the driver's live position. Enforce on server responses
+  and writes, not just map visibility. Public previews defensively ignore GPS.
 - Keep completed, cancelled, expired, declined and withdrawn history. Ordinary offers last six hours; test samples renew on 24-hour cycles. Never delete history just because an offer expires.
 
 ## Current fit calculation — limitations are intentional to document
@@ -207,7 +211,9 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 1. Rider pickup is at most 1,500 metres from the straight-line segment between the driver's original origin and destination.
 2. Rider destination is at most 2,500 metres from that same segment.
-3. Requested departure is on/after the driver's scheduled departure and on/before offer expiry (inclusive).
+3. Requested departure is on/before offer expiry (inclusive). A rider may request
+   a future offer now; the stored requested time is no earlier than the driver's
+   scheduled departure. This supersedes the former lower-bound timing rejection.
 
 Otherwise it assigns POOR. This is a coarse geometric/time heuristic. It does **not** compare road polylines, traffic, real detour distance/time, pickup-before-drop-off order, or the driver's latest GPS. Reversed journeys or geographic barriers can therefore be misclassified. Do not describe GOOD as guaranteed compatibility or POOR as impossible. Road-following map geometry is separate. Changing these thresholds or the algorithm needs an explicit product decision and tests.
 

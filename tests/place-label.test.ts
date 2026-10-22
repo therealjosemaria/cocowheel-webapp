@@ -117,8 +117,18 @@ test("destination search biases place suggestions toward pickup", async () => {
   assert.ok(requested);
   assert.equal(
     requested.searchParams.get("bias"),
-    "proximity:151.2093,-33.8688",
+    "proximity:151.2093,-33.8688|countrycode:au",
   );
-  assert.equal(requested.searchParams.get("filter"), "countrycode:au");
+  assert.equal(requested.searchParams.has("filter"), false);
   assert.equal(requested.searchParams.get("limit"), "10");
+});
+
+test("search returns another country's result and country metadata without a hard filter", async () => {
+  const places = await searchPlaces("Sydney Australia", { latitude: 40, longitude: -74 }, "us", "test", async (input) => {
+    const url = new URL(input);
+    assert.equal(url.searchParams.has("filter"), false);
+    assert.equal(url.searchParams.get("bias"), "proximity:-74,40|countrycode:us");
+    return Response.json({ results: [{ lat: -33.86, lon: 151.2, formatted: "Sydney, Australia", country_code: "AU" }] });
+  });
+  assert.deepEqual(places, [{ latitude: -33.86, longitude: 151.2, label: "Sydney, Australia", countryCode: "au" }]);
 });

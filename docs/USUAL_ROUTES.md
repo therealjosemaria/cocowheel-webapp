@@ -11,7 +11,10 @@ scope and activation status; code presence is not verified deployment.
 - One private saved route per verified principal, across browsers. Saving does
   not reserve a ride, publish automatically or change the one-active-role rule.
 - Origin and destination are explicitly chosen from the existing place search.
-  The pilot filters new searches to Australia and biases destination by origin.
+  The pilot initially prefers Australia without a hard country filter. Destination
+  biases toward origin; other fields use the last selected coordinates/country
+  across Profile/Offer/Find (same-tab session storage, 30-minute expiry).
+  Selecting another country replaces that preference; no state/city boundary.
   RouteFields is shared with ordinary Offer/Find. Entry focuses the first empty
   address once, with Where from?/Where to? placeholders. A same-tab sessionStorage
   draft keyed by authenticated UniKey restores unfinished address text, selected
@@ -47,6 +50,9 @@ scope and activation status; code presence is not verified deployment.
   Discovery estimates include the remaining planned departure delay. The preview
   suppresses the live pickup-time badge before a future offer's departure rather
   than imply the driver is already approaching. Times remain estimates.
+  Future available offers appear in search immediately and can be requested now;
+  requests store the later of rider time and planned departure. Acceptance/pickup
+  remain explicit. Existing availability, self-join and expiry rules still apply.
 - Replace saved route soft-disables it and pending alerts, with the standard
   destructive confirmation. Existing offered/requested/completed rides stay
   unchanged. Configuration can be overwritten on subsequent save; trip history

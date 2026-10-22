@@ -204,7 +204,9 @@ Inbox verification proves mailbox access, not enrolment, identity or driver fitn
   `test` is not an accepted alias. Neither identity bypasses verification.
 - Only verified `jmos0905` accesses admin, with no second password. Page visibility
   alone is not security: admin API authorization is enforced too.
-- Public discovery reveals driver route/location information needed for comparison.
+- Public discovery reveals the planned driver route, never live driver GPS.
+  Live tracking begins after acceptance and is shared only with that accepted
+  rider and the driver; pending/discarded requesters receive no driver GPS.
   Rider request data is participant-scoped. Do not claim all driver GPS is private.
 - PayID identifiers are withheld from riders until pickup confirmation; before
   pairing they see payment preference and a locked-details explanation.
@@ -220,6 +222,9 @@ UI wording must not be used as a server permission check.
 1. Driver offers origin/destination, free by default, or a fixed AUD contribution
    with PayID preference/details. Existing offers retain their agreed fare.
 2. Riders request to join. Poor fit is advisory, with confirmation rather than a block.
+   Unexpired future offers are discoverable before departure. Joining now records
+   the later of the requested time and the driver's intended departure; it does
+   not start the ride. Self-joining remains prohibited.
 3. Driver may compare multiple pending requests but accepts one atomically; competing
    requests become discarded. UI moves from **Request pending** to **Awaiting pickup**.
 4. Rider shares the four-digit pickup code; driver enters it. Pairing releases PayID
@@ -240,6 +245,7 @@ UI wording must not be used as a server permission check.
 | Email login code | Ten minutes, five guesses |
 | Verified login session | 30 days |
 | Profile unfinished route | Account-scoped, same-tab draft; 30-minute restore window; cleared on successful save |
+| Shared search location | Last selected coordinates/country, same-tab session storage, 30 minutes; soft search preference only |
 | Browser country preference | Seven days |
 | Find-a-ride saved search draft | 30 minutes |
 | Server reverse-label / road-route caches | Seven days; capped at 2,000 labels / 250 routes |
@@ -257,6 +263,12 @@ yes/no. This proximity check logs and does not block pairing.
 
 See [LOCATION_OWNERSHIP.md](docs/LOCATION_OWNERSHIP.md) for the full contract.
 
+- Both roles collect live fixes only in ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE.
+  Published/requested offers reject location submissions and source claims on
+  the API. Public search/preview omit GPS, including old retained fixes. Fixes
+  captured before acceptance are not exposed or accepted as new updates.
+  Planned route endpoints remain public; explicit saved-route origin lookup is
+  a separate one-off action, not continuous tracking. See [privacy checks](docs/GPS_PRIVACY_2026-10-22.md).
 - Tracking runs while the page is visible; background/closed-browser GPS is not
   guaranteed. Show last-update age instead of presenting stale data as live.
 - Before journey scheduling, stationary sends are throttled to roughly 60 seconds,
@@ -288,9 +300,15 @@ See [API failure handling and endpoint inventory](docs/API_FAILURES.md) for exac
 classification, recovery, write uncertainty and verification scope.
 
 Geoapify handles forward search, reverse labels and road routing; credentials stay
-server-side. Search uses available country filtering and proximity bias and is
+server-side. Search uses country and proximity preferences, not hard borders, and is
 explicitly triggered, not submitted on each keystroke. Provider failure may return
 an empty search result; do not interpret this as proof that no place exists.
+Profile/Offer/Find share the last selected search coordinates and country for
+30 minutes in the same tab. Destination prefers its selected origin; other fields
+use the remembered location, with Australia as the initial country preference.
+Results retain provider ranking, may cross states/countries, and selecting a
+different country updates the preference. No city/state exclusion or exact
+state-first ranking is promised. See [correction checks](docs/DISCOVERY_LOCATION_2026-10-22.md).
 
 Reverse labels and routes use the SQLite cache described above. Typed place search
 does not automatically share that cache. Browser session caches also reuse previews;
@@ -514,7 +532,7 @@ navigation beneath copyright, on mobile and desktop. Both use the shared
 capture, account gate or tracking. Home's minimum hero height reserves the
 additional footer-link row. The main menu is unchanged.
 
-Copy describes the current pilot: visible UniKeys and published driver locations,
+Copy describes the current pilot: visible UniKeys and published route endpoints,
 participant-scoped requests, PayID disclosure after pairing, retained pickup
 snapshots/history, browser caches, provider processing, direct payments, and
 synthetic rides. It does not promise current-enrolment checks, automatic account

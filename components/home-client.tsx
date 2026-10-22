@@ -17,7 +17,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CancelPrompt from "./cancel-prompt";
 import PoorFitPrompt from "./poor-fit-prompt";
 import CopyPayId from "./copy-payid";
-import LocationAge from "./location-age";
 import { payIdInputError } from "@/lib/input-validation";
 import {
   ApiError,
@@ -1147,7 +1146,7 @@ function RideSelection({
   const estimateKey = visibleCandidates
     .map(
       (candidate) =>
-        `${candidate.rideId}:${candidate.driverLocation ? `${candidate.driverLocation.latitude.toFixed(3)}:${candidate.driverLocation.longitude.toFixed(3)}` : "origin"}`,
+        `${candidate.rideId}:origin`,
     )
     .join("|");
   useEffect(() => {
@@ -1164,7 +1163,7 @@ function RideSelection({
           {
             method: "POST",
             body: JSON.stringify({
-              origin: candidate.driverLocation ?? ride.plannedRoute.origin,
+              origin: ride.plannedRoute.origin,
               destination: pickup,
             }),
           },
@@ -1215,7 +1214,7 @@ function RideSelection({
   const mapPins = [
     ...(visibleDriverRoute
       ? [
-          selectedCandidate?.driverLocation ?? visibleDriverRoute.origin,
+          visibleDriverRoute.origin,
           visibleDriverRoute.destination,
         ]
       : []),
@@ -1292,9 +1291,6 @@ function RideSelection({
         </button>
       </div>
       <div className="ride-selection-route-key" aria-label="Map route colours">
-        {selectedCandidate ? (
-          <LocationAge location={selectedCandidate.driverLocation} />
-        ) : null}
         <span>
           <i className="ride-selection-route-rider" aria-hidden="true" />
           Your route

@@ -43,12 +43,9 @@ export default function LocationTracker() {
           }>;
         }>("/api/current");
         const current = currents.find(
-          ({ role, ride }) =>
+          ({ ride }) =>
             !ride.isSample &&
-            (role === "DRIVER" ||
-              ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
-                ride.status,
-              )),
+            ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status),
         );
         if (!current || stopped) {
           currentId = "";

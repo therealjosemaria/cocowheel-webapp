@@ -751,7 +751,6 @@ export function createApiServer(
         const currents = currentOpenRides(database, token).map((current) => ({
           ...current,
           locationSource:
-            current.role === "DRIVER" ||
             ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(
               current.ride.status,
             )

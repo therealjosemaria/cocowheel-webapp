@@ -82,7 +82,8 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
   return {
     rideId: ride.rideId,
     isSample: ride.isSample,
-    driverLocation: ride.driverLocation,
+    driverLocation: ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status)
+      ? ride.driverLocation : undefined,
     driverAlias: ride.driverAlias,
     driverRating: ride.driverRating,
     priceAud: ride.priceAud,
@@ -249,7 +250,7 @@ export default function RidePreviewClient({
   const privateRide = participantRide ?? activityRide;
   const [previewClock, setPreviewClock] = useState(() => Date.now());
   const ride = useMemo<PreviewRide | null>(() => {
-    if (!privateRide) return publicRide;
+    if (!privateRide) return publicRide ? { ...publicRide, driverLocation: undefined } : null;
     const next = previewFromActivity(privateRide);
     if (privateRide.pickupEstablished && privateRide.tracking?.location)
       next.driverLocation = privateRide.tracking.location;

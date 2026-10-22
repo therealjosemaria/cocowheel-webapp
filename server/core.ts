@@ -776,10 +776,9 @@ function directionFit(row: RideRow, input: SearchInput) {
     origin,
     destination,
   );
-  const scheduled = validDate(row.scheduled_departure_at).getTime();
   const requested = validDate(input.requestedDepartureAt).getTime();
+  // A rider ready now may wait for a future offer; expiry is still a hard bound.
   const timingCompatible =
-    requested >= scheduled &&
     requested <= new Date(rideOfferExpiryAt(row)).getTime();
   return {
     pickupDistanceMeters,
@@ -1085,9 +1084,9 @@ export function searchRides(
     throw new Error("INVALID_REQUEST_TIME");
   const rows = db
     .prepare(
-      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED') AND scheduled_departure_at <= ? ORDER BY scheduled_departure_at ASC LIMIT 50",
+      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
-    .all(iso(new Date(requested.getTime() + 1))) as RideRow[];
+    .all() as RideRow[];
   const session = rawSessionToken
     ? findSession(db, rawSessionToken, now)
     : null;
@@ -1104,7 +1103,6 @@ export function searchRides(
       return {
         rideId: row.public_id,
         isSample: Boolean(row.is_sample),
-        driverLocation: locationFor(db, row.id, "DRIVER", now),
         driverAlias: row.driver_alias,
         driverRating: row.is_sample
           ? null
@@ -1227,7 +1225,6 @@ export function publicRidePreview(
     plannedRoute: { origin, destination },
     paymentMethod: ride.price_aud === 0 ? undefined : ride.driver_payid ? "PAYID" : "CASH",
     isSample: Boolean(ride.is_sample),
-    driverLocation: locationFor(db, ride.id, "DRIVER", now),
   };
 }
 
@@ -1279,7 +1276,7 @@ export function requestRide(
       input.destination.latitude,
       input.destination.longitude,
       cleanOptional(input.destination.label, 160, "INVALID_DESTINATION_LABEL"),
-      requestedAt.toISOString(),
+      new Date(Math.max(requestedAt.getTime(), Date.parse(ride.scheduled_departure_at))).toISOString(),
       timestamp,
     );
     db.prepare(
@@ -1607,7 +1604,7 @@ function locationFor(
 ): PublicLocation | undefined {
   const row = db
     .prepare(
-      "SELECT participant, latitude, longitude, accuracy_meters, captured_at, received_at, moving FROM live_locations WHERE ride_id = ? AND participant = ?",
+      "SELECT participant, latitude, longitude, accuracy_meters, captured_at, received_at, moving FROM live_locations WHERE ride_id = ? AND participant = ? AND captured_at >= (SELECT accepted_at FROM rides WHERE id = live_locations.ride_id)",
     )
     .get(rideId, participant) as LocationRow | undefined;
   if (!row) return undefined;
@@ -1639,8 +1636,6 @@ export function locationSource(
   if (
     !ride ||
     ![
-      "PUBLISHED",
-      "REQUESTED",
       "ACCEPTED",
       "RIDE_ACTIVE",
       "CO_RIDE_ACTIVE",
@@ -1691,8 +1686,6 @@ export function submitLocation(
   if (
     !ride ||
     ![
-      "PUBLISHED",
-      "REQUESTED",
       "ACCEPTED",
       "RIDE_ACTIVE",
       "CO_RIDE_ACTIVE",
@@ -1721,6 +1714,8 @@ export function submitLocation(
     throw new Error("LOCATION_ACCURACY_REJECTED");
   if (Math.abs(now.getTime() - captured.getTime()) > LOCATION_FRESH_MS)
     throw new Error("LOCATION_STALE");
+  if (!ride.accepted_at || captured.getTime() < Date.parse(ride.accepted_at))
+    throw new Error("LOCATION_NOT_ALLOWED");
   db.transaction(() => {
     const previous = locationFor(db, ride.id, participant, now);
     // Sample drivers use ephemeral server-only tokens, never browser tracking.
@@ -2023,9 +2018,9 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
   return {
     rideId: row.public_id,
     isSample: Boolean(row.is_sample),
-    driverLocation: terminal(row.status)
-      ? undefined
-      : locationFor(db, row.id, "DRIVER", now),
+    driverLocation: ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(row.status)
+      ? locationFor(db, row.id, "DRIVER", now)
+      : undefined,
     status: row.status,
     driverAlias: row.driver_alias,
     driverRating: row.is_sample
@@ -2105,6 +2100,7 @@ function riderView(
   now: Date,
 ): RideView {
   const canSeePartner =
+    request.id === row.accepted_request_id &&
     request.status === "ACCEPTED" &&
     ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE", "COMPLETED"].includes(
       row.status,
@@ -2142,8 +2138,7 @@ function riderView(
       },
     },
     driverLocation:
-      ["PUBLISHED", "REQUESTED"].includes(row.status) ||
-      (canSeePartner && !terminal(row.status))
+      canSeePartner && !terminal(row.status)
         ? locationFor(db, row.id, "DRIVER", now)
         : undefined,
     riderLocation: canSeePartner

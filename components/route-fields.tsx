@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
+import { searchLocation, rememberSearchLocation } from "@/lib/search-location";
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
@@ -128,6 +129,9 @@ export function PlaceSearch({
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus, selectOnFocus]);
   const search = () => {
+    const previous = searchLocation();
+    const preferredLocation = bias ?? previous;
+    const preferredCountry = bias?.countryCode ?? previous?.countryCode ?? countryCode;
     const generation = ++searchGeneration.current;
     inputRef.current?.setCustomValidity(searchInputError(text) ?? "");
     if (!inputRef.current?.reportValidity()) return;
@@ -139,8 +143,8 @@ export function PlaceSearch({
       method: "POST",
       body: JSON.stringify({
         text,
-        ...(bias ? { bias: canonicalPin(bias) } : {}),
-        ...(countryCode ? { countryCode } : {}),
+        ...(preferredLocation ? { bias: canonicalPin(preferredLocation) } : {}),
+        ...(preferredCountry ? { countryCode: preferredCountry } : {}),
       }),
     })
       .then((result) => {
@@ -217,6 +221,7 @@ export function PlaceSearch({
               key={`${place.latitude}:${place.longitude}`}
               onClick={() => {
                 ++searchGeneration.current;
+                rememberSearchLocation(place);
                 choose(place);
                 setText(place.label ?? "");
                 setPlaces([]);

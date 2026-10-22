@@ -311,6 +311,31 @@ test("location source stays with one browser per participant until explicitly sw
       accuracyMeters: 10,
       capturedAt: now.toISOString(),
     };
+    assert.throws(() => locationSource(db, driverA.token, ride.rideId, true, now), /LOCATION_NOT_ALLOWED/);
+    const requested = requestRide(
+      db,
+      riderA.token,
+      ride.rideId,
+      {
+        pickup: origin,
+        destination,
+        requestedDepartureAt: now.toISOString(),
+      },
+      now,
+    );
+    assert.throws(
+      () => locationSource(db, riderA.token, ride.rideId, true, now),
+      /LOCATION_NOT_ALLOWED/,
+    );
+    decideRequest(
+      db,
+      driverA.token,
+      ride.rideId,
+      requested.ride.request!.requestId,
+      "ACCEPT",
+      now,
+    );
+    submitLocation(db, riderA.token, ride.rideId, fix, now);
     assert.equal(
       locationSource(db, driverA.token, ride.rideId, false, now).canReport,
       true,
@@ -328,30 +353,6 @@ test("location source stays with one browser per participant until explicitly sw
       () => locationSource(db, outsider.token, ride.rideId, true, now),
       /RIDE_ACCESS_DENIED/,
     );
-    const requested = requestRide(
-      db,
-      riderA.token,
-      ride.rideId,
-      {
-        pickup: origin,
-        destination,
-        requestedDepartureAt: now.toISOString(),
-      },
-      now,
-    );
-    assert.throws(
-      () => locationSource(db, riderA.token, ride.rideId, true, now),
-      /RIDE_ACCESS_DENIED/,
-    );
-    decideRequest(
-      db,
-      driverA.token,
-      ride.rideId,
-      requested.ride.request!.requestId,
-      "ACCEPT",
-      now,
-    );
-    submitLocation(db, riderA.token, ride.rideId, fix, now);
     locationSource(db, driverB.token, ride.rideId, true, now);
     assert.equal(
       locationSource(db, driverA.token, ride.rideId, false, now).canReport,

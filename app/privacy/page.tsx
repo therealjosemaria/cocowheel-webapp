@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-21", label: "21 October 2026" }}
+      revision={{ date: "2026-10-22", label: "22 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL university carpool pilot handles
@@ -50,7 +50,9 @@ export default function PrivacyPage() {
       </p>
       <p>
         With browser permission, we collect location fixes, accuracy and
-        timestamps to show positions and estimate routes. Updates may pause when
+        timestamps to show positions and estimate routes. Live trip tracking starts
+        after the driver accepts a request, not when an offer is published.
+        Updates may pause when
         the browser is closed, hidden or offline. The app stores the latest live
         fixes, not a complete journey trail.
       </p>
@@ -64,9 +66,11 @@ export default function PrivacyPage() {
       <h2>Who can see your information</h2>
       <p>
         Your UniKey is your visible participant name. Published driver offers
-        expose the driver’s name, route endpoints, fare and available location
-        information to people browsing rides, including visitors who have not
+        expose the driver’s name, planned route endpoints and fare
+        to people browsing rides, including visitors who have not
         signed in. Do not publish an address you are unwilling to share.
+        The driver’s live GPS is not public; it is shared with the accepted rider
+        during the active trip, and remains visible to the driver.
       </p>
       <p>
         Rider request details are shared with the relevant driver and rider, not
@@ -125,9 +129,9 @@ export default function PrivacyPage() {
       </p>
       <h2>Storage and retention</h2>
       <p>
-        Sign-in cookies last up to 30 days. Browser storage can reuse recent GPS
-        for five minutes, country preferences for seven days and Find a ride
-        drafts for 30 minutes. Server address and route caches last up to seven
+        Sign-in cookies last up to 30 days. Browser storage can reuse country
+        preferences for seven days, and search-location preferences and unfinished
+        route drafts for 30 minutes. Server address and route caches last up to seven
         days. Expiry prevents reuse; physical removal can occur during later
         cleanup.
       </p>

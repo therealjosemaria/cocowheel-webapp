@@ -2,10 +2,10 @@
 from playwright.sync_api import sync_playwright, expect
 import copy
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
-origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney'}
-destination = {'latitude': -33.88, 'longitude': 151.25, 'label': 'University of Sydney'}
+origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney', 'countryCode':'au'}
+destination = {'latitude': -33.88, 'longitude': 151.25, 'label': 'University of Sydney', 'countryCode':'au'}
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
     for width in [320, 390, 844, 1440]:
@@ -13,9 +13,9 @@ with sync_playwright() as p:
         page = context.new_page()
         errors = []
         page.on('pageerror', lambda e: errors.append(str(e)))
-        state = {'saved': None, 'writes': [], 'offers': [], 'signed': True, 'fail': False, 'missing': False}
+        state = {'saved': None, 'writes': [], 'offers': [], 'signed': True, 'fail': False, 'missing': False, 'searches': []}
         ride = {'rideId':'matching-ride', 'driverAlias':'driv1234', 'status':'PUBLISHED', 'priceAud':5,
-                'scheduledDepartureAt': datetime.now(timezone.utc).isoformat(), 'expiresAt':'2099-01-01T00:00:00Z',
+                'scheduledDepartureAt': (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(), 'expiresAt':'2099-01-01T00:00:00Z',
                 'plannedRoute': {'origin':origin,'destination':destination}, 'paymentMethod':'PAYID'}
         def respond(r):
             path = r.request.url.split('/api/')[-1].split('?')[0]
@@ -40,6 +40,7 @@ with sync_playwright() as p:
                 state['offers'].append(body)
                 r.fulfill(status=409, json={'error':'OPEN_ITEM_EXISTS'})
             elif path == 'place-search':
+                state['searches'].append(body)
                 r.fulfill(json={'places':[origin if 'Town' in body['text'] else destination]})
             elif path == 'rides/matching-ride/preview':
                 r.fulfill(status=404 if state['missing'] else 200,
@@ -71,7 +72,13 @@ with sync_playwright() as p:
         page.get_by_placeholder('Where from?', exact=True).fill('Town Hall')
         page.locator('.place-search').first.get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
+        assert state['searches'][-1]['countryCode'] == 'au'
+        assert state['searches'][-1]['bias'] == {'latitude':destination['latitude'], 'longitude':destination['longitude']}
         expect(page.get_by_role('heading', name='Choose a ride', exact=True)).to_be_visible()
+        expect(page.locator('.ride-option')).to_have_count(1)
+        expect(page.locator('.leaflet-container')).to_be_visible()
+        expect(page.locator('.ride-selection-route-key .driver-location-age')).to_have_count(0)
+        page.screenshot(path=f'/tmp/private-discovery-{width}.png', full_page=True, animations='disabled')
         page.get_by_role('button', name='Back to route search', exact=True).click()
         expect(page.get_by_placeholder('Where from?', exact=True)).to_have_value(origin['label'])
         expect(page.get_by_placeholder('Where to?', exact=True)).to_have_value(destination['label'])
@@ -106,6 +113,8 @@ with sync_playwright() as p:
         page.get_by_placeholder('Where from?').fill('Town Hall')
         page.locator('.place-search').nth(0).get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
+        assert state['searches'][-1]['countryCode'] == 'au'
+        assert state['searches'][-1]['bias'] == {'latitude':origin['latitude'], 'longitude':origin['longitude']}
         expect(page.get_by_placeholder('Where to?', exact=True)).to_be_focused()
         page.goto('http://127.0.0.1:3090/help')
         page.goto('http://127.0.0.1:3090/usual-route')

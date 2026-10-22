@@ -238,6 +238,15 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       driverToken,
     );
     assert.equal(driverCurrent.body.guestAlias, driverRide.driverAlias);
+    assert.equal((driverCurrent.body.current as Record<string, unknown>).locationSource, null);
+    const prematureLocation = await json(`${base}/api/rides/${driverRide.rideId}/location`, "POST", {
+      latitude: -33.86, longitude: 151.21, accuracyMeters: 10, capturedAt: new Date().toISOString(),
+    }, driverToken);
+    assert.equal(prematureLocation.body.error, "LOCATION_NOT_ALLOWED");
+    const prematureClaim = await json(`${base}/api/rides/${driverRide.rideId}/location-source`, "POST", {}, driverToken);
+    assert.equal(prematureClaim.body.error, "LOCATION_NOT_ALLOWED");
+    const publicPreview = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET");
+    assert.equal("driverLocation" in (publicPreview.body.ride as Record<string, unknown>), false);
     const riderSearch = await json(`${base}/api/search`, "POST", {
       pickup: { latitude: -33.855, longitude: 151.225 },
       destination: { latitude: -33.82, longitude: 151.265 },
@@ -249,6 +258,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     >;
     assert.equal(candidates.length, 1);
     assert.equal("origin" in candidates[0], false);
+    assert.equal("driverLocation" in candidates[0], false);
     const riderCreate = await json(
       `${base}/api/rides/${driverRide.rideId}/requests`,
       "POST",

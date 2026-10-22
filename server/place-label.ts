@@ -90,13 +90,11 @@ export async function searchPlaces(
   url.searchParams.set("text", text.trim());
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", "10");
+  const preferences = [];
+  if (bias) preferences.push(`proximity:${bias.longitude},${bias.latitude}`);
   if (countryCode && /^[a-z]{2}$/i.test(countryCode))
-    url.searchParams.set("filter", `countrycode:${countryCode.toLowerCase()}`);
-  if (bias)
-    url.searchParams.set(
-      "bias",
-      `proximity:${bias.longitude},${bias.latitude}`,
-    );
+    preferences.push(`countrycode:${countryCode.toLowerCase()}`);
+  if (preferences.length) url.searchParams.set("bias", preferences.join("|"));
   url.searchParams.set("apiKey", apiKey);
   try {
     const response = await fetcher(url, {
@@ -110,6 +108,7 @@ export async function searchPlaces(
         lon?: unknown;
         formatted?: unknown;
         address_line1?: unknown;
+        country_code?: unknown;
       }>;
     };
     return (payload.results ?? []).flatMap((place) =>
@@ -118,6 +117,8 @@ export async function searchPlaces(
             {
               latitude: place.lat,
               longitude: place.lon,
+              ...(typeof place.country_code === "string" && /^[a-z]{2}$/i.test(place.country_code)
+                ? { countryCode: place.country_code.toLowerCase() } : {}),
               label:
                 typeof place.formatted === "string"
                   ? place.formatted.slice(0, 96)
