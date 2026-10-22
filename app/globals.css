@@ -1416,6 +1416,7 @@ p {
   font-weight: var(--weight-bold);
   background: #ffffff;
 }
+.departure-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .payid-type-options button.active {
   border-color: var(--ink);
   color: #ffffff;
@@ -1585,6 +1586,25 @@ p {
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 12px 28px rgb(15 23 42 / 15%);
+}
+.place-search .route-use-location {
+  width: auto;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  background: var(--surface);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.place-search .route-location-desktop { display: none; }
+.route-search-fields .place-search .route-location-mobile { display: inline-flex; margin: 8px 0 0; }
+.place-search input { min-width: 0; }
+@media (min-width: 700px) {
+  .route-search-fields .place-search .route-location-desktop { display: inline-flex; align-items: center; margin: 4px 0 4px 4px; }
+  .route-search-fields .place-search .route-location-mobile { display: none; }
 }
 .place-results button {
   display: block;
@@ -1940,6 +1960,7 @@ p {
   font-weight: var(--weight-bold);
   white-space: nowrap;
 }
+.ride-option-main .ride-option-departure { grid-row: 3; }
 .ride-option-fit.direction-fit-good {
   color: #15803d;
 }

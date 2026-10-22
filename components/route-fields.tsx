@@ -5,6 +5,7 @@ import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
 import { searchLocation, rememberSearchLocation } from "@/lib/search-location";
+import RideFieldLabel from "./ride-field-label";
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
@@ -46,6 +47,7 @@ export function RouteFields({
     <div className="route-search-fields" ref={container}>
       <PlaceSearch
         placeholder="Where from?"
+        allowCurrentLocation
         initialValue={draftText?.origin ?? (origin ? locationText(origin) : "")}
         countryCode={countryCode}
         onEdit={(text) => {
@@ -96,6 +98,7 @@ export function PlaceSearch({
   destinationIcon = false,
   inlineResults = true,
   onEdit,
+  allowCurrentLocation = false,
 }: {
   bias?: Pin;
   countryCode?: string;
@@ -108,12 +111,53 @@ export function PlaceSearch({
   destinationIcon?: boolean;
   inlineResults?: boolean;
   onEdit?: (text: string) => void;
+  allowCurrentLocation?: boolean;
 }) {
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGeneration = useRef(0);
+  const [locating, setLocating] = useState(false);
+  const locateOrigin = async () => {
+    const generation = ++searchGeneration.current;
+    setLocating(true);
+    setSearchError(null);
+    setPlaces([]);
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error("GPS"));
+        navigator.geolocation.getCurrentPosition(resolve, () => reject(new Error("GPS")), {
+          enableHighAccuracy: true, maximumAge: 0, timeout: 12000,
+        });
+      });
+      if (generation !== searchGeneration.current) return;
+      const pin = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      const result = await cocowheelsApi<{ label: string | null; countryCode: string | null }>("/api/place-label", {
+        method: "POST", body: JSON.stringify({ pin }),
+      });
+      if (generation !== searchGeneration.current) return;
+      const place: Pin = { ...pin, ...(result.label ? { label: result.label } : {}),
+        ...(result.countryCode ? { countryCode: result.countryCode } : {}) };
+      rememberSearchLocation(place);
+      setText(locationText(place));
+      inputRef.current?.setCustomValidity("");
+      choose(place);
+    } catch (reason) {
+      if (generation !== searchGeneration.current) return;
+      setSearchError(reason instanceof Error && reason.message === "GPS"
+        ? "We couldn’t get your location. Allow location access or search for your address."
+        : apiErrorMessage(reason, "We couldn’t find your address. Please try again or search."));
+    } finally {
+      if (generation === searchGeneration.current) setLocating(false);
+    }
+  };
+  const locationButton = (className: string) => allowCurrentLocation ? (
+    <button type="button" className={`secondary route-use-location ${className}`}
+      disabled={locating} onClick={() => void locateOrigin()}>
+      <RideFieldLabel icon="from">{locating ? "Locating…" : "Use my location"}</RideFieldLabel>
+    </button>
+  ) : null;
   useEffect(
     () => () => {
       ++searchGeneration.current;
@@ -129,6 +173,7 @@ export function PlaceSearch({
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus, selectOnFocus]);
   const search = () => {
+    setLocating(false);
     const previous = searchLocation();
     const preferredLocation = bias ?? previous;
     const preferredCountry = bias?.countryCode ?? previous?.countryCode ?? countryCode;
@@ -185,6 +230,7 @@ export function PlaceSearch({
           value={text}
           onChange={(event) => {
             ++searchGeneration.current;
+            setLocating(false);
             onEdit?.(event.target.value);
             event.target.setCustomValidity("");
             setText(event.target.value);
@@ -199,10 +245,12 @@ export function PlaceSearch({
           placeholder={placeholder}
           aria-label={ariaLabel ?? placeholder}
         />
+        {locationButton("route-location-desktop")}
         <button type="button" onClick={search}>
           Search
         </button>
       </div>
+      {locationButton("route-location-mobile")}
       {searchError ? (
         <p className="reconnect" role="alert">
           {searchError}
@@ -221,6 +269,7 @@ export function PlaceSearch({
               key={`${place.latitude}:${place.longitude}`}
               onClick={() => {
                 ++searchGeneration.current;
+                setLocating(false);
                 rememberSearchLocation(place);
                 choose(place);
                 setText(place.label ?? "");

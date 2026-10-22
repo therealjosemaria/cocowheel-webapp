@@ -3,7 +3,7 @@
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
-from Profile. Drivers offer it from fresh GPS using Now/In 30 min/In 1 hour;
+from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
 riders opt into matching emails for selected days and one Sydney-time ±1-hour
 window. Publication queues matching alerts once; GPS updates never notify.
 Optional alert delivery is separately enabled, with no app-wide hourly/daily
@@ -354,14 +354,31 @@ for service operations.
 
 ## Shared UI behaviour
 
+- New offers default to In 30 min; In 1 hour is the other departure choice in
+  both ordinary Offer and the saved-route shortcut. These are intended departure
+  times, not a waiting lock: participants can agree to leave early. Existing rides
+  and backend acceptance of immediate offers remain unchanged for compatibility.
+
+- Discovery separates driving time to pickup from departure waiting. A caption
+  below timing reads Departs in N min (rounded up), Departing now during the
+  first minute from scheduled departure, then Delayed. This reflects schedule,
+  not confirmed movement. A visible-page local clock refreshes each second without
+  API calls; arrival uses the later of now/scheduled departure plus driving times.
+  See [departure-display checks](docs/DEPARTURE_DISPLAY_2026-10-22.md).
+
 - Home presents Find a ride first (dark), then Offer a ride (light), in both
   visual and keyboard order. Desktop/mobile menus also put Find before Offer;
   other menu positions and role destinations are unchanged.
 
 - Profile's route editor, Offer a ride and Find a ride reuse `RouteFields` and
   `PlaceSearch`: Where from?/Where to? placeholders, explicit search and selectable
-  results. Ordinary Offer/Find setup no longer requests GPS or prefills recent GPS;
-  active-trip tracking and Profile's saved-route offering shortcut still use GPS.
+  results. Where from also offers an explicit Use my location action: below the
+  field below 700px, beside Search on wider screens. It requests a fresh one-off
+  fix (12-second timeout), resolves its address, and uses normal origin selection.
+  No automatic GPS or recent-GPS prefill; edits/unmount ignore late results.
+  Permission/provider failures preserve the typed address and allow manual search;
+  missing reverse labels fall back to coordinates. Destination has no GPS action.
+  Active-trip tracking and Profile's saved-route offering shortcut stay unchanged.
   Entry focuses the first empty address once; selecting origin moves to an empty
   destination. Editing a selected address invalidates its coordinates. Find opens
   the existing map/ride chooser only after both locations are selected, in either

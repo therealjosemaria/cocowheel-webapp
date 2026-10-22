@@ -44,10 +44,13 @@ scope and activation status; code presence is not verified deployment.
   These are client-reported fixes, not trusted proof of physical location.
   Browser denial/timeout offers nothing. A valid fix whose reverse lookup fails
   can use the existing coordinate-label fallback.
-- Leaving choices: Now, In 30 min, In 1 hour, shared with normal Offer a ride.
+- Leaving choices: In 30 min (default), In 1 hour, shared with normal Offer a ride.
+  The former Now UI option is removed; existing records/API compatibility remain.
+  These choices do not prevent acceptance or pickup earlier by mutual agreement.
   They are intended departure estimates, not bookings. Readouts use “Leaving
   around [Sydney clock time]”; the ride still expires six hours after offering.
-  Discovery estimates include the remaining planned departure delay. The preview
+  Discovery pickup minutes exclude departure wait, shown in a separate neutral
+  countdown line; arrival estimates still include that wait. The preview
   suppresses the live pickup-time badge before a future offer's departure rather
   than imply the driver is already approaching. Times remain estimates.
   Future available offers appear in search immediately and can be requested now;

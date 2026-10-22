@@ -4,13 +4,28 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+DepartureChoice offers two equal options: In 30 min (default) and In 1 hour.
+Reuse it in ordinary Offer and Profile's saved-route shortcut. No Now/two-hour
+UI option. Intended times are flexible, not a mandatory waiting period.
+
+Prioritise familiarity: prefer established interaction patterns and recognisable
+language before inventing controls or terminology. Preserve accurate meaning,
+accessibility and the shared visual system rather than copying decoration.
+Discovery uses a neutral departure-board line below pickup/arrival timing:
+Departs in N min, Departing now for the scheduled minute, then Delayed. These
+are schedule-based labels, not GPS-confirmed movement. No added colours, badges
+or emphasis. Pickup minutes mean driving duration only, excluding departure wait.
+
 Shared address entry (22 October): Profile, Offer and Find reuse RouteFields,
 not copies of its markup. Use Where from?/Where to? placeholders and accessible
 names, 16px gaps, explicit Search and the shared scrollable results. Focus the
 first empty address on entry only; never refocus on each keystroke. Choosing an
 origin advances to an empty destination. Both filled: do not steal focus.
-No setup current-location button or recent-GPS prefill in ordinary Offer/Find;
-this supersedes the former GPS-first setup. Keep active-trip GPS unchanged.
+Where from includes Use my location in all three editors: below the input on
+mobile, immediately left of Search from 700px. Reuse secondary-button and origin
+icon styling, a 44px target and an 8px mobile gap. No automatic GPS/prefill or
+destination GPS button. This supersedes the earlier removal of setup GPS buttons;
+active-trip tracking remains acceptance-gated and unchanged.
 Find retains its map/ride-selection flow after both valid selections. Editing
 text clears the corresponding selected coordinates until a result is chosen.
 Departure choices keep their accessible name without a visible Leaving legend

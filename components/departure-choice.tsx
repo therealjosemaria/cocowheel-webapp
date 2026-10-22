@@ -10,11 +10,11 @@ export default function DepartureChoice({
   return (
     <fieldset className="payid-field" aria-label="Leaving">
       <div
-        className="payid-type-options"
+        className="payid-type-options departure-options"
         role="radiogroup"
         aria-label="Leaving"
       >
-        {[0, 30, 60].map((minutes) => (
+        {[30, 60].map((minutes) => (
           <button
             type="button"
             key={minutes}
@@ -23,7 +23,7 @@ export default function DepartureChoice({
             className={value === minutes ? "active" : undefined}
             onClick={() => onChange(minutes)}
           >
-            {minutes === 0 ? "Now" : minutes === 30 ? "In 30 min" : "In 1 hour"}
+            {minutes === 30 ? "In 30 min" : "In 1 hour"}
           </button>
         ))}
       </div>

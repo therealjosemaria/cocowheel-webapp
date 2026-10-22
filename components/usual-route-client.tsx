@@ -33,7 +33,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [contribution, setContribution] = useState(false);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<UsualRoute["payIdType"]>("MOBILE");
-  const [leaving, setLeaving] = useState(0);
+  const [leaving, setLeaving] = useState(30);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);

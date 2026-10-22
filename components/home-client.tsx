@@ -1,5 +1,6 @@
 "use client";
 import DepartureChoice from "./departure-choice";
+import { departureLabel } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
 import PaymentFields from "./payment-fields";
 import { RouteFields } from "./route-fields";
@@ -203,7 +204,7 @@ export default function HomeClient({
   }>({});
   const [price, setPrice] = useState("5");
   const [contribution, setContribution] = useState(false);
-  const [departureMinutes, setDepartureMinutes] = useState(0);
+  const [departureMinutes, setDepartureMinutes] = useState(30);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -1065,6 +1066,33 @@ type RoutePreviewResponse = {
   durationSeconds: number | null;
 };
 
+function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds }: {
+  scheduledAt: string;
+  pickupSeconds?: number;
+  riderSeconds?: number | null;
+}) {
+  const [clock, setClock] = useState(() => Date.now());
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) setClock(Date.now()); };
+    const timer = window.setInterval(refresh, 1000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+  const arrival = pickupSeconds !== undefined && riderSeconds != null
+    ? new Date(Math.max(clock, Date.parse(scheduledAt)) + (pickupSeconds + riderSeconds) * 1000)
+    : null;
+  return <>
+    <small>
+      {pickupSeconds !== undefined ? `${Math.max(1, Math.round(pickupSeconds / 60))} min away` : "Estimating pickup"}
+      {arrival ? ` · ${new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(arrival)}` : ""}
+    </small>
+    <small className="ride-option-departure">{departureLabel(scheduledAt, clock)}</small>
+  </>;
+}
+
 function RideSelection({
   pickup,
   destination,
@@ -1170,8 +1198,7 @@ function RideSelection({
         );
         return {
           rideId: candidate.rideId,
-          pickupSeconds: route.durationSeconds === null ? null :
-            route.durationSeconds + Math.max(0, (Date.parse(candidate.scheduledDepartureAt) - calculatedAt) / 1000),
+          pickupSeconds: route.durationSeconds,
         };
       }),
     ).then((results) => {
@@ -1306,18 +1333,6 @@ function RideSelection({
           <div className="ride-option-list">
             {visibleCandidates.map((candidate) => {
               const estimate = estimates[candidate.rideId];
-              const pickupMinutes = estimate
-                ? Math.max(1, Math.round(estimate.pickupSeconds / 60))
-                : null;
-              const arrival =
-                estimate &&
-                riderDurationSeconds !== null &&
-                riderDurationSeconds !== undefined
-                  ? new Date(
-                      estimate.calculatedAt +
-                        (estimate.pickupSeconds + riderDurationSeconds) * 1_000,
-                    )
-                  : null;
               return (
                 <button
                   type="button"
@@ -1339,17 +1354,8 @@ function RideSelection({
                       {candidate.driverAlias}{" "}
                       <RatingBadge summary={candidate.driverRating} />
                     </strong>
-                    <small>
-                      {pickupMinutes !== null
-                        ? `${pickupMinutes} min away`
-                        : "Estimating pickup"}
-                      {arrival
-                        ? ` · ${new Intl.DateTimeFormat("en-AU", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          }).format(arrival)}`
-                        : ""}
-                    </small>
+                    <RideOptionTiming scheduledAt={candidate.scheduledDepartureAt}
+                      pickupSeconds={estimate?.pickupSeconds} riderSeconds={riderDurationSeconds} />
                   </span>
                   <span className="ride-option-payment">
                     <b>{fareLabel(candidate.priceAud)}</b>

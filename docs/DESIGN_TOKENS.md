@@ -44,10 +44,22 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- DepartureChoice keeps the existing radio-button tokens but uses two equal grid
+  columns for In 30 min/In 1 hour. Scope this override to departure-options;
+  PayID's three choices keep their existing three-column layout.
+
+- Discovery's departure line uses the existing timing caption size, muted colour
+  and inherited weight, in the third grid row beneath pickup/arrival. Fare and
+  PayID retain their right-column rows. No status colours, badge or new font.
+
 - Shared RouteFields uses a single minmax(0, 1fr) grid with 16px gaps, zero
   nested PlaceSearch margins and the existing input/Search/results tokens.
   Ordinary Offer/Find give the section 16px bottom spacing; Profile's parent
   grid supplies its spacing. No new typography, colour or button style.
+  Origin's Use my location secondary action has a 44px minimum target, caption
+  text and shared origin icon. Below 700px it sits 8px below the input; wider
+  layouts place it directly left of Search. Only the visible responsive control
+  participates in keyboard navigation. Search remains on the right.
 
 - Profile's route editor uses placeholders and accessible names instead of visible
   origin/destination/time labels; My usual route retains section/semibold.
