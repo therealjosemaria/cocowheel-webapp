@@ -24,6 +24,12 @@ Update README.md for architecture/behaviour and the specialist guide for details
 
 ## Safety and consistency
 
+For requested implementation work, complete relevant tests, visual review and
+documentation, then commit and push without waiting for a separate reminder.
+Never skip the full source/staged diff review below. Explicit requests to plan,
+inspect only or hold a push override this default; stop and report genuine safety
+or verification blockers rather than pushing unreviewed or unrelated changes.
+
 GUMWHEEL is the visible brand. Preserve legacy internal COCOWHEELS identifiers,
 URLs, cookies, storage keys, IDs and services unless migration is explicitly asked.
 Keep authorization server-side and preserve trip history. Never stress-test live

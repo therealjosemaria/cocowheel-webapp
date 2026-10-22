@@ -117,6 +117,23 @@ say Email verified. This does not verify student status, identity or licence.
 
 ## Checks and deployment
 
+### Suggestion alignment — 23 October 2026
+
+Both suggestion buttons now share left-aligned, vertically centred text with
+12px padding on all four sides, matching the textarea inset. Existing regular
+14px type, secondary border and minimum 44px target remain; wrapping increases
+height naturally. No messaging behaviour changes.
+Reproduce with the two browser commands below: both now assert text alignment,
+vertical centring and all four computed padding values before inserting a draft.
+The initial attempt could not connect because the isolated dev server was stopped;
+it was started with the API proxy pointing to loopback port 1, never production.
+Results: rider entry checks passed at 320/393/1440px and driver checks at
+390/1440px, including alignment/padding assertions and unchanged insertion,
+collapsed defaults and notification opening. Production build and diff checks
+passed. Full rider/driver screens visually reviewed at phone/desktop widths:
+wrapped suggestions have balanced inset, regular text and no competing emphasis.
+External map tiles were blocked. Physical phones and deployment remain unverified.
+
 ### Collapsed entry and driver starter — 23 October 2026
 
 Run `npx tsx --test tests/messaging-entry.test.ts` and

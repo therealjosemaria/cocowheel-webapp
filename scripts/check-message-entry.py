@@ -64,7 +64,13 @@ with sync_playwright() as p:
             expect(page.locator('#messages-req0')).not_to_have_attribute('open', '')
             page.locator('#messages-req0 > summary').click()
             expect(textbox).to_have_value('')
-            page.get_by_role('button', name=starter, exact=True).click()
+            suggestion=page.get_by_role('button', name=starter, exact=True)
+            expect(suggestion).to_have_css('text-align','left')
+            for side in ['top','right','bottom','left']:
+                expect(suggestion).to_have_css('padding-'+side,'12px')
+            expect(suggestion).to_have_css('align-items','center')
+            page.screenshot(path=f'/tmp/rider-suggestion-{width}-{preview}.png',full_page=True)
+            suggestion.click()
             expect(textbox).to_have_value(starter, timeout=15000)
             assert 'request=req0' in page.url and 'compose=' not in page.url
             assert state['sends'] == 0

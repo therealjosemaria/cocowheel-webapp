@@ -79,6 +79,8 @@ ride details with messaging collapsed, matching normal visits and driver views.
 Opening an empty conversation offers a tap-to-insert editable starter for either
 role; nothing is filled or sent automatically. Explicit unread-message links
 still open the targeted conversation.
+Both suggested-message buttons use left-aligned, vertically centred text and
+equal 12px padding, retaining shared secondary-button styling.
 See [entry-flow checks](docs/MESSAGE_ENTRY_CHECK_2026-10-20.md).
 Ride details offer “Report a concern via WhatsApp” once below the ride
 details/actions and all driver rider-request/detail cards, not inside conversations.

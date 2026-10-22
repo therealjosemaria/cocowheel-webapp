@@ -192,6 +192,10 @@ wordmark/navigation controls. See HEADER_LOGO_2026-10-19.md for asset provenance
 5. Run the visual-system regression test, relevant browser checks, lint and build. Update this document and UI standards for agreed exceptions.
 ## Private messaging (20 October 2026)
 
+Both role-specific message suggestions use left-aligned regular small text,
+vertically centred with 12px padding on all sides. Retain the shared secondary
+border/radius and minimum 44px touch target; wrapped text grows the button.
+
 Ride-details panels use 12px top separation. Map legends keep `--text-caption`,
 8px row / 16px column gaps, non-shrinking colour swatches and unbroken route names.
 Below 600px the location-age item spans a separate centred row. Do not shrink

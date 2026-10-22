@@ -73,6 +73,11 @@ with sync_playwright() as p:
         chat.locator('summary').click()
         suggestion=page.get_by_role('button',name='Hi! Where would you like me to pick you up?',exact=True)
         expect(suggestion).to_be_visible()
+        expect(suggestion).to_have_css('text-align','left')
+        for side in ['top','right','bottom','left']:
+            expect(suggestion).to_have_css('padding-'+side,'12px')
+        expect(suggestion).to_have_css('align-items','center')
+        page.screenshot(path=f'/tmp/driver-suggestion-{width}.png',full_page=True,animations='disabled')
         suggestion.click()
         expect(chat.get_by_role('textbox',name='Message',exact=True)).to_have_value('Hi! Where would you like me to pick you up?')
         page.screenshot(path=f'/tmp/driver-message-starter-{width}.png',full_page=True,animations='disabled')

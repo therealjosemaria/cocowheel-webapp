@@ -153,6 +153,8 @@ both roles, including after requesting. Explicit unread-message navigation may
 open its target. After opening an empty conversation, offer the role-specific
 tap-to-insert starter with the shared secondary button; never auto-fill,
 auto-scroll, auto-focus or auto-send the suggested draft.
+Suggested-message text is left-aligned and vertically centred with equal 12px
+padding on every side, for both roles; preserve natural wrapping and regular weight.
 
 ### Mutual rating controls (19 October 2026)
 
