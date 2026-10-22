@@ -11,6 +11,9 @@ offers Notify me / Not now for explicit email consent. Existing schedules,
 payment preferences and email choices are preserved; stale replacement writes
 are rejected. Profile supports Edit schedule without retyping addresses.
 See [save-route checks](docs/SAVE_SEARCH_ROUTE_2026-10-22.md).
+Save-route API activated from `cc021be` at 14:50:59 AEDT on 22 October 2026
+after a zero-underway-trip preflight and private backup; local/public health and
+record preservation passed. Frontend deployment and inbox delivery are separate.
 Publication queues matching alerts once; GPS updates never notify.
 Optional alert delivery is separately enabled, with no app-wide hourly/daily
 alert cap; provider quotas still apply and login email rules are unchanged.

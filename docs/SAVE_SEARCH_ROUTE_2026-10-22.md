@@ -74,9 +74,17 @@ Final targeted ESLint and production build passed without warnings/errors.
 
 Requires Pi API restart independently of frontend deployment. No new environment
 variables or database migration. Never restart during real trips without approval.
-This report does not claim production activation, inbox arrival, physical iPhone/
-Safari testing or load capacity. Browser APIs were mocked; real HTTP/database
+This report does not claim inbox arrival, physical iPhone/Safari testing or load
+capacity. Browser APIs were mocked; real HTTP/database
 behavior was checked separately by the Node suite.
+
+User-authorized API activation: 22 October 2026 at 14:50:59 AEDT, source
+`cc021be`. Preflight found zero accepted/in-progress trips and one available
+offer. A consistent mode-restricted local SQLite backup was taken before
+restarting only cocowheels-api. Local and https://www.gumwheel.com/api/health
+both returned status ok; service active, 118 ride records retained, quick_check
+ok and zero underway trips afterward. No live save/email/booking mutation was
+used as a health check. Frontend deployment remains separately unverified.
 
 Manual check: Find a ride → choose both addresses → Save route → Not now or
 Notify me. Stay on chooser. Try a different route and Cancel/Replace. Open Profile
