@@ -14,6 +14,7 @@ import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/pr
 import { Message } from "./ride-journey-controls";
 import RideFieldLabel from "./ride-field-label";
 import RouteSchedule from "./route-schedule";
+import RouteTime from "./route-time";
 
 export default function UsualRouteClient({ match }: { match: string | null }) {
   const router = useRouter();
@@ -246,7 +247,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           ) : saved ? (
             <>
-              <dl className="ride-preview-fields">
+              <dl className="ride-preview-fields profile-route-summary">
                 <div>
                   <dt>
                     <RideFieldLabel icon="from">Where from?</RideFieldLabel>
@@ -372,14 +373,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   ))}
                 </div>
               </fieldset>
-              <div className="field usual-route-time">
-                <input
-                  type="time"
-                  aria-label="Usual departure time"
-                  value={minute}
-                  onChange={(e) => setMinute(e.target.value)}
-                />
-              </div>
+              <RouteTime value={minute} onChange={setMinute} />
               <label className="usual-alert-choice">
                 <input
                   type="checkbox"

@@ -47,6 +47,14 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Profile body uses 12px related-content gaps; saved address summary is one column
+  with 12px between fields and no inset/border. Other ride grids are unchanged.
+  Shared route swap uses the secondary control border/radius, 44px square target,
+  18px monochrome two-arrow SVG, right aligned between the two search fields.
+  Its -12px block margins within the 16px grid gaps leave 4px above/below.
+  Time hints use body/muted tokens, inset 12px and centred vertically; native input
+  dimensions, keyboard semantics and focus appearance remain unchanged.
+
 - Extra driving is a normal pending-request cell below Requested, next to Request
   status. Reuse RideFieldLabel's clock icon at 14px, caption/muted label and normal
   14px regular ink value, standard grid padding and 4px label/value gap. No bespoke

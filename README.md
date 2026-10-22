@@ -28,6 +28,12 @@ Profile UI contains no payment controls (including new-route setup); fare and
 PayID are configured in Offer a ride. Legacy saved payment data is preserved.
 The redundant routine-privacy helper is omitted; saved routes remain private.
 Usual route and Matching ride alerts use matching icon-and-heading styling.
+Profile's saved addresses stack in one column with a 12px heading/content gap,
+matching the alerts section. Shared address editors in Profile, Offer and Find
+include a right-aligned Swap addresses control between fields; it swaps selected
+pins and draft text without submitting, navigating or saving. Schedule editors
+retain native time inputs with a Choose a time hint when empty and unfocused.
+See [Profile and shared-route polish](docs/PROFILE_ROUTE_POLISH_2026-10-23.md).
 The schedule summary omits the Sydney time suffix; matching still uses
 Australia/Sydney and the same ±1-hour window.
 See the [Profile cleanup checks](docs/PROFILE_CLEANUP_2026-10-23.md).

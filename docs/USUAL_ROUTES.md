@@ -6,6 +6,16 @@ scope and activation status; code presence is not verified deployment.
 
 ## Product contract
 
+23 October layout refinement: saved origin/destination stack vertically. Route
+and alert heading/content gaps both use 12px. Shared Profile/Offer/Find swap action
+exchanges coordinate-bearing pins and draft text in place, without auto-saving or
+navigating. In-flight place/GPS results from replaced inputs are invalidated via
+unmount cleanup. Text without a selected pin remains unselected after swapping;
+normal validation still applies. Empty endpoints are allowed in the editor, not
+silently invented. Existing schedule/consent/fare fields are untouched.
+New-route and Edit schedule time fields share an empty Choose a time hint;
+it hides on focus or when populated, preserving the native time picker.
+
 23 October clarification supersedes the payment UI described below: Profile
 contains only route and matching-alert settings, not fare/PayID controls, in both
 new and saved states. New routes retain zero/empty payment defaults; editing an

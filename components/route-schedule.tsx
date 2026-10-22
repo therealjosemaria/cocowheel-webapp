@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { WEEKDAYS, type UsualRoute } from "@/lib/usual-route";
+import RouteTime from "./route-time";
 
 export default function RouteSchedule({
   route,
@@ -58,15 +59,7 @@ export default function RouteSchedule({
               ))}
             </div>
           </fieldset>
-          <div className="field usual-route-time">
-            <input
-              type="time"
-              aria-label="Usual departure time"
-              value={time}
-              disabled={busy}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
+          <RouteTime value={time} disabled={busy} onChange={setTime} />
         </>
       )}
       <button

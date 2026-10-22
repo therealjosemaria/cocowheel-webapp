@@ -3053,3 +3053,21 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 }
 .save-route-prompt > p { text-align: left; }
 .save-route-profile-note { font-size: var(--text-small); color: var(--muted); font-weight: var(--weight-regular); }
+
+.usual-route-body { gap: 12px; }
+.profile-route-summary { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.profile-route-summary > div { padding: 0; border: 0; }
+.profile-route-summary > div:nth-child(odd) { border-right: 0; }
+.route-search-fields > .route-swap {
+  justify-self: end; width: 44px; height: 44px; min-height: 44px;
+  padding: 10px; margin: -12px 0; z-index: 1;
+}
+.route-swap svg { display: block; width: var(--icon-field); height: var(--icon-field); }
+.usual-route-time { position: relative; }
+.route-time-placeholder {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--muted); font-size: var(--text-body);
+}
+.usual-route-time:focus-within .route-time-placeholder { display: none; }
+.usual-route-time.is-empty:not(:focus-within) input::-webkit-datetime-edit { opacity: 0; }
+.usual-route-time.is-empty:not(:focus-within) input::-webkit-date-and-time-value { opacity: 0; }
