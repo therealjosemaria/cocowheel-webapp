@@ -13,6 +13,7 @@ import { createApiServer } from "../server/index";
 import {
   validateUsualRoute,
   saveUsualRoute,
+  saveSearchRoute,
   readUsualRoute,
   removeUsualRoute,
   scheduleMatches,
@@ -34,6 +35,55 @@ const route: UsualRoute = {
   payId: "",
   payIdType: "MOBILE",
 };
+test("search save requires explicit consent, preserves preferences and rejects stale writes", () => {
+  const { db, rider } = setup();
+  try {
+    const initial = saveSearchRoute(db, rider.session.id, { origin: start, destination: end, expected: null });
+    assert.equal(initial.alerts, false);
+    assert.equal(initial.anyTime, true);
+    assert.ok(scheduleMatches(initial, new Date("2026-10-25T15:00:00Z")));
+    assert.equal(scheduleMatches({ ...route, alerts: false, days: [], minute: null }, now), false);
+    assert.throws(() => validateUsualRoute({ ...route, anyTime: true }));
+    assert.throws(() => validateUsualRoute({ ...initial, anyTime: "true" }));
+    assert.throws(() => saveSearchRoute(db, rider.session.id, { origin: end, destination: start, expected: null }), /USUAL_ROUTE_CHANGED/);
+    const configured = saveUsualRoute(db, rider.session.id, { ...route, alerts: false, payIdType: "EMAIL", payId: "private@example.com" });
+    const replacement = saveSearchRoute(db, rider.session.id, { origin: start, destination: end, expected: configured });
+    assert.equal(replacement.alerts, false);
+    assert.deepEqual(replacement.days, route.days);
+    assert.equal(replacement.minute, route.minute);
+    assert.equal(replacement.payId, "private@example.com");
+    assert.equal(replacement.priceAud, 5);
+    const optedIn = saveUsualRoute(db, rider.session.id, { ...replacement, alerts: true });
+    const enabledReplacement = saveSearchRoute(db, rider.session.id, { origin: end, destination: start, expected: optedIn });
+    assert.equal(enabledReplacement.alerts, true);
+    saveUsualRoute(db, rider.session.id, { ...enabledReplacement, alerts: false });
+    assert.throws(() => saveSearchRoute(db, rider.session.id, { origin: end, destination: start, expected: enabledReplacement, notify: true }), /USUAL_ROUTE_CHANGED/);
+  } finally { db.close(); }
+});
+test("search email consent enables all-time matching only explicitly and queues future offers once", async () => {
+  const { db, rider, offer } = setup();
+  const keys = ["COCOWHEELS_ROUTE_ALERTS_ENABLED", "COCOWHEELS_RESEND_API_KEY", "COCOWHEELS_EMAIL_FROM", "COCOWHEELS_PUBLIC_ORIGIN"];
+  const previous = keys.map((key) => process.env[key]);
+  try {
+    process.env.COCOWHEELS_ROUTE_ALERTS_ENABLED = "0";
+    const saved = saveSearchRoute(db, rider.session.id, { origin: route.origin, destination: route.destination, expected: null });
+    assert.throws(() => saveSearchRoute(db, rider.session.id, { origin: route.origin, destination: route.destination, expected: saved, notify: true }), /ALERTS_UNAVAILABLE/);
+    assert.equal(readUsualRoute(db, rider.session.id)?.alerts, false);
+    keys.forEach((key) => { process.env[key] = key.endsWith("ENABLED") ? "1" : "test-only"; });
+    const consented = saveSearchRoute(db, rider.session.id, { origin: route.origin, destination: route.destination, expected: saved, notify: true });
+    assert.equal(consented.alerts, true);
+    assert.equal(consented.anyTime, true);
+    assert.equal((db.prepare("SELECT count(*) n FROM route_alerts").get() as { n: number }).n, 0);
+    offer();
+    let sends = 0;
+    await deliverRouteAlerts(db, async () => { sends++; }, now);
+    await deliverRouteAlerts(db, async () => { sends++; }, now);
+    assert.equal(sends, 1);
+  } finally {
+    keys.forEach((key, i) => { if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i]; });
+    db.close();
+  }
+});
 test("alert delivery continues beyond former global caps without duplicate sends", async () => {
   for (const count of [20, 50, 100]) {
     const { db, rider, offer } = setup();
@@ -331,6 +381,14 @@ test("HTTP saved-route access is owner-scoped; fresh GPS and departure choices e
     });
   try {
     assert.equal((await call("")).status, 401);
+    assert.equal((await call("/from-search", undefined, { origin: start, destination: end, expected: null })).status, 401);
+    const shortcut = await call("/from-search", rider.token, { origin: start, destination: end, expected: null, principal_id: driver.session.id });
+    assert.equal(shortcut.status, 200);
+    const shortcutRoute = (await shortcut.json()).route;
+    assert.equal(shortcutRoute.alerts, false);
+    assert.equal(shortcutRoute.anyTime, true);
+    assert.equal((await call("/from-search", rider.token, { origin: end, destination: start, expected: null })).status, 409);
+    assert.equal((await (await call("", driver.token)).json()).route, null);
     assert.equal(
       (
         await call("", rider.token, {

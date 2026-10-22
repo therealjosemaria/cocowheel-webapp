@@ -54,7 +54,7 @@ import { initializeAdmin, adminDashboard, adminInspector } from "./admin";
 import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
-import { readUsualRoute, saveUsualRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
+import { readUsualRoute, saveUsualRoute, saveSearchRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -778,6 +778,18 @@ export function createApiServer(
         if (request.method === "POST") {
           const body = await readJson(request);
           const owner = requireUniversitySession(database, token);
+          if (parts.length === 3 && parts[2] === "from-search") {
+            try {
+              writeJson(response, 200, { route: saveSearchRoute(database, owner.id, body) }, cors);
+            } catch (error) {
+              if (error instanceof Error && error.message === "USUAL_ROUTE_CHANGED") {
+                writeJson(response, 409, { error: "USUAL_ROUTE_CHANGED" }, cors);
+              } else if (error instanceof Error && error.message === "ALERTS_UNAVAILABLE") {
+                writeJson(response, 503, { error: "ALERTS_UNAVAILABLE" }, cors);
+              } else throw error;
+            }
+            return;
+          }
           if (parts.length === 2) {
             writeJson(response, 200, { route: saveUsualRoute(database, owner.id, body) }, cors);
             return;

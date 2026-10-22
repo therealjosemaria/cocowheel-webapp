@@ -4,6 +4,7 @@ import { departureLabel } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
 import PaymentFields from "./payment-fields";
 import { RouteFields } from "./route-fields";
+import SaveSearchRoute from "./save-search-route";
 import { fareLabel, validFare, CONTRIBUTION_ERROR } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { RatingBadge } from "./ride-rating";
@@ -1327,6 +1328,7 @@ function RideSelection({
           Driver route
         </span>
       </div>
+      <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
       <section className="ride-options" aria-live="polite">
         <h1>Choose a ride</h1>
         {searching ? null : visibleCandidates.length ? (

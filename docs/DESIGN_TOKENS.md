@@ -44,6 +44,15 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Find's Save route reuses the secondary button with 12px/16px section padding,
+  outside the map legend and results. Consent/replacement reuse cancel-prompt,
+  regular paragraphs and stacked equal actions. Profile schedule editing reuses
+  existing checkbox, weekday and native time controls; no new tokens.
+
+- Home active-ride cards use the same min(100%, 360px) width/centering as CTAs
+  above 700px; do not resize the Profile version. Driver Departure reuses the
+  detail grid, departure icon and body-value tokens, without animated emphasis.
+
 - DepartureChoice keeps the existing radio-button tokens but uses two equal grid
   columns for In 30 min/In 1 hour. Scope this override to departure-options;
   PayID's three choices keep their existing three-column layout.

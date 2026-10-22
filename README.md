@@ -4,8 +4,14 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified u
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
 from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
-riders opt into matching emails for selected days and one Sydney-time ±1-hour
-window. Publication queues matching alerts once; GPS updates never notify.
+riders opt into matching emails for any day/time or selected days and one
+Sydney-time ±1-hour window. Find a ride offers Save route below the map legend,
+outside ride results. It saves addresses in place, asks before replacement, then
+offers Notify me / Not now for explicit email consent. Existing schedules,
+payment preferences and email choices are preserved; stale replacement writes
+are rejected. Profile supports Edit schedule without retyping addresses.
+See [save-route checks](docs/SAVE_SEARCH_ROUTE_2026-10-22.md).
+Publication queues matching alerts once; GPS updates never notify.
 Optional alert delivery is separately enabled, with no app-wide hourly/daily
 alert cap; provider quotas still apply and login email rules are unchanged.
 See [checks and user walkthrough](docs/USUAL_ROUTES_CHECK_2026-10-21.md)
@@ -354,6 +360,12 @@ for service operations.
 
 ## Shared UI behaviour
 
+- Home's active-ride card matches the centred 360px desktop CTA width; mobile
+  remains full width. Driver details show a minute-only Departure countdown while
+  offered/awaiting pickup, hidden after pickup or closure. It reuses discovery's
+  schedule wording without extra colours; local ticks do not update the map.
+  Rider/public detail copy retains Leaving around without the Sydney time suffix.
+
 - New offers default to In 30 min; In 1 hour is the other departure choice in
   both ordinary Offer and the saved-route shortcut. These are intended departure
   times, not a waiting lock: participants can agree to leave early. Existing rides
@@ -393,10 +405,10 @@ for service operations.
   section. The existing `/usual-route` URL and private route APIs stay unchanged.
   Its editor uses Where from?/Where to? placeholders with persistent accessible
   names, and an accessibly named native time picker without a visible Around label.
-  New route drafts preselect matching emails when delivery is available; nothing
-  is saved or sent until Save route. Existing saved choices are preserved. Turning
-  emails off requires the shared confirmation dialog. Schedule requirements and
-  the Sydney ±1-hour matching window remain unchanged despite simpler copy.
+  New route drafts leave matching emails off; explicit consent is required.
+  Existing saved choices are preserved. Turning emails off requires the shared
+  confirmation dialog. Scheduled matching keeps the Sydney ±1-hour window;
+  explicit any-day/time mode is available through Edit schedule.
   Profile and Offer a ride reuse one payment-field component, including PayID
   examples and decimal validation. See [checks](docs/PROFILE_POLISH_2026-10-22.md).
 

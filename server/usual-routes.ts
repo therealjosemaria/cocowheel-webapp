@@ -3,7 +3,7 @@ import type { Db } from "./core";
 import type { Pin } from "../lib/client-types";
 import { payIdInputError } from "../lib/input-validation";
 import { fareLabel, validFare } from "../lib/fare";
-import { departureLabel, type UsualRoute } from "../lib/usual-route";
+import { departureLabel, sameRoute, type UsualRoute } from "../lib/usual-route";
 
 export function initializeUsualRoutes(db: Db) {
   db.exec(`
@@ -63,7 +63,9 @@ export function validateUsualRoute(value: unknown): UsualRoute {
     (r.minute !== null &&
       (!Number.isInteger(r.minute) || r.minute < 0 || r.minute > 1439)) ||
     typeof r.alerts !== "boolean" ||
-    (r.alerts && (!r.days.length || r.minute === null)) ||
+    (r.anyTime !== undefined && typeof r.anyTime !== "boolean") ||
+    (r.anyTime === true && (r.days.length > 0 || r.minute !== null)) ||
+    (r.alerts && !r.anyTime && (!r.days.length || r.minute === null)) ||
     r.days.length > 0 !== (r.minute !== null) ||
     !validFare(r.priceAud) ||
     !["MOBILE", "EMAIL", "OTHER"].includes(r.payIdType) ||
@@ -77,6 +79,7 @@ export function validateUsualRoute(value: unknown): UsualRoute {
     destination,
     days: [...r.days].sort(),
     minute: r.minute,
+    ...(r.anyTime !== undefined ? { anyTime: r.anyTime } : {}),
     alerts: r.alerts,
     priceAud: r.priceAud,
     payId: r.priceAud === 0 ? "" : r.payId.trim(),
@@ -121,6 +124,7 @@ export function removeUsualRoute(db: Db, principal: string) {
   })();
 }
 export function scheduleMatches(route: UsualRoute, departure: Date) {
+  if (route.anyTime === true) return Number.isFinite(departure.getTime());
   if (route.minute === null || !route.days.length) return false;
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Australia/Sydney",
@@ -139,6 +143,28 @@ export function scheduleMatches(route: UsualRoute, departure: Date) {
     const distance = Math.abs(current - ((d - 1) * 1440 + route.minute!));
     return Math.min(distance, 10080 - distance) <= 60;
   });
+}
+// Atomic compare-and-save: a stale tab cannot overwrite a newer mute or schedule.
+export function saveSearchRoute(db: Db, principal: string, body: Record<string, unknown>) {
+  return db.transaction(() => {
+    const current = readUsualRoute(db, principal);
+    const expected = body.expected === null ? null : validateUsualRoute(body.expected);
+    if (JSON.stringify(current) !== JSON.stringify(expected)) throw new Error("USUAL_ROUTE_CHANGED");
+    if (body.notify !== undefined && typeof body.notify !== "boolean") throw new Error("INVALID_USUAL_ROUTE");
+    if (body.notify === true && !alertsConfigured()) throw new Error("ALERTS_UNAVAILABLE");
+    const addresses = { origin: checkedPin(body.origin), destination: checkedPin(body.destination) };
+    const route: UsualRoute = current ? { ...current, ...addresses } : {
+      ...addresses, anyTime: true, days: [], minute: null, alerts: false,
+      priceAud: 0, payId: "", payIdType: "MOBILE",
+    };
+    if (body.notify === true) {
+      route.alerts = true;
+      // Legacy driver-only routes have no rider schedule. Explicit consent enables any time.
+      if (!route.days.length && route.minute === null) route.anyTime = true;
+    }
+    if (current && sameRoute(current, route) && JSON.stringify(current) === JSON.stringify(route)) return current;
+    return saveUsualRoute(db, principal, route);
+  })();
 }
 // Conservative straight-line corridor, with pickup-before-drop-off order.
 // Suggestions are advisory, not a road-detour guarantee.

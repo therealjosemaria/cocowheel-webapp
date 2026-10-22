@@ -5,12 +5,17 @@ export type UsualRoute = {
   destination: Pin;
   days: number[]; // ISO weekday: Monday 1 ... Sunday 7
   minute: number | null;
+  anyTime?: boolean; // Explicit opt-in to unrestricted schedule; absent keeps legacy semantics.
   alerts: boolean;
   priceAud: number;
   payId: string;
   payIdType: PayIdType;
 };
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export function sameRoute(a: Pick<UsualRoute, "origin" | "destination">, b: Pick<UsualRoute, "origin" | "destination">) {
+  return a.origin.latitude === b.origin.latitude && a.origin.longitude === b.origin.longitude &&
+    a.destination.latitude === b.destination.latitude && a.destination.longitude === b.destination.longitude;
+}
 export function clockLabel(minute: number) {
   const m = ((minute % 1440) + 1440) % 1440;
   return `${Math.floor(m / 60) % 12 || 12}:${String(m % 60).padStart(2, "0")} ${m < 720 ? "am" : "pm"}`;

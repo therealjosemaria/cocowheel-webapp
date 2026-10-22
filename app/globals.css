@@ -2627,6 +2627,10 @@ p {
     min-height: 64px;
     justify-self: center;
   }
+  .role-choice > .home-current-ride {
+    width: min(100%, 360px);
+    justify-self: center;
+  }
   .desktop-navigation {
     justify-content: flex-end;
     align-items: center;
@@ -3024,4 +3028,10 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .ride-action-buttons.request-action {
   grid-auto-rows: auto;
   gap: 0;
+}
+.save-search-route {
+  padding: 12px 16px;
+}
+.save-search-route > button {
+  margin: 0;
 }

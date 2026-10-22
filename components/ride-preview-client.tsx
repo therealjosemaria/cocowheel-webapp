@@ -7,6 +7,7 @@ import RideStatusText from "./ride-status-text";
 import RideMessages, { ReportConcern } from "./ride-messages";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import { departureLabel } from "@/lib/usual-route";
+import DepartureCountdown from "./departure-countdown";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
@@ -875,8 +876,8 @@ export default function RidePreviewClient({
               />
             ) : null}
             <div className="ride-preview-summary">
-              {["PUBLISHED", "REQUESTED"].includes(ride.status) && (
-                <p className="usual-route-hint">{departureLabel(ride.scheduledDepartureAt)} · Sydney time</p>
+              {!driverOwned && ["PUBLISHED", "REQUESTED"].includes(ride.status) && (
+                <p className="usual-route-hint">{departureLabel(ride.scheduledDepartureAt)}</p>
               )}
               {privateRide?.conversations
                 ?.filter(
@@ -991,6 +992,12 @@ export default function RidePreviewClient({
                     ) : null}
                   </dd>
                 </div>
+                {driverOwned && rideIsActive && !privateRide?.pickupEstablished ? (
+                  <div className="preview-driver-departure">
+                    <dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt>
+                    <dd><DepartureCountdown scheduledAt={ride.scheduledDepartureAt} /></dd>
+                  </div>
+                ) : null}
                 <div>
                   <dt>
                     <RideFieldLabel icon="price">Fare</RideFieldLabel>

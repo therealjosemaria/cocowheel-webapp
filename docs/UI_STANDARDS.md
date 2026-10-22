@@ -4,6 +4,24 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Find's Save route is a secondary button below the map legend, separate from ride
+results/empty-state messaging. Same addresses become disabled Route saved on that
+button, not a new toast. Different saved addresses require “Replace your saved
+route?” with Replace / Cancel. Saving stays in Find; no Profile navigation.
+If alerts are off and delivery available, follow successful save with “Get notified
+about matching rides?” and “Receive emails when matching rides become available.
+Change this anytime in Profile.” Use Notify me / Not now in the shared modal shell.
+Not now/Escape preserves the saved route and leaves emails off. Already-enabled
+alerts skip consent. No permanent email helper text beside Save route.
+Profile's Edit schedule uses existing day/time/checkbox/button tokens and no
+replacement confirmation. New email choices start off, superseding preselection.
+
+Home's active-ride link matches the CTA width/alignment, with wrapping addresses.
+Driver-only Departure uses a normal detail cell directly below Estimated duration
+in the left column, preserving stacked route endpoints on the right. Use minutes,
+not seconds; remove after pickup/closure. Reuse countdown wording and normal
+cell typography. No duplicated rider countdown or new urgency colour.
+
 DepartureChoice offers two equal options: In 30 min (default) and In 1 hour.
 Reuse it in ordinary Offer and Profile's saved-route shortcut. No Now/two-hour
 UI option. Intended times are flexible, not a mandatory waiting period.
@@ -38,10 +56,10 @@ picker has the accessible name Usual departure time, without visible Around copy
 Saved-route address labels remain unchanged. Day buttons retain an accessible group name
 without a visible legend. Remove redundant setup/requirements/window prose from
 the editor, but retain validation messages and the delivery-unavailable notice.
-New drafts preselect matching email alerts only when available; saved preferences
+New drafts leave matching email alerts off; saved preferences
 are never changed by viewing. Confirm turning off with the existing dialog shell,
 TURN OFF EMAILS / GO BACK, Escape and focus restoration. A saved mute persists only
-after a successful response. This supersedes the initially-off editor rule below.
+after a successful response. This supersedes the earlier preselected-email draft.
 
 Prefer shared components over copying markup whenever behavior is equivalent.
 Profile and Offer a ride must use PaymentFields for the same placeholders, keyboard

@@ -26,10 +26,14 @@ scope and activation status; code presence is not verified deployment.
 - Riders select one or more weekdays and one shared wall-clock time. The window
   is inclusive ±60 minutes, using `Australia/Sydney` including DST. A window
   around Monday midnight includes late Sunday; the saved summary labels crossings.
-  Days/time must be supplied together. They are mandatory for email opt-in.
-  Drivers may omit both; there is no unrestricted all-day rider-alert mode.
-- New drafts preselect matching emails when delivery is configured; Save route
-  explicitly persists the visible selection. Existing saved choices stay unchanged.
+  Days/time must be supplied together in scheduled mode. Explicit `anyTime: true`
+  instead requires empty days/null minute and matches every valid departure time.
+  Legacy records without this flag retain their existing semantics; missing
+  schedules are never implicitly widened. Profile's Edit schedule allows either
+  mode without replacing the addresses or payment preferences.
+- New drafts leave matching emails off. Save route explicitly persists the visible
+  selection; Find's shortcut has a separate Notify me / Not now consent modal.
+  Existing saved choices stay unchanged.
   Turning off in the draft or saved view requires confirmation; Escape/Go back
   leaves it on. No schedule is invented. Enable/Mute controls affect future queued
   sends; no automatic historical search/fan-out occurs on enabling or saving.
@@ -73,6 +77,15 @@ Saved configuration is private GET/POST data, never added to current/history,
 public discovery, another participant's ride or admin payloads.
 
 - GET `/api/usual-route`: own active route or null, plus `alertsAvailable`.
+- POST `/api/usual-route/from-search`: `{origin, destination, expected, notify?}`.
+  `expected` is the previously read route or null; compare-and-save is atomic.
+  A mismatch returns 409 USUAL_ROUTE_CHANGED, without overwriting a newer mute,
+  schedule or payment setting. Server-owned current preferences are copied, not
+  caller-supplied fare/schedule/account fields. New routes default to free,
+  anyTime and alerts false. Only explicit notify=true enables email; unavailable
+  delivery returns 503 ALERTS_UNAVAILABLE without changing data. Same exact save
+  is a no-op; replacement still versions the route and skips older queued alerts.
+  No schema migration or historical record rewrite. API restart required.
 - POST `/api/usual-route`: validate/replace own configuration. Unknown account
   fields do not choose ownership. Changes version the configuration and suppress
   pending alerts for its previous version.
@@ -95,7 +108,8 @@ Self-matches are excluded. At send time, active participation in another ride
 suppresses the alert; the normal request endpoint still rechecks availability.
 
 Schedule compares the offer's intended departure with the rider's window,
-not the moment the driver clicked. Spatial matching uses an approximate planar
+not the moment the driver clicked; explicit anyTime skips only this schedule test.
+Spatial matching uses an approximate planar
 straight-line corridor: pickup within 1,500m, destination within 2,500m, projection
 ordered pickup before destination and bounded to −5%/+5% of the driver segment.
 Driver segments below 100m do not match. This is deliberately advisory:

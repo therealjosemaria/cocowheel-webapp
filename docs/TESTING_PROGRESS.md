@@ -6,6 +6,7 @@ relevant retest verifies the fix. Do not infer production deployment from a push
 
 | Date | Campaign | Result / scope | Evidence |
 | --- | --- | --- | --- |
+| 2026-10-22 | Find save-route / email consent | 134 isolated regressions; four-width mocked save/replace/consent/conflict/Profile checks, lint/build. No live emails or load test; API activation separate. | [Save-route checks](SAVE_SEARCH_ROUTE_2026-10-22.md), [Driver countdown](DRIVER_DEPARTURE_2026-10-22.md) |
 | 2026-10-22 | Departure UI and optional origin location | 132 regressions, lint/build; mocked responsive checks for countdown states, two departure choices and explicit GPS. No backend change. | [Departure](DEPARTURE_DISPLAY_2026-10-22.md), [Origin GPS](ROUTE_LOCATION_2026-10-22.md) |
 | 2026-10-22 | Acceptance-gated GPS privacy | Isolated API/core tests and mobile/desktop GPS-spy checks; API restarted from ccc4229, local/public health passed. Authenticated live flow unverified. | [Privacy checks](GPS_PRIVACY_2026-10-22.md) |
 | 2026-10-22 | Future-offer discovery and shared search locality | 131 regression tests, lint/build and four-width mocked browser suite passed; production API restarted, local/public health passed. | [Causes, checks and boundaries](DISCOVERY_LOCATION_2026-10-22.md) |

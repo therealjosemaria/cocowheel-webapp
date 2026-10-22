@@ -18,6 +18,7 @@ import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/pr
 import DepartureChoice from "./departure-choice";
 import { Message } from "./ride-journey-controls";
 import RideFieldLabel from "./ride-field-label";
+import RouteSchedule from "./route-schedule";
 
 export default function UsualRouteClient({ match }: { match: string | null }) {
   const router = useRouter();
@@ -28,7 +29,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [draftOwner, setDraftOwner] = useState<string | null>(null);
   const [days, setDays] = useState<number[]>([]);
   const [minute, setMinute] = useState("");
-  const [alerts, setAlerts] = useState(true);
+  const [alerts, setAlerts] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(false);
   const [fare, setFare] = useState("5");
   const [contribution, setContribution] = useState(false);
   const [payId, setPayId] = useState("");
@@ -61,7 +63,8 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setPayId("");
       setDays([]);
       setMinute("");
-      setAlerts(true);
+      setAlerts(false);
+      setEditingSchedule(false);
       setFare("5");
       setContribution(false);
       setPayIdType("MOBILE");
@@ -88,7 +91,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               setPayId(result.route.payId);
               setPayIdType(result.route.payIdType);
             }
-            setAlerts(result.route?.alerts ?? (result.alertsAvailable && (draft?.alerts ?? true)));
+            setAlerts(result.route?.alerts ?? (result.alertsAvailable && (draft?.alerts ?? false)));
             setAvailable(result.alertsAvailable);
             setVerified(true);
           }
@@ -365,12 +368,10 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                 <h2>
                   <RideFieldLabel icon="rider">Find a ride</RideFieldLabel>
                 </h2>
-                {saved.minute !== null && saved.days.length ? (
+                {saved.anyTime || (saved.minute !== null && saved.days.length) ? (
                   <>
                     <p>
-                      {saved.days.map((d) => WEEKDAYS[d - 1]).join(", ")}
-                      <br />
-                      {scheduleWindow(saved.minute)}
+                      {saved.anyTime ? "Any day, any time" : <>{saved.days.map((d) => WEEKDAYS[d - 1]).join(", ")}<br />{scheduleWindow(saved.minute!)}</>}
                     </p>
                     <button
                       className="secondary"
@@ -397,10 +398,15 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   </>
                 ) : (
                   <p>
-                    Replace your saved route to add travel days and a time for
-                    rider alerts.
+                    Add a schedule for matching ride emails.
                   </p>
                 )}
+                {editingSchedule ? <RouteSchedule route={saved} busy={busy} close={() => setEditingSchedule(false)} save={async (route) => {
+                  setBusy(true);
+                  try { await persist(route); setEditingSchedule(false); }
+                  catch (reason) { fail(reason); }
+                  finally { setBusy(false); }
+                }} /> : <button className="secondary" disabled={busy} onClick={() => setEditingSchedule(true)}>Edit schedule</button>}
                 {!available && (
                   <p className="usual-route-hint">
                     Matching emails aren’t available yet. Your route can still
@@ -502,7 +508,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                       );
                       if (current === generation.value) {
                         setSaved(null);
-                        setAlerts(available);
+                        setAlerts(false);
                         setContribution(false);
                         setFare("5");
                         setPayId("");
