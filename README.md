@@ -30,7 +30,7 @@ The redundant routine-privacy helper is omitted; saved routes remain private.
 Usual route and Matching ride alerts use matching icon-and-heading styling.
 Profile's saved addresses stack in one column with a 12px heading/content gap,
 matching the alerts section. Shared address editors in Profile, Offer and Find
-include a centred Swap addresses control between fields; it swaps selected
+include Swap addresses beside Use my location, without a separate row; it swaps selected
 pins and draft text without submitting, navigating or saving. Schedule editors
 retain native time inputs with a Choose a time hint when empty and unfocused.
 See [Profile and shared-route polish](docs/PROFILE_ROUTE_POLISH_2026-10-23.md).

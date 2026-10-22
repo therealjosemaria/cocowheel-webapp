@@ -51,3 +51,21 @@ Reviewed Profile editor and both role-form captures at 390/1440px for overall
 hierarchy, spacing and alignment. No overflow or browser exceptions. Full test
 suite/build results above apply to the preceding implementation; this CSS-only
 refinement was checked with browser regression and git diff --check.
+
+## Adjacent controls refinement
+
+The centred-between-fields experiment is superseded. Swap now sits immediately
+after Use my location with an 8px gap, in the same responsive action group:
+below origin on mobile, before Search on desktop. Its separate row is removed.
+The 44px target and centred 18px arrows remain. The hidden responsive duplicate
+is excluded from keyboard/accessibility navigation by display:none. After swapping
+remounts the inputs, focus returns to the visible Swap control without scrolling.
+Address/pin swapping, search/GPS cleanup and save behaviour are unchanged.
+
+Re-ran the browser command above at 320/390/844/1440px: all passed, including
+8px adjacency, vertical alignment, centred icons, 44px targets and restored
+keyboard focus. Profile pin persistence and Offer/Find draft swaps passed without
+overflow or browser exceptions. ESLint, production build and git diff --check
+passed. Visually reviewed complete Profile editor and Offer/Find captures at
+390/1440px for spacing, typography, icon prominence and unchanged surrounding
+controls. Physical-device Safari and deployed production remain unverified.

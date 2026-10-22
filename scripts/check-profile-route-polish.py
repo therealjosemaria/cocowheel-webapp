@@ -35,15 +35,17 @@ with sync_playwright() as p:
         page.screenshot(path=f'/tmp/profile-polish-summary-{width}.png',full_page=True)
         page.get_by_role('button',name='Edit route',exact=True).click()
         def check_swap_alignment():
-            fields=page.locator('.route-search-fields').bounding_box()
             button=page.get_by_role('button',name='Swap addresses',exact=True).bounding_box()
-            icon=page.locator('.route-swap svg').bounding_box()
-            assert abs(button['x']+button['width']/2-fields['x']-fields['width']/2)<1
+            location=page.get_by_role('button',name='Use my location',exact=True).bounding_box()
+            icon=page.locator('.route-swap:visible svg').bounding_box()
+            assert abs(button['x']-location['x']-location['width']-8)<1
+            assert abs(button['y']+button['height']/2-location['y']-location['height']/2)<1
             assert abs(icon['x']+icon['width']/2-button['x']-button['width']/2)<1
             assert abs(icon['y']+icon['height']/2-button['y']-button['height']/2)<1
             assert button['width']>=44 and button['height']>=44
         check_swap_alignment()
         page.get_by_role('button',name='Swap addresses',exact=True).click()
+        expect(page.get_by_role('button',name='Swap addresses',exact=True)).to_be_focused()
         expect(page.get_by_placeholder('Where from?',exact=True)).to_have_value(destination['label'])
         expect(page.get_by_placeholder('Where to?',exact=True)).to_have_value(origin['label'])
         page.screenshot(path=f'/tmp/profile-polish-editor-{width}.png',full_page=True)

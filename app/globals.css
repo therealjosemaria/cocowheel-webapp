@@ -3058,10 +3058,13 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .profile-route-summary { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .profile-route-summary > div { padding: 0; border: 0; }
 .profile-route-summary > div:nth-child(odd) { border-right: 0; }
-.route-search-fields > .route-swap {
-  justify-self: center; display: grid; place-items: center;
+.route-location-actions { align-items: center; gap: 8px; flex-shrink: 0; }
+.place-search .route-location-actions > .secondary { margin: 0; }
+.place-search .route-swap {
+  display: grid; place-items: center; flex-shrink: 0;
   width: 44px; height: 44px; min-height: 44px;
-  padding: 10px; margin: -12px 0; z-index: 1;
+  padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-control);
+  background: var(--surface); color: var(--ink);
 }
 .route-swap svg { display: block; width: var(--icon-field); height: var(--icon-field); }
 .usual-route-time { position: relative; }

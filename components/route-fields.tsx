@@ -50,6 +50,21 @@ export function RouteFields({
         key={`origin-${swapped?.revision ?? 0}`}
         placeholder="Where from?"
         allowCurrentLocation
+        onSwap={() => {
+          const inputs = container.current?.querySelectorAll("input");
+          const from = inputs?.[0]?.value ?? "";
+          const to = inputs?.[1]?.value ?? "";
+          if (!from && !to) return;
+          setOrigin(destination);
+          setDestination(origin);
+          onDraftText?.("origin", to);
+          onDraftText?.("destination", from);
+          setSwapped((old) => ({ revision: (old?.revision ?? 0) + 1, origin: to, destination: from }));
+          requestAnimationFrame(() => {
+            const buttons = container.current?.querySelectorAll<HTMLButtonElement>(".route-swap");
+            Array.from(buttons ?? []).find((button) => button.getClientRects().length)?.focus({ preventScroll: true });
+          });
+        }}
         initialValue={swapped?.origin ?? draftText?.origin ?? (origin ? locationText(origin) : "")}
         countryCode={countryCode}
         onEdit={(text) => {
@@ -66,27 +81,6 @@ export function RouteFields({
               ?.focus({ preventScroll: true });
         }}
       />
-      <button
-        type="button"
-        className="secondary route-swap"
-        aria-label="Swap addresses"
-        title="Swap addresses"
-        onClick={() => {
-          const inputs = container.current?.querySelectorAll("input");
-          const from = inputs?.[0]?.value ?? "";
-          const to = inputs?.[1]?.value ?? "";
-          if (!from && !to) return;
-          setOrigin(destination);
-          setDestination(origin);
-          onDraftText?.("origin", to);
-          onDraftText?.("destination", from);
-          setSwapped((old) => ({ revision: (old?.revision ?? 0) + 1, origin: to, destination: from }));
-        }}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8 20V4m-4 4 4-4 4 4M16 4v16m-4-4 4 4 4-4" />
-        </svg>
-      </button>
       <PlaceSearch
         key={`destination-${swapped?.revision ?? 0}`}
         placeholder="Where to?"
@@ -123,6 +117,7 @@ export function PlaceSearch({
   inlineResults = true,
   onEdit,
   allowCurrentLocation = false,
+  onSwap,
 }: {
   bias?: Pin;
   countryCode?: string;
@@ -136,6 +131,7 @@ export function PlaceSearch({
   inlineResults?: boolean;
   onEdit?: (text: string) => void;
   allowCurrentLocation?: boolean;
+  onSwap?: () => void;
 }) {
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
@@ -177,10 +173,18 @@ export function PlaceSearch({
     }
   };
   const locationButton = (className: string) => allowCurrentLocation ? (
-    <button type="button" className={`secondary route-use-location ${className}`}
+    <div className={`route-location-actions ${className}`}>
+    <button type="button" className="secondary route-use-location"
       disabled={locating} onClick={() => void locateOrigin()}>
       <RideFieldLabel icon="from">{locating ? "Locating…" : "Use my location"}</RideFieldLabel>
     </button>
+    {onSwap && <button type="button" className="secondary route-swap"
+      aria-label="Swap addresses" title="Swap addresses" onClick={onSwap}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 20V4m-4 4 4-4 4 4M16 4v16m-4-4 4 4 4-4" />
+      </svg>
+    </button>}
+    </div>
   ) : null;
   useEffect(
     () => () => {

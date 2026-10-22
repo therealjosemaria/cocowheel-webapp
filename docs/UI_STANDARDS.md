@@ -7,9 +7,11 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 Profile saved addresses stack Where from? then Where to? in one column, matching
 edit order. Heading-to-content spacing is 12px in both route and alert sections;
 remove the saved summary's former cell padding/borders, scoped to Profile only.
-Shared RouteFields includes a 44px secondary Swap addresses icon button aligned
-centrally between fields, with its arrows centred inside, an accessible name and
-title. Keep Use my location with the origin. It swaps draft text and
+Shared RouteFields includes a 44px secondary Swap addresses icon button beside
+Use my location with an 8px gap, with its arrows centred inside, an accessible
+name and title. Both sit below the origin input on mobile and before Search on
+desktop. No separate swap row; this supersedes centred-between-fields placement.
+It swaps draft text and
 selected pins, not schedule/consent/fare, and never submits or advances Find.
 Native schedule time fields show Choose a time when empty/unfocused; focus exposes
 native time segments. Both new-route and Edit schedule use the same component.
