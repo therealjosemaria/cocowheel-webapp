@@ -21,6 +21,7 @@ export function saveVehicle(
   input: unknown,
 ): Vehicle {
   const vehicle = checkedVehicle(input);
+  if (!vehicle.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
   db.prepare(
     "INSERT INTO account_vehicles(principal_id, body) VALUES (?, ?) ON CONFLICT(principal_id) DO UPDATE SET body=excluded.body",
   ).run(principal, JSON.stringify(vehicle));

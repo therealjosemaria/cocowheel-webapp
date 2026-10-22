@@ -18,7 +18,7 @@ function PlateField({
 }) {
   return (
     <label className="field">
-      Number plate
+      Number plate (required)
       <input
         value={value}
         onChange={(e) => change(e.target.value.toUpperCase())}
@@ -112,6 +112,7 @@ export default function VehicleDetails() {
             <PlateField
               value={vehicle.plate}
               change={(value) => change("plate", value)}
+              required
               disabled={busy}
             />
             {(
@@ -122,7 +123,7 @@ export default function VehicleDetails() {
               ] as const
             ).map(([key, label, placeholder]) => (
               <label className="field" key={key}>
-                {label} (optional)
+                {label}
                 <input
                   value={vehicle[key]}
                   placeholder={placeholder}
@@ -132,7 +133,7 @@ export default function VehicleDetails() {
                 />
               </label>
             ))}
-            <button className="secondary" disabled={busy}>
+            <button className="primary" disabled={busy}>
               {busy ? "Saving…" : "Save vehicle details"}
             </button>
             {saved && <p role="status">Vehicle details saved.</p>}

@@ -6,7 +6,10 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 Vehicle details is a collapsed, single-purpose Profile accordion using the existing
 disclosure, car icon, field and button styles. Number plate is required at rider
-acceptance, not publication; make/model/colour are optional. The plate-only prompt
+acceptance, not publication; make/model/colour are optional. Both the prompt
+and Profile mark Number plate (required); omit optional suffixes on other fields.
+Profile saving requires a plate and reuses the primary Save route button treatment.
+The plate-only prompt
 uses the shared modal and Save & accept / Go back, preserving input on failure.
 Accepted riders see vehicle details just below their pickup panel, outside chat.
 The rider message starter is “Hi! Where should we meet?”. Do not duplicate plate

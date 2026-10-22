@@ -51,6 +51,8 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   summary target, with the existing car icon. Fields use the shared 16px inputs,
   12px related gaps and regular body copy. Pickup vehicle summary uses 14px text,
   12px padding and 4px value gaps, existing neutral border/radius; no new palette.
+  Save vehicle details uses primary, matching Save route; other vehicle actions
+  keep their existing styles.
 
 - Profile body uses 12px related-content gaps; saved address summary is one column
   with 12px between fields and no inset/border. Other ride grids are unchanged.

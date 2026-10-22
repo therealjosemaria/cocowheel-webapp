@@ -12,7 +12,9 @@ starting with a letter/digit; leading zeros remain. Optional make/model/colour
 are trimmed, max 40 characters, rejecting control characters. These are basic
 input checks, not registration, ownership, licence or identity verification.
 
-The account editor permits a blank plate; publication does not require one.
+Saving vehicle details requires a plate; publication does not require one.
+Blank saves return 409 VEHICLE_PLATE_REQUIRED without changing existing details.
+This supersedes the initial blank-plate Profile save behaviour in 4bb8253.
 PATCH /api/rides/:ride/requests/:request with ACCEPT uses acceptWithVehicle.
 It validates role/state, uses the saved vehicle or saves an optional supplied plate,
 then inserts the ride snapshot in one SQLite transaction. Missing plate returns
@@ -29,6 +31,8 @@ pending and discarded rider views do not. Old accepted rides without a snapshot
 remain usable. This release does not require existing riders to re-pair.
 
 Profile's collapsed Vehicle details accordion works independently of route saving.
+Save vehicle details uses the same primary button as Save route. Only Number plate
+is marked (required); Make, Model and Colour omit optional suffixes but remain optional.
 Both acceptance entry points reuse the plate-only modal with focus containment,
 Escape/Go back, busy protection and input-preserving errors. Accepted rider details
 show the plate and supplied optional fields below pickup, outside messaging.
@@ -68,6 +72,11 @@ explicit navigation wait passed. No product change was needed for those failures
 
 Production API activation, real-device Safari/keyboard checks and authenticated
 live-account walkthrough remain unverified. A push is not a verified deployment.
+
+Follow-up to 4bb8253: simplified labels and primary Save vehicle details button
+retested with 147 passing regressions and the same 320/390/1440px browser script.
+Screenshots reviewed on mobile/desktop; blank vehicle saves now preserve prior
+details and return VEHICLE_PLATE_REQUIRED. Publication still needs no plate.
 
 ### Dated sanitized reliability evidence
 

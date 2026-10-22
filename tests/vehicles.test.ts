@@ -90,6 +90,8 @@ test("saved vehicle acceptance, immutable snapshot, other-rider privacy and lega
       acceptWithVehicle(db, driver.token, id, otherReq, "BAD999"),
     );
     assert.equal(readVehicle(db, driver.session.id)?.plate, "NEW123");
+    assert.throws(() => saveVehicle(db, driver.session.id, { plate: " " }), /VEHICLE_PLATE_REQUIRED/);
+    assert.equal(readVehicle(db, driver.session.id)?.plate, "NEW123");
     assert.equal((db.prepare("SELECT count(*) n FROM ride_vehicles").get() as { n: number }).n, 1);
     // Pre-feature accepted rides have no snapshot and remain readable.
     db.prepare("DELETE FROM ride_vehicles").run();

@@ -46,7 +46,9 @@ with sync_playwright() as p:
         expect(details).to_be_visible()
         expect(details).not_to_have_attribute('open', '')
         details.locator('summary').click()
-        for label, value in [('Number plate', 'ABC123'), ('Make (optional)', 'Toyota'), ('Model (optional)', 'Corolla'), ('Colour (optional)', 'White')]:
+        expect(details.get_by_role('button', name='Save vehicle details')).to_have_class('primary')
+        expect(details.get_by_label('Number plate (required)')).to_have_attribute('required', '')
+        for label, value in [('Number plate (required)', 'ABC123'), ('Make', 'Toyota'), ('Model', 'Corolla'), ('Colour', 'White')]:
             details.get_by_label(label, exact=True).fill(value)
         details.get_by_role('button', name='Save vehicle details', exact=True).click()
         expect(details.get_by_text('Vehicle details saved.')).to_be_visible()
@@ -61,14 +63,14 @@ with sync_playwright() as p:
         dialog.get_by_role('button', name='Go back').click()
         assert not state['accepted']
         page.get_by_role('button', name='ACCEPT RIDER', exact=True).click()
-        dialog.get_by_label('Number plate').fill('xyz123')
-        expect(dialog.get_by_label('Number plate')).to_have_value('XYZ123')
+        dialog.get_by_label('Number plate (required)').fill('xyz123')
+        expect(dialog.get_by_label('Number plate (required)')).to_have_value('XYZ123')
         page.screenshot(path=f'/tmp/vehicle-prompt-{width}.png', full_page=True)
         state['fail'] = True
         dialog.get_by_role('button', name='Save & accept').click()
         expect(dialog.get_by_role('alert')).to_be_visible()
         assert not state['accepted']
-        expect(dialog.get_by_label('Number plate')).to_have_value('XYZ123')
+        expect(dialog.get_by_label('Number plate (required)')).to_have_value('XYZ123')
         with page.expect_navigation(wait_until='load'):
             dialog.get_by_role('button', name='Save & accept').click()
         expect(dialog).not_to_be_visible()

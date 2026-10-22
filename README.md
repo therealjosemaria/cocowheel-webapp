@@ -611,7 +611,10 @@ real-device verification.
 ### Vehicle details (23 October 2026)
 
 Profile has a collapsed Vehicle details accordion: number plate, plus optional
-make, model and colour. Publishing remains unchanged. Accepting a rider requires
+make, model and colour. Publishing remains unchanged. Saving vehicle details
+requires a plate. Only the plate label says (required);
+the other fields remain optional without suffixes. Save vehicle details matches
+the primary Save route button. Accepting a rider requires
 a plate server-side; if absent, Save & accept asks only for that plate in the
 shared modal, without accepting until the save succeeds. Account save, acceptance
 and a trip-specific vehicle snapshot are atomic. Later Profile edits affect future
