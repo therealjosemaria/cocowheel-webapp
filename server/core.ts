@@ -12,6 +12,7 @@ import type Database from "better-sqlite3";
 import { ratingSummary, rideRatingState } from "./ratings";
 import { conversationSummaries } from "./messaging";
 import { initializeUsualRoutes, queueRouteAlerts } from "./usual-routes";
+import { initializeVehicles, rideVehicle } from "./vehicles";
 import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
@@ -213,6 +214,7 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  vehicle?: import("../lib/vehicle").Vehicle;
   conversations?: ConversationSummary[];
   driverRating?: RatingSummary;
   rating?: RideRatingState;
@@ -344,6 +346,7 @@ export function initializeCoreSchema(db: Db) {
     readFileSync(path.join(process.cwd(), "server", "schema.sql"), "utf8"),
   );
   initializeUsualRoutes(db);
+  initializeVehicles(db);
   allowFreeRideFares(db);
   const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
@@ -2016,6 +2019,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     )
     .all(row.id) as RequestRow[];
   return {
+    vehicle: rideVehicle(db, row.id),
     rideId: row.public_id,
     isSample: Boolean(row.is_sample),
     driverLocation: ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(row.status)
@@ -2113,6 +2117,7 @@ function riderView(
       ? decryptCode(row.co_ride_code_ciphertext)
       : undefined;
   return {
+    vehicle: request.id === row.accepted_request_id && request.status === "ACCEPTED" ? rideVehicle(db, row.id) : undefined,
     rideId: row.public_id,
     status: row.status,
     driverAlias: row.driver_alias,

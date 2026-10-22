@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import Database from "better-sqlite3";
 import { allowFreeRideFares } from "../server/free-ride-schema";
+import { initializeVehicles } from "../server/vehicles";
 import { fareLabel, validFare, validFareDraft } from "../lib/fare";
 import {
   initializeCoreSchema,
@@ -88,6 +89,7 @@ test(`fare migration preserves records, FK, indexes and triggers from ${priorChe
     );
     // Initialize ancillary schemas without upgrading the legacy rides table yet.
     initializeUsualRoutes(db);
+    initializeVehicles(db);
     db.exec(readFileSync("server/messaging-schema.sql", "utf8"));
     db.exec(
       "ALTER TABLE live_locations ADD COLUMN moving INTEGER NOT NULL DEFAULT 0",

@@ -15,7 +15,7 @@ export const conversationTarget = (id: string) =>
   `messages-${encodeURIComponent(id)}`;
 
 export const MESSAGE_STARTER =
-  "Hi! Where should we meet, and what’s your car’s number plate?";
+  "Hi! Where should we meet?";
 export const DRIVER_MESSAGE_STARTER =
   "Hi! Where would you like me to pick you up?";
 export const REQUEST_MESSAGE_HINT =

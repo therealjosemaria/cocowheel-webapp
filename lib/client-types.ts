@@ -44,6 +44,7 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type Ride = {
+  vehicle?: import("./vehicle").Vehicle;
   conversations?: import("./messaging-types").ConversationSummary[];
   driverRating?: RatingSummary;
   rating?: RideRatingState;

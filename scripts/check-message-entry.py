@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright, expect
 
 pin = {'latitude': -33.87, 'longitude': 151.21, 'label': 'Town Hall'}
 end = {'latitude': -33.92, 'longitude': 151.25, 'label': 'Coogee'}
-starter = 'Hi! Where should we meet, and what’s your car’s number plate?'
+starter = 'Hi! Where should we meet?'
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
     for width in [320, 393, 1440]:

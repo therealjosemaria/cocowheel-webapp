@@ -52,6 +52,12 @@ project.
 
 ## Verification
 
+Vehicle details (23 October): restart the API before using the new Profile
+accordion. Startup adds account_vehicles and ride_vehicles without rewriting
+existing rides. Back up first and confirm no accepted/active trips before restarting.
+Acceptance now requires a plate; pre-existing accepted trips are grandfathered.
+See [vehicle checks](../docs/VEHICLES.md). A frontend push alone is not activation.
+
 Profile/contribution update (22 October) lowers the paid minimum to AUD 1 and
 allows cents. Restart the tested API before releasing its frontend. The existing
 transactional fare migration now handles both >=5 and free-or->=5 CHECKs, changing

@@ -12,6 +12,6 @@ test("successful request targets its own conversation without a scroll anchor", 
   assert.equal(url.searchParams.has("compose"), false);
   assert.equal(url.hash, "");
   assert.equal(url.searchParams.has("text"), false);
-  assert.ok(MESSAGE_STARTER.includes("number plate"));
+  assert.equal(MESSAGE_STARTER, "Hi! Where should we meet?");
   assert.equal(DRIVER_MESSAGE_STARTER, "Hi! Where would you like me to pick you up?");
 });

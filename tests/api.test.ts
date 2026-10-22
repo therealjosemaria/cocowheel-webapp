@@ -11,6 +11,8 @@ import {
   ensureSampleRides,
 } from "../server/core";
 import { createApiServer } from "../server/index";
+import type { Vehicle } from "../lib/vehicle";
+import type { RideView } from "../server/core";
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
@@ -282,13 +284,32 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       anonymous,
     );
     assert.equal(privateAttempt.response.status, 403);
+    assert.equal((await json(`${base}/api/vehicle`, "GET")).response.status, 401);
+    assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, null);
+    const acceptUrl = `${base}/api/rides/${driverRide.rideId}/requests/${riderRide.request.requestId}`;
+    const missingPlate = await json(acceptUrl, "PATCH", { decision: "ACCEPT" }, driverToken);
+    assert.equal(missingPlate.body.error, "VEHICLE_PLATE_REQUIRED");
+    assert.equal(missingPlate.response.status, 409);
+    assert.equal((database.prepare("SELECT count(*) n FROM ride_vehicles").get() as { n: number }).n, 0);
+    assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "BAD\nPLATE" }, driverToken)).response.status, 400);
+    assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, null);
+    assert.equal(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, riderToken)).body.ride as RideView).request?.status, "PENDING");
+    assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "STEAL" }, riderToken)).response.status, 403);
     const accepted = await json(
       `${base}/api/rides/${driverRide.rideId}/requests/${riderRide.request.requestId}`,
       "PATCH",
-      { decision: "ACCEPT" },
+      { decision: "ACCEPT", plate: " abc123 " },
       driverToken,
     );
     assert.equal(accepted.response.status, 200);
+    assert.equal((accepted.body.ride as RideView).vehicle?.plate, "ABC123");
+    assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, riderToken)).body.vehicle, null);
+    assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "ABC123");
+    assert.equal((await json(`${base}/api/vehicle`, "POST", { plate: "NEW123", make: "Toyota", model: "Corolla", colour: "White", principal_id: "someone-else" }, driverToken)).response.status, 200);
+    assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "OVERWRITE" }, driverToken)).response.status, 409);
+    assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "NEW123");
+    const exposed = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET");
+    assert.equal(exposed.body.ride, undefined); // Accepted offers are no longer public.
     const driverRenewal = await json(
       `${base}/api/rides/${driverRide.rideId}/pickup-code`,
       "POST",
@@ -309,6 +330,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
       undefined,
       riderToken,
     );
+    assert.equal((acceptedRiderState.body.ride as RideView).vehicle?.plate, "ABC123");
     assert.equal(
       (acceptedRiderState.body.ride as Record<string, unknown>).payId,
       undefined,

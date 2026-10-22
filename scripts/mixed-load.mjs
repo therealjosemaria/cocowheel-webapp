@@ -553,7 +553,7 @@ async function main() {
             "accept",
             route() + "/requests/" + p.requestId,
             p.driver,
-            { decision: "ACCEPT" },
+            { decision: "ACCEPT", plate: "TEST123" },
             "PATCH",
             (d) => d.ride?.status === "ACCEPTED",
           );

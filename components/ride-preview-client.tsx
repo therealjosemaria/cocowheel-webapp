@@ -1,4 +1,5 @@
 "use client";
+import { VehiclePlatePrompt, RideVehicle } from "./vehicle-details";
 import { fareLabel } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
@@ -555,9 +556,11 @@ export default function RidePreviewClient({
     }
   }
 
+  const [plateRequest, setPlateRequest] = useState<string | null>(null);
   async function decideRiderRequest(
     requestId: string,
     decision: "ACCEPT" | "DECLINE",
+    plate?: string,
   ) {
     setRequestDecision({ requestId, decision });
     try {
@@ -565,11 +568,17 @@ export default function RidePreviewClient({
         `/api/rides/${encodeURIComponent(rideId)}/requests/${encodeURIComponent(requestId)}`,
         {
           method: "PATCH",
-          body: JSON.stringify({ decision }),
+          body: JSON.stringify({ decision, plate }),
         },
       );
       window.location.reload();
     } catch (reason) {
+      setRequestDecision(null);
+      if (plate !== undefined) throw reason;
+      if (reason instanceof ApiError && reason.code === "VEHICLE_PLATE_REQUIRED") {
+        setPlateRequest(requestId);
+        return;
+      }
       setRequestDecisionError(
         apiErrorMessage(reason, "We couldn’t update this request."),
       );
@@ -694,6 +703,7 @@ export default function RidePreviewClient({
           </section>
         </div>
       ) : null}
+      {plateRequest && <VehiclePlatePrompt close={() => setPlateRequest(null)} confirm={async plate => { await decideRiderRequest(plateRequest, "ACCEPT", plate); setPlateRequest(null); }} />}
       {requestDecisionError ? (
         <div className="location-prompt-backdrop" role="presentation">
           <section
@@ -867,6 +877,7 @@ export default function RidePreviewClient({
                 }
               >
                 <PickupConfirmation ride={privateRide} driver={driverOwned} />
+                {!driverOwned && <RideVehicle vehicle={privateRide.vehicle} />}
               </div>
             ) : null}
             {privateRide ? (

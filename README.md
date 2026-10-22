@@ -77,7 +77,8 @@ Discovery and public ride previews keep Request to join unchanged, with a quiet
 “You can message the driver after requesting.” hint. Successful requests open
 ride details with messaging collapsed, matching normal visits and driver views.
 Opening an empty conversation offers a tap-to-insert editable starter for either
-role; nothing is filled or sent automatically. Explicit unread-message links
+role; the rider suggestion is “Hi! Where should we meet?” without a number-plate
+question. Nothing is filled or sent automatically. Explicit unread-message links
 still open the targeted conversation.
 Both suggested-message buttons use left-aligned, vertically centred text and
 equal 12px padding, retaining shared secondary-button styling.
@@ -606,6 +607,20 @@ permissions do not automatically transfer. Do not promise seamless handoff witho
 real-device verification.
 
 ## Product and UI standards
+
+### Vehicle details (23 October 2026)
+
+Profile has a collapsed Vehicle details accordion: number plate, plus optional
+make, model and colour. Publishing remains unchanged. Accepting a rider requires
+a plate server-side; if absent, Save & accept asks only for that plate in the
+shared modal, without accepting until the save succeeds. Account save, acceptance
+and a trip-specific vehicle snapshot are atomic. Later Profile edits affect future
+acceptances only. Existing accepted trips without a snapshot remain usable.
+Only the owner and accepted rider receive the trip snapshot; discovery and other
+riders do not. The rider sees it beside the pickup area. No verification claim or
+automatic deletion is added. The rider message suggestion is now “Hi! Where should
+we meet?”. See [vehicle API, privacy and checks](docs/VEHICLES.md).
+Requires a Pi API restart (additive tables); push alone does not activate it.
 
 After every UI or copy edit, review the whole affected screen on mobile and
 desktop for competing emphasis, not just the changed element. Reassess weight,

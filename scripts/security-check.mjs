@@ -437,7 +437,7 @@ try {
   const accept = await call(
     `${ridePath}/requests/${requestId}`,
     driver,
-    { decision: "ACCEPT" },
+    { decision: "ACCEPT", plate: "TEST123" },
     "PATCH",
   );
   assert.equal(accept.status, 200);
@@ -478,7 +478,7 @@ try {
     deny(
       `${ridePath}/requests/${otherId}`,
       driver,
-      { decision: "ACCEPT" },
+      { decision: "ACCEPT", plate: "TEST123" },
       "PATCH",
     ),
   );

@@ -55,6 +55,8 @@ import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
 import { readUsualRoute, saveUsualRoute, saveSearchRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
+import { readVehicle, saveVehicle } from "./vehicles";
+import { acceptWithVehicle } from "./vehicle-acceptance";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -131,6 +133,7 @@ async function readJson(request: IncomingMessage): Promise<Json> {
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (code === "VEHICLE_PLATE_REQUIRED") return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
     return 409;
@@ -769,6 +772,19 @@ export function createApiServer(
         );
         return;
       }
+      if (parts.length === 2 && parts[0] === "api" && parts[1] === "vehicle") {
+        const owner = requireUniversitySession(database, token);
+        if (request.method === "GET") {
+          writeJson(response, 200, { vehicle: readVehicle(database, owner.id) }, cors);
+          return;
+        }
+        if (request.method === "POST") {
+          const body = await readJson(request);
+          const current = requireUniversitySession(database, token);
+          writeJson(response, 200, { vehicle: saveVehicle(database, current.id, body) }, cors);
+          return;
+        }
+      }
       if (parts[0] === "api" && parts[1] === "usual-route") {
         const session = requireUniversitySession(database, token);
         if (parts.length === 2 && request.method === "GET") {
@@ -975,12 +991,12 @@ export function createApiServer(
           response,
           200,
           {
-            ride: decideRequest(
+            ride: body.decision === "ACCEPT" ? acceptWithVehicle(database, token, parts[2], parts[4], body.plate) : decideRequest(
               database,
               token,
               parts[2],
               parts[4],
-              body.decision === "ACCEPT" ? "ACCEPT" : "DECLINE",
+              "DECLINE",
             ),
           },
           cors,

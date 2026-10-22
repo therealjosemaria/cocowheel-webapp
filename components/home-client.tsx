@@ -1,4 +1,5 @@
 "use client";
+import { VehiclePlatePrompt } from "./vehicle-details";
 import DepartureChoice from "./departure-choice";
 import { departureLabel, departureTone } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
@@ -697,7 +698,8 @@ export default function HomeClient({
       setBusy(false);
     }
   }
-  async function action(path: string, body?: unknown) {
+  const [plateAction, setPlateAction] = useState<string | null>(null);
+  async function action(path: string, body?: unknown, fromPlate = false) {
     if (!ride) return false;
     setBusy(true);
     setError(null);
@@ -710,6 +712,11 @@ export default function HomeClient({
       setServiceAvailable(true);
       return true;
     } catch (reason) {
+      if (fromPlate) throw reason;
+      if (reason instanceof ApiError && reason.code === "VEHICLE_PLATE_REQUIRED") {
+        setPlateAction(path);
+        return false;
+      }
       setError(humanError(reason));
       return false;
     } finally {
@@ -756,6 +763,7 @@ export default function HomeClient({
           : "page-content"
       }
     >
+      {plateAction && <VehiclePlatePrompt close={() => setPlateAction(null)} confirm={async plate => { const accepted = await action(plateAction, { decision: "ACCEPT", plate }, true); if (!accepted) throw new Error("Ride unavailable"); setPlateAction(null); }} />}
       {serviceAvailable === false && serviceError !== CONNECTION_MESSAGE ? (
         <p className="reconnect" role="status">
           {serviceError}

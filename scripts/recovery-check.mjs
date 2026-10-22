@@ -277,7 +277,7 @@ async function main() {
           await api(
             `rides/${id}/requests/${requestId}`,
             driver,
-            { decision: "ACCEPT" },
+            { decision: "ACCEPT", plate: "TEST123" },
             "PATCH",
           )
         ).status,
@@ -333,7 +333,7 @@ async function main() {
     await lost(
       `rides/${id}/requests/${requestId}`,
       driver,
-      { decision: "ACCEPT" },
+      { decision: "ACCEPT", plate: "TEST123" },
       "PATCH",
     );
     const code = (await state(id, rider)).coRideCode;
@@ -347,7 +347,7 @@ async function main() {
         await api(
           `rides/${id}/requests/${requestId}`,
           driver,
-          { decision: "ACCEPT" },
+          { decision: "ACCEPT", plate: "TEST123" },
           "PATCH",
         )
       ).data.error,
@@ -416,7 +416,7 @@ async function main() {
         "REQUESTED",
         "accept",
         "RIDER_ACCEPTED",
-        () => ({ decision: "ACCEPT" }),
+        () => ({ decision: "ACCEPT", plate: "TEST123" }),
         "driver",
         "PATCH",
       ],
@@ -490,7 +490,7 @@ async function main() {
         api(
           `rides/${competition.id}/requests/${rid}`,
           competition.driver,
-          { decision: "ACCEPT" },
+          { decision: "ACCEPT", plate: "TEST123" },
           "PATCH",
         ),
       ),
@@ -570,16 +570,14 @@ async function main() {
       ...pin,
       accuracyMeters: 5,
       moving: true,
-      capturedAt: new Date(Date.now() - 1000).toISOString(),
+      capturedAt: new Date().toISOString(),
     };
-    assert.equal(
-      (await api(`rides/${gps.id}/location`, gps.driver, newer)).status,
-      200,
-    );
+    const gpsResponse = await api(`rides/${gps.id}/location`, gps.driver, newer);
+    assert.equal(gpsResponse.status, 200, gpsResponse.data.error);
     const gpsSaved = await rpc("snapshot");
     for (const capturedAt of [
       newer.capturedAt,
-      new Date(Date.now() - 15000).toISOString(),
+      (await state(gps.id, gps.driver)).acceptedAt,
     ]) {
       assert.equal(
         (

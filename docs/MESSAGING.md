@@ -63,8 +63,9 @@ unread-message navigation reveals its enclosing request as well as the chat.
 Messages are first below the request summary, before the sibling request details
 and actions (not enclosing them). Collapsing chat never hides request controls.
 Rider/accepted driver see theirs in ride details below the pickup area. No extra
-tab or historical chat inbox. Rider can insert an editable starter asking where
-to meet and the number plate; never sent automatically. No media, calls, typing
+tab or historical chat inbox. Rider can insert the editable starter
+“Hi! Where should we meet?”; never sent automatically. The former number-plate
+question is removed. No media, calls, typing
 indicators, photos, age or identity-verification claims were added.
 
 ### Request entry and discovery

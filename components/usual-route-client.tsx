@@ -1,4 +1,5 @@
 "use client";
+import VehicleDetails from "./vehicle-details";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useRouter } from "next/navigation";
@@ -400,6 +401,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           )}
         </div>
+        {verified && <VehicleDetails key={draftOwner} />}
         {confirmMute && (
           <MuteAlertsPrompt
             busy={busy}

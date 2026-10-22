@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-22", label: "22 October 2026" }}
+      revision={{ date: "2026-10-23", label: "23 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL university carpool pilot handles
@@ -35,6 +35,14 @@ export default function PrivacyPage() {
         store or reveal a ride payment identifier. Riders can see your
         payment preference, but your PayID details remain hidden from them until
         pickup is confirmed.
+      </p>
+      <p>
+        We store the vehicle details you provide to help your rider recognise
+        your car. A number plate is required before accepting a rider; make,
+        model and colour are optional. Vehicle details are not public and are
+        shared only with the accepted rider. We retain a copy with that ride’s
+        history; later profile edits do not change that copy. These details are
+        provided by drivers, not independently verified by GUMWHEEL.
       </p>
       <h2>Location and pickup records</h2>
       <p>

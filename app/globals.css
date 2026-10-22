@@ -2906,6 +2906,13 @@ p {
 .route-search-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }
 .route-search-fields .place-search { margin: 0; }
 .form-panel-content > .route-search-fields { margin-bottom: 16px; }
+.vehicle-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.vehicle-fields .field, .vehicle-fields p, .vehicle-fields .secondary { margin: 0; }
+.vehicle-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
+.vehicle-details { margin: 0 16px 16px; }
+.vehicle-details .vehicle-fields { margin: 12px 0; }
+.ride-vehicle { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); font-size: var(--text-small); }
+.ride-vehicle p { margin: 4px 0 0; overflow-wrap: anywhere; }
 .usual-route-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
 .usual-route-body h2 { margin: 0; font-size: var(--text-section); font-weight: var(--weight-semibold); }
 .usual-route-body p { margin: 0; }

@@ -47,6 +47,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Vehicle details reuses the contribution disclosure border, radius and 44px
+  summary target, with the existing car icon. Fields use the shared 16px inputs,
+  12px related gaps and regular body copy. Pickup vehicle summary uses 14px text,
+  12px padding and 4px value gaps, existing neutral border/radius; no new palette.
+
 - Profile body uses 12px related-content gaps; saved address summary is one column
   with 12px between fields and no inset/border. Other ride grids are unchanged.
   Shared route swap uses the secondary control border/radius, 44px square target,
