@@ -34,6 +34,15 @@ with sync_playwright() as p:
         assert a['x']==b['x'] and b['y']>a['y']
         page.screenshot(path=f'/tmp/profile-polish-summary-{width}.png',full_page=True)
         page.get_by_role('button',name='Edit route',exact=True).click()
+        def check_swap_alignment():
+            fields=page.locator('.route-search-fields').bounding_box()
+            button=page.get_by_role('button',name='Swap addresses',exact=True).bounding_box()
+            icon=page.locator('.route-swap svg').bounding_box()
+            assert abs(button['x']+button['width']/2-fields['x']-fields['width']/2)<1
+            assert abs(icon['x']+icon['width']/2-button['x']-button['width']/2)<1
+            assert abs(icon['y']+icon['height']/2-button['y']-button['height']/2)<1
+            assert button['width']>=44 and button['height']>=44
+        check_swap_alignment()
         page.get_by_role('button',name='Swap addresses',exact=True).click()
         expect(page.get_by_placeholder('Where from?',exact=True)).to_have_value(destination['label'])
         expect(page.get_by_placeholder('Where to?',exact=True)).to_have_value(origin['label'])
@@ -55,6 +64,8 @@ with sync_playwright() as p:
         for role in ['driver','rider']:
             page.goto('http://127.0.0.1:3090/?start='+role)
             from_input=page.get_by_placeholder('Where from?',exact=True)
+            expect(from_input).to_be_visible()
+            check_swap_alignment()
             to_input=page.get_by_placeholder('Where to?',exact=True)
             from_input.fill('Town')
             page.locator('.place-search').first.get_by_role('button',name='Search',exact=True).click()

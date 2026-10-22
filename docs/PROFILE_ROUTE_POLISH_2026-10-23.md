@@ -37,3 +37,17 @@ made by swapping. Physical-device and race-injection testing remain unverified.
 
 Physical iOS/Safari native picker behaviour and deployed production remain
 unverified; desktop Chromium/mobile viewport emulation is not a real device test.
+
+## Centred swap refinement
+
+The original right alignment above is superseded: Swap addresses is horizontally
+centred between the stacked fields in all three shared editors. Its SVG is centred
+on both axes inside the unchanged 44px button. Equal 4px surrounding gaps remain;
+Use my location stays with the origin. This adapts the between-fields relationship
+observed in Google Flights, not its side-by-side layout. No behaviour changes.
+Re-ran the browser command at 320/390/844/1440px: all passed, including explicit
+button-to-container and icon-to-button centre assertions and the 44px target.
+Reviewed Profile editor and both role-form captures at 390/1440px for overall
+hierarchy, spacing and alignment. No overflow or browser exceptions. Full test
+suite/build results above apply to the preceding implementation; this CSS-only
+refinement was checked with browser regression and git diff --check.

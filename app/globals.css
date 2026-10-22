@@ -3059,7 +3059,8 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .profile-route-summary > div { padding: 0; border: 0; }
 .profile-route-summary > div:nth-child(odd) { border-right: 0; }
 .route-search-fields > .route-swap {
-  justify-self: end; width: 44px; height: 44px; min-height: 44px;
+  justify-self: center; display: grid; place-items: center;
+  width: 44px; height: 44px; min-height: 44px;
   padding: 10px; margin: -12px 0; z-index: 1;
 }
 .route-swap svg { display: block; width: var(--icon-field); height: var(--icon-field); }
