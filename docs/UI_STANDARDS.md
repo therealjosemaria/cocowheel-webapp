@@ -4,13 +4,17 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
-Find's Save route is a secondary button below the map legend, separate from ride
-results/empty-state messaging. Same addresses become disabled Route saved on that
+Find's Save route is a centred text-style button below Request to join in the
+bottom action area, separate from ride results/empty-state messaging. No border,
+fill or shadow; reuse small muted regular text and a minimum 44px tap target.
+Same addresses become disabled Route saved on that
 button, not a new toast. Different saved addresses require “Replace your saved
 route?” with Replace / Cancel. Saving stays in Find; no Profile navigation.
-If alerts are off and delivery available, follow successful save with “Get notified
-about matching rides?” and “Receive emails when matching rides become available.
-Change this anytime in Profile.” Use Notify me / Not now in the shared modal shell.
+If alerts are off and delivery available, follow successful save with “Would you
+like to get notified about matching rides?” and “Receive emails when matching
+rides become available.” Then a single line break, not a paragraph gap, before
+“Change this anytime in Profile.” Centre paragraphs in both save-route modals
+only. Use Notify me / Not now in the shared modal shell.
 Not now/Escape preserves the saved route and leaves emails off. Already-enabled
 alerts skip consent. No permanent email helper text beside Save route.
 Profile's Edit schedule uses existing day/time/checkbox/button tokens and no

@@ -4,7 +4,15 @@
 
 ## Implemented
 
-- A separate secondary Save route button below the Find map legend, independent
+Placement/copy refinement (22 October, baseline `44e738c`): replaced the original
+map-legend placement with the bottom text action described below. Browser flows
+passed at 320/390/844/1440px with mocked APIs/providers blocked; mobile/desktop
+screenshots reviewed for text hierarchy, centred copy and the Profile line break.
+Visual review caught map controls overlapping prompts after the move into the
+sticky action bar; body portals resolved it and the flow was retested. No backend
+changes or production data writes. Live deployment is not verified by these checks.
+
+- A quiet centred Save route text button below Request to join, independent
   of available/empty results. No tab change or inferred weekday/time.
 - Existing identical addresses: Route saved on the same disabled button; no
   write, repeated opt-in prompt or reset of custom settings.
@@ -12,7 +20,7 @@
   Cancellation keeps the old route. Replacement changes addresses only, retaining
   schedule, payment and email preferences. Profile edits need no such confirmation.
 - New routes use explicit anyTime mode, free fare and emails off. Successful saves
-  with emails off offer Get notified about matching rides? / Notify me / Not now.
+  with emails off offer Would you like to get notified about matching rides? / Notify me / Not now.
   Copy explains email delivery and that preferences can be changed in Profile.
   Dismissing, Escape or Not now leaves the route saved, emails off and user in Find.
   Already-enabled alerts skip the prompt. Previously disabled alerts require
@@ -20,6 +28,11 @@
 - Sign-in uses the existing modal in place before reading account settings.
   Async responses are ignored after identity changes/unmount; writes never retry
   automatically under another identity. Errors reuse the existing Message modal.
+  Save-route prompts and errors render through a body portal so the sticky bottom
+  action area's stacking context cannot put map controls above the overlay.
+  Both prompt messages are centred. The email explanation and Profile note are
+  separated by a single line break, not a paragraph gap. No saving/consent API
+  behaviour changes; text-button retains a minimum 44px tap target.
 - Profile Edit schedule keeps addresses/payment/consent and supports any day/time
   or selected weekdays and one Sydney ±60-minute window. Existing legacy records
   without anyTime remain scheduled or non-matching as before. New Profile drafts

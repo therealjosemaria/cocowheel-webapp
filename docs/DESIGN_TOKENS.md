@@ -47,8 +47,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
-- Find's Save route reuses the secondary button with 12px/16px section padding,
-  outside the map legend and results. Consent/replacement reuse cancel-prompt,
+- Find's Save route reuses text-button below Request to join, centred with a 4px
+  top gap and minimum 44px tap target, no border/fill/shadow, regular small text.
+  It remains outside results. Consent/replacement reuse cancel-prompt,
   regular paragraphs and stacked equal actions. Profile schedule editing reuses
   existing checkbox, weekday and native time controls; no new tokens.
 

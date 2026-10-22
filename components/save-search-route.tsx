@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { sameRoute, type UsualRoute } from "@/lib/usual-route";
 import type { Pin } from "@/lib/client-types";
@@ -130,22 +131,23 @@ export default function SaveSearchRoute({
     <div className="save-search-route">
       <button
         type="button"
-        className="secondary"
+        className="text-button save-route-button"
         disabled={busy || saved}
         onClick={() => void begin()}
       >
         {busy ? "Saving…" : saved ? "Route saved" : "Save route"}
       </button>
-      {prompt && (
+      {prompt && createPortal(
         <SaveRoutePrompt
           key={prompt}
           notify={prompt === "notify"}
           busy={busy}
           close={() => setPrompt(null)}
           confirm={() => void persist(existing, prompt === "notify", available)}
-        />
+        />,
+        document.body,
       )}
-      {error && <Message text={error} close={() => setError(null)} />}
+      {error && createPortal(<Message text={error} close={() => setError(null)} />, document.body)}
     </div>
   );
 }
@@ -172,20 +174,21 @@ function SaveRoutePrompt({
         aria-modal="true"
         aria-label={
           notify
-            ? "Get notified about matching rides?"
+            ? "Would you like to get notified about matching rides?"
             : "Replace your saved route?"
         }
-        className="cancel-prompt"
+        className="cancel-prompt save-route-prompt"
       >
         <p>
           {notify
-            ? "Get notified about matching rides?"
+            ? "Would you like to get notified about matching rides?"
             : "Replace your saved route?"}
         </p>
         {notify && (
           <p>
-            Receive emails when matching rides become available. Change this
-            anytime in Profile.
+            Receive emails when matching rides become available.
+            <br />
+            Change this anytime in Profile.
           </p>
         )}
         <div className="cancel-prompt-actions">

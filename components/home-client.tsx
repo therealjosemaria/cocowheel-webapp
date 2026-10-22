@@ -1328,7 +1328,6 @@ function RideSelection({
           Driver route
         </span>
       </div>
-      <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
       <section className="ride-options" aria-live="polite">
         <h1>Choose a ride</h1>
         {searching ? null : visibleCandidates.length ? (
@@ -1381,6 +1380,7 @@ function RideSelection({
         >
           {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
         </button>
+        <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
       </div>
     </div>
   );

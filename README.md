@@ -24,8 +24,8 @@ No backend or lifecycle changes.
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
 from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
 riders opt into matching emails for any day/time or selected days and one
-Sydney-time ±1-hour window. Find a ride offers Save route below the map legend,
-outside ride results. It saves addresses in place, asks before replacement, then
+Sydney-time ±1-hour window. Find a ride offers a quiet Save route text button below
+Request to join in the bottom action area, outside ride results. It saves addresses in place, asks before replacement, then
 offers Notify me / Not now for explicit email consent. Existing schedules,
 payment preferences and email choices are preserved; stale replacement writes
 are rejected. Profile supports Edit schedule without retyping addresses.
