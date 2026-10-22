@@ -2909,7 +2909,9 @@ p {
 .vehicle-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .vehicle-fields .field, .vehicle-fields p, .vehicle-fields .secondary { margin: 0; }
 .vehicle-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
-.vehicle-details { margin: 0 16px 16px; }
+.profile-disclosure { margin: 0 16px 16px; }
+.usual-route-disclosure { margin-top: 16px; }
+.usual-route-disclosure > .usual-route-body { padding: 12px 0; }
 .vehicle-details .vehicle-fields { margin: 12px 0; }
 .ride-vehicle { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); font-size: var(--text-small); }
 .ride-vehicle p { margin: 4px 0 0; overflow-wrap: anywhere; }

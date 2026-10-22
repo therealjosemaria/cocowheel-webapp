@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Profile uses two independent, initially collapsed native disclosures: Usual route
+and Vehicle details (drivers only). Reuse identical summary typography, route/car
+icons, inset, border and 44px targets. Usual route contains its addresses, editors
+and matching alerts; collapsing never resets drafts or consent. Email-linked
+matching-ride visits open Usual route so their destination remains visible.
+No rider/driver qualifier for Usual route, which serves both roles.
+
 Vehicle details is a collapsed, single-purpose Profile accordion using the existing
 disclosure, car icon, field and button styles. Number plate is required at rider
 acceptance, not publication; make/model/colour are optional. Both the prompt

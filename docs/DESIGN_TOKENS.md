@@ -47,6 +47,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Profile disclosures share contribution-choice and profile-disclosure: 16px
+  outer inset/gaps, 12px inner padding, 14px semibold summaries with existing
+  monochrome icons. The usual-route body has no second horizontal inset; headings
+  inside remain section-sized. The driver-only qualifier shares summary styling.
+
 - Vehicle details reuses the contribution disclosure border, radius and 44px
   summary target, with the existing car icon. Fields use the shared 16px inputs,
   12px related gaps and regular body copy. Pickup vehicle summary uses 14px text,

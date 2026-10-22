@@ -63,9 +63,9 @@ export default function VehicleDetails() {
     setSaved(false);
   }
   return (
-    <details className="contribution-choice vehicle-details">
+    <details className="contribution-choice profile-disclosure vehicle-details">
       <summary>
-        <RideFieldLabel icon="driver">Vehicle details</RideFieldLabel>
+        <RideFieldLabel icon="driver">Vehicle details (drivers only)</RideFieldLabel>
       </summary>
       <form
         className="vehicle-fields"

@@ -70,8 +70,38 @@ legacy fare-schema fixtures must initialize vehicle tables. Initial browser chec
 had an incorrect accordion selector and a reload race; corrected selectors and
 explicit navigation wait passed. No product change was needed for those failures.
 
-Production API activation, real-device Safari/keyboard checks and authenticated
-live-account walkthrough remain unverified. A push is not a verified deployment.
+Production API activation was initially pending; see the activation entry below.
+Real-device Safari/keyboard checks and authenticated live-account walkthrough
+remain unverified. A push is not a verified frontend deployment.
+
+## Activation and Profile disclosures — 23 October 2026
+
+The Profile error was reproduced against the old API: GET /api/vehicle returned
+404 NOT_FOUND; service startup was 22 October 14:50:59 AEDT and both vehicle tables
+were absent. After owner approval, rechecked zero accepted/active trips and created
+a private consistent SQLite backup in the ignored data directory (directory mode
+0700, file 0600). Backup integrity and foreign keys passed. Restarted only
+cocowheels-api at 10:39:48 AEDT from backend revision 9715d9a.
+
+Post-restart: health ok, both vehicle tables present, 121 rides retained,
+integrity ok, zero FK violations. Local and www.gumwheel.com/api/vehicle now
+return 401 UNIVERSITY_VERIFICATION_REQUIRED to anonymous requests, not 404.
+No production account/ride writes or email sends were performed as tests.
+
+Usual route now collapses independently of Vehicle details (drivers only), using
+the same native disclosure. Route fields stay mounted, preserving unsaved edits.
+Email matching links with a match parameter start with Usual route open. Vehicle
+loading failure never prevents opening or editing the route section.
+
+Disclosure follow-up checks: `npm test` (147 passed), `npm run lint` and
+`npm run build` passed. With an isolated local frontend and mocked APIs,
+`scripts/check-vehicles.py` passed at 320/390/1440px, including independent
+collapse, preserved unfinished route edits, vehicle saving, acceptance retry and
+rider vehicle display. `scripts/check-profile-route-polish.py` passed at
+320/390/844/1440px for saved-route editing, swapping and schedule controls.
+Expanded whole-Profile screenshots at 320/1440px were visually reviewed for
+summary/icon consistency, padding, button emphasis and overflow. These browser
+checks do not establish authenticated production behaviour or real-device Safari.
 
 Follow-up to 4bb8253: simplified labels and primary Save vehicle details button
 retested with 147 passing regressions and the same 320/390/1440px browser script.

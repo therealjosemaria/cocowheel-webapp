@@ -610,8 +610,12 @@ real-device verification.
 
 ### Vehicle details (23 October 2026)
 
-Profile has a collapsed Vehicle details accordion: number plate, plus optional
-make, model and colour. Publishing remains unchanged. Saving vehicle details
+Profile has a collapsed Vehicle details (drivers only) accordion.
+Usual route is a separate, initially collapsed accordion for either role; its
+addresses, editing and matching-alert settings stay together and preserve drafts
+when collapsed. Email-linked matching-ride visits open Usual route automatically.
+Vehicle fields include number plate and optional make, model and colour.
+Publishing remains unchanged. Saving vehicle details
 requires a plate. Only the plate label says (required);
 the other fields remain optional without suffixes. Save vehicle details matches
 the primary Save route button. Accepting a rider requires

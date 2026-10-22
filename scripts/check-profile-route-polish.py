@@ -28,6 +28,7 @@ with sync_playwright() as p:
         page.route('**/*',lambda r:r.continue_() if r.request.url.startswith('http://127.0.0.1:3090') else r.abort())
         page.route('**/api/**',respond)
         page.goto('http://127.0.0.1:3090/usual-route')
+        page.locator('.usual-route-disclosure > summary').click()
         summary=page.locator('.profile-route-summary')
         expect(summary).to_be_visible()
         a=summary.locator('> div').nth(0).bounding_box(); b=summary.locator('> div').nth(1).bounding_box()

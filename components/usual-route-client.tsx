@@ -218,8 +218,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
     <section className="activity-page">
       <div className="activity-panel usual-route-panel">
         <h1 className="page-title">Profile</h1>
+        <details className="contribution-choice profile-disclosure usual-route-disclosure" open={match ? true : undefined}>
+          <summary><RideFieldLabel icon="route">Usual route</RideFieldLabel></summary>
         <div className="usual-route-body">
-          <h2><RideFieldLabel icon="route">Usual route</RideFieldLabel></h2>
           {loading ? (
             <p>Loading…</p>
           ) : loadFailed ? (
@@ -401,6 +402,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           )}
         </div>
+        </details>
         {verified && <VehicleDetails key={draftOwner} />}
         {confirmMute && (
           <MuteAlertsPrompt
