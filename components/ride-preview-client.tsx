@@ -8,6 +8,7 @@ import RideMessages, { ReportConcern } from "./ride-messages";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import { departureLabel } from "@/lib/usual-route";
 import DepartureCountdown from "./departure-countdown";
+import ExtraDriving from "./extra-driving";
 
 import { participantStatusLabel } from "@/lib/ride-status";
 import dynamic from "next/dynamic";
@@ -160,6 +161,7 @@ export default function RidePreviewClient({
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
     null,
   );
+  const [openRequests, setOpenRequests] = useState<Record<string, boolean>>({});
   const activityRequest =
     participantRide?.request ?? pendingRequest ?? activityRide?.request;
   const pendingRiderRequests =
@@ -1133,6 +1135,14 @@ export default function RidePreviewClient({
                   <details
                     className="driver-request-card driver-request-accordion"
                     key={request.requestId}
+                    onToggle={(event) => {
+                      if (event.target !== event.currentTarget) return;
+                      const open = event.currentTarget.open;
+                      setOpenRequests((previous) => ({
+                        ...previous,
+                        [request.requestId]: open,
+                      }));
+                    }}
                   >
                     <summary>
                       <RideFieldLabel icon="rider">
@@ -1244,7 +1254,29 @@ export default function RidePreviewClient({
                           </a>
                         </dd>
                       </div>
-                      <div className="request-detail-status-wide">
+                      <div className="request-extra-driving">
+                        <dt>
+                          <RideFieldLabel icon="requested">
+                            Extra driving
+                          </RideFieldLabel>
+                        </dt>
+                        <dd>
+                          {ride?.plannedRoute ? (
+                            <ExtraDriving
+                              origin={ride.plannedRoute.origin}
+                              destination={ride.plannedRoute.destination}
+                              pickup={request.pickup}
+                              dropoff={request.destination}
+                              expanded={Boolean(
+                                openRequests[request.requestId],
+                              )}
+                            />
+                          ) : (
+                            "Estimate unavailable"
+                          )}
+                        </dd>
+                      </div>
+                      <div>
                         <dt>
                           <RideFieldLabel icon="request-status">
                             Request status

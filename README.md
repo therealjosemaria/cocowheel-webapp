@@ -358,6 +358,17 @@ ride records can retain readable place labels. Cache lifetime is independent of
 ride expiry. Missing labels may fall back to coordinates; missing routing may show
 endpoint lines rather than a verified road path. Travel times are estimates.
 
+Opening a driver pending-request accordion calculates an advisory Extra driving
+cell below Requested, alongside Request status. Multiple requests can stay open.
+Show route / Hide route independently selects at most one rider on the map;
+switching resets the previous button without closing cards or scrolling.
+The original offered drive is
+compared with origin → pickup → drop-off → driver destination using the existing
+two-point road API; no straight-line timing fallback, live traffic or waiting time
+is included. Results remain visible when hiding/switching routes. Missing metrics
+or provider failures show an unavailable state. No matching, acceptance or GPS
+rules change. See [calculation, cache and checks](docs/EXTRA_DRIVING_2026-10-23.md).
+
 Resend handles OTP email. Missing configuration fails closed, never granting access
 or claiming successful delivery. See the university guide for database-backed send,
 resend and verification limits. Provider subscription quotas are not inferred from

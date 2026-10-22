@@ -47,6 +47,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Extra driving is a normal pending-request cell below Requested, next to Request
+  status. Reuse RideFieldLabel's clock icon at 14px, caption/muted label and normal
+  14px regular ink value, standard grid padding and 4px label/value gap. No bespoke
+  CSS, selection colour, badge or animation. Action remains full width.
+
 - Profile's Edit route matches the existing Edit schedule secondary control.
   Its expanded editor reuses RouteFields and primary Save route / secondary
   Cancel controls; preferences headings retain the existing section typography.

@@ -228,6 +228,15 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Ride information
 
+- Opening a driver pending request estimates an Extra driving cell below Requested,
+  alongside Request status. Reuse the clock field icon, label/value typography and
+  grid spacing. Multiple cards can stay open; Show route / Hide route independently
+  displays at most one rider route and resets the previous button when switching.
+  No automatic scroll, selection colour, ranking or acceptance gate. Loading and
+  unavailable states are explicit. Use About N min, hours/minutes from 60 minutes,
+  or Less than 1 min. Closing/reopening retries without changing map selection.
+  Rider views remain unchanged. See EXTRA_DRIVING_2026-10-23.md for limitations.
+
 - Use Where from?, Where to?, Fare and Google Maps. Directions include the existing navigation icon.
 - Ride details reuse the shared preview. Keep origin/pickup then destination/drop-off
   in the right column, with identity/status and timing on the left. Driver Fare
@@ -241,7 +250,8 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   padding. Each pending request is a native independent accordion, initially
   collapsed, with rider icon/UniKey, regular caption status and disclosure marker.
   Keep existing fields/actions/chat inside; addresses stack on the right,
-  identity/timing on the left, then full-width request status and Action.
+  identity/timing on the left, then Extra driving and Request status sharing a row,
+  followed by full-width Action.
   Notification navigation opens the relevant accordion before scrolling; incoming
   updates do not open, collapse or scroll requests. Several may remain open.
   Keep support after the whole section, never inside individual accordions.
