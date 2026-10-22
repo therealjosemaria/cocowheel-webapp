@@ -9,11 +9,11 @@ are stripped. Browser referrers are limited to origin. No Pi API restart or
 database change is involved. Dashboard enablement and production collection
 must be verified separately from a successful local build.
 
-Departure text in discovery and the driver Departure cell uses muted green
+Departure text in discovery and both roles' Departure cells uses muted green
 above 10 minutes, dark amber from 10 minutes through the scheduled minute,
 and red from 60 seconds overdue. This is schedule-based, not proof of physical
 departure. Colours supplement unchanged wording, typography and minute timing;
-see [design tokens](docs/DESIGN_TOKENS.md). Driver Departure retains the planned
+see [design tokens](docs/DESIGN_TOKENS.md). Both roles' Departure cells retain the planned
 Sydney time above a smaller coloured countdown; discovery keeps only its existing
 countdown line alongside the unchanged pickup/arrival information. Both show
 Delayed N min (whole elapsed minutes, no separator), not a predicted extra wait.
@@ -419,9 +419,10 @@ for service operations.
   remains full width. Driver details show a minute-only Departure countdown while
   offered/awaiting pickup, hidden after pickup or closure. It reuses discovery's
   schedule wording without extra colours; local ticks do not update the map.
-  Rider/public detail copy retains Leaving around without the Sydney time suffix,
-  now in a Departure cell beside Estimated duration for published/requested rides,
-  rather than floating above messages. Fare follows the timing cells.
+  Rider/public published/requested details reuse the same planned-time/countdown
+  component in Departure beside Estimated duration, rather than floating above
+  messages. Fare follows the timing cells. The former Leaving around copy is
+  superseded; both roles use the same colours and minute/hour formatting.
 
 - New offers default to In 30 min; In 1 hour is the other departure choice in
   both ordinary Offer and the saved-route shortcut. These are intended departure

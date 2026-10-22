@@ -6,7 +6,6 @@ import RideRating, { RatingBadge } from "./ride-rating";
 import RideStatusText from "./ride-status-text";
 import RideMessages, { ReportConcern } from "./ride-messages";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
-import { departureLabel } from "@/lib/usual-route";
 import DepartureCountdown from "./departure-countdown";
 import ExtraDriving from "./extra-driving";
 
@@ -1010,7 +1009,7 @@ export default function RidePreviewClient({
                 {!driverOwned && ["PUBLISHED", "REQUESTED"].includes(ride.status) ? (
                   <div className="preview-rider-departure">
                     <dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt>
-                    <dd>{departureLabel(ride.scheduledDepartureAt)}</dd>
+                    <dd><DepartureCountdown scheduledAt={ride.scheduledDepartureAt} /></dd>
                   </div>
                 ) : null}
                 <div>

@@ -50,7 +50,8 @@ Home's active-ride link matches the CTA width/alignment, with wrapping addresses
 Driver-only Departure uses a normal detail cell directly below Estimated duration
 in the left column, preserving stacked route endpoints on the right. Use minutes,
 not seconds; remove after pickup/closure. Reuse countdown wording and normal
-cell typography. No duplicated rider countdown; departure-only colours follow below.
+cell typography. Rider/public published/requested details reuse this same
+planned-time/countdown display; departure-only colours follow below.
 
 DepartureChoice offers two equal options: In 30 min (default) and In 1 hour.
 Reuse it in ordinary Offer and Profile's saved-route shortcut. No Now/two-hour
@@ -244,8 +245,9 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 ## Ride information
 
 - Rider/public published/requested details put Departure beside Estimated duration,
-  below the identity/endpoints rows and before Fare. Keep Leaving around wording,
-  the shared departure icon and normal cell typography; no floating schedule hint
+  below the identity/endpoints rows and before Fare. Reuse the driver's planned
+  time/countdown component, colours and minute/hour formatting, superseding
+  Leaving around wording. Keep the shared departure icon; no floating schedule hint
   above messages. Existing visibility gates and driver countdown are unchanged.
   A lone Fare cell before full-width Payment spans both columns, like a lone
   cell before Action; do not leave an empty half-row.

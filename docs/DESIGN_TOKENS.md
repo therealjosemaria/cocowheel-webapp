@@ -89,7 +89,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   also apply to the driver countdown, not general ride statuses or map routes.
   Contrast on white: green 7.13:1, amber 6.85:1, red 6.57:1; on surface-subtle:
   6.81:1, 6.55:1, 6.28:1. Text always communicates the state without colour.
-  Driver Departure stacks normal-ink planned time and caption/regular coloured
+  Driver and rider-detail Departure stack normal-ink planned time and caption/regular coloured
   status with a 4px gap, in the existing cell. Discovery retains its single
   departure caption. Delayed N min has no separator or added emphasis.
 

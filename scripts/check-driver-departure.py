@@ -89,13 +89,19 @@ with sync_playwright() as p:
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
         cell=page.locator('.ride-preview-fields .preview-rider-departure')
         expect(cell.locator('dt')).to_have_text('Departure')
-        expect(cell.locator('dd')).to_contain_text('Leaving around')
+        expect(cell.locator('time')).to_have_attribute('datetime',departure)
+        expect(cell.locator('.driver-departure-status')).to_have_text('In 30 min')
         expect(page.locator('.ride-preview-summary > .usual-route-hint')).to_have_count(0)
         expect(page.get_by_text('Messages with guest',exact=False)).to_be_visible()
         duration=page.locator('.ride-preview-fields > div').filter(has=page.get_by_text('Estimated duration',exact=True))
         assert abs(cell.bounding_box()['y']-duration.bounding_box()['y'])<1
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.screenshot(path=f'/tmp/rider-departure-cell-{width}.png',full_page=True,animations='disabled')
+        for minutes,expected in [(109,'In 1 hr 49 min'),(-109,'Delayed 1 hr 49 min')]:
+            departure=(datetime.now(timezone.utc)+timedelta(minutes=minutes)).isoformat()
+            page.reload()
+            expect(cell.locator('time')).to_have_attribute('datetime',departure)
+            expect(cell.locator('.driver-departure-status')).to_have_text(expected)
         for status in ['ACCEPTED','CO_RIDE_ACTIVE','COMPLETED']:
             state['status']=status
             page.reload()

@@ -48,6 +48,24 @@ The subsequent messaging-entry checks also exercised the public-preview request
 flow and paid rider details. Physical devices and production deployment are not
 verified. No backend or service restart is needed.
 
+## Shared detail countdown — 23 October 2026
+
+The rider Departure cell now reuses DepartureCountdown directly: planned Sydney
+time above the same coloured In N min / Departing now / Delayed N min status,
+with hours/minutes from 60 minutes. This supersedes Leaving around in the rider
+cell. Both use scheduledDepartureAt, not pickup duration or estimated arrival.
+Existing role/status visibility gates remain unchanged. The component's local
+visible-page clock adds no API requests and does not rerender the parent map.
+The browser command above checks rider planned time, future/overdue hour formatting
+and existing driver/discovery regressions. No backend restart is required.
+
+Results: targeted ESLint, production build and browser checks at 390/1440px
+passed. Reviewed full rider screens at both widths: planned time and supporting
+countdown fit their cell, typography/colour match the driver component, messages
+remain collapsed and other details/actions retain their hierarchy. No horizontal
+overflow or browser exceptions. Mock APIs and blocked map providers only;
+physical devices and deployment remain unverified.
+
 ## Superseded proposal
 
 Find-a-ride shortcut: Save route & email me matches, with explicit Any day, any
