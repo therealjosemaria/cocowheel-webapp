@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { departureLabel } from "../lib/departure-label";
+import { departureLabel, departureTone } from "../lib/departure-label";
+
+test("departure colours share exact ten-minute and delayed boundaries", () => {
+  const scheduled = "2026-10-22T04:00:00Z";
+  const time = Date.parse(scheduled);
+  for (const [offset, tone] of [[-600001, "scheduled"], [-600000, "soon"], [-1, "soon"], [0, "soon"], [59999, "soon"], [60000, "delayed"]] as const) {
+    assert.equal(departureTone(scheduled, time + offset), tone);
+  }
+  assert.equal(departureTone("invalid", time), "neutral");
+});
 
 test("departure display separates waiting, current minute and overdue schedule", () => {
   const scheduled = "2026-10-22T04:00:00Z";

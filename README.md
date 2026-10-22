@@ -2,6 +2,19 @@
 
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
 
+[Vercel Web Analytics](docs/WEB_ANALYTICS.md) is integrated in the frontend root
+layout, matching Lime Wheels' SDK version. Only allowlisted page views are sent;
+private ride/admin URLs and custom events are excluded, and query/hash values
+are stripped. Browser referrers are limited to origin. No Pi API restart or
+database change is involved. Dashboard enablement and production collection
+must be verified separately from a successful local build.
+
+Departure text in discovery and the driver Departure cell uses muted green
+above 10 minutes, dark amber from 10 minutes through the scheduled minute,
+and red from 60 seconds overdue. This is schedule-based, not proof of physical
+departure. Colours supplement unchanged wording, typography and minute timing;
+see [design tokens](docs/DESIGN_TOKENS.md). No backend or lifecycle changes.
+
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
 from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;
 riders opt into matching emails for any day/time or selected days and one

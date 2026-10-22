@@ -5,12 +5,14 @@ import SiteFooter from "@/components/site-footer";
 import LocationTracker from "@/components/location-tracker";
 import UniversityVerification from "@/components/university-verification";
 import ConnectionNotice from "@/components/connection-notice";
+import WebAnalytics from "@/components/web-analytics";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GUMWHEEL",
   description: "A simple planned ride, together.",
+  referrer: "origin",
 };
 export default function RootLayout({
   children,
@@ -43,6 +45,7 @@ export default function RootLayout({
           </div>
           <SiteFooter />
         </main>
+        <WebAnalytics />
       </body>
     </html>
   );

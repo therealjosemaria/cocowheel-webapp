@@ -25,6 +25,7 @@ with sync_playwright() as p:
             if path=='university/session': data={'unikey':'driv1234' if state['role']=='DRIVER' else 'ride1234'}
             elif path=='current': data={'current':item,'currents':[item]}
             elif path=='history': data={'driver':[ride] if state['role']=='DRIVER' else [],'rider':[ride] if state['role']=='RIDER' else []}
+            elif path=='search': data={'candidates':[{'rideId':f'colour-{minutes}','driverAlias':f'driver{index}','priceAud':0,'directionFit':'GOOD','redactedCorridor':[origin,end],'expiresAt':'2099-01-01T00:00:00Z','pickupDistanceMeters':0,'destinationDistanceMeters':0,'isOwnOffer':False,'departureLabel':origin['label'],'destinationLabel':end['label'],'scheduledDepartureAt':(datetime.now(timezone.utc)+timedelta(minutes=minutes)).isoformat()} for index,minutes in enumerate([30,5,-2])]}
             elif path=='route-preview': data={'points':[origin,end],'durationSeconds':600}
             elif path.startswith('rides/'): data={'ride':ride,'serverNow':datetime.now(timezone.utc).isoformat()}
             else: data={}
@@ -41,6 +42,14 @@ with sync_playwright() as p:
         expect(page.locator('.preview-driver-departure dd')).to_have_text('In 30 min')
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
         page.screenshot(path=f'/tmp/driver-departure-{width}.png',full_page=True,animations='disabled')
+        for minutes, tone, colour in [(30,'scheduled','rgb(22, 101, 52)'),(5,'soon','rgb(133, 77, 14)'),(-2,'delayed','rgb(180, 35, 24)')]:
+            departure=(datetime.now(timezone.utc)+timedelta(minutes=minutes)).isoformat()
+            page.reload()
+            value=page.locator(f'.preview-driver-departure .departure-tone-{tone}')
+            expect(value).to_be_visible()
+            expect(value).to_have_css('color',colour)
+            value.scroll_into_view_if_needed()
+            page.screenshot(path=f'/tmp/departure-{tone}-{width}.png',animations='disabled')
         for status in ['CO_RIDE_ACTIVE','COMPLETED']:
             state['status']=status
             page.reload()
@@ -51,6 +60,14 @@ with sync_playwright() as p:
         expect(page.locator('.ride-preview-fields')).to_be_visible()
         expect(page.locator('.preview-driver-departure')).to_have_count(0)
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
+        page.evaluate('draft => sessionStorage.setItem("cocowheels:find-ride-draft:v1", JSON.stringify({...draft,savedAt:Date.now()}))', {'pickup':origin,'destination':end,'departureAt':None})
+        page.goto('http://127.0.0.1:3090/?start=rider')
+        for tone,colour in [('scheduled','rgb(22, 101, 52)'),('soon','rgb(133, 77, 14)'),('delayed','rgb(180, 35, 24)')]:
+            value=page.locator(f'.ride-option-departure.departure-tone-{tone}')
+            expect(value).to_be_visible()
+            expect(value).to_have_css('color',colour)
+        page.locator('.ride-option-departure').last.scroll_into_view_if_needed()
+        page.screenshot(path=f'/tmp/departure-discovery-{width}.png',animations='disabled')
         assert not errors,errors
         print(f'PASS driver countdown, role gates and Home width {width}px')
         page.close()

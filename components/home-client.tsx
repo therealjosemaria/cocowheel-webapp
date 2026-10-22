@@ -1,6 +1,6 @@
 "use client";
 import DepartureChoice from "./departure-choice";
-import { departureLabel } from "@/lib/departure-label";
+import { departureLabel, departureTone } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
 import PaymentFields from "./payment-fields";
 import { RouteFields } from "./route-fields";
@@ -1090,7 +1090,7 @@ function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds }: {
       {pickupSeconds !== undefined ? `${Math.max(1, Math.round(pickupSeconds / 60))} min away` : "Estimating pickup"}
       {arrival ? ` · ${new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(arrival)}` : ""}
     </small>
-    <small className="ride-option-departure">{departureLabel(scheduledAt, clock)}</small>
+    <small className={`ride-option-departure departure-tone-${departureTone(scheduledAt, clock)}`}>{departureLabel(scheduledAt, clock)}</small>
   </>;
 }
 

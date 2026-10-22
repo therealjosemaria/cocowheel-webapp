@@ -37,6 +37,9 @@ Use 400 (`--weight-regular`) for body/status, 600 (`--weight-semibold`) for rest
 | Surface / subtle surface | `--surface` #ffffff / `--surface-subtle` #f8fafc |
 | Dividers and neutral borders | `--line` #e2e8f0 |
 | Destructive action | `--danger` #b42318 |
+| Departure >10 minutes | `--departure-scheduled` #166534 |
+| Departure ≤10 minutes / departing now | `--departure-soon` #854d0e |
+| Departure delayed (≥60 seconds overdue) | `--departure-delayed` #b42318 |
 | Rider / driver routes | `--route-rider` blue / `--route-driver` dark orange |
 | Finished status / pulse midpoint | `--status-finished` #444444 / `--status-pulse` #666666 |
 
@@ -57,9 +60,12 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   columns for In 30 min/In 1 hour. Scope this override to departure-options;
   PayID's three choices keep their existing three-column layout.
 
-- Discovery's departure line uses the existing timing caption size, muted colour
+- Discovery's departure line uses the existing timing caption size, departure colour
   and inherited weight, in the third grid row beneath pickup/arrival. Fare and
-  PayID retain their right-column rows. No status colours, badge or new font.
+  PayID retain their right-column rows. No badge or new font. Departure tokens
+  also apply to the driver countdown, not general ride statuses or map routes.
+  Contrast on white: green 7.13:1, amber 6.85:1, red 6.57:1; on surface-subtle:
+  6.81:1, 6.55:1, 6.28:1. Text always communicates the state without colour.
 
 - Shared RouteFields uses a single minmax(0, 1fr) grid with 16px gaps, zero
   nested PlaceSearch margins and the existing input/Search/results tokens.

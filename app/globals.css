@@ -36,6 +36,9 @@
   --line: #e2e8f0;
   --muted: #64748b;
   --danger: #b42318;
+  --departure-scheduled: #166534;
+  --departure-soon: #854d0e;
+  --departure-delayed: #b42318;
 }
 .ride-rating {
   padding: 16px 8px;
@@ -1961,6 +1964,9 @@ p {
   white-space: nowrap;
 }
 .ride-option-main .ride-option-departure { grid-row: 3; }
+.departure-tone-scheduled, .ride-option-main .departure-tone-scheduled { color: var(--departure-scheduled); }
+.departure-tone-soon, .ride-option-main .departure-tone-soon { color: var(--departure-soon); }
+.departure-tone-delayed, .ride-option-main .departure-tone-delayed { color: var(--departure-delayed); }
 .ride-option-fit.direction-fit-good {
   color: #15803d;
 }

@@ -20,7 +20,7 @@ Home's active-ride link matches the CTA width/alignment, with wrapping addresses
 Driver-only Departure uses a normal detail cell directly below Estimated duration
 in the left column, preserving stacked route endpoints on the right. Use minutes,
 not seconds; remove after pickup/closure. Reuse countdown wording and normal
-cell typography. No duplicated rider countdown or new urgency colour.
+cell typography. No duplicated rider countdown; departure-only colours follow below.
 
 DepartureChoice offers two equal options: In 30 min (default) and In 1 hour.
 Reuse it in ordinary Offer and Profile's saved-route shortcut. No Now/two-hour
@@ -29,10 +29,14 @@ UI option. Intended times are flexible, not a mandatory waiting period.
 Prioritise familiarity: prefer established interaction patterns and recognisable
 language before inventing controls or terminology. Preserve accurate meaning,
 accessibility and the shared visual system rather than copying decoration.
-Discovery uses a neutral departure-board line below pickup/arrival timing:
+Discovery uses a departure-board line below pickup/arrival timing:
 Departs in N min, Departing now for the scheduled minute, then Delayed. These
-are schedule-based labels, not GPS-confirmed movement. No added colours, badges
-or emphasis. Pickup minutes mean driving duration only, excluding departure wait.
+are schedule-based labels, not GPS-confirmed movement. From 22 October, departure
+text alone is muted green above 10 minutes, dark amber at 10 minutes or less
+through the first scheduled minute, and existing red from 60 seconds overdue.
+This supersedes neutral departure colours, in discovery and driver Departure.
+Keep wording, size and weight; no badges, backgrounds, glow or animation.
+Pickup minutes mean driving duration only, excluding departure wait.
 
 Shared address entry (22 October): Profile, Offer and Find reuse RouteFields,
 not copies of its markup. Use Where from?/Where to? placeholders and accessible

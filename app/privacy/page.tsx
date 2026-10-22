@@ -127,6 +127,18 @@ export default function PrivacyPage() {
         not automatically recorded in GUMWHEEL’s ride history. Email remains
         available for privacy questions.
       </p>
+      <h2>Website analytics</h2>
+      <p>
+        We use Vercel Web Analytics to understand visits and page views, including
+        browser, device and approximate region information. We exclude private
+        ride-detail and admin pages and remove query parameters from tracked
+        page URLs. We do not add account details, messages, PayIDs or GPS fixes
+        to analytics events. This is separate from the records needed to operate
+        your rides. See{" "}
+        <a href="https://vercel.com/docs/analytics/privacy-policy">
+          Vercel’s analytics privacy information
+        </a>.
+      </p>
       <h2>Storage and retention</h2>
       <p>
         Sign-in cookies last up to 30 days. Browser storage can reuse country
