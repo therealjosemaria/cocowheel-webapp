@@ -88,13 +88,14 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   participates in keyboard navigation. Search remains on the right.
 
 - Profile's route editor uses placeholders and accessible names instead of visible
-  origin/destination/time labels; My usual route retains section/semibold.
+  origin/destination/time labels; Usual route retains section/semibold and uses
+  the same RideFieldLabel icon sizing/gap as Matching ride alerts.
   Native time inputs and their grid parents have min-width: 0;
   time inputs use border-box and 100%/max-width:100% to contain mobile intrinsic
   sizing. The editor uses an explicit minmax(0, 1fr) grid track; time controls
   reset native appearance and WebKit edit padding without replacing the picker.
-  Keep native pickers and 16px input text. PaymentFields is shared between
-  Profile and Offer; retain the existing 16px field gap and payment selectors.
+  Keep native pickers and 16px input text. Profile no longer includes payment
+  controls; Offer retains PaymentFields and its existing spacing/selectors.
 
 - Contribution settings reuse a native details/summary accordion: surface/line,
   control radius, 12px inset/gap, small text and semibold summary with a 44px

@@ -21,7 +21,7 @@ export function clockLabel(minute: number) {
   return `${Math.floor(m / 60) % 12 || 12}:${String(m % 60).padStart(2, "0")} ${m < 720 ? "am" : "pm"}`;
 }
 export function scheduleWindow(minute: number) {
-  return `${clockLabel(minute - 60)}–${clockLabel(minute + 60)} · Sydney time${minute < 60 || minute >= 1380 ? " (crosses midnight)" : ""}`;
+  return `${clockLabel(minute - 60)}–${clockLabel(minute + 60)}${minute < 60 || minute >= 1380 ? " (crosses midnight)" : ""}`;
 }
 export function departureLabel(value: string) {
   return `Leaving around ${new Intl.DateTimeFormat("en-AU", {

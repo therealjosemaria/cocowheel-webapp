@@ -104,7 +104,15 @@ with sync_playwright() as p:
         assert state['saved']['days']==[1] and state['saved']['minute']==600
         assert state['saved']['alerts'] is True and state['saved']['payId']=='driver@example.com'
         expect(page.get_by_role('heading',name='Matching ride alerts',exact=True)).to_be_visible()
-        expect(page.get_by_role('heading',name='Payment preferences',exact=True)).to_be_visible()
+        expect(page.get_by_role('heading',name='Usual route',exact=True).locator('svg')).to_be_visible()
+        headings=page.locator('.usual-route-body h2')
+        assert headings.count()==2
+        assert headings.evaluate_all('els => els.every(el => { const s=getComputedStyle(el), first=getComputedStyle(els[0]); return s.fontSize===first.fontSize && s.fontWeight===first.fontWeight && s.color===first.color; })')
+        expect(page.get_by_text('Your routine is private.',exact=False)).to_have_count(0)
+        expect(page.get_by_role('heading',name='Payment preferences',exact=True)).to_have_count(0)
+        expect(page.locator('.contribution-choice')).to_have_count(0)
+        expect(page.get_by_text('9:00 am–11:00 am',exact=False)).to_be_visible()
+        expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
         expect(page.get_by_role('button',name='OFFER A RIDE',exact=True)).to_have_count(0)
         expect(page.get_by_role('button',name='Replace saved route',exact=True)).to_have_count(0)
         before=copy.deepcopy(state['saved'])

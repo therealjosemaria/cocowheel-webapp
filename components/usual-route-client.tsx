@@ -1,7 +1,4 @@
 "use client";
-import ContributionChoice from "./contribution-choice";
-import PaymentFields from "./payment-fields";
-import { fareLabel, validFare, CONTRIBUTION_ERROR } from "@/lib/fare";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useRouter } from "next/navigation";
@@ -12,7 +9,6 @@ import {
   saveRiderPreviewRoute,
   saveRiderSearchDraft,
 } from "@/lib/ride-preview-cache";
-import { payIdInputError } from "@/lib/input-validation";
 import { RouteFields } from "./route-fields";
 import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/profile-draft";
 import { Message } from "./ride-journey-controls";
@@ -30,10 +26,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [minute, setMinute] = useState("");
   const [alerts, setAlerts] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(false);
-  const [fare, setFare] = useState("5");
-  const [contribution, setContribution] = useState(false);
-  const [payId, setPayId] = useState("");
-  const [payIdType, setPayIdType] = useState<UsualRoute["payIdType"]>("MOBILE");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -58,14 +50,10 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setSaved(null);
       setOrigin(undefined);
       setDestination(undefined);
-      setPayId("");
       setDays([]);
       setMinute("");
       setAlerts(false);
       setEditingSchedule(false);
-      setFare("5");
-      setContribution(false);
-      setPayIdType("MOBILE");
       void Promise.all([cocowheelsApi<{
         route: UsualRoute | null;
         alertsAvailable: boolean;
@@ -82,12 +70,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
               setDraftText(draft.text);
               setDays(draft.days);
               setMinute(draft.minute);
-            }
-            if (result.route) {
-              setContribution(result.route.priceAud > 0);
-              setFare(String(result.route.priceAud || 5));
-              setPayId(result.route.payId);
-              setPayIdType(result.route.payIdType);
             }
             setAlerts(result.route?.alerts ?? (result.alertsAvailable && (draft?.alerts ?? false)));
             setAvailable(result.alertsAvailable);
@@ -171,15 +153,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       );
       return;
     }
-    const payError = contribution ? payIdInputError(payId, payIdType) : null;
-    if (payError) {
-      setError(payError);
-      return;
-    }
-    if (contribution && (Number(fare) <= 0 || !validFare(Number(fare)))) {
-      setError(CONTRIBUTION_ERROR);
-      return;
-    }
     setBusy(true);
     try {
       const [h, m] = minute.split(":").map(Number);
@@ -189,9 +162,9 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
         days,
         minute: minute ? h * 60 + m : null,
         alerts,
-        priceAud: contribution ? Number(fare) : 0,
-        payId: contribution ? payId : "",
-        payIdType,
+        priceAud: 0,
+        payId: "",
+        payIdType: "MOBILE",
       });
     } catch (reason) {
       fail(reason);
@@ -244,7 +217,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       <div className="activity-panel usual-route-panel">
         <h1 className="page-title">Profile</h1>
         <div className="usual-route-body">
-          <h2>My usual route</h2>
+          <h2><RideFieldLabel icon="route">Usual route</RideFieldLabel></h2>
           {loading ? (
             <p>Loading…</p>
           ) : loadFailed ? (
@@ -273,10 +246,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
             </>
           ) : saved ? (
             <>
-              <p className="usual-route-hint">
-                Your routine is private. Only rides you offer are visible to
-                others.
-              </p>
               <dl className="ride-preview-fields">
                 <div>
                   <dt>
@@ -376,66 +345,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   </p>
                 )}
               </section>
-              <section className="usual-route-section">
-                <h2>
-                  <RideFieldLabel icon="driver">Payment preferences</RideFieldLabel>
-                </h2>
-                <p>
-                  {fareLabel(saved.priceAud)}
-                  {saved.priceAud > 0 ? " · PayID" : " ride"}
-                </p>
-                <ContributionChoice
-                  checked={contribution}
-                  onChange={setContribution}
-                  fare={fare}
-                  controls={
-                    <button
-                      className="secondary"
-                      disabled={busy}
-                      onClick={async () => {
-                        const issue = contribution
-                          ? payIdInputError(payId, payIdType)
-                          : null;
-                        if (contribution && (!payId.trim() || issue)) {
-                          setError(issue ?? "Enter your PayID.");
-                          return;
-                        }
-                        if (
-                          contribution &&
-                          (Number(fare) <= 0 || !validFare(Number(fare)))
-                        ) {
-                          setError(CONTRIBUTION_ERROR);
-                          return;
-                        }
-                        setBusy(true);
-                        try {
-                          await persist({
-                            ...saved,
-                            priceAud: contribution ? Number(fare) : 0,
-                            payId: contribution ? payId : "",
-                            payIdType,
-                          });
-                        } catch (reason) {
-                          fail(reason);
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      Save payment preferences
-                    </button>
-                  }
-                >
-                  <PaymentFields
-                    fare={fare}
-                    setFare={setFare}
-                    payId={payId}
-                    setPayId={setPayId}
-                    type={payIdType}
-                    setType={setPayIdType}
-                  />
-                </ContributionChoice>
-              </section>
             </>
           ) : (
             <>
@@ -487,20 +396,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   Matching emails aren’t available yet.
                 </p>
               )}
-              <ContributionChoice
-                checked={contribution}
-                onChange={setContribution}
-                fare={fare}
-              >
-                <PaymentFields
-                  fare={fare}
-                  setFare={setFare}
-                  payId={payId}
-                  setPayId={setPayId}
-                  type={payIdType}
-                  setType={setPayIdType}
-                />
-              </ContributionChoice>
               <button
                 className="primary"
                 disabled={busy}

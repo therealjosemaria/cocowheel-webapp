@@ -6,6 +6,14 @@ scope and activation status; code presence is not verified deployment.
 
 ## Product contract
 
+23 October clarification supersedes the payment UI described below: Profile
+contains only route and matching-alert settings, not fare/PayID controls, in both
+new and saved states. New routes retain zero/empty payment defaults; editing an
+existing route, schedule or consent preserves its legacy payment fields. Offer a
+ride remains unchanged. Schedule summaries omit “· Sydney time”; matching remains
+Australia/Sydney (including DST) with the same window and midnight-crossing note.
+No backend migration, deletion or restart is required.
+
 22 October Profile refinement supersedes the Profile offering/replacement UI
 described in the original baseline below: Profile now manages saved preferences.
 Edit route uses shared address fields with Save/Cancel and POST /api/usual-route,

@@ -23,8 +23,15 @@ No backend or lifecycle changes.
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
 from Profile. Profile manages preferences only: Edit route changes endpoints in
-place with Save/Cancel, preserving schedule, alerts and payment settings. The
-ride-offering shortcut/departure choices are removed from Profile; offering stays
+place with Save/Cancel, preserving schedule, alerts and payment settings.
+Profile UI contains no payment controls (including new-route setup); fare and
+PayID are configured in Offer a ride. Legacy saved payment data is preserved.
+The redundant routine-privacy helper is omitted; saved routes remain private.
+Usual route and Matching ride alerts use matching icon-and-heading styling.
+The schedule summary omits the Sydney time suffix; matching still uses
+Australia/Sydney and the same ±1-hour window.
+See the [Profile cleanup checks](docs/PROFILE_CLEANUP_2026-10-23.md).
+The ride-offering shortcut/departure choices are removed from Profile; offering stays
 in Offer a ride. Matching-email review links remain available when opened from
 an email. Legacy saved-route offer API remains unchanged for compatibility.
 See the [Profile refinement checks](docs/PROFILE_PREFERENCES_2026-10-22.md).
@@ -438,8 +445,8 @@ for service operations.
   Existing saved choices are preserved. Turning emails off requires the shared
   confirmation dialog. Scheduled matching keeps the Sydney ±1-hour window;
   explicit any-day/time mode is available through Edit schedule.
-  Profile and Offer a ride reuse one payment-field component, including PayID
-  examples and decimal validation. See [checks](docs/PROFILE_POLISH_2026-10-22.md).
+  Payment fields now appear only in Offer a ride; their examples and decimal
+  validation are unchanged. Earlier Profile payment UI is superseded.
 
 - Profile account actions use a single 12px-spaced grid below ratings/current
   ride. Navigation links and buttons reserve equal full-width button boxes;

@@ -4,12 +4,18 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
-Profile is preferences-only. My usual route shows its endpoint summary and an
+Profile is preferences-only. Usual route shows its endpoint summary and an
 Edit route secondary control matching Edit schedule. Editing expands shared
 RouteFields with Save route/Cancel; cancellation discards edits, saving preserves
-schedule, email and payment choices. Use Matching ride alerts and Payment
-preferences section headings, not Find/Offer a ride. No publish/departure controls
+schedule, email and legacy payment choices. Use Matching ride alerts, not
+Find/Offer a ride. No payment controls in Profile, including new-route setup;
+fare and PayID belong in Offer a ride. Omit the Sydney time suffix from the
+schedule summary without changing its timezone or midnight-crossing note.
+No publish/departure controls
 in Profile. Email-linked Review matching ride remains a compatibility exception.
+Omit the routine-privacy helper sentence; saved-route privacy is unchanged.
+Usual route and Matching ride alerts both use RideFieldLabel in matching H2s,
+with existing monochrome route/rider icons, equal sizing and icon/text gaps.
 
 Find's Save route is a centred text-style button below Request to join in the
 bottom action area, separate from ride results/empty-state messaging. No border,
@@ -88,8 +94,8 @@ TURN OFF EMAILS / GO BACK, Escape and focus restoration. A saved mute persists o
 after a successful response. This supersedes the earlier preselected-email draft.
 
 Prefer shared components over copying markup whenever behavior is equivalent.
-Profile and Offer a ride must use PaymentFields for the same placeholders, keyboard
-modes, limits and labels. Review both consumers when changing it. Contributions
+Offer a ride uses PaymentFields for consistent placeholders, keyboard
+modes, limits and labels. Profile has no payment controls. Contributions
 allow cents (maximum two decimal places), with $1–$10,000 bounds and server
 validation. No redundant currency prefix in the input; summaries retain A$.
 
