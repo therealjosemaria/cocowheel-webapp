@@ -53,7 +53,13 @@ production behavior are not verified by these isolated checks.
 
 ## Activation
 
-Not activated in production yet. API restart and frontend deployment are both
-needed; old open clients can still attempt updates, but the updated API denies
+API activated from `ccc4229` by an owner-authorized restart of only
+`cocowheels-api` at 12:46:31 AEDT on 22 October 2026. The first immediate health
+probe preceded the listening socket; the follow-up returned status ok locally
+and via `https://www.gumwheel.com/api/health`. The service was active/running,
+and the public `/api/current` correctly returned GUEST_SESSION_REQUIRED without
+credentials. No rides were created, changed or cancelled for verification.
+Authenticated physical-device flows and frontend deployment remain unverified.
+Old open clients can still attempt updates, but the updated API denies
 pre-acceptance writes and never returns public GPS. Already received/cached
-information cannot be recalled. Awaiting safe restart coordination with owner.
+information cannot be recalled.

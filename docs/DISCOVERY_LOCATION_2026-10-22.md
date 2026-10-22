@@ -46,8 +46,9 @@ for unchanged typography, spacing and containment. No new controls/styles.
 
 ## Activation boundary
 
-Production API restart is required for future discovery/joining and soft provider
-bias. A frontend push alone does not activate these fixes. No service restart or
-production verification has been performed for this change. Coordinate a safe
-restart while real rides are active; do not create/cancel rides as a deployment
-test. Physical iPhone testing and real Geoapify ranking remain unverified.
+Production API restarted with owner authorization from `ccc4229` at 12:46:31
+AEDT on 22 October 2026. Local and public-domain API health passed after startup;
+unauthenticated current-ride access was correctly denied. See the
+[activation evidence](GPS_PRIVACY_2026-10-22.md#activation). No ride mutations
+were used for verification. Physical iPhone testing, authenticated production
+journeys, frontend deployment and real Geoapify ranking remain unverified.
