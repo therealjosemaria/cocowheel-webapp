@@ -29,3 +29,20 @@ https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html
   Map tiles were intentionally blocked; real map/provider rendering not retested.
 - Analytics local/browser evidence is in WEB_ANALYTICS.md. Live Vercel deployment
   and dashboard collection remain separate, unverified steps at commit time.
+
+## Planned-time and elapsed-delay refinement
+
+Baseline `f522a17`: driver Departure now retains its planned Sydney time in normal
+ink, with the smaller coloured status below and a 4px gap. Discovery keeps only
+the existing departure-status row; pickup/arrival information is unchanged.
+Delayed N min uses floored elapsed minutes since the scheduled time (not extra
+waiting time); there is no dot. The 60-second grace period remains. Invalid
+timestamps render nothing; Sydney formatting handles daylight saving explicitly.
+
+`npm test` passed 139/139, including rounding and Sydney summer/winter formatting.
+The same mocked browser command above passed 390px/1440px for both roles, all
+three colours, retained planned time, elapsed-delay copy and lifecycle gates.
+Screenshots were reviewed for both screens at both widths: existing layout and
+regular body/caption hierarchy retained; no extra rider time or row added.
+ESLint and production build passed. No API/schema changes or restart required.
+Production deployment remains unverified at commit time.

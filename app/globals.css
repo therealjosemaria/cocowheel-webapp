@@ -1964,6 +1964,9 @@ p {
   white-space: nowrap;
 }
 .ride-option-main .ride-option-departure { grid-row: 3; }
+.driver-departure-timing { display: grid; gap: 4px; }
+.driver-departure-timing time { color: var(--ink); }
+.driver-departure-status { font-size: var(--text-caption); font-weight: var(--weight-regular); }
 .departure-tone-scheduled, .ride-option-main .departure-tone-scheduled { color: var(--departure-scheduled); }
 .departure-tone-soon, .ride-option-main .departure-tone-soon { color: var(--departure-soon); }
 .departure-tone-delayed, .ride-option-main .departure-tone-delayed { color: var(--departure-delayed); }

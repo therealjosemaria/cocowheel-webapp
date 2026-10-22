@@ -13,7 +13,11 @@ Departure text in discovery and the driver Departure cell uses muted green
 above 10 minutes, dark amber from 10 minutes through the scheduled minute,
 and red from 60 seconds overdue. This is schedule-based, not proof of physical
 departure. Colours supplement unchanged wording, typography and minute timing;
-see [design tokens](docs/DESIGN_TOKENS.md). No backend or lifecycle changes.
+see [design tokens](docs/DESIGN_TOKENS.md). Driver Departure retains the planned
+Sydney time above a smaller coloured countdown; discovery keeps only its existing
+countdown line alongside the unchanged pickup/arrival information. Both show
+Delayed N min (whole elapsed minutes, no separator), not a predicted extra wait.
+No backend or lifecycle changes.
 
 Private [usual routes](docs/USUAL_ROUTES.md) let a verified account save one route
 from Profile. Drivers offer it from fresh GPS using In 30 min/In 1 hour;

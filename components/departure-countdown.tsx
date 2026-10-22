@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { departureLabel, departureTone } from "@/lib/departure-label";
+import { departureLabel, departureTone, plannedDepartureTime } from "@/lib/departure-label";
 
 export default function DepartureCountdown({
   scheduledAt,
@@ -20,5 +20,12 @@ export default function DepartureCountdown({
       document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
-  return <span className={`departure-tone-${departureTone(scheduledAt, now)}`}>{departureLabel(scheduledAt, now).replace(/^Departs in /, "In ")}</span>;
+  const plannedTime = plannedDepartureTime(scheduledAt);
+  if (!plannedTime) return null;
+  return <span className="driver-departure-timing">
+    <time dateTime={scheduledAt}>{plannedTime}</time>
+    <span className={`driver-departure-status departure-tone-${departureTone(scheduledAt, now)}`}>
+      {departureLabel(scheduledAt, now).replace(/^Departs in /, "In ")}
+    </span>
+  </span>;
 }

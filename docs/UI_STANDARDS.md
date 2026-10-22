@@ -36,6 +36,12 @@ text alone is muted green above 10 minutes, dark amber at 10 minutes or less
 through the first scheduled minute, and existing red from 60 seconds overdue.
 This supersedes neutral departure colours, in discovery and driver Departure.
 Keep wording, size and weight; no badges, backgrounds, glow or animation.
+Later 22 October refinement: driver Departure keeps the planned Sydney time in
+normal ink above the caption-size coloured countdown, within the same cell.
+Both roles show Delayed N min using completed elapsed minutes after the existing
+one-minute grace period. No dot separator. Discovery gains no extra time/row;
+its arrival estimate stays unchanged. This is elapsed schedule time, not extra
+waiting time or GPS-confirmed lateness.
 Pickup minutes mean driving duration only, excluding departure wait.
 
 Shared address entry (22 October): Profile, Offer and Find reuse RouteFields,

@@ -39,7 +39,8 @@ with sync_playwright() as p:
         assert abs(card.bounding_box()['width']-button.bounding_box()['width'])<1
         page.screenshot(path=f'/tmp/home-current-width-{width}.png',full_page=True,animations='disabled')
         page.goto('http://127.0.0.1:3090/activity/driver-countdown')
-        expect(page.locator('.preview-driver-departure dd')).to_have_text('In 30 min')
+        expect(page.locator('.preview-driver-departure .driver-departure-status')).to_have_text('In 30 min')
+        expect(page.locator('.preview-driver-departure time')).to_have_attribute('datetime',departure)
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
         page.screenshot(path=f'/tmp/driver-departure-{width}.png',full_page=True,animations='disabled')
         for minutes, tone, colour in [(30,'scheduled','rgb(22, 101, 52)'),(5,'soon','rgb(133, 77, 14)'),(-2,'delayed','rgb(180, 35, 24)')]:
@@ -48,6 +49,9 @@ with sync_playwright() as p:
             value=page.locator(f'.preview-driver-departure .departure-tone-{tone}')
             expect(value).to_be_visible()
             expect(value).to_have_css('color',colour)
+            expect(page.locator('.preview-driver-departure time')).to_have_attribute('datetime',departure)
+            expect(page.locator('.preview-driver-departure time')).to_have_css('color','rgb(17, 24, 39)')
+            if tone=='delayed': expect(value).to_have_text('Delayed 2 min')
             value.scroll_into_view_if_needed()
             page.screenshot(path=f'/tmp/departure-{tone}-{width}.png',animations='disabled')
         for status in ['CO_RIDE_ACTIVE','COMPLETED']:
@@ -66,6 +70,8 @@ with sync_playwright() as p:
             value=page.locator(f'.ride-option-departure.departure-tone-{tone}')
             expect(value).to_be_visible()
             expect(value).to_have_css('color',colour)
+            if tone=='delayed': expect(value).to_have_text('Delayed 2 min')
+        expect(page.locator('.ride-option time')).to_have_count(0)
         page.locator('.ride-option-departure').last.scroll_into_view_if_needed()
         page.screenshot(path=f'/tmp/departure-discovery-{width}.png',animations='disabled')
         assert not errors,errors
