@@ -37,7 +37,8 @@ be skipped even while the offer is still available. No provider quota/consent ch
 Commands: `npm test`, `npm run lint`, `npm run build`, and
 `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-departure-picker.py`
 against localhost:3090. Browser APIs mocked and external requests blocked;
-backend tests use isolated temporary databases. All 153 tests and lint passed;
+backend tests use isolated temporary databases. All 153 tests, lint and final
+production build passed;
 coverage includes tomorrow's discovery/request, six-hours-after-departure boundary,
 preserved legacy expiry/history, 24-hour HTTP offering, invalid delays and Sydney
 date/DST formatting. An initial updated HTTP test still expected a 30-minute
@@ -53,7 +54,10 @@ desktop Chromium emulation. API activation requires the approved zero-underway
 check, private backup, restart and health verification independently of frontend push.
 Approved activation: zero accepted/active trips, verified local SQLite backup,
 API restart at 13:29:07 AEDT; local/public health passed, 125 rides preserved,
-integrity ok and zero foreign-key errors. Frontend rollout is verified separately.
+integrity ok and zero foreign-key errors. Frontend deployment `040f6d8` reached
+READY; a public HTML fetch confirmed the new departure field. Final picker
+browser checks passed again after the styling corrections. No live ride was
+created as part of verification.
 
 ## Manual phone/desktop walkthrough
 
