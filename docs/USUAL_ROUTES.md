@@ -141,7 +141,11 @@ Schedule compares the offer's intended departure with the rider's window,
 not the moment the driver clicked; explicit anyTime skips only this schedule test.
 Spatial matching uses an approximate planar
 straight-line corridor: pickup within 1,500m, destination within 2,500m, projection
-ordered pickup before destination and bounded to −5%/+5% of the driver segment.
+ordered pickup before destination and bounded to −20%/+5% of the driver segment.
+The pickup-only allowance increased from 5% to 20% on 23 October 2026; the
+destination bound and distance caps are unchanged. It is not a new fixed pickup
+radius or a 20% road-detour allowance. New publications only; no historical
+offer rematching or email replay. See [checks](MATCHING_CORRIDOR_2026-10-23.md).
 Driver segments below 100m do not match. This is deliberately advisory:
 it does not promise road access, pickup ETA, detour duration or traffic suitability.
 It introduces no per-recipient routing-provider requests. Existing request-fit

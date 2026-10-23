@@ -62,6 +62,10 @@ Save-route API activated from `cc021be` at 14:50:59 AEDT on 22 October 2026
 after a zero-underway-trip preflight and private backup; local/public health and
 record preservation passed. Frontend deployment and inbox delivery are separate.
 Publication queues matching alerts once; GPS updates never notify.
+Matching allows pickup up to 20% behind the driver's straight-line origin,
+with the existing 1.5km pickup-distance cap, 2.5km destination cap, pickup-before-
+drop-off order and 5% destination overshoot unchanged. Existing offers are not
+backfilled; see [matching checks](docs/MATCHING_CORRIDOR_2026-10-23.md).
 Optional alert delivery is separately enabled, with no app-wide hourly/daily
 alert cap; provider quotas still apply and login email rules are unchanged.
 See [checks and user walkthrough](docs/USUAL_ROUTES_CHECK_2026-10-21.md)

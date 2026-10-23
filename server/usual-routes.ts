@@ -196,7 +196,7 @@ export function corridorMatches(
   const a = project(route.origin),
     b = project(route.destination);
   return (
-    a.t >= -0.05 &&
+    a.t >= -0.20 &&
     b.t <= 1.05 &&
     b.t > a.t &&
     a.distance <= 1500 &&

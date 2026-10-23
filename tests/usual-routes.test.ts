@@ -18,6 +18,7 @@ import {
   removeUsualRoute,
   scheduleMatches,
   corridorMatches,
+  queueRouteAlerts,
   deliverRouteAlerts,
 } from "../server/usual-routes";
 import type { UsualRoute } from "../lib/usual-route";
@@ -268,6 +269,56 @@ test("corridor rejects reverse direction and far-away routes", () => {
     }),
   );
 });
+test("pickup behind origin allows 20 percent while preserving other corridor bounds", () => {
+  const origin = { latitude: 0, longitude: 0 };
+  const destination = { latitude: 0.04, longitude: 0 };
+  const matches = (pickup: typeof origin, dropoff = destination) =>
+    corridorMatches(origin, destination, { ...route, origin: pickup, destination: dropoff });
+  // Synthetic regression: pickup behind and sideways, not private GPS samples.
+  assert.ok(matches({ latitude: -0.04 * 0.0622, longitude: 0.0055 }));
+  assert.ok(matches({ latitude: -0.04 * 0.1999, longitude: 0 }));
+  assert.ok(matches({ latitude: -0.04 * 0.20, longitude: 0 }));
+  assert.equal(matches({ latitude: -0.04 * 0.2001, longitude: 0 }), false);
+  assert.equal(matches({ latitude: -0.004, longitude: 0.02 }), false);
+  assert.equal(matches(origin, { latitude: 0.04 * 1.0501, longitude: 0 }), false);
+  assert.equal(matches(origin, { latitude: 0.04, longitude: 0.03 }), false);
+  assert.equal(matches({ latitude: 0.03, longitude: 0 }, { latitude: 0.02, longitude: 0 }), false);
+  // Short trips still use percentages, not a new fixed radius; long trips retain 1.5km cap.
+  assert.ok(corridorMatches(origin, { latitude: 0.002, longitude: 0 }, {
+    ...route, origin: { latitude: -0.00039, longitude: 0 }, destination: { latitude: 0.002, longitude: 0 },
+  }));
+  assert.equal(corridorMatches(origin, { latitude: 0.1, longitude: 0 }, {
+    ...route, origin: { latitude: -0.019, longitude: 0 }, destination: { latitude: 0.1, longitude: 0 },
+  }), false);
+  assert.equal(corridorMatches(origin, { latitude: 0.0005, longitude: 0 }, {
+    ...route, origin, destination: { latitude: 0.0005, longitude: 0 },
+  }), false);
+});
+
+test("newly eligible pickup queues and delivers once without backfilling old offers", async () => {
+  const { db, driver, rider, offer } = setup();
+  try {
+    const behind = { ...route, origin: { ...start, longitude: start.longitude - 0.01 } };
+    saveUsualRoute(db, rider.session.id, behind, now);
+    offer();
+    const ride = db.prepare("SELECT id FROM rides WHERE driver_session_id=?").get(driver.session.id) as { id: string };
+    assert.equal((db.prepare("SELECT count(*) n FROM route_alerts").get() as {n:number}).n, 1);
+    queueRouteAlerts(db, ride.id, driver.session.id, start, end, now.toISOString(), now);
+    assert.equal((db.prepare("SELECT count(*) n FROM route_alerts").get() as {n:number}).n, 1);
+    let sends = 0;
+    await deliverRouteAlerts(db, async () => { sends++; }, now);
+    await deliverRouteAlerts(db, async () => { sends++; }, now);
+    assert.equal(sends, 1);
+  } finally { db.close(); }
+  const second = setup();
+  try {
+    second.offer();
+    saveUsualRoute(second.db, second.rider.session.id, { ...route, origin: { ...start, longitude: start.longitude - 0.01 } }, now);
+    const db = second.db;
+    assert.equal((db.prepare("SELECT count(*) n FROM route_alerts").get() as {n:number}).n, 0);
+  } finally { second.db.close(); }
+});
+
 test("publication queues once, sends once, has no private address or PayID in email", async () => {
   const { db, rider, offer } = setup();
   try {
