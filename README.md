@@ -32,6 +32,11 @@ Profile's saved addresses stack in one column with dark 14px bold labels matchin
 vehicle fields, directly above regular-weight values. Fields remain 12px apart;
 this Profile-only treatment leaves ride-map captions unchanged.
 Shared address editors in Profile, Offer and Find
+show explicit search results in a floating, scrollable panel anchored to the
+address field, without moving the form. It fits the visible viewport (opens above
+when necessary), dismisses on outside interaction/Escape/selection, and supports
+arrow-key result navigation. See [overlay checks](docs/SEARCH_OVERLAY_2026-10-23.md).
+Shared address editors
 include Swap addresses beside Use my location, without a separate row; it swaps selected
 pins and draft text without submitting, navigating or saving. Schedule editors
 retain native time inputs with a Choose a time hint when empty and unfocused.

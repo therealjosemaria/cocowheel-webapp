@@ -27,6 +27,7 @@ with sync_playwright() as p:
             page.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1:3090') else r.abort())
             page.route('**/api/**', respond)
             page.goto('http://127.0.0.1:3090/'+view)
+            if view=='usual-route': page.locator('summary').filter(has_text='Usual route').click()
             button=page.get_by_role('button', name='Use my location', exact=True)
             expect(button).to_have_count(1)
             expect(button).to_be_visible()

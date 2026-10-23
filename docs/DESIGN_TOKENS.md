@@ -47,6 +47,14 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Address results use the existing surface/line/shadow dropdown treatment,
+  fixed to the field bounds through a body portal, 5px gap, 420px maximum height
+  constrained to the visual viewport. Results retain 12px padding and minimum
+  44px targets. No inline-results reflow; no page/heading/button resizing.
+- Email brand icon uses a zero-line-height cell with 3px bottom padding for an
+  approximately 1.5px optical lift toward the capital-letter centre. Original
+  15px artwork, 6px horizontal gap and wordmark typography remain unchanged.
+
 - Matching-email HTML repeats the existing palette inline for email clients:
   ink, muted, surface, surface-subtle and line; Arial, 20px semibold title,
   16px body/CTA, 14px support and 12px preference link. One 560px-max column,

@@ -1614,12 +1614,12 @@ p {
   background: var(--ink);
 }
 .place-results {
-  position: absolute;
+  position: fixed;
   z-index: 800;
-  right: 0;
-  left: 0;
-  margin-top: 5px;
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  max-height: min(44svh, 420px);
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #ffffff;
@@ -1647,6 +1647,7 @@ p {
 .place-results button {
   display: block;
   width: 100%;
+  min-height: 44px;
   padding: 12px;
   border: 0;
   border-top: 1px solid #f1f5f9;
@@ -1656,16 +1657,6 @@ p {
 }
 .place-results button:first-child {
   border-top: 0;
-}
-.place-search-inline-results .place-results {
-  position: static;
-  max-height: min(44svh, 420px);
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #94a3b8 #f1f5f9;
-  box-shadow: none;
 }
 @media (max-width: 699px) {
   .rider-form-page {

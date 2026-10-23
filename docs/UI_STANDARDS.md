@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Address search results float above the form, matching the field width, without
+layout shift. Explicit Search remains unchanged. Reuse one shared portal panel
+for Offer/Find/Profile, capped at 420px and available visual viewport height;
+open above when the keyboard leaves insufficient room below. Selection, outside
+pointer/focus and Escape dismiss; arrow keys navigate native result buttons.
+This is a non-modal dropdown, not a focus-trapping dialog.
+
 Browser tab and Apple touch icons reuse the original public header PNG. Matching
 emails use the same artwork beside the wordmark, 15px square with 6px spacing,
 using presentation tables for email compatibility. Keep readable brand text when

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
@@ -114,7 +115,6 @@ export function PlaceSearch({
   autoFocus = false,
   selectOnFocus = false,
   destinationIcon = false,
-  inlineResults = true,
   onEdit,
   allowCurrentLocation = false,
   onSwap,
@@ -128,7 +128,6 @@ export function PlaceSearch({
   autoFocus?: boolean;
   selectOnFocus?: boolean;
   destinationIcon?: boolean;
-  inlineResults?: boolean;
   onEdit?: (text: string) => void;
   allowCurrentLocation?: boolean;
   onSwap?: () => void;
@@ -136,12 +135,75 @@ export function PlaceSearch({
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGeneration = useRef(0);
   const [locating, setLocating] = useState(false);
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const dismiss = () => {
+      ++searchGeneration.current;
+      setResultsOpen(false);
+      setPlaces([]);
+    };
+    const outside = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node && !rootRef.current?.contains(target) && !resultsRef.current?.contains(target)) dismiss();
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      dismiss();
+      inputRef.current?.focus({ preventScroll: true });
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("focusin", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("focusin", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [resultsOpen]);
+  useLayoutEffect(() => {
+    if (!resultsOpen || !places.length) return;
+    const position = () => {
+      const anchor = anchorRef.current;
+      const panel = resultsRef.current;
+      if (!anchor || !panel) return;
+      const rect = anchor.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const top = viewport?.offsetTop ?? 0;
+      const bottom = top + (viewport?.height ?? window.innerHeight);
+      const below = bottom - rect.bottom - 12;
+      const above = rect.top - top - 12;
+      const upwards = below < 132 && above > below;
+      const height = Math.max(0, Math.min(420, upwards ? above : below));
+      panel.style.left = `${rect.left}px`;
+      panel.style.width = `${rect.width}px`;
+      panel.style.maxHeight = `${height}px`;
+      panel.style.top = `${upwards ? rect.top - 5 - Math.min(panel.scrollHeight, height) : rect.bottom + 5}px`;
+      panel.style.visibility = height < 44 || rect.bottom < top || rect.top > bottom ? "hidden" : "visible";
+    };
+    position();
+    window.addEventListener("resize", position);
+    window.addEventListener("scroll", position, true);
+    window.visualViewport?.addEventListener("resize", position);
+    window.visualViewport?.addEventListener("scroll", position);
+    return () => {
+      window.removeEventListener("resize", position);
+      window.removeEventListener("scroll", position, true);
+      window.visualViewport?.removeEventListener("resize", position);
+      window.visualViewport?.removeEventListener("scroll", position);
+    };
+  }, [resultsOpen, places]);
   const locateOrigin = async () => {
     const generation = ++searchGeneration.current;
     setLocating(true);
+    setResultsOpen(false);
     setSearchError(null);
     setPlaces([]);
     try {
@@ -212,6 +274,9 @@ export function PlaceSearch({
       inputRef.current?.focus();
       return;
     }
+    setPlaces([]);
+    setSearchError(null);
+    setResultsOpen(true);
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
       body: JSON.stringify({
@@ -228,6 +293,7 @@ export function PlaceSearch({
       .catch((reason) => {
         if (generation !== searchGeneration.current) return;
         setPlaces([]);
+        setResultsOpen(false);
         setSearchError(
           apiErrorMessage(
             reason,
@@ -238,9 +304,9 @@ export function PlaceSearch({
   };
   return (
     <div
-      className={`place-search${inlineResults ? " place-search-inline-results" : ""}`}
+      ref={rootRef} className="place-search"
     >
-      <div className="place-search-input">
+      <div ref={anchorRef} className="place-search-input">
         {destinationIcon ? (
           <svg
             className="place-search-icon"
@@ -263,8 +329,13 @@ export function PlaceSearch({
             event.target.setCustomValidity("");
             setText(event.target.value);
             setPlaces([]);
+            setResultsOpen(false);
           }}
           onKeyDown={(event) => {
+            if (event.key === "ArrowDown" && resultsOpen && places.length) {
+              event.preventDefault();
+              resultsRef.current?.querySelector("button")?.focus();
+            }
             if (event.key === "Enter") {
               event.preventDefault();
               search();
@@ -284,12 +355,18 @@ export function PlaceSearch({
           {searchError}
         </p>
       ) : null}
-      {places.length ? (
+      {resultsOpen && places.length ? createPortal(
         <div
+          ref={resultsRef}
           className="place-results"
           role="region"
           aria-label="Destination search results"
-          tabIndex={0}
+          onKeyDown={(event) => {
+            const buttons = Array.from(resultsRef.current?.querySelectorAll("button") ?? []);
+            const current = buttons.indexOf(document.activeElement as HTMLButtonElement);
+            const next = { ArrowDown: Math.min(current + 1, buttons.length - 1), ArrowUp: Math.max(current - 1, 0), Home: 0, End: buttons.length - 1 }[event.key];
+            if (next !== undefined) { event.preventDefault(); buttons[next]?.focus(); }
+          }}
         >
           {places.map((place) => (
             <button
@@ -302,13 +379,14 @@ export function PlaceSearch({
                 choose(place);
                 setText(place.label ?? "");
                 setPlaces([]);
+                setResultsOpen(false);
               }}
             >
               {place.label ??
                 `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}
             </button>
           ))}
-        </div>
+        </div>, document.body
       ) : null}
     </div>
   );

@@ -74,6 +74,7 @@ with sync_playwright() as p:
         logo = page.locator('img')
         expect(logo).to_have_attribute('width','15')
         assert logo.evaluate('img => img.complete && img.naturalWidth === 1254')
+        assert logo.evaluate('img => { const a=img.getBoundingClientRect(); const b=img.closest("tr").firstElementChild.getBoundingClientRect(); return Math.abs((b.y+b.height/2)-(a.y+a.height/2)-1.5)<0.2; }')
         expect(page.get_by_role('link',name='View matching ride')).to_have_attribute('href','https://gumwheel.com/?start=rider&match=example')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.screenshot(path=f'/tmp/matching-email-{width}.png',full_page=True)

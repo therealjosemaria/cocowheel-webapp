@@ -9,6 +9,7 @@ test("matching email escapes untrusted text and links, retains plain text and no
   assert.ok(!email.html.includes('<img src=x'));
   assert.ok(email.html.includes('src="https://gumwheel.com/brand/gumwheel-original.png" width="15" height="15" alt=""'));
   assert.ok(!email.text.includes('gumwheel-original.png'));
+  assert.ok(email.html.includes('padding:0 0 3px 6px;vertical-align:middle;font-size:0;line-height:0'));
   assert.ok(email.html.includes('?start=rider&amp;match=ride%26%22x'));
   assert.ok(email.html.includes('Free'));
   assert.ok(email.text.startsWith('A matching ride from '));
