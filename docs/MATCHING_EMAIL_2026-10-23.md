@@ -1,5 +1,26 @@
 # Matching email and navigation — 23 October 2026
 
+## Time-first and fare-label refinement
+
+Based on 84964ab: new HTML/plain-text payloads say “Leaving at 2:40 pm on
+Friday, 23 October”, then “Fare: Free” (paid values retain A$ and cents).
+No forced break inside departure text; regular body styling, natural wrapping,
+logo, links and coordination helper unchanged. Sydney timezone remains explicit
+in formatting, not visible copy. No countdown, lifecycle, consent or delivery changes.
+Existing persisted retry payloads are not rewritten. API activation pending approval.
+
+Checks: 154 tests passed, lint and production build passed. Initial new assertions
+caught en-AU omitting the desired weekday comma; explicit date parts fixed this
+and the complete suite passed on rerun. Midnight/Sydney winter offset, free/paid
+HTML/text and escaping covered. The existing browser suite passed before the
+punctuation adjustment; its rerun hit stale local frontend assets after rebuilding.
+Final email-only check avoids frontend dependencies:
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-email-copy.py`.
+Free/paid renders passed at 320/390/1440px without overflow or external requests.
+Whole 320px and 1440px emails visually reviewed for natural wrapping, unchanged
+logo alignment, hierarchy, regular fare weight, spacing and CTA prominence.
+Real inbox rendering and Apple calendar detection remain unverified; no real email sent.
+
 Baseline e81955c. Scope: alert presentation and destination flow, not matching
 thresholds, availability, OTP, delivery quotas or consent. No schema change.
 

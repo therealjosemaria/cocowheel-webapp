@@ -198,6 +198,11 @@ payloads may retain the old email format.
 Heading is “A matching ride from [UniKey]”, preserving the exact identity. Timing
 still uses Sydney time but omits the suffix. Keep “Coordinate pickup in messages.”
 without “Times are flexible”.
+Later 23 October copy refinement: time first, “Leaving at 2:40 pm on Friday,
+23 October”, followed by “Fare: Free” or “Fare: A$5” on the next line in both
+HTML and plain text. No forced break inside the departure sentence; natural mobile
+wrapping is retained. This supersedes email “Leaving around” wording only;
+ride countdowns, scheduling and delivery rules are unchanged.
 The brand row now includes the original public header PNG at 15×15px beside the
 wordmark. This is a static shared image URL, not a tracking pixel; recipient email
 clients may block/proxy/cache it. Plain text remains unchanged. Existing persisted

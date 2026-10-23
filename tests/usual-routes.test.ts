@@ -335,7 +335,7 @@ test("publication queues once, sends once, has no private address or PayID in em
       async (email) => {
         sends++;
         assert.equal(email.to[0], "ride1234@uni.sydney.edu.au");
-        assert.match(email.text, /Leaving around .*12:00 pm/);
+        assert.match(email.text, /Leaving at 12:00 pm on Friday, 23 October/);
         assert.ok(!email.text.includes("driver@example.com"));
         assert.ok(!email.text.includes("151.20"));
         assert.match(email.text, /\?start=rider&match=/);

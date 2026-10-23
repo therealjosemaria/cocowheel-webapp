@@ -11,7 +11,7 @@ export function routeAlertContent(origin: string, rideId: string, driver: string
   const logo = `${base}/brand/gumwheel-original.png`;
   const heading = `A matching ride from ${driver}`;
   const timing = departureLabel(departure);
-  const price = fareLabel(fare);
+  const price = `Fare: ${fareLabel(fare)}`;
   const helper = "Coordinate pickup in messages.";
   return {
     text: `${heading}\n${timing}\n${price}\n${helper}\n\nView matching ride: ${view}\n\nMute matching emails: ${mute}`,

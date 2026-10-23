@@ -1,5 +1,4 @@
 import type { Pin, PayIdType } from "./client-types";
-import { plannedDepartureDateTime } from "./departure-label";
 
 export type UsualRoute = {
   origin: Pin;
@@ -25,5 +24,15 @@ export function scheduleWindow(minute: number) {
   return `${clockLabel(minute - 60)}–${clockLabel(minute + 60)}${minute < 60 || minute >= 1380 ? " (crosses midnight)" : ""}`;
 }
 export function departureLabel(value: string) {
-  return `Leaving around ${plannedDepartureDateTime(value)}`;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Departure time unavailable";
+  const time = new Intl.DateTimeFormat("en-AU", {
+    hour: "numeric", minute: "2-digit", timeZone: "Australia/Sydney",
+  }).format(date);
+  const parts = new Intl.DateTimeFormat("en-AU", {
+    weekday: "long", day: "numeric", month: "long", timeZone: "Australia/Sydney",
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  const day = `${part("weekday")}, ${part("day")} ${part("month")}`;
+  return `Leaving at ${time} on ${day}`;
 }

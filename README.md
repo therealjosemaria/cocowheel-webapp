@@ -49,8 +49,11 @@ in Offer a ride. Matching-email links open Find a ride's map/chooser using the
 signed-in account's saved endpoints, with the suggested offer selected if available.
 Old Profile review links redirect there too. Unavailable offers show a notice while
 other results remain usable; sign-in resumes the flow without auto-requesting.
-Matching emails include lightweight branded HTML and plain text, one View matching
-ride button and a Mute matching emails link that expands Profile's Usual route and
+Matching emails include lightweight branded HTML and plain text.
+Departure copy is time-first (Leaving at 2:40 pm on Friday, 23 October),
+followed by Fare: Free or the existing A$ amount on the next line; Sydney timezone
+is unchanged. New payloads require API restart; persisted retries retain their copy.
+Emails retain one View matching ride button and a Mute matching emails link that expands Profile's Usual route and
 focuses the alert control without changing consent. See [email checks](docs/MATCHING_EMAIL_2026-10-23.md).
 Browser tab/Apple touch icons reuse the unchanged original header PNG. Matching
 emails include that same public asset at 15×15px beside the 16px wordmark, with
