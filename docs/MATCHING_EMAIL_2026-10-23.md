@@ -7,7 +7,14 @@ Friday, 23 October”, then “Fare: Free” (paid values retain A$ and cents).
 No forced break inside departure text; regular body styling, natural wrapping,
 logo, links and coordination helper unchanged. Sydney timezone remains explicit
 in formatting, not visible copy. No countdown, lifecycle, consent or delivery changes.
-Existing persisted retry payloads are not rewritten. API activation pending approval.
+Existing persisted retry payloads are not rewritten.
+Owner-approved API activation completed at 14:29:39 AEDT on 23 October 2026,
+source afb9020. Confirmed zero accepted/active trips before backup and immediately
+before restarting only cocowheels-api. SQLite online backup was integrity/FK/count
+checked and retained privately (0700 directory, 0600 file). After restart the
+service was active, local/public-proxy health returned ok, all 127 rides remained,
+integrity was ok and there were zero FK violations. No schema or trip mutations,
+test email sends or retry-payload rewrites were performed.
 
 Checks: 154 tests passed, lint and production build passed. Initial new assertions
 caught en-AU omitting the desired weekday comma; explicit date parts fixed this
