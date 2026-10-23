@@ -34,6 +34,7 @@ consistent spacing, clear heading/body hierarchy and no overflow.
 
 With user approval and no trips underway, a local SQLite backup was verified
 before restarting only `cocowheels-api` at 13:13:12 AEDT. The service is active
-and local `/api/health` returns `status: ok`. Frontend production verification
-must follow the push; a local build is not a verified deployment. Real Safari tab
+and local `/api/health` returns `status: ok`. Production deployment of `d294b54`
+reached READY; a public HTML fetch confirmed both icon links, and the public PNG
+returned HTTP 200 with image/png content type. Real Safari tab
 rendering and Gmail/Outlook inbox rendering are not established by Chromium.
