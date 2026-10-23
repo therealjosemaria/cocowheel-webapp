@@ -8,7 +8,9 @@ Profile uses two independent, initially collapsed native disclosures: Usual rout
 and Vehicle details (drivers only). Reuse identical summary typography, route/car
 icons, inset, border and 44px targets. Usual route contains its addresses, editors
 and matching alerts; collapsing never resets drafts or consent. Email-linked
-matching-ride visits open Usual route so their destination remains visible.
+alert preferences open Usual route and focus the existing alert control once.
+Matching-ride links open Find's existing map/chooser instead, preselecting the
+suggested available offer without requesting it. No extra Profile review step.
 No rider/driver qualifier for Usual route, which serves both roles.
 
 Vehicle details is a collapsed, single-purpose Profile accordion using the existing
@@ -45,7 +47,7 @@ Find/Offer a ride. No payment controls in Profile, including new-route setup;
 fare and PayID belong in Offer a ride. Omit the Sydney time suffix from the
 schedule summary without changing its timezone or midnight-crossing note.
 No publish/departure controls
-in Profile. Email-linked Review matching ride remains a compatibility exception.
+in Profile. Legacy email review links redirect to Find's matching-ride entry.
 Omit the routine-privacy helper sentence; saved-route privacy is unchanged.
 Usual route and Matching ride alerts both use RideFieldLabel in matching H2s,
 with existing monochrome route/rider icons, equal sizing and icon/text gaps.

@@ -165,8 +165,12 @@ const humanError = (error: unknown) => {
 
 export default function HomeClient({
   initialScreen = "HOME",
+  initialMatch,
+  initialNotice,
 }: {
   initialScreen?: "HOME" | "DRIVER" | "RIDER";
+  initialMatch?: { rideId: string; origin: Pin; destination: Pin };
+  initialNotice?: string;
 }) {
   const router = useRouter();
   const [screen, setScreen] = useState<"HOME" | "DRIVER" | "RIDER">(
@@ -187,7 +191,7 @@ export default function HomeClient({
     }>
   >([]);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialNotice ?? null);
   const [discoveryError, setDiscoveryError] = useState<string | null>(null);
   const [serviceError, setServiceError] = useState<string | null>(null);
   const [serviceAvailable, setServiceAvailable] = useState<boolean | null>(
@@ -203,16 +207,17 @@ export default function HomeClient({
   const [riderPins, setRiderPins] = useState<{
     pickup?: Pin;
     destination?: Pin;
-  }>({});
+  }>(initialMatch ? { pickup: initialMatch.origin, destination: initialMatch.destination } : {});
   const [price, setPrice] = useState("5");
   const [contribution, setContribution] = useState(false);
   const [departureMinutes, setDepartureMinutes] = useState(30);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialMatch?.rideId ?? null);
+  const pendingEmailMatch = useRef(initialMatch?.rideId ?? null);
   const [searching, setSearching] = useState(false);
-  const [riderSelectionOpen, setRiderSelectionOpen] = useState(false);
+  const [riderSelectionOpen, setRiderSelectionOpen] = useState(Boolean(initialMatch));
   const [riderTime, setRiderTime] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
@@ -237,6 +242,13 @@ export default function HomeClient({
     () => candidates.find((candidate) => candidate.rideId === selected) ?? null,
     [candidates, selected],
   );
+  useEffect(() => {
+    if (!initialMatch && !initialNotice) return;
+    const timer = window.setTimeout(() => window.dispatchEvent(
+      new CustomEvent("cocowheels:ride-tab", { detail: "rider" }),
+    ), 0);
+    return () => window.clearTimeout(timer);
+  }, [initialMatch, initialNotice]);
 
   const begin = useCallback(
     (roleChoice: Role) => {
@@ -295,6 +307,7 @@ export default function HomeClient({
     }
   }
   useEffect(() => {
+    if (initialMatch || initialNotice) return;
     if (!consumeRiderSearchReturn()) return;
     const draft = riderSearchDraft();
     if (!draft) return;
@@ -309,8 +322,9 @@ export default function HomeClient({
       );
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [initialMatch, initialNotice]);
   useEffect(() => {
+    if (initialMatch || initialNotice) return;
     const requested = new URLSearchParams(window.location.search).get("start");
     if (requested !== "driver" && requested !== "rider") return;
     window.history.replaceState(
@@ -342,7 +356,7 @@ export default function HomeClient({
       );
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [initialMatch, initialNotice]);
   useEffect(() => {
     const handleStart = (event: Event) => {
       const roleChoice = (event as CustomEvent<unknown>).detail;
@@ -615,6 +629,12 @@ export default function HomeClient({
           if (cancelled) return;
           setCandidates(result.candidates);
           setDiscoveryError(null);
+          if (pendingEmailMatch.current) {
+            if (!result.candidates.some((candidate) => candidate.rideId === pendingEmailMatch.current)) {
+              setError("That ride is no longer available. You can browse other rides for your route.");
+            }
+            pendingEmailMatch.current = null;
+          }
           setSelected((current) =>
             result.candidates.some((candidate) => candidate.rideId === current)
               ? current

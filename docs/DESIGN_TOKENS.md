@@ -47,6 +47,12 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Matching-email HTML repeats the existing palette inline for email clients:
+  ink, muted, surface, surface-subtle and line; Arial, 20px semibold title,
+  16px body/CTA, 14px support and 12px preference link. One 560px-max column,
+  24px inner and 16px horizontal outer padding, dark rounded 10px CTA.
+  No tracking image, extra colour or external font. Plain-text fallback retained.
+
 - Profile disclosures share contribution-choice and profile-disclosure: 16px
   outer inset/gaps, 12px inner padding, 14px semibold summaries with existing
   monochrome icons. The usual-route body has no second horizontal inset; headings

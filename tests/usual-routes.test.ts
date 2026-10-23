@@ -287,7 +287,11 @@ test("publication queues once, sends once, has no private address or PayID in em
         assert.match(email.text, /Leaving around 12:00 pm/);
         assert.ok(!email.text.includes("driver@example.com"));
         assert.ok(!email.text.includes("151.20"));
-        assert.match(email.text, /usual-route\?ride=/);
+        assert.match(email.text, /\?start=rider&match=/);
+        assert.match(email.html!, /View matching ride/);
+        assert.match(email.html!, /usual-route\?alerts=1/);
+        assert.ok(!email.html!.includes("driver@example.com"));
+        assert.ok(!email.html!.includes("151.20"));
       },
       now,
     );

@@ -40,8 +40,14 @@ The schedule summary omits the Sydney time suffix; matching still uses
 Australia/Sydney and the same ±1-hour window.
 See the [Profile cleanup checks](docs/PROFILE_CLEANUP_2026-10-23.md).
 The ride-offering shortcut/departure choices are removed from Profile; offering stays
-in Offer a ride. Matching-email review links remain available when opened from
-an email. Legacy saved-route offer API remains unchanged for compatibility.
+in Offer a ride. Matching-email links open Find a ride's map/chooser using the
+signed-in account's saved endpoints, with the suggested offer selected if available.
+Old Profile review links redirect there too. Unavailable offers show a notice while
+other results remain usable; sign-in resumes the flow without auto-requesting.
+Matching emails include lightweight branded HTML and plain text, one View matching
+ride button and a Mute matching emails link that expands Profile's Usual route and
+focuses the alert control without changing consent. See [email checks](docs/MATCHING_EMAIL_2026-10-23.md).
+Legacy saved-route offer API remains unchanged for compatibility.
 See the [Profile refinement checks](docs/PROFILE_PREFERENCES_2026-10-22.md).
 Riders opt into matching emails for any day/time or selected days and one
 Sydney-time ±1-hour window. Find a ride offers a quiet Save route text button below
@@ -615,7 +621,7 @@ real-device verification.
 Profile has a collapsed Vehicle details (drivers only) accordion.
 Usual route is a separate, initially collapsed accordion for either role; its
 addresses, editing and matching-alert settings stay together and preserve drafts
-when collapsed. Email-linked matching-ride visits open Usual route automatically.
+when collapsed. Email-linked alert preferences open Usual route automatically.
 Vehicle fields include number plate and optional make, model and colour.
 Publishing remains unchanged. Saving vehicle details
 requires a plate. Only the plate label says (required);

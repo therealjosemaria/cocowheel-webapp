@@ -33,8 +33,8 @@ not write. Identity change closes the editor. Schedule and payment remain editab
 Section headings are Matching ride alerts and Payment preferences. Profile's
 offer button, GPS publishing flow and departure choices are removed. The legacy
 offer/remove endpoints remain for compatibility; no API/schema migration or
-restart is required. Email deep links retain Review matching ride to avoid
-breaking previously delivered notifications. Ordinary Offer/Find are unchanged.
+restart is required. The later email refinement redirects legacy review links
+into Find; see the current email contract below.
 
 - Account menu → Profile opens `/usual-route`, with My usual route as a section,
   not another main-menu tab. URLs and API names remain unchanged.
@@ -182,10 +182,29 @@ coordinates, saved home address or PayID. A mute/replacement cannot recall an
 already in-flight/delivered email. Payloads/audit attempts are retained without a
 new deletion schedule. No E2EE claim.
 
-Email review opens `/usual-route?ride=...`; sign-in is required to load the private
-routine. Explicit Review matching ride rechecks public availability, uses existing
-search to calculate fit, and seeds the existing 30-minute rider draft before
-opening the shared map-first preview. No request is sent until Request to join.
-If the routine was removed, save a route again first. If unavailable, show the
-existing concise modal. Saving a new routine can change what the rider reviews;
-an email is never a reservation or immutable rider journey.
+23 October email refinement supersedes the Profile review step: HTML plus plain
+text contains the driver, planned Sydney time, fare, coordination sentence, View
+matching ride and Mute matching emails. No greeting, tracking image, saved address,
+PayID, reservation/privacy filler or new provider dependency. Dynamic HTML is
+escaped. Persisted retry payloads remain byte-for-byte compatible; already queued
+payloads may retain the old email format.
+Heading is “A matching ride from [UniKey]”, preserving the exact identity. Timing
+still uses Sydney time but omits the suffix. Keep “Coordinate pickup in messages.”
+without “Times are flexible”.
+
+Review opens `/?start=rider&match=PUBLIC_ID`; legacy `/usual-route?ride=PUBLIC_ID`
+redirects there. This is an ordinary reusable public ride reference, not a login
+credential, encrypted token or reservation. Authentication still protects the
+saved route. After sign-in, use the current saved endpoints to open Find's normal
+map/chooser. Existing search rechecks availability and preselects the target even
+if not first; later polls preserve the user's selection normally. A missing target
+produces a one-time notice and leaves alternatives usable. Removed saved route
+opens manual address entry with an explanation. API failures offer retry; identity
+changes invalidate pending loads and remove the previous account's entry view.
+No click auto-requests, mutates a route, changes consent or sends an email.
+
+Mute link opens `/usual-route?alerts=1`, expands Usual route and focuses its alert
+control once after loading/sign-in. Existing mute confirmation and POST remain
+required; already-muted accounts stay muted. No one-click unauthenticated API is
+introduced. Current saved-route changes can affect a later email review.
+See [research, verification and activation](MATCHING_EMAIL_2026-10-23.md).

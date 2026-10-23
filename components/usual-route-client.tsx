@@ -2,14 +2,9 @@
 import VehicleDetails from "./vehicle-details";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
-import { useRouter } from "next/navigation";
 import { cocowheelsApi, ApiError, apiErrorMessage } from "@/lib/api-client";
 import { WEEKDAYS, scheduleWindow, type UsualRoute } from "@/lib/usual-route";
-import type { Pin, Ride, Candidate } from "@/lib/client-types";
-import {
-  saveRiderPreviewRoute,
-  saveRiderSearchDraft,
-} from "@/lib/ride-preview-cache";
+import type { Pin } from "@/lib/client-types";
 import { RouteFields } from "./route-fields";
 import { readProfileDraft, writeProfileDraft, clearProfileDraft } from "@/lib/profile-draft";
 import { Message } from "./ride-journey-controls";
@@ -17,8 +12,9 @@ import RideFieldLabel from "./ride-field-label";
 import RouteSchedule from "./route-schedule";
 import RouteTime from "./route-time";
 
-export default function UsualRouteClient({ match }: { match: string | null }) {
-  const router = useRouter();
+export default function UsualRouteClient({ alertsEntry = false }: { alertsEntry?: boolean }) {
+  const alertControl = useRef<HTMLButtonElement>(null);
+  const alertFocused = useRef(false);
   const [saved, setSaved] = useState<UsualRoute | null>(null);
   const [origin, setOrigin] = useState<Pin>();
   const [destination, setDestination] = useState<Pin>();
@@ -38,6 +34,12 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
   const [editingRoute, setEditingRoute] = useState(false);
   const [confirmMute, setConfirmMute] = useState(false);
   const [generation] = useState(() => ({ value: 0 }));
+  useEffect(() => {
+    if (alertsEntry && !loading && verified && saved && alertControl.current && !alertFocused.current) {
+      alertFocused.current = true;
+      alertControl.current.focus();
+    }
+  }, [alertsEntry, loading, verified, saved]);
   useEffect(() => {
     let live = true;
     const load = () => {
@@ -174,51 +176,11 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
       setBusy(false);
     }
   }
-  async function review() {
-    if (!saved || !match) return;
-    setBusy(true);
-    const current = generation.value;
-    try {
-      const { ride } = await cocowheelsApi<{ ride: Ride }>(
-        `/api/rides/${encodeURIComponent(match)}/preview`,
-      );
-      const departure = new Date(
-        Math.max(Date.now(), Date.parse(ride.scheduledDepartureAt)),
-      ).toISOString();
-      const { candidates } = await cocowheelsApi<{ candidates: Candidate[] }>(
-        "/api/search",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            pickup: saved.origin,
-            destination: saved.destination,
-            requestedDepartureAt: departure,
-          }),
-        },
-        true,
-      );
-      const candidate = candidates.find((c) => c.rideId === match);
-      if (current !== generation.value) return;
-      if (!candidate) throw new ApiError("RIDE_UNAVAILABLE", 409);
-      saveRiderSearchDraft(saved.origin, saved.destination, departure);
-      saveRiderPreviewRoute(
-        match,
-        saved.origin,
-        saved.destination,
-        candidate.directionFit,
-      );
-      router.push(`/rides/${encodeURIComponent(match)}`);
-    } catch (reason) {
-      fail(reason);
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <section className="activity-page">
       <div className="activity-panel usual-route-panel">
         <h1 className="page-title">Profile</h1>
-        <details className="contribution-choice profile-disclosure usual-route-disclosure" open={match ? true : undefined}>
+        <details className="contribution-choice profile-disclosure usual-route-disclosure" open={alertsEntry ? true : undefined}>
           <summary><RideFieldLabel icon="route">Usual route</RideFieldLabel></summary>
         <div className="usual-route-body">
           {loading ? (
@@ -289,15 +251,6 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                   setEditingRoute(true);
                 }}>Edit route</button>
               )}
-              {match && (
-                <button
-                  className="primary"
-                  disabled={busy}
-                  onClick={() => void review()}
-                >
-                  Review matching ride
-                </button>
-              )}
               <section className="usual-route-section">
                 <h2>
                   <RideFieldLabel icon="rider">Matching ride alerts</RideFieldLabel>
@@ -308,6 +261,7 @@ export default function UsualRouteClient({ match }: { match: string | null }) {
                       {saved.anyTime ? "Any day, any time" : <>{saved.days.map((d) => WEEKDAYS[d - 1]).join(", ")}<br />{scheduleWindow(saved.minute!)}</>}
                     </p>
                     <button
+                      ref={alertControl}
                       className="secondary"
                       disabled={busy || (!saved.alerts && !available)}
                       onClick={async () => {

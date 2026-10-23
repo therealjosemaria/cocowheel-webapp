@@ -2,8 +2,9 @@ import { randomUUID } from "node:crypto";
 import type { Db } from "./core";
 import type { Pin } from "../lib/client-types";
 import { payIdInputError } from "../lib/input-validation";
-import { fareLabel, validFare } from "../lib/fare";
-import { departureLabel, sameRoute, type UsualRoute } from "../lib/usual-route";
+import { validFare } from "../lib/fare";
+import { sameRoute, type UsualRoute } from "../lib/usual-route";
+import { routeAlertContent } from "./route-alert-email";
 
 export function initializeUsualRoutes(db: Db) {
   db.exec(`
@@ -240,7 +241,7 @@ export function queueRouteAlerts(
       );
   }
 }
-type Email = { from: string; to: string[]; subject: string; text: string };
+type Email = { from: string; to: string[]; subject: string; text: string; html?: string };
 export type AlertSender = (email: Email, id: string) => Promise<void>;
 export const sendRouteAlert: AlertSender = async (email, id) => {
   const response = await fetch("https://api.resend.com/emails", {
@@ -347,7 +348,7 @@ export async function deliverRouteAlerts(
               : `${job.unikey}@uni.sydney.edu.au`,
         ],
         subject: "A ride matches your usual route",
-        text: `${job.driver_alias} has offered a matching ride.\n${departureLabel(job.scheduled_departure_at)} · Sydney time · ${fareLabel(job.price_aud)}\nTimes are flexible. Coordinate pickup in messages.\n\nReview availability and request: ${origin}/usual-route?ride=${encodeURIComponent(job.public_id)}\n\nThis is a suggestion, not a reservation. Your routine is not shared with the driver.\nMute matching emails: ${origin}/usual-route`,
+        ...routeAlertContent(origin, job.public_id, job.driver_alias, job.scheduled_departure_at, job.price_aud),
       };
   // Persist the exact payload for provider idempotency across retry/restart.
   const claimed = db.transaction(() => {
