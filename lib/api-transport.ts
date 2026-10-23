@@ -1,3 +1,5 @@
+import { PLATE_ERROR } from "./vehicle";
+
 export const CONNECTION_MESSAGE =
   "We can’t reach the server. Please try again shortly.";
 export const API_TIMEOUT_MS = 15_000;
@@ -16,6 +18,8 @@ export function apiErrorMessage(
   error: unknown,
   fallback = "We couldn’t complete that action. Please try again.",
 ) {
+  if (error instanceof ApiError && error.code === "INVALID_VEHICLE_PLATE")
+    return PLATE_ERROR;
   return error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE"
     ? CONNECTION_MESSAGE
     : error instanceof ApiError && error.code === "INVALID_RESPONSE"

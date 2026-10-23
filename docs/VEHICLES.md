@@ -14,6 +14,21 @@ input checks, not registration, ownership, licence or identity verification.
 
 ## Nine-character refinement (23 October 2026)
 
+Error-copy follow-up (baseline 16e582f): the shared API error mapper translates
+INVALID_VEHICLE_PLATE into the same PLATE_ERROR instruction used by browser
+validation: “Use up to 9 letters, numbers, spaces or hyphens, starting with a letter
+or number.” Profile and Save & accept retain their existing inline error areas and
+draft values, allowing correction/retry. Other vehicle-field failures retain their
+contextual fallback; network errors retain connection wording. No API contract,
+validation, layout, database or restart change is required for this frontend fix.
+Verification: 155 isolated tests, lint and production build passed. Mocked browser
+checks on :3198 (`VEHICLE_CHECK_ORIGIN=http://127.0.0.1:3198` with the command below)
+passed at 320/390/1440px, including forced backend plate rejections in both forms,
+exact shared copy, retained input, no save/accept on failure and successful retry.
+Mobile modal and desktop Profile error screenshots visually reviewed for wrapping,
+regular text weight, unchanged controls and spacing. No live writes; real-device
+Safari and frontend production deployment remain separate/unverified checks.
+
 Baseline 21d9af6. Nine is a pragmatic input cap, not a universal registry-format
 claim: [WA's official custom-plate guidance](https://online.transport.wa.gov.au/webExternal/optionalplates/?type=custom)
 allows up to nine characters including spaces for acrylic vehicle plates.

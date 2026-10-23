@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { cocowheelsApi } from "../lib/api-client";
+import { PLATE_ERROR } from "../lib/vehicle";
 import {
   ApiError,
   apiErrorMessage,
@@ -10,6 +11,15 @@ import {
 } from "../lib/api-transport";
 
 const originalFetch = globalThis.fetch;
+test("backend plate rejection uses the same instruction as frontend validation", async () => {
+  globalThis.fetch = async () => Response.json({ error: "INVALID_VEHICLE_PLATE" }, { status: 400 });
+  for (const method of ["POST", "PATCH"]) {
+    await assert.rejects(requestJson("/api/vehicle", { method }), (error: unknown) =>
+      error instanceof ApiError && apiErrorMessage(error, "Generic fallback") === PLATE_ERROR);
+  }
+  assert.equal(apiErrorMessage(new ApiError("INVALID_VEHICLE", 400), "Check vehicle"), "Check vehicle");
+  assert.equal(apiErrorMessage(new ApiError("SERVICE_UNAVAILABLE", 503)), CONNECTION_MESSAGE);
+});
 test('verification retry metadata survives transport without guessing a wait', async () => {
   for (const value of [55, 780, undefined, -1, '60']) {
     globalThis.fetch = async () => Response.json({error: 'VERIFICATION_RATE_LIMITED', retryAfterSeconds: value}, {status:429});

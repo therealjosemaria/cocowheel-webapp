@@ -649,6 +649,8 @@ spaces or hyphens, starting with a letter/number. Spaces/hyphens are retained.
 Profile and acceptance share the API's validation rule; invalid/overlong drafts
 are rejected without silently truncating pasted input. Existing saved plates and
 trip snapshots are not migrated. See the vehicle guide for research and checks.
+Backend INVALID_VEHICLE_PLATE errors display the same shared instruction as
+browser validation in Profile and the acceptance modal, preserving entered values.
 Publishing remains unchanged. Saving vehicle details
 requires a plate. Only the plate label says (required);
 the other fields remain optional without suffixes. Save vehicle details matches

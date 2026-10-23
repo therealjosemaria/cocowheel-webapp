@@ -23,6 +23,8 @@ with sync_playwright() as p:
             if state['accepted']: ride['vehicle'] = state['vehicle']
             item = {'role': state['role'], 'ride': ride}
             if path == 'vehicle':
+                if r.request.method == 'POST' and state.get('plate_error'):
+                    r.fulfill(status=400, json={'error':'INVALID_VEHICLE_PLATE'}); return
                 if r.request.method == 'POST': state['vehicle'] = r.request.post_data_json
                 data = {'vehicle': state['vehicle']}
             elif path == 'usual-route': data = {'route': None, 'alertsAvailable': True}
@@ -33,6 +35,8 @@ with sync_playwright() as p:
                 body = r.request.post_data_json
                 if not body.get('plate'):
                     r.fulfill(status=409, json={'error': 'VEHICLE_PLATE_REQUIRED'}); return
+                if state.get('plate_error'):
+                    r.fulfill(status=400, json={'error':'INVALID_VEHICLE_PLATE'}); return
                 if state['fail']:
                     state['fail'] = False
                     r.fulfill(status=503, json={'error': 'UNAVAILABLE'}); return
@@ -69,6 +73,13 @@ with sync_playwright() as p:
             assert plate.evaluate('(el) => el.checkValidity()')
         for label, value in [('Number plate (required)', 'ABC123'), ('Make', 'Toyota'), ('Model', 'Corolla'), ('Colour', 'White')]:
             details.get_by_label(label, exact=True).fill(value)
+        state['plate_error'] = True
+        details.get_by_role('button', name='Save vehicle details', exact=True).click()
+        expect(details.get_by_role('alert')).to_have_text('Use up to 9 letters, numbers, spaces or hyphens, starting with a letter or number.')
+        expect(plate).to_have_value('ABC123')
+        assert state['vehicle'] is None
+        page.screenshot(path=f'/tmp/vehicle-profile-error-{width}.png', full_page=True)
+        state['plate_error'] = False
         details.get_by_role('button', name='Save vehicle details', exact=True).click()
         expect(details.get_by_text('Vehicle details saved.')).to_be_visible()
         page.screenshot(path=f'/tmp/vehicle-profile-{width}.png', full_page=True)
@@ -93,6 +104,13 @@ with sync_playwright() as p:
             assert not dialog.get_by_label('Number plate (required)').evaluate('(el) => el.checkValidity()')
         dialog.get_by_label('Number plate (required)').fill('xyz123')
         expect(dialog.get_by_label('Number plate (required)')).to_have_value('XYZ123')
+        state['plate_error'] = True
+        dialog.get_by_role('button', name='Save & accept').click()
+        expect(dialog.get_by_role('alert')).to_have_text('Use up to 9 letters, numbers, spaces or hyphens, starting with a letter or number.')
+        expect(dialog.get_by_label('Number plate (required)')).to_have_value('XYZ123')
+        assert not state['accepted']
+        page.screenshot(path=f'/tmp/vehicle-prompt-error-{width}.png', full_page=True)
+        state['plate_error'] = False
         page.screenshot(path=f'/tmp/vehicle-prompt-{width}.png', full_page=True)
         state['fail'] = True
         dialog.get_by_role('button', name='Save & accept').click()
