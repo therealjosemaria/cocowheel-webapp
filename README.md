@@ -644,6 +644,11 @@ Usual route is a separate, initially collapsed accordion for either role; its
 addresses, editing and matching-alert settings stay together and preserve drafts
 when collapsed. Email-linked alert preferences open Usual route automatically.
 Vehicle fields include number plate and optional make, model and colour.
+New plate writes allow 1–9 characters after trimming: ASCII letters/numbers,
+spaces or hyphens, starting with a letter/number. Spaces/hyphens are retained.
+Profile and acceptance share the API's validation rule; invalid/overlong drafts
+are rejected without silently truncating pasted input. Existing saved plates and
+trip snapshots are not migrated. See the vehicle guide for research and checks.
 Publishing remains unchanged. Saving vehicle details
 requires a plate. Only the plate label says (required);
 the other fields remain optional without suffixes. Save vehicle details matches

@@ -7,10 +7,51 @@ One private vehicle per university account. GET /api/vehicle returns `{vehicle}`
 from the authenticated session, never a supplied account ID. Writes recheck the
 session after reading JSON. Existing Origin, body-size and no-store rules apply.
 Unauthenticated access is 401; invalid fields are 400. Missing fields become empty.
-Plate is trimmed, uppercased, limited to 12 ASCII letters/digits/spaces/hyphens,
+Plate is trimmed, uppercased, limited to 9 ASCII letters/digits/spaces/hyphens,
 starting with a letter/digit; leading zeros remain. Optional make/model/colour
 are trimmed, max 40 characters, rejecting control characters. These are basic
 input checks, not registration, ownership, licence or identity verification.
+
+## Nine-character refinement (23 October 2026)
+
+Baseline 21d9af6. Nine is a pragmatic input cap, not a universal registry-format
+claim: [WA's official custom-plate guidance](https://online.transport.wa.gov.au/webExternal/optionalplates/?type=custom)
+allows up to nine characters including spaces for acrylic vehicle plates.
+[NSW EPA's vehicle-report form](https://apps.epa.nsw.gov.au/mvreportingapp/noisyreporting.aspx)
+asks for no spaces/hyphens, but this is an input convention, not proof that no
+Australian plate displays separators. Per owner instruction, preserve existing
+space/hyphen support rather than guessing a national prohibition. Other punctuation,
+emoji and control characters remain rejected. Leading zeros and numeric-only plates
+remain supported; letters become uppercase. Separators count toward the nine limit.
+
+The same validPlate helper powers server writes and browser custom validity in
+Profile and the acceptance modal. Invalid nonempty drafts show a native validation
+message on submission and aria-invalid; no permanent helper or layout change.
+Overlong paste remains visible and cannot submit, rather than silently truncating
+to a different plate. Empty input keeps native required handling. No changes to
+make/model/colour. No record migration: historical snapshots and previously saved
+plates remain readable; acceptance using an unchanged legacy saved plate remains
+compatible. New/edited plate writes must meet the new rule.
+
+Verification: 154 isolated tests passed, including direct HTTP rejection in both
+vehicle-save and acceptance endpoints, atomic rollback, preserved previous vehicle,
+valid nine-character plates, separators, leading zeros and invalid symbols.
+Lint and production build passed. With built frontend on loopback :3197:
+`VEHICLE_CHECK_ORIGIN=http://127.0.0.1:3197 /tmp/gumwheel-pickup-check-env/bin/python scripts/check-vehicles.py`
+passed at 320/390/1440px, using mocked APIs and blocking external traffic. Invalid
+drafts cannot save/accept; corrected input clears validity; normal save, retry,
+cancellation and accepted-rider display pass. Whole mobile prompt/rider and desktop
+Profile screenshots reviewed: typography, spacing and hierarchy unchanged, no
+overflow. Initial server startup on :3091 found that port occupied; used :3197
+without stopping the existing process. Real-device Safari remains unverified.
+
+Owner-approved API activation at 14:37:33 AEDT, 23 October: this tested change
+series over 21d9af6. Zero accepted/active trips checked before online backup and
+immediately before restarting only cocowheels-api. Private backup integrity/FKs
+and ride count passed (0700 directory/0600 file). Post-restart service active,
+local/public-proxy health ok, 127 rides retained, integrity ok and no FK violations.
+No production test writes or plate/history migrations. Frontend push/deployment
+is separate from API activation.
 
 Saving vehicle details requires a plate; publication does not require one.
 Blank saves return 409 VEHICLE_PLATE_REQUIRED without changing existing details.

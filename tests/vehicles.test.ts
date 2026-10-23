@@ -13,7 +13,7 @@ import {
 } from "../server/core";
 import { acceptWithVehicle } from "../server/vehicle-acceptance";
 import { readVehicle, saveVehicle } from "../server/vehicles";
-import { checkedVehicle } from "../lib/vehicle";
+import { checkedVehicle, validPlate } from "../lib/vehicle";
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
 );
@@ -21,6 +21,14 @@ process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
 test("vehicle validation preserves plate text and rejects malformed fields", () => {
   assert.equal(checkedVehicle({ plate: " 001abc " }).plate, "001ABC");
   assert.equal(checkedVehicle({}).plate, "");
+  for (const plate of ["1", "001abc", "ABCDEFGHI", "AB-123", "ABC 123", "  ABC123  "]) {
+    assert.ok(validPlate(plate));
+    assert.equal(checkedVehicle({ plate }).plate, plate.trim().toUpperCase());
+  }
+  for (const plate of ["ABCDEFGHIJ", "ABC!123", "ABC_123", "ABC.123", "🚗123", "-ABC", "   "]) {
+    assert.equal(validPlate(plate), false);
+    if (plate.trim()) assert.throws(() => checkedVehicle({ plate }), /INVALID_VEHICLE_PLATE/);
+  }
   for (const input of [
     null,
     { plate: 123 },
@@ -79,6 +87,9 @@ test("saved vehicle acceptance, immutable snapshot, other-rider privacy and lega
       model: "Corolla",
       colour: "White",
     });
+    assert.throws(() => acceptWithVehicle(db, driver.token, id, req, "ABCDEFGHIJ"), /INVALID_VEHICLE_PLATE/);
+    assert.deepEqual(readVehicle(db, driver.session.id), vehicle);
+    assert.equal(getRide(db, id, rider.session).request?.status, "PENDING");
     assert.equal(getRide(db, id, rider.session).vehicle, undefined);
     const accepted = acceptWithVehicle(db, driver.token, id, req);
     assert.deepEqual(accepted.vehicle, vehicle);

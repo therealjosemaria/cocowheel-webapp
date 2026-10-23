@@ -1,6 +1,8 @@
 """Mocked mobile/desktop vehicle UI; local :3090, external requests blocked."""
 from datetime import datetime, timezone
+import os
 from playwright.sync_api import sync_playwright, expect
+BASE = os.environ.get('VEHICLE_CHECK_ORIGIN', 'http://127.0.0.1:3090')
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
@@ -39,9 +41,9 @@ with sync_playwright() as p:
             elif path.startswith('rides/'): data = {'ride': ride}
             else: data = {}
             r.fulfill(json=data)
-        page.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1:3090') else r.abort())
+        page.route('**/*', lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
         page.route('**/api/**', respond)
-        page.goto('http://127.0.0.1:3090/usual-route')
+        page.goto(f'{BASE}/usual-route')
         usual = page.locator('.usual-route-disclosure')
         expect(usual).not_to_have_attribute('open', '')
         expect(usual.get_by_placeholder('Where from?', exact=True)).not_to_be_visible()
@@ -56,6 +58,15 @@ with sync_playwright() as p:
         details.locator('summary').click()
         expect(details.get_by_role('button', name='Save vehicle details')).to_have_class('primary')
         expect(details.get_by_label('Number plate (required)')).to_have_attribute('required', '')
+        plate = details.get_by_label('Number plate (required)')
+        for bad in ['ABCDEFGHIJ', 'ABC!123', 'ABC_123', '   ']:
+            plate.fill(bad)
+            details.get_by_role('button', name='Save vehicle details', exact=True).click()
+            assert not plate.evaluate('(el) => el.checkValidity()')
+            assert state['vehicle'] is None
+        for good in ['ABCDEFGHI', 'AB-123', 'ABC 123']:
+            plate.fill(good)
+            assert plate.evaluate('(el) => el.checkValidity()')
         for label, value in [('Number plate (required)', 'ABC123'), ('Make', 'Toyota'), ('Model', 'Corolla'), ('Colour', 'White')]:
             details.get_by_label(label, exact=True).fill(value)
         details.get_by_role('button', name='Save vehicle details', exact=True).click()
@@ -67,7 +78,7 @@ with sync_playwright() as p:
         page.screenshot(path=f'/tmp/profile-expanded-{width}.png', full_page=True)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         state['vehicle'] = None  # Exercise a driver who has not saved a plate.
-        page.goto('http://127.0.0.1:3090/activity/vehicle-test')
+        page.goto(f'{BASE}/activity/vehicle-test')
         page.locator('.driver-request-accordion > summary').click()
         page.get_by_role('button', name='ACCEPT RIDER', exact=True).click()
         dialog = page.get_by_role('dialog', name='Add your number plate')
@@ -75,6 +86,11 @@ with sync_playwright() as p:
         dialog.get_by_role('button', name='Go back').click()
         assert not state['accepted']
         page.get_by_role('button', name='ACCEPT RIDER', exact=True).click()
+        for bad in ['ABCDEFGHIJ', 'ABC!123']:
+            dialog.get_by_label('Number plate (required)').fill(bad)
+            dialog.get_by_role('button', name='Save & accept').click()
+            assert not state['accepted']
+            assert not dialog.get_by_label('Number plate (required)').evaluate('(el) => el.checkValidity()')
         dialog.get_by_label('Number plate (required)').fill('xyz123')
         expect(dialog.get_by_label('Number plate (required)')).to_have_value('XYZ123')
         page.screenshot(path=f'/tmp/vehicle-prompt-{width}.png', full_page=True)

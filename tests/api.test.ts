@@ -292,6 +292,12 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.equal(missingPlate.response.status, 409);
     assert.equal((database.prepare("SELECT count(*) n FROM ride_vehicles").get() as { n: number }).n, 0);
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "BAD\nPLATE" }, driverToken)).response.status, 400);
+    for (const plate of ["ABCDEFGHIJ", "ABC!123", "ABC_123"]) {
+      const rejected = await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate }, driverToken);
+      assert.equal(rejected.response.status, 400);
+      assert.equal(rejected.body.error, "INVALID_VEHICLE_PLATE");
+      assert.equal((await json(`${base}/api/vehicle`, "POST", { plate }, driverToken)).response.status, 400);
+    }
     assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, null);
     assert.equal(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, riderToken)).body.ride as RideView).request?.status, "PENDING");
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "STEAL" }, riderToken)).response.status, 403);

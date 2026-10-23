@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
-import { emptyVehicle, type Vehicle } from "@/lib/vehicle";
+import { emptyVehicle, PLATE_ERROR, validPlate, type Vehicle } from "@/lib/vehicle";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import RideFieldLabel from "./ride-field-label";
 
@@ -16,19 +16,24 @@ function PlateField({
   required?: boolean;
   disabled?: boolean;
 }) {
+  const input = useRef<HTMLInputElement>(null);
+  const invalid = value.length > 0 && !validPlate(value);
+  useEffect(() => {
+    input.current?.setCustomValidity(invalid ? PLATE_ERROR : "");
+  }, [invalid]);
   return (
     <label className="field">
       Number plate (required)
       <input
+        ref={input}
         value={value}
         onChange={(e) => change(e.target.value.toUpperCase())}
         placeholder="ABC123"
-        maxLength={12}
+        aria-invalid={invalid || undefined}
         autoCapitalize="characters"
         autoComplete="off"
         required={required}
         disabled={disabled}
-        pattern="[A-Za-z0-9][A-Za-z0-9 \-]*"
       />
     </label>
   );
