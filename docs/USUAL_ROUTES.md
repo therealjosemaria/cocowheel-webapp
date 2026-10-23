@@ -195,6 +195,10 @@ payloads may retain the old email format.
 Heading is “A matching ride from [UniKey]”, preserving the exact identity. Timing
 still uses Sydney time but omits the suffix. Keep “Coordinate pickup in messages.”
 without “Times are flexible”.
+The brand row now includes the original public header PNG at 15×15px beside the
+wordmark. This is a static shared image URL, not a tracking pixel; recipient email
+clients may block/proxy/cache it. Plain text remains unchanged. Existing persisted
+email payloads are not rewritten. API restart is required for new email branding.
 
 Review opens `/?start=rider&match=PUBLIC_ID`; legacy `/usual-route?ride=PUBLIC_ID`
 redirects there. This is an ordinary reusable public ride reference, not a login

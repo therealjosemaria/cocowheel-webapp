@@ -47,6 +47,10 @@ other results remain usable; sign-in resumes the flow without auto-requesting.
 Matching emails include lightweight branded HTML and plain text, one View matching
 ride button and a Mute matching emails link that expands Profile's Usual route and
 focuses the alert control without changing consent. See [email checks](docs/MATCHING_EMAIL_2026-10-23.md).
+Browser tab/Apple touch icons reuse the unchanged original header PNG. Matching
+emails include that same public asset at 15×15px beside the 16px wordmark, with
+a 6px gap and email-compatible table alignment. Image blocking leaves the brand
+text readable; no tracking parameters or new artwork. See [icon checks](docs/BRAND_ICONS_2026-10-23.md).
 Legacy saved-route offer API remains unchanged for compatibility.
 See the [Profile refinement checks](docs/PROFILE_PREFERENCES_2026-10-22.md).
 Riders opt into matching emails for any day/time or selected days and one

@@ -52,6 +52,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   16px body/CTA, 14px support and 12px preference link. One 560px-max column,
   24px inner and 16px horizontal outer padding, dark rounded 10px CTA.
   No tracking image, extra colour or external font. Plain-text fallback retained.
+  The brand row includes the original header PNG at 15×15px, 6px gap after the
+  16px bold wordmark (0.08em tracking), vertically centred using table cells.
+  Serve the original without recompression; empty alt avoids duplicate branding.
 
 - Profile disclosures share contribution-choice and profile-disclosure: 16px
   outer inset/gaps, 12px inner padding, 14px semibold summaries with existing

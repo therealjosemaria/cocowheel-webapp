@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "GUMWHEEL",
   description: "A simple planned ride, together.",
   referrer: "origin",
+  icons: {
+    icon: { url: "/brand/gumwheel-original.png", type: "image/png", sizes: "1254x1254" },
+    apple: { url: "/brand/gumwheel-original.png", sizes: "1254x1254" },
+  },
 };
 export default function RootLayout({
   children,

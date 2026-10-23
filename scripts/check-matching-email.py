@@ -35,6 +35,8 @@ with sync_playwright() as p:
         page.route('**/*', lambda r:r.continue_() if r.request.url.startswith('http://127.0.0.1:3090') else r.abort())
         page.route('**/api/**', respond)
         page.goto('http://127.0.0.1:3090/?start=rider&match=target')
+        expect(page.locator('link[rel="icon"]')).to_have_attribute('href','/brand/gumwheel-original.png')
+        expect(page.locator('link[rel="apple-touch-icon"]')).to_have_attribute('href','/brand/gumwheel-original.png')
         expect(page.get_by_role('button',name='target',exact=False)).to_have_attribute('aria-pressed','true')
         if width == 1440:
             expect(page.get_by_role('navigation',name='Primary navigation').get_by_role('button',name='Find a ride',exact=True)).to_have_attribute('aria-pressed','true')
@@ -66,7 +68,12 @@ with sync_playwright() as p:
         assert not state['writes'],state['writes']
         assert not errors,errors
         html = subprocess.check_output(['node','--import','tsx','-e',"const { routeAlertContent } = require('./server/route-alert-email.ts'); process.stdout.write(routeAlertContent('https://gumwheel.com','example','guest','2026-10-23T01:00:00Z',0).html)"],text=True)
+        # Serve the exact original locally; never fetch a real email image/provider.
+        page.route('https://gumwheel.com/brand/gumwheel-original.png', lambda r:r.fulfill(path='public/brand/gumwheel-original.png',content_type='image/png'))
         page.set_content(html)
+        logo = page.locator('img')
+        expect(logo).to_have_attribute('width','15')
+        assert logo.evaluate('img => img.complete && img.naturalWidth === 1254')
         expect(page.get_by_role('link',name='View matching ride')).to_have_attribute('href','https://gumwheel.com/?start=rider&match=example')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.screenshot(path=f'/tmp/matching-email-{width}.png',full_page=True)

@@ -4,6 +4,11 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Browser tab and Apple touch icons reuse the original public header PNG. Matching
+emails use the same artwork beside the wordmark, 15px square with 6px spacing,
+using presentation tables for email compatibility. Keep readable brand text when
+remote images are blocked. No per-user tracking URLs or new logo variants.
+
 Profile uses two independent, initially collapsed native disclosures: Usual route
 and Vehicle details (drivers only). Reuse identical summary typography, route/car
 icons, inset, border and 44px targets. Usual route contains its addresses, editors
