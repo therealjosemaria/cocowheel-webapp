@@ -1419,7 +1419,42 @@ p {
   font-weight: var(--weight-bold);
   background: #ffffff;
 }
-.departure-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.departure-choice.secondary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+}
+.departure-picker { max-height: calc(100dvh - 36px); overflow: auto; }
+.departure-wheel {
+  height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  padding-block: 88px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+.departure-wheel-option {
+  height: 44px;
+  display: grid;
+  place-items: center;
+  scroll-snap-align: center;
+  font-size: var(--text-body);
+  color: var(--muted);
+  cursor: pointer;
+}
+.departure-wheel-option[aria-selected="true"] {
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+.location-prompt p.departure-picker-time { text-align: center; margin-top: 12px; font-size: var(--text-small); }
+@media (min-width: 700px) { .departure-picker-backdrop { align-items: center; } }
 .payid-type-options button.active {
   border-color: var(--ink);
   color: #ffffff;

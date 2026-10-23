@@ -805,7 +805,37 @@ test("either participant may cancel after pickup", () => {
   }
 });
 
-test("six-hour offers retain expiry and request fit in admin", () => {
+test("tomorrow's offer survives midnight, is requestable now, and expires after departure", () => {
+  const h = harness();
+  try {
+    const scheduled = new Date(+baseTime + 24 * 3600000);
+    const published = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: scheduled.toISOString() }, baseTime);
+    assert.equal(published.ride.expiresAt, new Date(+scheduled + 6 * 3600000).toISOString());
+    assert.equal(searchRides(h.db, riderInput, baseTime).length, 1);
+    requestRide(h.db, null, published.ride.rideId, riderInput, baseTime);
+    assert.equal(expireStaleRides(h.db, new Date(+baseTime + 12 * 3600000)), 0);
+    assert.equal(availableRides(h.db, scheduled).length, 1);
+    const expiry = new Date(+scheduled + 6 * 3600000);
+    assert.equal(expireStaleRides(h.db, expiry), 0);
+    assert.equal(expireStaleRides(h.db, new Date(+expiry + 1)), 1);
+    assert.equal(availableRides(h.db, new Date(+expiry + 1)).length, 0);
+    assert.equal(privateHistory(h.db, published.sessionToken, new Date(+expiry + 1)).driver[0].status, "EXPIRED");
+  } finally { h.close(); }
+});
+
+test("existing stored offer expiry is not extended by schema initialization", () => {
+  const h = harness();
+  try {
+    const published = publishRide(h.db, null, driverInput, baseTime);
+    const oldExpiry = new Date(+baseTime + 6 * 3600000).toISOString();
+    h.db.prepare("UPDATE rides SET offer_expires_at = ? WHERE public_id = ?").run(oldExpiry, published.ride.rideId);
+    initializeCoreSchema(h.db);
+    assert.equal(publicRidePreview(h.db, published.ride.rideId, baseTime).expiresAt, oldExpiry);
+    assert.equal(expireStaleRides(h.db, new Date(Date.parse(oldExpiry) + 1)), 1);
+  } finally { h.close(); }
+});
+
+test("offers expire six hours after departure and retain request fit in admin", () => {
   const h = harness();
   try {
     const published = publishRide(h.db, null, driverInput, baseTime);
@@ -813,7 +843,7 @@ test("six-hour offers retain expiry and request fit in admin", () => {
     const report = adminInspector(h.db, published.ride.rideId);
     assert.equal(
       (report.ride as { offer_expires_at: string }).offer_expires_at,
-      new Date(baseTime.getTime() + 6 * 3600000).toISOString(),
+      new Date(Date.parse(departure) + 6 * 3600000).toISOString(),
     );
     assert.ok(["GOOD", "POOR"].includes(report.requests[0].fit));
     assert.equal(report.requests[0].cached_pickup_minutes, null);
@@ -821,9 +851,9 @@ test("six-hour offers retain expiry and request fit in admin", () => {
       availableRides(h.db, new Date(baseTime.getTime() + 2 * 3600000)).length,
       1,
     );
-    expireStaleRides(h.db, new Date(baseTime.getTime() + 6 * 3600000 + 1));
+    expireStaleRides(h.db, new Date(Date.parse(departure) + 6 * 3600000 + 1));
     assert.equal(
-      availableRides(h.db, new Date(baseTime.getTime() + 6 * 3600000 + 1))
+      availableRides(h.db, new Date(Date.parse(departure) + 6 * 3600000 + 1))
         .length,
       0,
     );
@@ -852,7 +882,7 @@ test("publishes a fixed-price offer and keeps discovery redacted while allowing 
     assert.equal("payIdType" in candidates[0], false);
     assert.equal(
       candidates[0].expiresAt,
-      new Date(baseTime.getTime() + 6 * 60 * 60_000).toISOString(),
+      new Date(Date.parse(departure) + 6 * 60 * 60_000).toISOString(),
     );
     const preview = publicRidePreview(h.db, published.ride.rideId, baseTime);
     assert.equal(preview.expiresAt, candidates[0].expiresAt);
@@ -1520,7 +1550,7 @@ test("private history keeps expired rides visible to their driver and requester"
   const h = harness();
   try {
     const flow = sessions(h);
-    const expiredAt = new Date(baseTime.getTime() + 6 * 60 * 60_000 + 1);
+    const expiredAt = new Date(Date.parse(departure) + 6 * 60 * 60_000 + 1);
     const driverHistory = privateHistory(
       h.db,
       flow.published.sessionToken,

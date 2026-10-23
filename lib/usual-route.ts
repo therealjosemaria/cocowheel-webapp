@@ -1,4 +1,5 @@
 import type { Pin, PayIdType } from "./client-types";
+import { plannedDepartureDateTime } from "./departure-label";
 
 export type UsualRoute = {
   origin: Pin;
@@ -24,9 +25,5 @@ export function scheduleWindow(minute: number) {
   return `${clockLabel(minute - 60)}–${clockLabel(minute + 60)}${minute < 60 || minute >= 1380 ? " (crosses midnight)" : ""}`;
 }
 export function departureLabel(value: string) {
-  return `Leaving around ${new Intl.DateTimeFormat("en-AU", {
-    timeZone: "Australia/Sydney",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value))}`;
+  return `Leaving around ${plannedDepartureDateTime(value)}`;
 }

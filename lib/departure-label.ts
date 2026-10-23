@@ -7,7 +7,7 @@ export function departureTone(scheduledAt: string, now: number): "scheduled" | "
   return "delayed";
 }
 
-function departureDuration(minutes: number): string {
+export function departureDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
@@ -29,4 +29,12 @@ const plannedTimeFormatter = new Intl.DateTimeFormat("en-AU", {
 export function plannedDepartureTime(scheduledAt: string): string {
   const time = Date.parse(scheduledAt);
   return Number.isFinite(time) ? plannedTimeFormatter.format(time) : "";
+}
+
+export function plannedDepartureDateTime(scheduledAt: string): string {
+  const time = Date.parse(scheduledAt);
+  return Number.isFinite(time) ? new Intl.DateTimeFormat("en-AU", {
+    weekday: "short", day: "numeric", month: "short", hour: "numeric",
+    minute: "2-digit", timeZone: "Australia/Sydney",
+  }).format(time) : "";
 }

@@ -1054,7 +1054,7 @@ export function publishRide(
         "INVALID_DESTINATION_LABEL",
       ) ?? fallbackLocationLabel(input.destination),
       departure.toISOString(),
-      iso(new Date(now.getTime() + OFFER_STALE_MS)),
+      offerExpiryAt(departure.toISOString()),
       input.priceAud,
       payId,
       payIdType,

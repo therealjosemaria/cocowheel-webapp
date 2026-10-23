@@ -307,7 +307,7 @@ UI wording must not be used as a server permission check.
 
 | Item | Current rule |
 | --- | --- |
-| Normal published offer | Six-hour window |
+| New normal published offer | Until six hours after scheduled departure; existing stored expiries unchanged |
 | Sample offer | 24-hour window; samples are replenished |
 | Accepted/in-progress ride | 24-hour inactivity cleanup, based on last activity |
 | Pickup code | No countdown; single-use; renewal invalidates old code; five guesses and attempt throttling |
@@ -443,10 +443,15 @@ for service operations.
   messages. Fare follows the timing cells. The former Leaving around copy is
   superseded; both roles use the same colours and minute/hour formatting.
 
-- New offers default to In 30 min; In 1 hour is the other departure choice in
-  both ordinary Offer and the saved-route shortcut. These are intended departure
-  times, not a waiting lock: participants can agree to leave early. Existing rides
-  and backend acceptance of immediate offers remain unchanged for compatibility.
+- Offer uses a scrollable departure picker: 30 minutes–24 hours in half-hour
+  steps, default 30 minutes. Done confirms; Go back/Escape discards edits.
+  The mobile bottom sheet becomes centred on desktop, with keyboard support.
+  Its dated Sydney-time preview is indicative; the relative delay starts when
+  the offer is submitted. New offers expire six hours after planned departure,
+  not publication; old stored expiries/history are not rewritten. Both roles'
+  Departure cells and matching emails include the date to distinguish tomorrow.
+  Acceptance/pickup can still happen early by agreement. See
+  [picker and lifecycle checks](docs/DEPARTURE_PICKER_2026-10-23.md).
 
 - Discovery separates driving time to pickup from departure waiting. A caption
   below timing reads Departs in N min (rounded up), Departing now during the

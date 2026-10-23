@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { departureLabel, departureTone, plannedDepartureTime } from "../lib/departure-label";
+import { departureLabel, departureTone, plannedDepartureTime, plannedDepartureDateTime } from "../lib/departure-label";
 
 test("departure colours share exact ten-minute and delayed boundaries", () => {
   const scheduled = "2026-10-22T04:00:00Z";
@@ -40,4 +40,10 @@ test("planned departure uses Sydney time including daylight savings", () => {
   assert.equal(plannedDepartureTime("2026-10-22T04:00:00Z"), "3:00 pm");
   assert.equal(plannedDepartureTime("2026-06-22T04:00:00Z"), "2:00 pm");
   assert.equal(plannedDepartureTime("invalid"), "");
+});
+
+test("dated departures distinguish the Sydney day across midnight and DST", () => {
+  assert.match(plannedDepartureDateTime("2026-10-23T13:30:00Z"), /Sat, 24 Oct.*12:30 am/);
+  assert.match(plannedDepartureDateTime("2026-06-22T04:00:00Z"), /Mon, 22 June.*2:00 pm/);
+  assert.equal(plannedDepartureDateTime("invalid"), "");
 });

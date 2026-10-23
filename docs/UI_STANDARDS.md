@@ -81,9 +81,14 @@ not seconds; remove after pickup/closure. Reuse countdown wording and normal
 cell typography. Rider/public published/requested details reuse this same
 planned-time/countdown display; departure-only colours follow below.
 
-DepartureChoice offers two equal options: In 30 min (default) and In 1 hour.
-Reuse it in ordinary Offer and Profile's saved-route shortcut. No Now/two-hour
-UI option. Intended times are flexible, not a mandatory waiting period.
+DepartureChoice replaces the two buttons with one secondary field opening a
+scroll-snapping wheel, 30 minutes–24 hours in half-hour steps. Default 30 minutes.
+Reuse the location-prompt shell: bottom sheet on mobile, centred on desktop.
+Done commits, Go back/Escape discards; restore focus and contain keyboard focus.
+Arrow/Home/End/Page keys and direct option taps supplement touch scrolling.
+Show a compact dated Sydney-time preview; no seconds, new palette or dependency.
+Both roles' Departure cells and emails include date/time for next-day clarity.
+Intended times are flexible, not a mandatory waiting period.
 
 Prioritise familiarity: prefer established interaction patterns and recognisable
 language before inventing controls or terminology. Preserve accurate meaning,
@@ -332,7 +337,7 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   a driver-updated timestamp. Begin live collection only after acceptance; only
   the accepted rider sees the driver's live position. Enforce on server responses
   and writes, not just map visibility. Public previews defensively ignore GPS.
-- Keep completed, cancelled, expired, declined and withdrawn history. Ordinary offers last six hours; test samples renew on 24-hour cycles. Never delete history just because an offer expires.
+- Keep completed, cancelled, expired, declined and withdrawn history. New ordinary offers expire six hours after scheduled departure; existing stored expiries stay unchanged. Test samples renew on 24-hour cycles. Never delete history just because an offer expires.
 
 ## Current fit calculation — limitations are intentional to document
 

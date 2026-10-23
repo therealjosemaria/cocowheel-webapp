@@ -335,7 +335,7 @@ test("publication queues once, sends once, has no private address or PayID in em
       async (email) => {
         sends++;
         assert.equal(email.to[0], "ride1234@uni.sydney.edu.au");
-        assert.match(email.text, /Leaving around 12:00 pm/);
+        assert.match(email.text, /Leaving around .*12:00 pm/);
         assert.ok(!email.text.includes("driver@example.com"));
         assert.ok(!email.text.includes("151.20"));
         assert.match(email.text, /\?start=rider&match=/);
@@ -454,10 +454,12 @@ test("HTTP saved-route access is owner-scoped; fresh GPS and departure choices e
       200,
     );
     assert.equal((await (await call("", driver.token)).json()).route, null);
-    assert.equal(
-      (await call("/offer", rider.token, { departureMinutes: 15 })).status,
-      400,
-    );
+    for (const departureMinutes of [15, -30, 1470, 30.5, "30", null]) {
+      assert.equal(
+        (await call("/offer", rider.token, { departureMinutes })).status,
+        400,
+      );
+    }
     assert.equal(
       (
         await call("/offer", rider.token, {
@@ -479,7 +481,7 @@ test("HTTP saved-route access is owner-scoped; fresh GPS and departure choices e
     });
     const gps = { ...start, longitude: 151.19, label: "Current location" };
     const result = await call("/offer", driver.token, {
-      departureMinutes: 30,
+      departureMinutes: 1440,
       capturedAt: new Date().toISOString(),
       accuracyMeters: 10,
       origin: gps,
@@ -497,7 +499,7 @@ test("HTTP saved-route access is owner-scoped; fresh GPS and departure choices e
     );
     assert.ok(
       Math.abs(
-        Date.parse(offered.scheduledDepartureAt) - Date.now() - 1800000,
+        Date.parse(offered.scheduledDepartureAt) - Date.now() - 86400000,
       ) < 5000,
     );
     assert.equal(

@@ -102,9 +102,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   above 700px; do not resize the Profile version. Driver Departure reuses the
   detail grid, departure icon and body-value tokens, without animated emphasis.
 
-- DepartureChoice keeps the existing radio-button tokens but uses two equal grid
-  columns for In 30 min/In 1 hour. Scope this override to departure-options;
-  PayID's three choices keep their existing three-column layout.
+- DepartureChoice uses a full-width secondary control with regular body text.
+  Its location-prompt sheet contains a 220px scroll viewport and 44px option rows,
+  two rows of end padding to centre boundary choices, ink/subtle selected state,
+  and a small/muted dated preview with 12px separation. Existing Done/Go back
+  action styles remain; desktop centres the same sheet. No PayID styling changes.
 
 - Discovery's departure line uses the existing timing caption size, departure colour
   and inherited weight, in the third grid row beneath pickup/arrival. Fare and

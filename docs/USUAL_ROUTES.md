@@ -78,11 +78,13 @@ into Find; see the current email contract below.
   These are client-reported fixes, not trusted proof of physical location.
   Browser denial/timeout offers nothing. A valid fix whose reverse lookup fails
   can use the existing coordinate-label fallback.
-- Leaving choices: In 30 min (default), In 1 hour, shared with normal Offer a ride.
+- Leaving choices (23 October): normal Offer uses 30 minutes–24 hours in 30-minute
+  steps, default 30 minutes, through a scrollable picker.
   The former Now UI option is removed; existing records/API compatibility remain.
   These choices do not prevent acceptance or pickup earlier by mutual agreement.
   They are intended departure estimates, not bookings. Readouts use “Leaving
-  around [Sydney clock time]”; the ride still expires six hours after offering.
+  around [Sydney date and clock time]”; new rides expire six hours after scheduled
+  departure, superseding publication-based expiry. Existing stored expiries remain.
   Discovery pickup minutes exclude departure wait, shown in a separate neutral
   countdown line; arrival estimates still include that wait. The preview
   suppresses the live pickup-time badge before a future offer's departure rather
@@ -121,7 +123,8 @@ public discovery, another participant's ride or admin payloads.
   pending alerts for its previous version.
 - POST `/api/usual-route/remove`: soft-disable own route/queued alerts.
 - POST `/api/usual-route/offer`: `{origin, capturedAt, accuracyMeters,
-  departureMinutes: 0|30|60}`. Destination/fare/PayID come from the authenticated
+  departureMinutes: 0|30|60|…|1440}` (integer half-hour steps; 0 retained for legacy
+  callers, absent from the UI). Destination/fare/PayID come from the authenticated
   principal's saved configuration, not caller-provided payment/destination fields.
   Normal `publishRide` owns validation, role gates, transaction and expiry.
 - Every endpoint requires university authentication; mutations recheck after

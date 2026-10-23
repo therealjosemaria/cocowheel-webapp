@@ -818,7 +818,7 @@ export function createApiServer(
           if (parts.length === 3 && parts[2] === "offer") {
             const saved = readUsualRoute(database, owner.id);
             if (!saved) throw new Error("USUAL_ROUTE_REQUIRED");
-            if (![0, 30, 60].includes(body.departureMinutes as number)) throw new Error("INVALID_DEPARTURE_TIME");
+            if (!Number.isInteger(body.departureMinutes) || (body.departureMinutes as number) < 0 || (body.departureMinutes as number) > 1440 || (body.departureMinutes as number) % 30 !== 0) throw new Error("INVALID_DEPARTURE_TIME");
             // The browser must obtain a fresh GPS fix; never silently reuse the saved origin.
             const captured = Date.parse(asString(body.capturedAt));
             if (!Number.isFinite(captured) || Math.abs(Date.now() - captured) > 30000 ||

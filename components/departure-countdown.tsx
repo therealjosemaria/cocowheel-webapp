@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { departureLabel, departureTone, plannedDepartureTime } from "@/lib/departure-label";
+import { departureLabel, departureTone, plannedDepartureDateTime } from "@/lib/departure-label";
 
 export default function DepartureCountdown({
   scheduledAt,
@@ -20,7 +20,7 @@ export default function DepartureCountdown({
       document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
-  const plannedTime = plannedDepartureTime(scheduledAt);
+  const plannedTime = plannedDepartureDateTime(scheduledAt);
   if (!plannedTime) return null;
   return <span className="driver-departure-timing">
     <time dateTime={scheduledAt}>{plannedTime}</time>
