@@ -1,4 +1,5 @@
 "use client";
+import ParticipantName from "./participant-name";
 import { fareLabel } from "@/lib/fare";
 
 import { participantStatusLabel } from "@/lib/ride-status";
@@ -256,7 +257,7 @@ function RideView({ ride }: { ride: Ride }) {
         </span>
       </div>
       <div className="ride-summary">
-        <span>{ride.driverAlias}</span>
+        <ParticipantName name={ride.driverAlias} />
         <strong>{fareLabel(ride.priceAud)}</strong>
         <small>{prettyTime(ride.scheduledDepartureAt)}</small>
       </div>

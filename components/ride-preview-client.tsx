@@ -1,4 +1,5 @@
 "use client";
+import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt, RideVehicle } from "./vehicle-details";
 import { fareLabel } from "@/lib/fare";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
@@ -961,7 +962,7 @@ export default function RidePreviewClient({
                       estimatedDuration
                     ) : (
                       <>
-                        {ride.driverAlias}{" "}
+                        <ParticipantName name={ride.driverAlias} />{" "}
                         <RatingBadge summary={ride.driverRating} />
                       </>
                     )}
@@ -1159,7 +1160,7 @@ export default function RidePreviewClient({
                   >
                     <summary>
                       <RideFieldLabel icon="rider">
-                        {request.riderAlias}
+                        <ParticipantName name={request.riderAlias} />
                       </RideFieldLabel>
                       <span className="request-summary-status">
                         {requestStatusLabel(request.status)}
@@ -1181,7 +1182,7 @@ export default function RidePreviewClient({
                           <RideFieldLabel icon="rider">Rider</RideFieldLabel>
                         </dt>
                         <dd>
-                          {request.riderAlias}{" "}
+                          <ParticipantName name={request.riderAlias} />{" "}
                           <RatingBadge summary={request.rating} />
                         </dd>
                       </div>

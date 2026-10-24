@@ -8,7 +8,8 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   const help = readFileSync("app/help/page.tsx", "utf8");
   assert.doesNotMatch(help, /Sign in with your UniKey|For University of Sydney students only/);
   const navigation = readFileSync("components/app-navigation.tsx", "utf8");
-  assert.match(navigation, /<p>For University of Sydney students only\.<\/p>\s*<button[\s\S]*?Verify UniKey\s*<\/button>/);
+  assert.doesNotMatch(navigation, /For University of Sydney students only|Verify UniKey/);
+  assert.match(navigation, /Sign in/);
   assert.ok(help.indexOf('id="rider-steps-heading"') < help.indexOf('id="driver-steps-heading"'));
   const lists = [...help.matchAll(/<ol className="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
   assert.equal(lists.length, 2);

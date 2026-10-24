@@ -274,10 +274,11 @@ export async function deliverRouteAlerts(
   // provider quotas still apply, and OTP rate limits are independent.
   const job = db
     .prepare(
-      `SELECT a.*, r.public_id, r.status AS ride_status, r.driver_alias,
+      `SELECT a.*, r.public_id, r.status AS ride_status, COALESCE(p.username, CASE WHEN instr(r.driver_alias,'@') > 0 THEN 'rider' ELSE r.driver_alias END) AS driver_alias,
     r.scheduled_departure_at, r.offer_expires_at, r.price_aud,
     u.active, u.version AS current_version, u.body, v.unikey
     FROM route_alerts a JOIN rides r ON r.id=a.ride_id
+    LEFT JOIN account_profiles p ON p.principal_id=r.driver_session_id
     JOIN usual_routes u ON u.principal_id=a.principal_id
     JOIN university_accounts v ON v.principal_id=a.principal_id
     WHERE a.status='PENDING' AND a.next_at <= ? ORDER BY a.created_at, a.id LIMIT 1`,

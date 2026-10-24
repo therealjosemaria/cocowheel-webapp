@@ -60,7 +60,7 @@ async function login(
     new Date(now),
   );
 }
-test("UniKey input accepts only the exact additional email and rejects other recipients", () => {
+test("email input accepts public mailboxes and preserves legacy UniKey identities", () => {
   assert.equal(normalizeUniKey(" GUEST "), "guest");
   assert.equal(normalizeUniKey(" JMOS0905 "), "jmos0905");
   assert.equal(
@@ -68,15 +68,15 @@ test("UniKey input accepts only the exact additional email and rejects other rec
     "mosciarobusiness@gmail.com",
   );
   for (const value of [
-    "test",
     "jmos0905@example.com",
-    "jmos0905\nbcc:x",
-    "admin",
-    "jmos0905@uni.sydney.edu.au",
     "other@gmail.com",
     "mosciarobusiness+test@gmail.com",
     "mosciarobusiness@gmail.com.evil.com",
     "mosciaro.business@gmail.com",
+  ]) assert.equal(normalizeUniKey(value), value);
+  assert.equal(normalizeUniKey("jmos0905@uni.sydney.edu.au"), "jmos0905");
+  for (const value of [
+    "test", "admin", "jmos0905\nbcc:x", "a..b@example.com", "@gmail.com", "a@-bad.com", "a@localhost", "a b@example.com",
     {},
     null,
   ])
@@ -250,7 +250,7 @@ test("every account shares history and one role across signed-in devices", async
     request,
     new Date(now),
   ).ride;
-  assert.equal(joined.request?.riderAlias, "mosciarobusiness@gmail.com");
+  assert.equal(joined.request?.riderAlias, "mosciaro");
   for (const account of [testDriver, testRider]) {
     const originalPrincipal = findSession(db, account.token)?.id;
     const replacement = await login(db, account.unikey, start + 60001);

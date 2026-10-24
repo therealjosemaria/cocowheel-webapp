@@ -22,7 +22,10 @@ with sync_playwright() as p:
             else: ride.update(request=request, coRideCode='1234')
             if state['accepted']: ride['vehicle'] = state['vehicle']
             item = {'role': state['role'], 'ride': ride}
-            if path == 'vehicle':
+            if path.startswith('profile-photo/'):
+                r.fulfill(content_type='image/svg+xml', body='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#64748b"/></svg>'); return
+            if path == 'profile': data = {'username': 'wwwwwwww', 'email': 'private@example.com', 'photoUrl': None}
+            elif path == 'vehicle':
                 if r.request.method == 'POST' and state.get('plate_error'):
                     r.fulfill(status=400, json={'error':'INVALID_VEHICLE_PLATE'}); return
                 if r.request.method == 'POST': state['vehicle'] = r.request.post_data_json

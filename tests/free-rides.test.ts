@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { initializeProfiles } from "../server/personal-details";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import Database from "better-sqlite3";
@@ -90,6 +91,7 @@ test(`fare migration preserves records, FK, indexes and triggers from ${priorChe
     // Initialize ancillary schemas without upgrading the legacy rides table yet.
     initializeUsualRoutes(db);
     initializeVehicles(db);
+    initializeProfiles(db);
     db.exec(readFileSync("server/messaging-schema.sql", "utf8"));
     db.exec(
       "ALTER TABLE live_locations ADD COLUMN moving INTEGER NOT NULL DEFAULT 0",

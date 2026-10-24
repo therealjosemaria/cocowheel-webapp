@@ -2936,9 +2936,9 @@ p {
 .vehicle-fields .field, .vehicle-fields p, .vehicle-fields .secondary { margin: 0; }
 .vehicle-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
 .profile-disclosure { margin: 0 16px 16px; }
-.usual-route-disclosure { margin-top: 16px; }
+.usual-route-disclosure, .personal-details { margin-top: 16px; }
 .usual-route-disclosure > .usual-route-body { padding: 12px 0; }
-.vehicle-details .vehicle-fields { margin: 12px 0; }
+.vehicle-details .vehicle-fields, .personal-details .vehicle-fields { margin: 12px 0; }
 .ride-vehicle { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); font-size: var(--text-small); }
 .ride-vehicle p { margin: 4px 0 0; overflow-wrap: anywhere; }
 .usual-route-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
@@ -3116,3 +3116,15 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .usual-route-time:focus-within .route-time-placeholder { display: none; }
 .usual-route-time.is-empty:not(:focus-within) input::-webkit-datetime-edit { opacity: 0; }
 .usual-route-time.is-empty:not(:focus-within) input::-webkit-date-and-time-value { opacity: 0; }
+.profile-photo-preview { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--surface-subtle); border: 1px solid var(--line); }
+.profile-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.profile-photo-preview svg { width: 100%; height: 100%; padding: 20px; fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.photo-upload-control { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.photo-upload-control input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.photo-upload-control:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.profile-personal-summary { margin: 0; font-size: var(--text-small); }
+.profile-personal-summary dt { color: var(--ink); font-weight: var(--weight-bold); }
+.profile-personal-summary dd { margin: 0; overflow-wrap: anywhere; }
+.participant-name { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; vertical-align: middle; }
+.participant-name img { flex: 0 0 24px; width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.participant-name > span { min-width: 0; overflow-wrap: anywhere; }

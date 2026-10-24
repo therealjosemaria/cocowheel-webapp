@@ -91,7 +91,7 @@ export default function UniversityVerification() {
         return;
       }
       const messages: Record<string, string> = {
-        INVALID_UNIKEY: "Enter your UniKey, for example abcd1234.",
+        INVALID_UNIKEY: "Enter a valid email address.",
         VERIFICATION_INVALID:
           "That code is invalid or expired. Try again or request a new code.",
         VERIFICATION_RATE_LIMITED: verificationWaitMessage(
@@ -120,7 +120,7 @@ export default function UniversityVerification() {
     <dialog
       ref={dialog}
       className="university-dialog"
-      aria-label={challenge ? "Enter your code" : "UniKey verification"}
+      aria-label={challenge ? "Enter your code" : "Email verification"}
       onCancel={(event) => {
         event.preventDefault();
         if (!busy) close();
@@ -151,8 +151,9 @@ export default function UniversityVerification() {
             <label>
               <input
                 key="unikey"
-                aria-label="UniKey"
-                placeholder="UniKey"
+                aria-label="Email"
+                placeholder="Email"
+                inputMode="email"
                 autoFocus
                 autoCapitalize="none"
                 autoComplete="username"
@@ -164,8 +165,7 @@ export default function UniversityVerification() {
               />
             </label>
             <p>
-              We’ll email a code to your university inbox. Your UniKey will be
-              visible to other participants.
+              We’ll email you a sign-in code. Your email stays private.
             </p>
           </>
         )}

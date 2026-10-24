@@ -38,6 +38,7 @@ export type RideStatus =
 export type RequestStatus =
   "PENDING" | "ACCEPTED" | "DECLINED" | "DISCARDED" | "CANCELLED";
 export type Participant = "DRIVER" | "RIDER";
+import { initializeProfiles, publicName } from "./personal-details";
 export type Session = { id: string; alias: string; unikey?: string };
 export type Pin = { latitude: number; longitude: number; label?: string };
 export type DirectionFit = "GOOD" | "POOR";
@@ -410,6 +411,7 @@ export function initializeCoreSchema(db: Db) {
       alignOpenRiderAlias.run(guestAlias, session.id);
     }
   })();
+  initializeProfiles(db);
   const rideColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
   }>;
@@ -545,7 +547,7 @@ export function findSession(
   if (verified)
     return {
       id: verified.principal_id,
-      alias: verified.unikey,
+      alias: publicName(db, verified.principal_id, verified.unikey),
       unikey: verified.unikey,
     };
   const row = db
@@ -1106,7 +1108,7 @@ export function searchRides(
       return {
         rideId: row.public_id,
         isSample: Boolean(row.is_sample),
-        driverAlias: row.driver_alias,
+        driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
         driverRating: row.is_sample
           ? null
           : ratingSummary(db, row.driver_session_id, "DRIVER", now),
@@ -1171,7 +1173,7 @@ export function availableRides(
     }>
   ).map((ride) => ({
     rideId: ride.public_id,
-    driverAlias: ride.driver_alias,
+    driverAlias: publicName(db, ride.driver_session_id, ride.driver_alias),
     driverRating: ratingSummary(db, ride.driver_session_id, "DRIVER", now),
     priceAud: ride.price_aud,
     scheduledDepartureAt: ride.scheduled_departure_at,
@@ -1214,7 +1216,7 @@ export function publicRidePreview(
   };
   return {
     rideId: ride.public_id,
-    driverAlias: ride.driver_alias,
+    driverAlias: publicName(db, ride.driver_session_id, ride.driver_alias),
     driverRating: ride.is_sample
       ? null
       : ratingSummary(db, ride.driver_session_id, "DRIVER", now),
@@ -1988,12 +1990,13 @@ export function completeCoRide(
 }
 
 function riderRequestView(
+  db: Db,
   ride: RideRow,
   request: RequestRow,
 ): RiderRequestView {
   return {
     requestId: request.id,
-    riderAlias: request.rider_alias,
+    riderAlias: publicName(db, request.rider_session_id, request.rider_alias),
     status: request.status,
     pickup: {
       latitude: request.pickup_latitude,
@@ -2026,7 +2029,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
       ? locationFor(db, row.id, "DRIVER", now)
       : undefined,
     status: row.status,
-    driverAlias: row.driver_alias,
+    driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     driverRating: row.is_sample
       ? null
       : ratingSummary(db, row.driver_session_id, "DRIVER", now),
@@ -2048,7 +2051,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     },
     rider: selected
       ? {
-          alias: selected.rider_alias,
+          alias: publicName(db, selected.rider_session_id, selected.rider_alias),
           rating: ratingSummary(db, selected.rider_session_id, "RIDER", now),
           pickup: {
             latitude: selected.pickup_latitude,
@@ -2066,7 +2069,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
       : undefined,
     requests: requests.map((request) => ({
       requestId: request.id,
-      riderAlias: request.rider_alias,
+      riderAlias: publicName(db, request.rider_session_id, request.rider_alias),
       rating: ratingSummary(db, request.rider_session_id, "RIDER", now),
       pickup: {
         latitude: request.pickup_latitude,
@@ -2120,7 +2123,7 @@ function riderView(
     vehicle: request.id === row.accepted_request_id && request.status === "ACCEPTED" ? rideVehicle(db, row.id) : undefined,
     rideId: row.public_id,
     status: row.status,
-    driverAlias: row.driver_alias,
+    driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     driverRating: row.is_sample
       ? null
       : ratingSummary(db, row.driver_session_id, "DRIVER", now),
@@ -2128,7 +2131,7 @@ function riderView(
     scheduledDepartureAt: row.scheduled_departure_at,
     expiresAt: rideOfferExpiryAt(row),
     acceptedAt: row.accepted_at,
-    request: riderRequestView(row, request),
+    request: riderRequestView(db, row, request),
     isSample: Boolean(row.is_sample),
     plannedRoute: {
       origin: {

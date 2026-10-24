@@ -1,4 +1,5 @@
 "use client";
+import ParticipantName from "./participant-name";
 import { fareLabel } from "@/lib/fare";
 import RideStatusText from "./ride-status-text";
 
@@ -302,7 +303,7 @@ function ActivityCard({
             <dt>
               <RideFieldLabel icon="driver">Driver</RideFieldLabel>
             </dt>
-            <dd>{ride.driverAlias}</dd>
+            <dd><ParticipantName name={ride.driverAlias} /></dd>
           </div>
           <div>
             <dt>

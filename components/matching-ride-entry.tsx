@@ -32,7 +32,7 @@ export default function MatchingRideEntry({ match }: { match: string }) {
   return <section className="activity-page"><div className="activity-panel usual-route-panel">
     <h1 className="page-title">Find a ride</h1><div className="usual-route-body">
       <p role="status">{state.error ?? (state.signedOut ? "Sign in to view rides matching your usual route." : "Loading your matching ride…")}</p>
-      {state.signedOut ? <button className="primary" onClick={() => window.dispatchEvent(new CustomEvent("cocowheels:verify-university"))}>Verify UniKey</button>
+      {state.signedOut ? <button className="primary" onClick={() => window.dispatchEvent(new CustomEvent("cocowheels:verify-university"))}>Sign in</button>
         : state.error ? <button className="secondary" onClick={() => setRetry((n) => n + 1)}>Try again</button> : null}
     </div></div></section>;
 }

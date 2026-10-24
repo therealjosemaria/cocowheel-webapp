@@ -6,6 +6,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { createGuestSession, findSession, type Db } from "./core";
+import { ensureProfile } from "./personal-details";
 
 export const UNIVERSITY_DOMAIN = "uni.sydney.edu.au";
 export const ADMIN_UNIKEY = "jmos0905";
@@ -14,8 +15,11 @@ const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 export function normalizeUniKey(value: unknown) {
   if (typeof value !== "string") throw new Error("INVALID_UNIKEY");
-  const normalized = value.trim().toLowerCase();
-  if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== TEST_EMAIL && normalized !== "guest")
+  let normalized = value.trim().toLowerCase();
+  // Preserve legacy account keys, sessions and privileges for Sydney mailboxes.
+  if (/^[a-z]{4}\d{4}@uni\.sydney\.edu\.au$/.test(normalized)) normalized = normalized.split("@")[0];
+  if (!/^[a-z]{4}\d{4}$/.test(normalized) && normalized !== "guest" &&
+      !(normalized.length <= 254 && /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(normalized) && normalized.split("@")[0].length <= 64))
     throw new Error("INVALID_UNIKEY");
   return normalized;
 }
@@ -98,7 +102,7 @@ export async function requestUniversityCode(
     ).run(id, unikey, digest, now + 10 * 60000);
   })();
   const deliveryAddress =
-    unikey === TEST_EMAIL || unikey === "guest" ? TEST_EMAIL : `${unikey}@${UNIVERSITY_DOMAIN}`;
+    unikey === "guest" ? TEST_EMAIL : unikey.includes("@") ? unikey : `${unikey}@${UNIVERSITY_DOMAIN}`;
   try {
     await send(deliveryAddress, code);
   } catch (error) {
@@ -171,6 +175,7 @@ export function verifyUniversityCode(
     db.prepare(
       "INSERT INTO university_accounts VALUES (?, ?, ?) ON CONFLICT(unikey) DO UPDATE SET verified_at = excluded.verified_at",
     ).run(unikey, principal, now.toISOString());
+    ensureProfile(db, principal, unikey);
     const token = randomBytes(32).toString("hex");
     db.prepare("DELETE FROM university_sessions WHERE expires_at <= ?").run(
       now.toISOString(),

@@ -7,10 +7,10 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-23", label: "23 October 2026" }}
+      revision={{ date: "2026-10-24", label: "24 October 2026" }}
     >
       <p>
-        This notice explains how the GUMWHEEL university carpool pilot handles
+        This notice explains how the GUMWHEEL carpool pilot handles
         your information. For privacy questions, contact{" "}
         <a href="mailto:jose@gumwheel.com">
           jose@gumwheel.com
@@ -19,10 +19,19 @@ export default function PrivacyPage() {
       </p>
       <h2>What we collect and why</h2>
       <p>
-        We use your UniKey and university email address to verify inbox access,
-        maintain your account and associate your rides across devices. Approved
-        testing accounts use their designated email inboxes. Verification does
+        We use your email address to verify inbox access,
+        maintain your account and associate your rides across devices. Existing
+        UniKey and testing accounts retain their designated inboxes. Verification does
         not establish current enrolment, identity or driving eligibility.
+      </p>
+      <p>
+        Your public username and optional profile photo help others recognise you.
+        Your login email is private. You can update your username and replace your
+        photo in Profile. Photos are resized and re-encoded with metadata removed;
+        only the current processed photo is kept in the active profile, although
+        backups may retain earlier copies. Previous usernames remain reserved to
+        your account to reduce impersonation. Photos and usernames are not identity
+        verification. Contact us for privacy or removal requests.
       </p>
       <p>
         We store ride and request details, including origin and destination
@@ -73,7 +82,8 @@ export default function PrivacyPage() {
       </p>
       <h2>Who can see your information</h2>
       <p>
-        Your UniKey is your visible participant name. Published driver offers
+        Your username is your visible participant name. Profile photos are public.
+        Published driver offers
         expose the driver’s name, planned route endpoints and fare
         to people browsing rides, including visitors who have not
         signed in. Do not publish an address you are unwilling to share.

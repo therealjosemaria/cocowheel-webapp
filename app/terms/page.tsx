@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      revision={{ date: "2026-10-21", label: "21 October 2026" }}
+      revision={{ date: "2026-10-24", label: "24 October 2026" }}
     >
       <p>
         These terms describe participation in the GUMWHEEL carpool pilot. Please
@@ -23,9 +23,8 @@ export default function TermsPage() {
       <p>
         GUMWHEEL helps drivers publish routes and riders request to join them.
         It does not itself drive passengers or process payments. The pilot is
-        intended for University of Sydney students, with limited approved
-        testing accounts. University email verification does not mean the
-        University endorses the service or that participants have passed
+        open to people with a verified email address. Email verification does not
+        mean a university endorses the service or that participants have passed
         identity, licence, vehicle or background checks.
       </p>
       <h2>Your account and conduct</h2>

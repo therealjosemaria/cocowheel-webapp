@@ -1,4 +1,5 @@
 "use client";
+import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import DepartureChoice from "./departure-choice";
 import { departureLabel, departureTone } from "@/lib/departure-label";
@@ -142,7 +143,7 @@ const humanError = (error: unknown) => {
   const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
   const messages: Record<string, string> = {
     VERIFICATION_CANCELLED: "",
-    UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your UniKey to continue.",
+    UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your email to continue.",
     SERVICE_UNAVAILABLE: CONNECTION_MESSAGE,
     OPEN_ITEM_EXISTS: "You already have an active ride or request.",
     FRESH_LOCATIONS_REQUIRED:
@@ -1380,7 +1381,7 @@ function RideSelection({
                   </span>
                   <span className="ride-option-main">
                     <strong>
-                      {candidate.driverAlias}{" "}
+                      <ParticipantName name={candidate.driverAlias} />{" "}
                       <RatingBadge summary={candidate.driverRating} />
                     </strong>
                     <RideOptionTiming scheduledAt={candidate.scheduledDepartureAt}
@@ -1465,7 +1466,7 @@ function RideStatus({
       </h1>
       {statusTitle ? <h2 className="status-heading">{statusTitle}</h2> : null}
       <div className="ride-summary">
-        <span>{ride.driverAlias}</span>
+        <ParticipantName name={ride.driverAlias} />
         <strong>{fareLabel(ride.priceAud)}</strong>
         <small>{prettyTime(ride.scheduledDepartureAt)}</small>
       </div>
@@ -1473,7 +1474,7 @@ function RideStatus({
         <section className="request-stack">
           {ride.requests.map((item) => (
             <article key={item.requestId} className="request-card">
-              <strong>{item.riderAlias}</strong>
+              <strong><ParticipantName name={item.riderAlias} /></strong>
               <p>
                 Pickup: {locationText(item.pickup)}
                 <br />

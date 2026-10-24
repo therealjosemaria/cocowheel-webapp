@@ -10,6 +10,12 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+Personal details reuses Profile's 14px ink/bold labels and regular values, 12px
+field/content spacing and existing primary/secondary controls. Photo previews
+are 96px circles; compact participant avatars are 24px with a 6px name gap,
+using the subtle surface/line tokens. Names wrap rather than forcing overflow.
+No new palette or typography scale for public profiles.
+
 One UI family: `--font-ui`, Arial, Helvetica, sans-serif. No new web fonts. Root browser size remains 16px; respect user zoom.
 
 | Role | Token | Size |

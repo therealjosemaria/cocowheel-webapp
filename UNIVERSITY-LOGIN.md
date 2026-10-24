@@ -1,29 +1,31 @@
-# University pilot
+# Email verification (legacy university identifiers preserved)
 
-Participants enter only their UniKey (four letters and four digits, normalized
-to lowercase). GUMWHEEL appends `@uni.sydney.edu.au` on the server. The six-digit
-code proves inbox access, not current enrolment, identity checks, or driving
-eligibility. The UI tells participants their UniKey will be publicly visible.
+Participants can enter any valid email address, normalized to lowercase. Legacy
+four-letter/four-digit UniKeys remain accepted; their full university email resolves
+to the same account, cooldown and principal. The six-digit code proves inbox access,
+not current enrolment, identity checks or driving eligibility. Email is owner-only;
+the separately editable public username is visible to other participants.
+See [Personal details](docs/PERSONAL_DETAILS.md). Historical references below to
+per-UniKey limits now mean per canonical login identity, including full emails.
 
 ## Rules
 
-- New offers and join requests require a verified university session at the API.
+- New offers and join requests require an email-verified session at the API.
 - Browsing remains open. Historical guest records are preserved, not silently
   claimed by a newly verified account. Existing guests may still finish/cancel
   their previously created rides and inspect their own history.
 - Ordinary UniKeys share one principal across devices: one active role/item,
   the same private history, and no self-join, using the existing server rules.
 - `jmos0905` follows exactly the same rules as all other UniKeys.
-- The sole non-university exception is `mosciarobusiness@gmail.com`, entered in
-  the same field and verified by a code sent directly to that inbox. It is a
-  separate account with the same restrictions, not a role or verification bypass.
-  Other email addresses (including Gmail aliases) are not accepted.
+- The existing `mosciarobusiness@gmail.com` identity remains a separate account
+  with the same restrictions, not a role or verification bypass. Other valid
+  emails are now accepted; provider-specific aliases are not merged.
 - Multiple devices can stay signed in. All share the account's principal,
   active role, and history. Switching accounts replaces only the current
   browser's session. Taking the other role requires ending the existing activity;
   the server never automatically cancels it.
-- New real participant names are the verified UniKey. Old records and synthetic
-  sample rides retain their original labels.
+- Public displays resolve the current username by principal. Stored historical
+  aliases are not rewritten; synthetic/legacy guest records keep safe labels.
 - Verified sessions are opaque HttpOnly cookies, expiring after 30 days. Signing
   out revokes only that browser session; it does not cancel an active ride or
   free an ordinary account's role restriction.

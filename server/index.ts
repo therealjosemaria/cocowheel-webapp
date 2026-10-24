@@ -57,6 +57,7 @@ import { roadRoutePreview } from "./route-preview";
 import { readUsualRoute, saveUsualRoute, saveSearchRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
 import { readVehicle, saveVehicle } from "./vehicles";
 import { acceptWithVehicle } from "./vehicle-acceptance";
+import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -112,13 +113,13 @@ function requestToken(request: IncomingMessage) {
   const authorization = request.headers.authorization;
   return authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
 }
-async function readJson(request: IncomingMessage): Promise<Json> {
+async function readJson(request: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promise<Json> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
     const data = Buffer.from(chunk);
     size += data.length;
-    if (size > MAX_BODY_BYTES) throw new Error("BODY_TOO_LARGE");
+    if (size > maxBytes) throw new Error("BODY_TOO_LARGE");
     chunks.push(data);
   }
   if (size === 0) return {};
@@ -133,6 +134,8 @@ async function readJson(request: IncomingMessage): Promise<Json> {
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (code === "USERNAME_UNAVAILABLE") return 409;
+  if (code === "PHOTO_BUSY") return 429;
   if (code === "VEHICLE_PLATE_REQUIRED") return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
@@ -579,6 +582,7 @@ export function createApiServer(
             200,
             {
               unikey: session.unikey,
+              username: session.alias,
               canAdmin: session.unikey === ADMIN_UNIKEY,
               ratings: {
                 driver: ratingSummary(database, session.id, "DRIVER", now),
@@ -771,6 +775,33 @@ export function createApiServer(
           cors,
         );
         return;
+      }
+      if (parts.length === 3 && parts[0] === "api" && parts[1] === "profile-photo" && request.method === "GET") {
+        const photo = database.prepare("SELECT photo FROM account_profiles WHERE username=?").get(parts[2]) as { photo: Buffer | null } | undefined;
+        if (!photo?.photo) {
+          response.writeHead(200, { ...cors, "Content-Type": "image/svg+xml", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
+          response.end('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="12" fill="#f8fafc"/><g fill="none" stroke="#64748b" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></g></svg>');
+          return;
+        }
+        response.writeHead(200, { ...cors, "Content-Type": "image/webp", "Content-Length": photo.photo.length, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
+        response.end(photo.photo);
+        return;
+      }
+      if (parts.length === 2 && parts[0] === "api" && parts[1] === "profile") {
+        const owner = requireUniversitySession(database, token);
+        if (request.method === "GET") {
+          writeJson(response, 200, readProfile(database, owner.id, owner.unikey!), cors);
+          return;
+        }
+        if (request.method === "POST") {
+          const body = await readJson(request, 710_000);
+          const photo = await preparePhoto(body.photo);
+          const current = requireUniversitySession(database, token);
+          if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+          saveProfile(database, current.id, body.username, photo);
+          writeJson(response, 200, readProfile(database, current.id, current.unikey!), cors);
+          return;
+        }
       }
       if (parts.length === 2 && parts[0] === "api" && parts[1] === "vehicle") {
         const owner = requireUniversitySession(database, token);

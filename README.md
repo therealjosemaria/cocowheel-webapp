@@ -1,6 +1,13 @@
 # GUMWHEEL
 
-GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with verified university accounts.
+GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-verified accounts.
+
+Any valid email can receive a sign-in code. Existing university accounts, sessions,
+admin authorization and trip history retain their original identifiers. Profile
+starts with Personal details: an editable unique 3–8-character alphanumeric
+username, optional photo and owner-only read-only email. Public names are separate
+from login identities. See [personal details](docs/PERSONAL_DETAILS.md) for migration,
+upload limits, privacy, tests and deployment status. Existing OTP limits remain.
 
 [Vercel Web Analytics](docs/WEB_ANALYTICS.md) is integrated in the frontend root
 layout, matching Lime Wheels' SDK version. Only allowlisted page views are sent;
@@ -153,7 +160,7 @@ Drivers offer rides; riders request to join; the driver accepts one rider and co
 This repository is intentionally independent from other projects: it has its own API, SQLite database, guest-session cookies, deployment configuration, tunnel target, and environment variables.
 
 The public **How it works** page (`/help`) sits immediately after Home in both
-menus. It briefly explains UniKey verification, finding/offering a ride, driver
+menus. It briefly explains finding/offering a ride, driver
 acceptance, pickup codes and direct PayID payment. It uses a static server-rendered
 page with no additional API calls or changes to ride behaviour.
 
@@ -176,10 +183,9 @@ The user writes and sends the message themselves; the app neither submits nor
 stores feedback. This avoids a new form endpoint and form-spam controls, but a
 public email address can still receive spam. A configured mail handler is needed.
 QR payments are roadmap messaging, not an implemented capability. The signed-out
-Profile popover shows “For University of Sydney students only.” directly above
-Verify UniKey, using its existing paragraph styling. Both former introductory
-sentences are removed from Help. Profile controls, mobile menu, verification
-behaviour and approved testing exceptions stay unchanged.
+Profile popover now shows Sign in, superseding the university-only introduction
+and Verify UniKey label. Inbox verification remains required for participation;
+legacy testing identities retain their existing inboxes and privileges.
 The FAQ has a subtle grey background; role cards use pale blue/orange tints
 derived from the rider/driver map colours, with matching coloured icons and dark
 text. Suggestions remain white; heading sizes are unchanged.
@@ -271,7 +277,8 @@ additional secondary-button margins; Verify and Cancel keep their existing style
 See [UNIVERSITY-LOGIN.md](UNIVERSITY-LOGIN.md) for precise OTP rules and delivery.
 Inbox verification proves mailbox access, not enrolment, identity or driver fitness.
 
-- Verified UniKey is the visible name and maps to one server principal.
+- Editable public username is separate from the immutable verified login identity
+  and server principal; renaming never changes ownership or admin authorization.
 - One active role/item per account across devices; browsing other offers is allowed.
   Self-joining is prohibited. Changing roles requires ending the existing activity.
 - Multiple browser sessions can remain signed in. Sign-out revokes that session,
@@ -679,7 +686,7 @@ navigation beneath copyright, on mobile and desktop. Both use the shared
 capture, account gate or tracking. Home's minimum hero height reserves the
 additional footer-link row. The main menu is unchanged.
 
-Copy describes the current pilot: visible UniKeys and published route endpoints,
+Copy describes the current pilot: public usernames/photos and published route endpoints,
 participant-scoped requests, PayID disclosure after pairing, retained pickup
 snapshots/history, browser caches, provider processing, direct payments, and
 synthetic rides. It does not promise current-enrolment checks, automatic account

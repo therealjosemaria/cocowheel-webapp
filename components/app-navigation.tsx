@@ -1,4 +1,5 @@
 "use client";
+import ParticipantName from "./participant-name";
 import { RatingBadge } from "./ride-rating";
 import type { RatingSummary } from "@/lib/rating-types";
 
@@ -19,6 +20,7 @@ export default function AppNavigation() {
   const [signingOut, setSigningOut] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
+  const [accountKey, setAccountKey] = useState<string | null>(null);
   const [canAdmin, setCanAdmin] = useState(false);
   const [ratings, setRatings] = useState<{
     driver: RatingSummary;
@@ -36,14 +38,14 @@ export default function AppNavigation() {
   );
   const markSeen = useCallback(
     (key: string) => {
-      if (!guestName) return;
+      if (!accountKey) return;
       setSeen((previous) => {
         const next = Array.from(
-          new Set([...readSeen(guestName), ...previous, key]),
+          new Set([...readSeen(accountKey), ...previous, key]),
         ).slice(-500);
         try {
           localStorage.setItem(
-            `cocowheels:seen-updates:v1:${guestName}`,
+            `cocowheels:seen-updates:v1:${accountKey}`,
             JSON.stringify(next),
           );
         } catch {
@@ -52,16 +54,16 @@ export default function AppNavigation() {
         return next;
       });
     },
-    [guestName],
+    [accountKey],
   );
   useEffect(() => {
     const sync = (event: StorageEvent) => {
-      if (guestName && event.key === `cocowheels:seen-updates:v1:${guestName}`)
-        setSeen(readSeen(guestName));
+      if (accountKey && event.key === `cocowheels:seen-updates:v1:${accountKey}`)
+        setSeen(readSeen(accountKey));
     };
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
-  }, [guestName]);
+  }, [accountKey]);
   const [rideTab, setRideTab] = useState<"driver" | "rider" | null>(null);
   const identityRef = useRef<HTMLDivElement>(null);
   const identityCloseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -115,10 +117,12 @@ export default function AppNavigation() {
     try {
       const result = await cocowheelsApi<{
         unikey: string;
+        username?: string;
         canAdmin: boolean;
         ratings?: { driver: RatingSummary; rider: RatingSummary };
       }>("/api/university/session");
-      setGuestName(result.unikey);
+      setGuestName(result.username ?? result.unikey);
+      setAccountKey(result.unikey);
       if (seenAccount.current !== result.unikey) {
         seenAccount.current = result.unikey;
         setActiveRide(null);
@@ -139,6 +143,7 @@ export default function AppNavigation() {
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
+        setAccountKey(null);
         setCanAdmin(false);
         setRatings(null);
         setActiveRide(null);
@@ -157,12 +162,14 @@ export default function AppNavigation() {
     const timer = window.setInterval(refresh, 10_000);
     window.addEventListener("focus", refresh);
     window.addEventListener("cocowheels:identity-changed", refresh);
+    window.addEventListener("cocowheels:profile-changed", refresh);
     window.addEventListener("cocowheels:messages-updated", refresh);
     return () => {
       window.clearTimeout(initial);
       window.clearInterval(timer);
       window.removeEventListener("focus", refresh);
       window.removeEventListener("cocowheels:identity-changed", refresh);
+      window.removeEventListener("cocowheels:profile-changed", refresh);
       window.removeEventListener("cocowheels:messages-updated", refresh);
     };
   }, [loadIdentities]);
@@ -314,17 +321,14 @@ export default function AppNavigation() {
           <strong>Profile</strong>
           {guestName ? (
             <div className="guest-identity-row">
-              <span>UniKey</span>
-              <b>{guestName}</b>
+              <span>Username</span>
+              <b><ParticipantName key={guestName} name={guestName} /></b>
               <span className="profile-verification">
-                {/^[a-z]{4}\d{4}$/.test(guestName)
-                  ? "University email verified"
-                  : "Email verified"}
+                Email verified
               </span>
             </div>
           ) : (
             <>
-              <p>For University of Sydney students only.</p>
               <button
                 className="secondary"
                 onClick={() => {
@@ -334,7 +338,7 @@ export default function AppNavigation() {
                   );
                 }}
               >
-                Verify UniKey
+                Sign in
               </button>
             </>
           )}

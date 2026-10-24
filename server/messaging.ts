@@ -1,4 +1,5 @@
 import type { Db } from "./core";
+import { publicName } from "./personal-details";
 import type { Conversation, ConversationSummary } from "../lib/messaging-types";
 
 type Thread = {
@@ -62,7 +63,7 @@ export function conversationSummaries(
     .filter((t) => active(t, now))
     .map((t) => ({
       requestId: t.id,
-      peer: principal === t.driver ? t.rider_alias : t.driver_alias,
+      peer: principal === t.driver ? publicName(db, t.rider, t.rider_alias) : publicName(db, t.driver, t.driver_alias),
       stopped: stopped(db, t.id),
       unread: stopped(db, t.id)
         ? 0

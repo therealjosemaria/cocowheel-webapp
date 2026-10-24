@@ -152,8 +152,8 @@ try {
       const before = inbox.size;
       for (const unikey of [
         "test",
-        "abcd1234@uni.sydney.edu.au",
-        "other@example.com",
+        "abcd1234@@uni.sydney.edu.au",
+        "other@",
         "abcd1234' OR 1=1--",
         "abcd1234\r\nBcc:other@example.com",
         { unikey: "jmos0905" },
