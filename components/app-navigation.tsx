@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import ProfileMenuPhoto from "./profile-menu-photo";
 import { RatingBadge } from "./ride-rating";
 import type { RatingSummary } from "@/lib/rating-types";
 
@@ -305,6 +306,9 @@ export default function AppNavigation() {
             <circle cx="12" cy="8" r="3.5" />
             <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
           </svg>
+          {guestName && (
+            <ProfileMenuPhoto key={guestName} username={guestName} />
+          )}
           {updates.length + messageCount > 0 && (
             <span className="profile-update-badge" aria-hidden="true">
               {updates.length + messageCount > 99

@@ -293,6 +293,17 @@ button:disabled {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
+.profile-menu-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+}
+.profile-menu-photo.loaded { opacity: 1; }
 .guest-identity-popover {
   position: absolute;
   top: calc(100% + 10px);

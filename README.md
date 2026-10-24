@@ -8,6 +8,10 @@ starts with Personal details: an editable unique 3–8-character alphanumeric
 username, optional photo and owner-only read-only email. Public names are separate
 from login identities. See [personal details](docs/PERSONAL_DETAILS.md) for migration,
 upload limits, privacy, tests and deployment status. Existing OTP limits remain.
+The shared mobile/desktop Profile button shows the signed-in user's saved photo
+inside its existing circular control. Missing/failed photos retain the person
+icon; notification badges and menu behaviour are unchanged. Photo metadata loads
+on identity mount/profile edits, not on a new polling loop.
 
 [Vercel Web Analytics](docs/WEB_ANALYTICS.md) is integrated in the frontend root
 layout, matching Lime Wheels' SDK version. Only allowlisted page views are sent;

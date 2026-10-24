@@ -28,6 +28,26 @@ discovery and ride/activity details. Photos are optional, not identity checks.
 
 ## Photos and authorization
 
+The header's shared mobile/desktop Profile trigger also displays the owner's
+photo. It reads the existing authenticated profile endpoint once on mount and
+on profile-change events, using the versioned public photo URL. No additional
+polling or API/schema changes. Identity changes remount the image component;
+late/unmounted or superseded responses are ignored. Missing metadata, request
+errors and failed image loads fall back to the original person icon. The unread
+badge, accessible button name, menu actions and dimensions remain unchanged.
+
+Header checks (24 October 2026): `npm test` 160/160, lint and production build
+passed. Run `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-profile-menu-photo.py`
+against local frontend :3201. Mocked API/browser checks passed at 320/390/844/1440px:
+missing photo, image refresh, failed image, sign-out, menu/Escape, unread badge
+visibility, unchanged button dimensions and no overflow/JS exceptions. Initial
+test expected a relative failed-image URL; Next normalizes it to absolute, so the
+assertion now checks the path suffix. Mobile/desktop whole-screen screenshots
+reviewed for header alignment, badge layering, spacing and hierarchy. React review
+checked effect cleanup, stale-response guards and decorative-image accessibility.
+Physical Safari and production frontend deployment remain unverified; no restart
+is required and no production records were changed.
+
 Add photo/Update photo appears in edit mode; no Remove control. Cancel discards
 the draft. JPG/PNG/WebP only, maximum input 10 MB and 32 million decoded pixels in
 the browser. Center-crop to 512px square WebP, preview before Save. HEIC, SVG, GIF

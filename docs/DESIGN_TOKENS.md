@@ -53,6 +53,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Header Profile photos fill the existing 42px circular button's inner box,
+  object-fit cover and 50% radius. Keep the existing 20px person icon as fallback,
+  unchanged border/focus ring and unread badge above the photo. No new palette.
+
 - Address results use the existing surface/line/shadow dropdown treatment,
   fixed to the field bounds through a body portal, 5px gap, 420px maximum height
   constrained to the visual viewport. Results retain 12px padding and minimum

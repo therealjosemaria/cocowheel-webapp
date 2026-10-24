@@ -259,6 +259,11 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Navigation and layout
 
+- The shared Profile trigger uses the saved account photo when available, with
+  the existing person icon beneath as loading/error/signed-out fallback. Preserve
+  its dimensions, accessible name, focus ring, popover behaviour and unread badge.
+  Crop only the image to a circle; never clip the enclosing notification badge.
+
 - Profile navigation links and account buttons share one action group: 12px
   above/between controls, equal full widths/heights and shared secondary styling.
   Button-styled links must use a block/flex box, never inline padding that can
