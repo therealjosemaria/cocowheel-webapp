@@ -2,6 +2,32 @@
 
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-verified accounts.
 
+## Calendar-led ride setup (25 October 2026)
+
+Find and Offer now share address-search sheets and separate date/time controls.
+Address entry waits 500ms after typing (minimum three characters); results stay
+inside a full-screen phone picker or centred desktop dialog. Selection returns
+to the form. Find submits only when the rider presses Find a ride. Profile keeps
+its existing explicit-search editor; the shared place lookup/GPS logic is reused.
+This supersedes the older explicit-search and automatic-advance rules below for
+Find/Offer only. Swap sits between the two address fields in these new forms.
+
+Departure dates run from today through three calendar months ahead in Sydney
+time, clamped at month ends. Driver time is an actual clock time in half-hour
+steps, validated as future at submission; it no longer shifts with submission.
+Riders default to Today / Any time, optionally Around a time (±1 hour within the
+selected day). API date filtering precedes the 50-result limit. Old API searches
+without a date retain their original behaviour. Email review uses the suggested
+offer's date. At least 24 hours ahead, departure readouts show date/time instead
+of a long hour countdown. See [calendar contract and checks](docs/CALENDAR_SEARCH_2026-10-25.md).
+
+New offers still expire six hours after departure. Awaiting-pickup inactivity
+now runs from the later of last activity and scheduled departure; after verified
+pickup, the existing 24-hour inactivity rule remains. One active role/item per
+account is unchanged: an advance offer/acceptance occupies that slot. No schema
+change, record rewrite, provider change or extra reminder-email loop. API restart
+and frontend deployment are separate activation steps.
+
 Any valid email can receive a sign-in code. Existing university accounts, sessions,
 admin authorization and trip history retain their original identifiers. Profile
 starts with Personal details: an editable unique 3–8-character alphanumeric
@@ -328,7 +354,8 @@ UI wording must not be used as a server permission check.
 | --- | --- |
 | New normal published offer | Until six hours after scheduled departure; existing stored expiries unchanged |
 | Sample offer | 24-hour window; samples are replenished |
-| Accepted/in-progress ride | 24-hour inactivity cleanup, based on last activity |
+| Awaiting pickup | 24 hours after the later of last activity and planned departure |
+| In-progress ride | 24-hour inactivity cleanup, based on last activity |
 | Pickup code | No countdown; single-use; renewal invalidates old code; five guesses and attempt throttling |
 | Email login code | Ten minutes, five guesses |
 | Verified login session | 30 days |

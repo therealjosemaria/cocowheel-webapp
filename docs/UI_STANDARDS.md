@@ -4,6 +4,23 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+25 October: [calendar-led setup](CALENDAR_SEARCH_2026-10-25.md) supersedes the
+older Find/Offer address/departure rules below. Shared address sheets are full
+screen on phones and centred dialogs on desktop, with Back/Escape/focus return.
+Search after 500ms idle and three characters, never every keystroke. Choosing a
+place returns to the form; Find requires its explicit action. Profile retains
+its existing editor. Find/Offer swap sits between endpoints. Omit unsupported
+trip/passenger/class menus. Keep form content compact and centred. Endpoints are
+side by side, not stacked, at all widths. On phones remove enclosing vertical
+borders/side inset, keeping horizontal separators and individual field outlines;
+tablet/desktop retain the frame.
+Date calendar uses Reset (Today) and Done; Back/Escape discards. Time is a separate
+scrollable half-hour clock-time list below date, with explicit selection/Done.
+Driver times must be future; rider Any time is allowed, Around means ±1 hour
+within the selected date. No automatic opening of the next picker. Dates through
+three calendar months; Sydney conversion regardless of browser timezone.
+Departure at least 24 hours away shows date/time; shorter countdowns unchanged.
+
 Address search results float above the form, matching the field width, without
 layout shift. Explicit Search remains unchanged. Reuse one shared portal panel
 for Offer/Find/Profile, capped at 420px and available visual viewport height;

@@ -6,6 +6,13 @@ scope and activation status; code presence is not verified deployment.
 
 ## Product contract
 
+25 October: normal Find/Offer now use calendar dates through three months and
+separate clock times; Profile schedule/consent and legacy saved-route offering
+API are unchanged. Email review loads the offer date from its public preview
+before entering date-filtered discovery. Awaiting-pickup cleanup waits until
+24h after the later of departure/activity. See CALENDAR_SEARCH_2026-10-25.md;
+this supersedes the 24-hour relative picker described below.
+
 23 October layout refinement: saved origin/destination stack vertically. Route
 and alert heading/content gaps both use 12px. Shared Profile/Offer/Find swap action
 exchanges coordinate-bearing pins and draft text in place, without auto-saving or

@@ -1,7 +1,8 @@
 "use client";
 import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt } from "./vehicle-details";
-import DepartureChoice from "./departure-choice";
+import ScheduleFields from "./schedule-fields";
+import { initialDeparture, lastDepartureDate, sydneyDateTime, sydneyInstant } from "@/lib/ride-schedule";
 import { departureLabel, departureTone } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
 import PaymentFields from "./payment-fields";
@@ -146,6 +147,8 @@ const humanError = (error: unknown) => {
     UNIVERSITY_VERIFICATION_REQUIRED: "Please verify your email to continue.",
     SERVICE_UNAVAILABLE: CONNECTION_MESSAGE,
     OPEN_ITEM_EXISTS: "You already have an active ride or request.",
+    INVALID_DEPARTURE_TIME: "Choose a future departure within the next three months.",
+    INVALID_REQUEST_TIME: "Choose a date from today through the next three months.",
     FRESH_LOCATIONS_REQUIRED:
       "Both people need to update their location before the driver can start.",
     LOCATION_STALE: "Your location is out of date. Update it to continue.",
@@ -170,7 +173,7 @@ export default function HomeClient({
   initialNotice,
 }: {
   initialScreen?: "HOME" | "DRIVER" | "RIDER";
-  initialMatch?: { rideId: string; origin: Pin; destination: Pin };
+  initialMatch?: { rideId: string; origin: Pin; destination: Pin; scheduledDepartureAt?: string };
   initialNotice?: string;
 }) {
   const router = useRouter();
@@ -211,7 +214,7 @@ export default function HomeClient({
   }>(initialMatch ? { pickup: initialMatch.origin, destination: initialMatch.destination } : {});
   const [price, setPrice] = useState("5");
   const [contribution, setContribution] = useState(false);
-  const [departureMinutes, setDepartureMinutes] = useState(30);
+  const [driverSchedule, setDriverSchedule] = useState(initialDeparture);
   const [payId, setPayId] = useState("");
   const [payIdType, setPayIdType] = useState<PayIdType>("MOBILE");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -220,6 +223,11 @@ export default function HomeClient({
   const [searching, setSearching] = useState(false);
   const [riderSelectionOpen, setRiderSelectionOpen] = useState(Boolean(initialMatch));
   const [riderTime, setRiderTime] = useState<string | null>(null);
+  const [riderDate, setRiderDate] = useState(() => {
+    const today = sydneyDateTime().date;
+    const date = sydneyDateTime(initialMatch?.scheduledDepartureAt ?? Date.now()).date;
+    return date < today ? today : date;
+  });
   const [code, setCode] = useState("");
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
@@ -265,6 +273,7 @@ export default function HomeClient({
               : { pickup: draft.pickup, destination: draft.destination },
           );
           setRiderTime(draft.departureAt);
+          setRiderDate(draft.departureDate ?? sydneyDateTime().date);
         } else {
           setRiderSelectionOpen(false);
           setRiderTime(null);
@@ -317,6 +326,7 @@ export default function HomeClient({
       setRiderSelectionOpen(true);
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
+      setRiderDate(draft.departureDate ?? sydneyDateTime().date);
       setScreen("RIDER");
       window.dispatchEvent(
         new CustomEvent("cocowheels:ride-tab", { detail: "rider" }),
@@ -345,6 +355,7 @@ export default function HomeClient({
             destination: draft.destination,
           });
           setRiderTime(draft.departureAt);
+          setRiderDate(draft.departureDate ?? sydneyDateTime().date);
         } else {
           setRiderSelectionOpen(false);
         }
@@ -538,6 +549,10 @@ export default function HomeClient({
       ? riderRoute.durationSeconds
       : null;
   async function publish() {
+    const departure = sydneyInstant(driverSchedule.date, driverSchedule.time);
+    if (!departure || Date.parse(departure) <= Date.now() || driverSchedule.date > lastDepartureDate()) {
+      setError("Choose a future departure within the next three months."); return;
+    }
     if (!driverPins.origin || !driverPins.destination) {
       setError(null);
       setPublishRouteRequiredPromptOpen(true);
@@ -551,7 +566,7 @@ export default function HomeClient({
         body: JSON.stringify({
           origin: canonicalPin(driverPins.origin),
           destination: canonicalPin(driverPins.destination),
-          scheduledDepartureAt: new Date(Date.now() + departureMinutes * 60000).toISOString(),
+          scheduledDepartureAt: departure,
           priceAud: contribution ? Number(price) : 0,
           payId: contribution ? payId : "",
           payIdType,
@@ -584,10 +599,11 @@ export default function HomeClient({
       draft?.pickup.latitude === riderPins.pickup.latitude &&
       draft.pickup.longitude === riderPins.pickup.longitude &&
       draft.destination.latitude === riderPins.destination.latitude &&
-      draft.destination.longitude === riderPins.destination.longitude;
+      draft.destination.longitude === riderPins.destination.longitude &&
+      draft.departureDate === riderDate && draft.departureAt === riderTime;
     const savedAt = matchesDraft ? draft.savedAt : Date.now();
     if (!matchesDraft)
-      saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime);
+      saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime, riderDate);
     const timer = window.setTimeout(
       () => {
         clearRiderSearchDraft();
@@ -601,10 +617,11 @@ export default function HomeClient({
       Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()),
     );
     return () => window.clearTimeout(timer);
-  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime]);
+  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime, riderDate]);
   useEffect(() => {
     if (
       screen !== "RIDER" ||
+      !riderSelectionOpen ||
       !riderSearchKey ||
       !riderPins.pickup ||
       !riderPins.destination
@@ -620,9 +637,9 @@ export default function HomeClient({
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup!),
             destination: canonicalPin(riderPins.destination!),
-            requestedDepartureAt: riderTime
-              ? new Date(riderTime).toISOString()
-              : new Date().toISOString(),
+            requestedDepartureAt: new Date().toISOString(),
+            departureDate: riderDate,
+            ...(riderTime ? { departureTime: sydneyDateTime(riderTime).time } : {}),
           }),
         },
       )
@@ -657,6 +674,8 @@ export default function HomeClient({
     riderPins.pickup,
     riderSearchKey,
     riderTime,
+    riderDate,
+    riderSelectionOpen,
     screen,
   ]);
   async function requestSelected(
@@ -688,9 +707,7 @@ export default function HomeClient({
           body: JSON.stringify({
             pickup: canonicalPin(riderPins.pickup),
             destination: canonicalPin(riderPins.destination),
-            requestedDepartureAt: riderTime
-              ? new Date(riderTime).toISOString()
-              : new Date().toISOString(),
+            requestedDepartureAt: new Date().toISOString(),
           }),
         },
       );
@@ -836,8 +853,8 @@ export default function HomeClient({
           contribution={contribution}
           setContribution={setContribution}
           setPrice={setPrice}
-          departureMinutes={departureMinutes}
-          setDepartureMinutes={setDepartureMinutes}
+          schedule={driverSchedule}
+          setSchedule={setDriverSchedule}
           payId={payId}
           setPayId={setPayId}
           payIdType={payIdType}
@@ -847,6 +864,10 @@ export default function HomeClient({
         />
       ) : screen === "RIDER" ? (
         <RiderForm
+          date={riderDate}
+          time={riderTime ? sydneyDateTime(riderTime).time : ""}
+          setDate={date => { setRiderDate(date); if (riderTime) setRiderTime(sydneyInstant(date, sydneyDateTime(riderTime).time)); }}
+          setTime={time => setRiderTime(time ? sydneyInstant(riderDate, time) : null)}
           setOrigin={(pin) => {
             if (!pin) clearRiderSearchDraft();
             setCandidates([]);
@@ -984,8 +1005,8 @@ function DriverForm(props: {
   contribution: boolean;
   setContribution: (value: boolean) => void;
   setPrice: (value: string) => void;
-  departureMinutes: number;
-  setDepartureMinutes: (value: number) => void;
+  schedule: { date: string; time: string };
+  setSchedule: (value: { date: string; time: string }) => void;
   payId: string;
   setPayId: (value: string) => void;
   payIdType: PayIdType;
@@ -1017,12 +1038,13 @@ function DriverForm(props: {
     <div className="form-page">
       <h1 className="page-title">Offer a ride</h1>
       <div className="form-panel-content">
-        <RouteFields
+        <RouteFields sheet
           origin={props.pins.origin} destination={props.pins.destination}
           countryCode={props.countryPreference ?? "au"}
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
-        <DepartureChoice value={props.departureMinutes} onChange={props.setDepartureMinutes} />
+        <ScheduleFields date={props.schedule.date} time={props.schedule.time}
+          setDate={date => props.setSchedule({ ...props.schedule, date })} setTime={time => props.setSchedule({ ...props.schedule, time })} />
         <ContributionChoice checked={props.contribution} onChange={props.setContribution} fare={props.price}>
           <PaymentFields
             fare={props.price} setFare={props.setPrice}
@@ -1039,6 +1061,7 @@ function DriverForm(props: {
   );
 }
 function RiderForm(props: {
+  date: string; time: string; setDate: (value: string) => void; setTime: (value: string) => void;
   setOrigin: (pin: Pin | undefined) => void;
   pins: { pickup?: Pin; destination?: Pin };
   countryPreference: string | null;
@@ -1076,12 +1099,13 @@ function RiderForm(props: {
     <div className="form-page rider-form-page">
       <h1 className="page-title">Find a ride</h1>
       <div className="form-panel-content">
-        <RouteFields
+        <RouteFields sheet
           origin={props.pins.pickup} destination={props.pins.destination}
           countryCode={props.countryPreference ?? "au"}
           setOrigin={props.setOrigin} setDestination={props.setDestination}
-          onComplete={props.openSelection}
         />
+        <ScheduleFields date={props.date} time={props.time} setDate={props.setDate} setTime={props.setTime} optional />
+        <button type="button" className="primary" disabled={!props.pins.pickup || !props.pins.destination} onClick={props.openSelection}>FIND A RIDE</button>
       </div>
     </div>
   );

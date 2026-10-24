@@ -131,6 +131,37 @@ const driverInput = {
   payIdType: "EMAIL" as const,
 };
 
+test("calendar searches filter before the result limit and retain legacy discovery", () => {
+  const h = harness();
+  try {
+    for (let i = 0; i < 51; i++) publishRide(h.db, null, driverInput, baseTime);
+    const scheduledDepartureAt = "2027-01-01T01:00:00.000Z";
+    const future = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt }, baseTime);
+    const query = { pickup: driverInput.origin, destination: driverInput.destination, requestedDepartureAt: baseTime.toISOString() };
+    assert.equal(searchRides(h.db, query, baseTime).length, 50);
+    assert.deepEqual(searchRides(h.db, { ...query, departureDate: "2027-01-01" }, baseTime).map(r => r.rideId), [future.ride.rideId]);
+    assert.equal(searchRides(h.db, { ...query, departureDate: "2027-01-01", departureTime: "12:00" }, baseTime).length, 1);
+    assert.equal(searchRides(h.db, { ...query, departureDate: "2027-01-01", departureTime: "14:00" }, baseTime).length, 0);
+    for (const departureDate of ["2027-01-02", "2026-09-30", "2026-02-30", "nonsense"]) {
+      assert.throws(() => searchRides(h.db, { ...query, departureDate }, baseTime), /INVALID_REQUEST_TIME/);
+    }
+    assert.throws(() => publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2027-01-02T01:00Z" }, baseTime), /INVALID_DEPARTURE_TIME/);
+  } finally { h.close(); }
+});
+
+test("accepted future offers survive inactivity until departure plus 24 hours", () => {
+  const h = harness();
+  try {
+    const scheduledDepartureAt = "2026-11-01T01:00:00.000Z";
+    const offer = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt }, baseTime);
+    // Isolate expiry predicate from acceptance's unrelated vehicle/session fixtures.
+    h.db.prepare("UPDATE rides SET status = 'ACCEPTED' WHERE public_id = ?").run(offer.ride.rideId);
+    assert.equal(expireStaleRides(h.db, new Date("2026-10-15T00:00Z")), 0);
+    assert.equal(expireStaleRides(h.db, new Date("2026-11-02T01:00Z")), 0);
+    assert.equal(expireStaleRides(h.db, new Date("2026-11-02T01:00:00.001Z")), 1);
+  } finally { h.close(); }
+});
+
 test("driver GPS starts at acceptance and is private to the accepted rider", () => {
   const h = harness();
   try {

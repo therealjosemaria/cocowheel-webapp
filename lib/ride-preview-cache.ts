@@ -1,4 +1,5 @@
 import type { Pin } from "./client-types";
+import { lastDepartureDate, scheduleDayBounds, sydneyDateTime } from "./ride-schedule";
 
 type DirectionFit = "GOOD" | "POOR";
 type RiderRouteContext = {
@@ -8,6 +9,7 @@ type RiderRouteContext = {
 };
 export type RiderSearchDraft = RiderRouteContext & {
   departureAt: string | null;
+  departureDate?: string;
   savedAt: number;
 };
 const contextPrefix = "cocowheels:ride-preview:v1:";
@@ -59,10 +61,11 @@ export function saveRiderSearchDraft(
   pickup: Pin,
   destination: Pin,
   departureAt: string | null,
+  departureDate?: string,
 ) {
   write(
     searchDraftKey,
-    { pickup, destination, departureAt, savedAt: Date.now() } satisfies RiderSearchDraft,
+    { pickup, destination, departureAt, ...(departureDate ? { departureDate } : {}), savedAt: Date.now() } satisfies RiderSearchDraft,
   );
 }
 export function riderSearchDraft(): RiderSearchDraft | null {
@@ -75,7 +78,9 @@ export function riderSearchDraft(): RiderSearchDraft | null {
     typeof draft.pickup.longitude !== "number" ||
     typeof draft.destination.latitude !== "number" ||
     typeof draft.destination.longitude !== "number" ||
-    (draft.departureAt !== null && typeof draft.departureAt !== "string") ||
+    (draft.departureAt !== null && (typeof draft.departureAt !== "string" || !Number.isFinite(Date.parse(draft.departureAt)))) ||
+    (draft.departureDate !== undefined && (typeof draft.departureDate !== "string" ||
+      !scheduleDayBounds(draft.departureDate) || draft.departureDate < sydneyDateTime().date || draft.departureDate > lastDepartureDate())) ||
     typeof draft.savedAt !== "number" ||
     draft.savedAt + riderSearchDraftTtlMs <= Date.now()
   ) {

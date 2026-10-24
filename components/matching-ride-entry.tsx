@@ -6,7 +6,7 @@ import type { UsualRoute } from "@/lib/usual-route";
 
 // No credentials or private route coordinates are carried in the email URL.
 export default function MatchingRideEntry({ match }: { match: string }) {
-  const [state, setState] = useState<{ route?: UsualRoute | null; error?: string; signedOut?: boolean }>({});
+  const [state, setState] = useState<{ route?: UsualRoute | null; scheduledDepartureAt?: string; error?: string; signedOut?: boolean }>({});
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     let live = true;
@@ -15,8 +15,12 @@ export default function MatchingRideEntry({ match }: { match: string }) {
       const current = ++generation;
       setState({});
       try {
-        const { route } = await cocowheelsApi<{ route: UsualRoute | null }>("/api/usual-route");
-        if (live && current === generation) setState({ route });
+        const [{ route }, preview] = await Promise.all([
+          cocowheelsApi<{ route: UsualRoute | null }>("/api/usual-route"),
+          cocowheelsApi<{ ride: { scheduledDepartureAt: string } }>(`/api/rides/${encodeURIComponent(match)}/preview`)
+            .catch(reason => { if (reason instanceof ApiError && [404, 409, 410].includes(reason.status)) return null; throw reason; }),
+        ]);
+        if (live && current === generation) setState({ route, scheduledDepartureAt: preview?.ride.scheduledDepartureAt });
       } catch (reason) {
         if (live && current === generation) setState(reason instanceof ApiError && reason.status === 401
           ? { signedOut: true } : { error: apiErrorMessage(reason) });
@@ -27,7 +31,7 @@ export default function MatchingRideEntry({ match }: { match: string }) {
     return () => { live = false; window.removeEventListener("cocowheels:identity-changed", load); };
   }, [retry, match]);
   if (state.route !== undefined) return <HomeClient initialScreen="RIDER"
-    initialMatch={state.route ? { rideId: match, origin: state.route.origin, destination: state.route.destination } : undefined}
+    initialMatch={state.route ? { rideId: match, origin: state.route.origin, destination: state.route.destination, scheduledDepartureAt: state.scheduledDepartureAt } : undefined}
     initialNotice={state.route ? undefined : "Your saved route is no longer available. Choose where from and where to to find a ride."} />;
   return <section className="activity-page"><div className="activity-panel usual-route-panel">
     <h1 className="page-title">Find a ride</h1><div className="usual-route-body">

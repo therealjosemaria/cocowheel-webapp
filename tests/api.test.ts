@@ -13,6 +13,7 @@ import {
 import { createApiServer } from "../server/index";
 import type { Vehicle } from "../lib/vehicle";
 import type { RideView } from "../server/core";
+import { calendarDay, sydneyDateTime } from "../lib/ride-schedule";
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
@@ -261,6 +262,16 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.equal(candidates.length, 1);
     assert.equal("origin" in candidates[0], false);
     assert.equal("driverLocation" in candidates[0], false);
+    const scheduledDate = sydneyDateTime(new Date(Date.now() + 5 * 60000)).date;
+    const calendarQuery = { pickup: { latitude: -33.855, longitude: 151.225 },
+      destination: { latitude: -33.82, longitude: 151.265 }, requestedDepartureAt: new Date().toISOString(), departureDate: scheduledDate };
+    const dated = await json(`${base}/api/search`, "POST", calendarQuery);
+    assert.equal(dated.response.status, 200);
+    assert.equal((dated.body.candidates as unknown[]).length, 1);
+    const otherDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: calendarDay(scheduledDate, 1) });
+    assert.equal((otherDate.body.candidates as unknown[]).length, 0);
+    const invalidDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "invalid" });
+    assert.equal(invalidDate.response.status, 400);
     const riderCreate = await json(
       `${base}/api/rides/${driverRide.rideId}/requests`,
       "POST",

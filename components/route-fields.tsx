@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
 import { searchLocation, rememberSearchLocation } from "@/lib/search-location";
 import RideFieldLabel from "./ride-field-label";
+import { SearchSheet } from "./schedule-fields";
+const recentSearches = new Map<string, { at: number; places: Pin[] }>();
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
   longitude: pin.longitude,
@@ -23,6 +25,7 @@ export function RouteFields({
   onComplete,
   draftText,
   onDraftText,
+  sheet = false,
 }: {
   origin?: Pin;
   destination?: Pin;
@@ -32,10 +35,12 @@ export function RouteFields({
   onComplete?: () => void;
   draftText?: { origin: string; destination: string };
   onDraftText?: (field: "origin" | "destination", text: string) => void;
+  sheet?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const [swapped, setSwapped] = useState<{ revision: number; origin: string; destination: string } | null>(null);
   useEffect(() => {
+    if (sheet) return;
     const frame = requestAnimationFrame(() => {
       const inputs = container.current?.querySelectorAll("input");
       const empty = Array.from(inputs ?? []).find(
@@ -44,7 +49,9 @@ export function RouteFields({
       empty?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [sheet]);
+  if (sheet) return <SheetRouteFields origin={origin} destination={destination}
+    setOrigin={setOrigin} setDestination={setDestination} countryCode={countryCode} />;
   return (
     <div className="route-search-fields" ref={container}>
       <PlaceSearch
@@ -105,6 +112,33 @@ export function RouteFields({
   );
 }
 
+function SheetRouteFields({ origin, destination, setOrigin, setDestination, countryCode }: {
+  origin?: Pin; destination?: Pin; setOrigin: (pin: Pin | undefined) => void;
+  setDestination: (pin: Pin | undefined) => void; countryCode: string;
+}) {
+  const [field, setField] = useState<"origin" | "destination" | null>(null);
+  const [drafts, setDrafts] = useState({ origin: "", destination: "" });
+  const selected = field === "origin" ? origin : destination;
+  return <div className="route-search-fields sheet-route-fields">
+    <button type="button" className={`secondary address-field${origin ? "" : " address-empty"}`} aria-label="Where from?" title={origin ? locationText(origin) : "Where from?"} aria-haspopup="dialog" onClick={() => setField("origin")}>
+      <RideFieldLabel icon="from">{origin ? locationText(origin) : "Where from?"}</RideFieldLabel></button>
+    <button type="button" className="secondary route-swap" aria-label="Swap addresses" title="Swap addresses" onClick={() => {
+      setOrigin(destination); setDestination(origin);
+      setDrafts({ origin: drafts.destination, destination: drafts.origin });
+    }}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20V4m-4 4 4-4 4 4M16 4v16m-4-4 4 4 4-4" /></svg></button>
+    <button type="button" className={`secondary address-field${destination ? "" : " address-empty"}`} aria-label="Where to?" title={destination ? locationText(destination) : "Where to?"} aria-haspopup="dialog" onClick={() => setField("destination")}>
+      <RideFieldLabel icon="to">{destination ? locationText(destination) : "Where to?"}</RideFieldLabel></button>
+    {field && <SearchSheet label={field === "origin" ? "Where from?" : "Where to?"} close={() => setField(null)}>
+      <PlaceSearch key={field} automatic autoFocus selectOnFocus
+        placeholder={field === "origin" ? "Where from?" : "Where to?"}
+        initialValue={drafts[field] || (selected ? locationText(selected) : "")}
+        allowCurrentLocation={field === "origin"} bias={field === "destination" ? origin : undefined} countryCode={countryCode}
+        onEdit={text => setDrafts(old => ({ ...old, [field]: text }))}
+        choose={pin => { (field === "origin" ? setOrigin : setDestination)(pin); setDrafts(old => ({ ...old, [field]: "" })); setField(null); }} />
+    </SearchSheet>}
+  </div>;
+}
+
 export function PlaceSearch({
   bias,
   countryCode,
@@ -118,6 +152,7 @@ export function PlaceSearch({
   onEdit,
   allowCurrentLocation = false,
   onSwap,
+  automatic = false,
 }: {
   bias?: Pin;
   countryCode?: string;
@@ -131,6 +166,7 @@ export function PlaceSearch({
   onEdit?: (text: string) => void;
   allowCurrentLocation?: boolean;
   onSwap?: () => void;
+  automatic?: boolean;
 }) {
   const [text, setText] = useState(initialValue);
   const [places, setPlaces] = useState<Pin[]>([]);
@@ -141,9 +177,11 @@ export function PlaceSearch({
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGeneration = useRef(0);
+  const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [locating, setLocating] = useState(false);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (!resultsOpen) return;
+    if (!resultsOpen || automatic) return;
     const dismiss = () => {
       ++searchGeneration.current;
       setResultsOpen(false);
@@ -167,9 +205,9 @@ export function PlaceSearch({
       document.removeEventListener("focusin", outside);
       document.removeEventListener("keydown", escape);
     };
-  }, [resultsOpen]);
+  }, [resultsOpen, automatic]);
   useLayoutEffect(() => {
-    if (!resultsOpen || !places.length) return;
+    if (!resultsOpen || !places.length || automatic) return;
     const position = () => {
       const anchor = anchorRef.current;
       const panel = resultsRef.current;
@@ -199,7 +237,7 @@ export function PlaceSearch({
       window.visualViewport?.removeEventListener("resize", position);
       window.visualViewport?.removeEventListener("scroll", position);
     };
-  }, [resultsOpen, places]);
+  }, [resultsOpen, places, automatic]);
   const locateOrigin = async () => {
     const generation = ++searchGeneration.current;
     setLocating(true);
@@ -262,7 +300,7 @@ export function PlaceSearch({
     });
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus, selectOnFocus]);
-  const search = () => {
+  const search = useCallback(() => {
     setLocating(false);
     const previous = searchLocation();
     const preferredLocation = bias ?? previous;
@@ -277,16 +315,20 @@ export function PlaceSearch({
     setPlaces([]);
     setSearchError(null);
     setResultsOpen(true);
+    const body = JSON.stringify({ text: text.trim(),
+      ...(preferredLocation ? { bias: canonicalPin(preferredLocation) } : {}),
+      ...(preferredCountry ? { countryCode: preferredCountry } : {}) });
+    const cached = recentSearches.get(body);
+    if (cached && Date.now() - cached.at < 60000) { setPlaces(cached.places); setLoading(false); return; }
+    setLoading(true);
     void cocowheelsApi<{ places: Pin[] }>("/api/place-search", {
       method: "POST",
-      body: JSON.stringify({
-        text,
-        ...(preferredLocation ? { bias: canonicalPin(preferredLocation) } : {}),
-        ...(preferredCountry ? { countryCode: preferredCountry } : {}),
-      }),
+      body,
     })
       .then((result) => {
         if (generation !== searchGeneration.current) return;
+        if (recentSearches.size >= 30) recentSearches.delete(recentSearches.keys().next().value!);
+        recentSearches.set(body, { at: Date.now(), places: result.places });
         setPlaces(result.places);
         setSearchError(null);
       })
@@ -300,11 +342,17 @@ export function PlaceSearch({
             "We couldn’t search destinations. Please try again.",
           ),
         );
-      });
-  };
+      }).finally(() => { if (generation === searchGeneration.current) setLoading(false); });
+  }, [bias, countryCode, text]);
+  useEffect(() => {
+    if (!automatic || locating || text.trim().length < 3 || searchInputError(text)) return;
+    debounce.current = setTimeout(search, 500);
+    return () => clearTimeout(debounce.current);
+  }, [automatic, text, search, locating]);
+  const renderResults = (content: React.ReactNode) => automatic ? content : createPortal(content, document.body);
   return (
     <div
-      ref={rootRef} className="place-search"
+      ref={rootRef} className={`place-search${automatic ? " sheet-place-search" : ""}`}
     >
       <div ref={anchorRef} className="place-search-input">
         {destinationIcon ? (
@@ -325,6 +373,7 @@ export function PlaceSearch({
           onChange={(event) => {
             ++searchGeneration.current;
             setLocating(false);
+            setLoading(false);
             onEdit?.(event.target.value);
             event.target.setCustomValidity("");
             setText(event.target.value);
@@ -338,27 +387,29 @@ export function PlaceSearch({
             }
             if (event.key === "Enter") {
               event.preventDefault();
+              clearTimeout(debounce.current);
               search();
             }
           }}
           placeholder={placeholder}
           aria-label={ariaLabel ?? placeholder}
         />
-        {locationButton("route-location-desktop")}
-        <button type="button" onClick={search}>
+        {!automatic && locationButton("route-location-desktop")}
+        {!automatic && <button type="button" onClick={search}>
           Search
-        </button>
+        </button>}
       </div>
-      {locationButton("route-location-mobile")}
+      {locationButton(automatic ? "route-location-sheet" : "route-location-mobile")}
+      {automatic && <p className="search-sheet-status" role="status">{loading ? "Searching…" : resultsOpen && !places.length ? "No places found. Try another address." : ""}</p>}
       {searchError ? (
         <p className="reconnect" role="alert">
           {searchError}
         </p>
       ) : null}
-      {resultsOpen && places.length ? createPortal(
+      {resultsOpen && places.length ? renderResults(
         <div
           ref={resultsRef}
-          className="place-results"
+          className={automatic ? "sheet-place-results" : "place-results"}
           role="region"
           aria-label="Destination search results"
           onKeyDown={(event) => {
@@ -386,7 +437,7 @@ export function PlaceSearch({
                 `${place.latitude.toFixed(5)}, ${place.longitude.toFixed(5)}`}
             </button>
           ))}
-        </div>, document.body
+        </div>
       ) : null}
     </div>
   );

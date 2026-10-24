@@ -405,6 +405,8 @@ function inputSearch(body: Json) {
     pickup: pin(body.pickup),
     destination: pin(body.destination),
     requestedDepartureAt: asString(body.requestedDepartureAt),
+    ...(body.departureDate !== undefined ? { departureDate: asString(body.departureDate) } : {}),
+    ...(body.departureTime !== undefined ? { departureTime: asString(body.departureTime) } : {}),
   };
 }
 function pathParts(url: string | undefined) {

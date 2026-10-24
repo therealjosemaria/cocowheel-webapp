@@ -53,6 +53,21 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Calendar-led Find/Offer setup (25 October) uses a centred 680px-max form and
+  side-by-side endpoints with Swap between them. Below 700px remove only the
+  enclosing panel's vertical borders, corner radius and horizontal inset;
+  retain horizontal separators and field outlines, with 8px outer gutters.
+  Mobile endpoints share an edge; a 32px visible swap circle overlaps that join
+  inside its 44px touch target, reserving inner field padding. Tablet/desktop
+  keep the frame. It uses existing page headings, secondary fields and primary final action. Swap is
+  44px, between endpoints; date/time have the existing departure/clock icons.
+  Search sheets are 560px-max/85dvh on desktop, full visual viewport below 700px,
+  with 16px/12px insets, existing ink/surface/line and control radius. Calendar
+  uses seven equal columns, 4px gaps and 44px-high day targets; selected dates/times
+  use ink with white text. Actions stay outside scroll areas. No new palette,
+  font or dependency. This supersedes the relative departure wheel and floating
+  address dropdown for Find/Offer; Profile retains its prior treatment.
+
 - Header Profile photos fill the existing 42px circular button's inner box,
   object-fit cover and 50% radius. Keep the existing 20px person icon as fallback,
   unchanged border/focus ring and unread badge above the photo. No new palette.

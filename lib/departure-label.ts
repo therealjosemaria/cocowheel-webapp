@@ -17,6 +17,7 @@ export function departureDuration(minutes: number): string {
 export function departureLabel(scheduledAt: string, now: number): string {
   const remaining = Date.parse(scheduledAt) - now;
   if (!Number.isFinite(remaining)) return "";
+  if (remaining >= 24 * 3600000) return `Departs ${plannedDepartureDateTime(scheduledAt)}`;
   if (remaining > 0) return `Departs in ${departureDuration(Math.ceil(remaining / 60000))}`;
   if (remaining > -60000) return "Departing now";
   return `Delayed ${departureDuration(Math.floor(-remaining / 60000))}`;

@@ -17,6 +17,7 @@ import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
 import { validFare } from "../lib/fare";
+import { lastDepartureDate, scheduleDayBounds, sydneyDateTime, sydneyInstant } from "../lib/ride-schedule";
 import { allowFreeRideFares } from "./free-ride-schema";
 import {
   atDropoff,
@@ -299,6 +300,8 @@ export type SearchInput = {
   pickup: Pin;
   destination: Pin;
   requestedDepartureAt: string;
+  departureDate?: string;
+  departureTime?: string;
 };
 
 const iso = (value = new Date()) => value.toISOString();
@@ -850,9 +853,9 @@ export function expireStaleRides(db: Db, now = new Date()) {
     .run(iso(now), iso(now), iso(now), staleScheduled).changes;
   const active = db
     .prepare(
-      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ?",
+      "UPDATE rides SET status = 'EXPIRED', expired_at = ?, last_activity_at = ?, co_ride_code_hash = NULL, co_ride_code_ciphertext = NULL, co_ride_code_expires_at = NULL WHERE status IN ('ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE') AND last_activity_at < ? AND (status = 'CO_RIDE_ACTIVE' OR scheduled_departure_at < ?)",
     )
-    .run(iso(now), iso(now), staleActive).changes;
+    .run(iso(now), iso(now), staleActive, staleActive).changes;
   if (scheduled || active)
     db.prepare(
       "DELETE FROM live_locations WHERE ride_id IN (SELECT id FROM rides WHERE status = 'EXPIRED')",
@@ -1012,7 +1015,7 @@ export function publishRide(
   const departure = validDate(input.scheduledDepartureAt);
   if (
     departure.getTime() < now.getTime() - 5 * 60 * 1000 ||
-    departure.getTime() > now.getTime() + 90 * 24 * 60 * 60 * 1000
+    sydneyDateTime(departure).date > lastDepartureDate(now)
   )
     throw new Error("INVALID_DEPARTURE_TIME");
   if (!validFare(input.priceAud))
@@ -1084,14 +1087,28 @@ export function searchRides(
   const requested = validDate(input.requestedDepartureAt);
   if (
     requested.getTime() < now.getTime() - 5 * 60 * 1000 ||
-    requested.getTime() > now.getTime() + 90 * 24 * 60 * 60 * 1000
+    sydneyDateTime(requested).date > lastDepartureDate(now)
   )
     throw new Error("INVALID_REQUEST_TIME");
+  let bounds: [string, string] | null = null;
+  if (input.departureDate !== undefined) {
+    bounds = scheduleDayBounds(input.departureDate);
+    if (!bounds || input.departureDate < sydneyDateTime(now).date || input.departureDate > lastDepartureDate(now))
+      throw new Error("INVALID_REQUEST_TIME");
+    if (input.departureTime) {
+      const center = sydneyInstant(input.departureDate, input.departureTime);
+      if (!center) throw new Error("INVALID_REQUEST_TIME");
+      bounds = [new Date(Math.max(Date.parse(bounds[0]), Date.parse(center) - 3600000)).toISOString(),
+        new Date(Math.min(Date.parse(bounds[1]), Date.parse(center) + 3600000 + 1)).toISOString()];
+    }
+  } else if (input.departureTime !== undefined) throw new Error("INVALID_REQUEST_TIME");
   const rows = db
     .prepare(
-      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED') ORDER BY scheduled_departure_at ASC LIMIT 50",
+      "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED')" +
+      (bounds ? " AND scheduled_departure_at >= ? AND scheduled_departure_at < ?" : "") +
+      " ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
-    .all() as RideRow[];
+    .all(...(bounds ?? [])) as RideRow[];
   const session = rawSessionToken
     ? findSession(db, rawSessionToken, now)
     : null;
