@@ -80,7 +80,7 @@ export function riderSearchDraft(): RiderSearchDraft | null {
     typeof draft.destination.longitude !== "number" ||
     (draft.departureAt !== null && (typeof draft.departureAt !== "string" || !Number.isFinite(Date.parse(draft.departureAt)))) ||
     (draft.departureDate !== undefined && (typeof draft.departureDate !== "string" ||
-      !scheduleDayBounds(draft.departureDate) || draft.departureDate < sydneyDateTime().date || draft.departureDate > lastDepartureDate())) ||
+      (draft.departureDate !== "any" && (!scheduleDayBounds(draft.departureDate) || draft.departureDate < sydneyDateTime().date || draft.departureDate > lastDepartureDate())))) ||
     typeof draft.savedAt !== "number" ||
     draft.savedAt + riderSearchDraftTtlMs <= Date.now()
   ) {

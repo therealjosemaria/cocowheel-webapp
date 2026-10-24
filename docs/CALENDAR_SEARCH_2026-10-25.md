@@ -82,7 +82,49 @@ confirming the new contract. The first Node fetch health probe failed because
 port 5060 is Fetch-blocked; curl and Node http/https probes verified service
 health independently. Frontend push is not verification of deployment.
 
+## Any-date extension (baseline 0794a95)
+
+Find retains Today / Any time defaults. Any date is an explicit calendar choice,
+committed by Done; Reset chooses Today, Back/Escape discards the draft. Date and
+time are independent: changing date retains the chosen clock time, including
+when switching to/from Any date. Any time never changes the date. Offer has no
+Any date choice. The existing 30-minute search draft preserves both preferences.
+
+API departureDate accepts the explicit sentinel `any`; omitted dates retain
+legacy behaviour. Any date covers Sydney today through the final allowed day
+three calendar months ahead, inclusive. Available delayed offers from today
+remain eligible under existing expiry rules, just as in a Today search.
+With departureTime, create one inclusive +/-60-minute UTC window per Sydney day,
+clipped to that day, before SQL's 50-result limit. The horizon bounds this to at
+most 93 daily windows. Invalid clock strings are rejected. Missing spring-forward
+clock times skip that day's window; repeated times use the existing earlier
+occurrence policy. No provider calls, new polling, email preference changes,
+schema changes or history rewrites. Rider draft instants carry a clock preference
+only; new selections use a fixed non-DST-transition reference date so selecting
+another search day cannot erase the clock preference.
+
+Verification on 25 October: `npm test` passed 167 tests, `npm run lint` and
+`npm run build` passed. The browser command above passed at 320/390/844/1440px,
+with all APIs mocked: independent date/time selection, Reset/Escape cancellation,
+reload then Home-to-Find draft restoration, no driver Any date option, correct
+request payload and no overflow/page exceptions. The first run incorrectly
+expected reload to bypass Home; the corrected test follows existing navigation.
+Whole-screen mobile/desktop forms and date pickers were visually reviewed;
+Any date uses regular text to match the calendar, with existing selected colours.
+React review retained shared components, explicit confirmation and focus return.
+Physical devices and production frontend deployment remain unverified.
+
+With owner approval and zero accepted/active trips, a private SQLite backup was
+validated and only the API restarted at 03:06 AEDT on 25 October. All 130 ride
+records were preserved; integrity and foreign-key checks passed. Local health
+passed and the public API returned HTTP 200 with a candidates array for
+`departureDate: any, departureTime: 09:00`. No test rides or emails were created.
+A frontend push alone does not establish frontend activation.
+
 ## Owner walkthrough
+
+0. Find a ride: choose Any date and keep Around a time, then try Any time.
+   Reopen Find after reloading and confirm both selections are retained.
 
 1. Find a ride: tap each address, type, pause, select; Back discards an unfinished
    selection. Try Swap and Use my location (allow and deny).

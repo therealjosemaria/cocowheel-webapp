@@ -20,6 +20,10 @@ Driver times must be future; rider Any time is allowed, Around means ±1 hour
 within the selected date. No automatic opening of the next picker. Dates through
 three calendar months; Sydney conversion regardless of browser timezone.
 Departure at least 24 hours away shows date/time; shorter countdowns unchanged.
+Find's calendar includes Any date above the months, confirmed with Done like a
+specific day. Today remains the default and Reset target. Changing date never
+resets time and vice versa; no Any date option in Offer. Keep the choice inside
+the existing picker, not an extra form control.
 
 Address search results float above the form, matching the field width, without
 layout shift. Explicit Search remains unchanged. Reuse one shared portal panel

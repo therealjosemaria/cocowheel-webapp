@@ -53,6 +53,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Find's Any date calendar choice reuses secondary-button geometry, regular text and a 44px
+  minimum target, with 12px below it. Selected uses existing ink/surface colours,
+  matching selected calendar days. No new palette or main-form row.
+
 - Calendar-led Find/Offer setup (25 October) uses a centred 680px-max form and
   side-by-side endpoints with Swap between them. Below 700px remove only the
   enclosing panel's vertical borders, corner radius and horizontal inset;

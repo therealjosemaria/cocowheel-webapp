@@ -16,7 +16,10 @@ Departure dates run from today through three calendar months ahead in Sydney
 time, clamped at month ends. Driver time is an actual clock time in half-hour
 steps, validated as future at submission; it no longer shifts with submission.
 Riders default to Today / Any time, optionally Around a time (±1 hour within the
-selected day). API date filtering precedes the 50-result limit. Old API searches
+selected day). Find also offers Any date, independently of Any time or Around a
+time; changing either preference preserves the other. Any date covers Sydney
+today through the same three-month horizon, applying the chosen time window on
+each day. Offer still requires a specific date/time. API date/time filtering precedes the 50-result limit. Old API searches
 without a date retain their original behaviour. Email review uses the suggested
 offer's date. At least 24 hours ahead, departure readouts show date/time instead
 of a long hour countdown. See [calendar contract and checks](docs/CALENDAR_SEARCH_2026-10-25.md).

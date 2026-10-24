@@ -37,7 +37,7 @@ export function SearchSheet({ label, close, children }: { label: string; close: 
   </div>, document.body);
 }
 
-function DatePicker({ value, close, confirm }: { value: string; close: () => void; confirm: (value: string) => void }) {
+function DatePicker({ value, optional, close, confirm }: { value: string; optional: boolean; close: () => void; confirm: (value: string) => void }) {
   const [draft, setDraft] = useState(value);
   const today = sydneyDateTime().date;
   const last = lastDepartureDate();
@@ -49,6 +49,7 @@ function DatePicker({ value, close, confirm }: { value: string; close: () => voi
     day = next.toISOString().slice(0, 10);
   }
   return <SearchSheet label="Departure date" close={close}>
+    {optional && <button type="button" className="secondary calendar-any-date" aria-pressed={draft === "any"} onClick={() => setDraft("any")}>Any date</button>}
     <div className="calendar-months">{months.map(month => {
       const first = new Date(`${month}T12:00:00Z`);
       const count = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
@@ -87,7 +88,7 @@ function TimePicker({ date, value, optional, close, confirm }: {
       {optional && <button type="button" aria-pressed={draft === ""} onClick={() => setDraft("")}>Any time</button>}
       {Array.from({ length: 48 }, (_, i) => {
         const time = `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`;
-        const instant = sydneyInstant(date, time);
+        const instant = sydneyInstant(date === "any" ? "2026-01-15" : date, time);
         return <button key={time} type="button" aria-pressed={draft === time}
           disabled={!instant || (!optional && Date.parse(instant) <= now)} onClick={() => setDraft(time)}>{timeCaption(time)}</button>;
       })}
@@ -102,9 +103,9 @@ export default function ScheduleFields({ date, time, setDate, setTime, optional 
 }) {
   const [picker, setPicker] = useState<"date" | "time" | null>(null);
   return <div className="schedule-fields">
-    <button type="button" className="secondary schedule-field" aria-label={`Departure date: ${dateCaption(date)}`} aria-haspopup="dialog" onClick={() => setPicker("date")}><RideFieldLabel icon="departure">{dateCaption(date)}</RideFieldLabel></button>
+    <button type="button" className="secondary schedule-field" aria-label={`Departure date: ${date === "any" ? "Any date" : dateCaption(date)}`} aria-haspopup="dialog" onClick={() => setPicker("date")}><RideFieldLabel icon="departure">{date === "any" ? "Any date" : dateCaption(date)}</RideFieldLabel></button>
     <button type="button" className="secondary schedule-field" aria-label={`Departure time: ${time ? timeCaption(time) : "Any time"}`} aria-haspopup="dialog" onClick={() => setPicker("time")}><RideFieldLabel icon="pickup-time">{time ? `${optional ? "Around " : ""}${timeCaption(time)}` : optional ? "Any time" : "Choose a time"}</RideFieldLabel></button>
-    {picker === "date" && <DatePicker value={date} close={() => setPicker(null)} confirm={value => { setDate(value); setPicker(null); }} />}
+    {picker === "date" && <DatePicker value={date} optional={optional} close={() => setPicker(null)} confirm={value => { setDate(value); setPicker(null); }} />}
     {picker === "time" && <TimePicker date={date} value={time} optional={optional} close={() => setPicker(null)} confirm={value => { setTime(value); setPicker(null); }} />}
   </div>;
 }

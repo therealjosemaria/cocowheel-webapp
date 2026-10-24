@@ -149,6 +149,34 @@ test("calendar searches filter before the result limit and retain legacy discove
   } finally { h.close(); }
 });
 
+test("any-date search keeps independent time filtering before the result limit", () => {
+  const h = harness();
+  try {
+    // More than one page of off-time results must not hide a later match.
+    for (let i = 0; i < 51; i++) publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2026-10-02T06:00:00Z" }, baseTime);
+    const morning = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2026-10-05T22:00:00Z" }, baseTime); // 9am AEDT
+    const last = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2026-12-31T23:00:00Z" }, baseTime); // 10am final day
+    const query = { pickup: driverInput.origin, destination: driverInput.destination, requestedDepartureAt: baseTime.toISOString(), departureDate: "any" };
+    assert.equal(searchRides(h.db, query, baseTime).length, 50);
+    assert.deepEqual(searchRides(h.db, { ...query, departureTime: "09:00" }, baseTime).map(r => r.rideId), [morning.ride.rideId, last.ride.rideId]);
+    assert.equal(searchRides(h.db, { ...query, departureTime: "00:00" }, baseTime).length, 0);
+    for (const departureTime of ["25:00", "9:00", "invalid"]) {
+      assert.throws(() => searchRides(h.db, { ...query, departureTime }, baseTime), /INVALID_REQUEST_TIME/);
+    }
+    assert.throws(() => publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "any" }, baseTime));
+  } finally { h.close(); }
+});
+
+test("any-date search uses Sydney day boundaries and skips missing DST clock times", () => {
+  const h = harness();
+  try {
+    const normal = publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2026-10-02T16:30:00Z" }, baseTime); // Oct 3, 2:30am
+    publishRide(h.db, null, { ...driverInput, scheduledDepartureAt: "2026-10-03T16:30:00Z" }, baseTime); // Oct 4, 3:30am (2:30 missing)
+    const query = { pickup: driverInput.origin, destination: driverInput.destination, requestedDepartureAt: baseTime.toISOString(), departureDate: "any", departureTime: "02:30" };
+    assert.deepEqual(searchRides(h.db, query, baseTime).map(r => r.rideId), [normal.ride.rideId]);
+  } finally { h.close(); }
+});
+
 test("accepted future offers survive inactivity until departure plus 24 hours", () => {
   const h = harness();
   try {

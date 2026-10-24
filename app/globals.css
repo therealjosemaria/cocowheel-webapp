@@ -3167,6 +3167,8 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
 .search-sheet-actions { display: flex; gap: 12px; padding-top: 16px; flex-shrink: 0; }
 .search-sheet-actions button { flex: 1; margin: 0; }
 .calendar-months, .clock-options { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.calendar-any-date { flex-shrink: 0; margin: 0 0 12px; font-weight: var(--weight-regular); }
+.calendar-any-date[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .calendar-month h3 { text-align: center; margin: 16px 0; font-size: var(--text-body); }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .calendar-grid span { text-align: center; font-size: var(--text-small); color: var(--muted); }

@@ -272,6 +272,12 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.equal((otherDate.body.candidates as unknown[]).length, 0);
     const invalidDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "invalid" });
     assert.equal(invalidDate.response.status, 400);
+    const anyDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any" });
+    assert.equal(anyDate.response.status, 200);
+    assert.equal((anyDate.body.candidates as unknown[]).length, 1);
+    const anyDateTime = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any", departureTime: sydneyDateTime(new Date(Date.now() + 5 * 60000)).time });
+    assert.equal(anyDateTime.response.status, 200);
+    assert.equal((anyDateTime.body.candidates as unknown[]).length, 1);
     const riderCreate = await json(
       `${base}/api/rides/${driverRide.rideId}/requests`,
       "POST",

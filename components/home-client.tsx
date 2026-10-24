@@ -866,8 +866,9 @@ export default function HomeClient({
         <RiderForm
           date={riderDate}
           time={riderTime ? sydneyDateTime(riderTime).time : ""}
-          setDate={date => { setRiderDate(date); if (riderTime) setRiderTime(sydneyInstant(date, sydneyDateTime(riderTime).time)); }}
-          setTime={time => setRiderTime(time ? sydneyInstant(riderDate, time) : null)}
+          setDate={setRiderDate}
+          // The stored instant carries a Sydney wall-clock preference, not a booking date.
+          setTime={time => setRiderTime(time ? sydneyInstant("2026-01-15", time) : null)}
           setOrigin={(pin) => {
             if (!pin) clearRiderSearchDraft();
             setCandidates([]);

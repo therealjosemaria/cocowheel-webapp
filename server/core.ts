@@ -17,7 +17,7 @@ import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
 import { validFare } from "../lib/fare";
-import { lastDepartureDate, scheduleDayBounds, sydneyDateTime, sydneyInstant } from "../lib/ride-schedule";
+import { calendarDay, lastDepartureDate, scheduleDayBounds, sydneyDateTime, sydneyInstant } from "../lib/ride-schedule";
 import { allowFreeRideFares } from "./free-ride-schema";
 import {
   atDropoff,
@@ -1090,9 +1090,22 @@ export function searchRides(
     sydneyDateTime(requested).date > lastDepartureDate(now)
   )
     throw new Error("INVALID_REQUEST_TIME");
-  let bounds: [string, string] | null = null;
-  if (input.departureDate !== undefined) {
-    bounds = scheduleDayBounds(input.departureDate);
+  const windows: [string, string][] = [];
+  if (input.departureDate === "any") {
+    const today = sydneyDateTime(now).date;
+    const last = lastDepartureDate(now);
+    if (input.departureTime) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.departureTime)) throw new Error("INVALID_REQUEST_TIME");
+      for (let date = today; date <= last; date = calendarDay(date, 1)) {
+        const bounds = scheduleDayBounds(date)!;
+        const center = sydneyInstant(date, input.departureTime);
+        // A missing spring-forward clock time has no matching window that day.
+        if (center) windows.push([new Date(Math.max(Date.parse(bounds[0]), Date.parse(center) - 3600000)).toISOString(),
+          new Date(Math.min(Date.parse(bounds[1]), Date.parse(center) + 3600000 + 1)).toISOString()]);
+      }
+    } else windows.push([scheduleDayBounds(today)![0], scheduleDayBounds(last)![1]]);
+  } else if (input.departureDate !== undefined) {
+    let bounds = scheduleDayBounds(input.departureDate);
     if (!bounds || input.departureDate < sydneyDateTime(now).date || input.departureDate > lastDepartureDate(now))
       throw new Error("INVALID_REQUEST_TIME");
     if (input.departureTime) {
@@ -1101,14 +1114,15 @@ export function searchRides(
       bounds = [new Date(Math.max(Date.parse(bounds[0]), Date.parse(center) - 3600000)).toISOString(),
         new Date(Math.min(Date.parse(bounds[1]), Date.parse(center) + 3600000 + 1)).toISOString()];
     }
+    windows.push(bounds);
   } else if (input.departureTime !== undefined) throw new Error("INVALID_REQUEST_TIME");
   const rows = db
     .prepare(
       "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED')" +
-      (bounds ? " AND scheduled_departure_at >= ? AND scheduled_departure_at < ?" : "") +
+      (windows.length ? ` AND (${windows.map(() => "(scheduled_departure_at >= ? AND scheduled_departure_at < ?)").join(" OR ")})` : "") +
       " ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
-    .all(...(bounds ?? [])) as RideRow[];
+    .all(...windows.flat()) as RideRow[];
   const session = rawSessionToken
     ? findSession(db, rawSessionToken, now)
     : null;
