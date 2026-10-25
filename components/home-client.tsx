@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import { FindRiders, PostRideRequest } from "./rider-demands";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import ScheduleFields from "./schedule-fields";
 import { RouteRequiredPrompt } from "./ride-journey-controls";
@@ -1005,6 +1006,7 @@ function DriverForm(props: {
 }) {
   const payIdRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
+  const [findingRiders, setFindingRiders] = useState(false);
   const submit = () => {
     if (!props.pins.origin || !props.pins.destination) {
       props.submit();
@@ -1027,9 +1029,10 @@ function DriverForm(props: {
       return;
     props.submit();
   };
+  if (findingRiders) return <FindRiders origin={props.pins.origin} destination={props.pins.destination} back={() => setFindingRiders(false)} />;
   return (
     <div className="form-page">
-      <h1 className="page-title">Offer a ride</h1>
+      <div className="demand-heading"><h1 className="page-title">Offer a ride</h1><button type="button" className="text-button" onClick={() => setFindingRiders(true)}>Find riders</button></div>
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.origin} destination={props.pins.destination}
@@ -1074,6 +1077,7 @@ function RiderForm(props: {
   if (props.selectionOpen && props.pins.pickup && props.pins.destination) {
     return (
       <RideSelection
+        date={props.date} time={props.time}
         pickup={props.pins.pickup}
         destination={props.pins.destination}
         riderRoute={props.routePoints}
@@ -1141,6 +1145,7 @@ function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds }: {
 }
 
 function RideSelection({
+  date, time,
   pickup,
   destination,
   riderRoute,
@@ -1153,6 +1158,7 @@ function RideSelection({
   searching,
   back,
 }: {
+  date: string; time: string;
   pickup: Pin;
   destination: Pin;
   riderRoute?: Pin[] | null;
@@ -1375,7 +1381,7 @@ function RideSelection({
         </span>
       </div>
       <section className="ride-options" aria-live="polite">
-        <h1>Choose a ride</h1>
+        <div className="demand-heading"><h1>Choose a ride</h1><PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} /></div>
         {searching ? null : visibleCandidates.length ? (
           <div className="ride-option-list">
             {visibleCandidates.map((candidate) => {

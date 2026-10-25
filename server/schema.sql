@@ -93,6 +93,25 @@ CREATE INDEX IF NOT EXISTS rides_discovery_index ON rides(status, scheduled_depa
 CREATE INDEX IF NOT EXISTS ride_requests_rider_index ON ride_requests(rider_session_id, status);
 CREATE INDEX IF NOT EXISTS ride_requests_ride_index ON ride_requests(ride_id, status);
 
+CREATE TABLE IF NOT EXISTS rider_demands (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL REFERENCES guest_sessions(id),
+  body TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('OPEN','CANCELLED','FULFILLED','EXPIRED')),
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS rider_demands_one_open ON rider_demands(owner_id) WHERE status='OPEN';
+CREATE INDEX IF NOT EXISTS rider_demands_discovery ON rider_demands(status, expires_at);
+CREATE TABLE IF NOT EXISTS rider_demand_offers (
+  id TEXT PRIMARY KEY,
+  demand_id TEXT NOT NULL REFERENCES rider_demands(id),
+  ride_id TEXT NOT NULL UNIQUE REFERENCES rides(id),
+  status TEXT NOT NULL CHECK(status IN ('PENDING','ACCEPTED','DECLINED')),
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS rider_demand_offers_request ON rider_demand_offers(demand_id);
+
 -- External map-provider responses are reusable but temporary. These tables are
 -- intentionally independent from a guest's ride history and clean themselves
 -- after seven days.

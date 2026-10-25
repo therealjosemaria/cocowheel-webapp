@@ -648,6 +648,33 @@ button:disabled {
   height: 16px;
   flex: 0 0 16px;
 }
+.demand-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.demand-heading > h1 { margin-bottom: 0; }
+.demand-heading > .text-button { flex: 0 0 auto; font-size: var(--text-small); min-height: 44px; margin: 0; }
+.demand-map { height: 260px; overflow: hidden; border-radius: var(--radius-control); }
+.demand-prompt { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.demand-prompt > .demand-fields, .demand-prompt > .save-route-profile-note { margin-block: 16px; }
+.demand-fields > div:last-child { grid-column: 1 / -1; }
+.demand-actions { padding: 12px; }
+.demand-actions > button { min-width: 0; }
+.demand-single-action > button { grid-column: 1 / -1; }
+.demand-page .activity-card, .demand-activity .activity-card { padding-top: 0; }
+.demand-page .activity-card + .activity-card { margin-top: 16px; }
+.demand-prompt .demand-fields { grid-template-columns: 1fr; }
+.demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }
+.demand-activity { display: grid; gap: 16px; scroll-margin-top: 24px; }
+.demand-activity h2 { font-size: var(--text-body); margin: 0; }
+.demand-activity summary { cursor: pointer; padding: 12px; font-size: var(--text-small); }
+.demand-activity .save-route-profile-note, .demand-activity .activity-card > p,
+.demand-activity .activity-card > .text-button, .demand-activity .activity-card > .secondary,
+.demand-activity .activity-card > .ride-field-label { margin: 12px; }
+.demand-offer { border-top: 1px solid var(--line); padding: 12px; font-size: var(--text-small); }
+.demand-offer .demand-actions { padding: 12px 0 0; }
+.demand-page .activity-card > .participant-name { margin: 12px; }
+@media (max-width: 600px) {
+  .demand-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .demand-heading > .text-button { padding-left: 0; }
+}
 .activity-card-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -961,6 +988,11 @@ p {
   padding: 18px 16px 16px;
   border-bottom: 1px solid var(--line);
 }
+.form-page > .demand-heading {
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.form-page > .demand-heading .page-title { max-width: none; margin: 0; }
 .form-panel-content {
   padding: 18px 14px 14px;
 }

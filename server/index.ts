@@ -4,6 +4,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import type { Db } from "./core";
+import { postDemand, demandActivity, searchDemands, cancelDemand, offerDemand, respondToDemandOffer, pendingDemandOffers } from "./rider-demands";
 import { ratingSummary, submitRating } from "./ratings";
 import {
   readConversation,
@@ -134,6 +135,8 @@ async function readJson(request: IncomingMessage, maxBytes = MAX_BODY_BYTES): Pr
 }
 function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
+  if (code === "DEMAND_NOT_FOUND") return 404;
+  if (["DEMAND_ALREADY_OPEN", "DEMAND_UNAVAILABLE"].includes(code)) return 409;
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
   if (code === "VEHICLE_PLATE_REQUIRED") return 409;
@@ -773,6 +776,7 @@ export function createApiServer(
             current: currents[0] ?? null,
             currents,
             guestAlias: guestAlias(database, token),
+            pendingDemandOffers: pendingDemandOffers(database, token),
           },
           cors,
         );
@@ -817,6 +821,40 @@ export function createApiServer(
           writeJson(response, 200, { vehicle: saveVehicle(database, current.id, body) }, cors);
           return;
         }
+      }
+      if (parts[0] === "api" && parts[1] === "rider-demands") {
+        const owner = requireUniversitySession(database, token);
+        if (parts.length === 2 && request.method === "GET") {
+          writeJson(response, 200, demandActivity(database, token), cors);
+          return;
+        }
+        if (request.method === "POST") {
+          const body = await readJson(request);
+          if (requireUniversitySession(database, token).id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+          if (parts.length === 2) {
+            writeJson(response, 201, { request: postDemand(database, token, body) }, cors);
+            return;
+          }
+          if (parts.length === 3 && parts[2] === "search") {
+            writeJson(response, 200, { requests: searchDemands(database, token, body) }, cors);
+            return;
+          }
+          if (parts.length === 4 && parts[3] === "cancel") {
+            cancelDemand(database, token, parts[2]);
+            writeJson(response, 200, { ok: true }, cors);
+            return;
+          }
+          if (parts.length === 4 && parts[3] === "offer") {
+            writeJson(response, 201, { offer: offerDemand(database, token, parts[2], body) }, cors);
+            return;
+          }
+          if (parts.length === 5 && parts[2] === "offers" && parts[4] === "respond") {
+            writeJson(response, 200, { ride: respondToDemandOffer(database, token, parts[3], body.decision) }, cors);
+            return;
+          }
+        }
+        writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
       }
       if (parts[0] === "api" && parts[1] === "usual-route") {
         const session = requireUniversitySession(database, token);

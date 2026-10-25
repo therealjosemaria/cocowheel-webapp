@@ -4,6 +4,19 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Rider-posted requests: keep Post a ride request in Choose a ride's heading row
+(below the heading on phones), outside ride choices and Save route. Keep Find
+riders as a secondary text action beside/below Offer a ride's heading, available
+before entering addresses. Neither action publishes without explicit review.
+Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
+ContributionChoice, PaymentFields and the existing plate prompt. Driver browsing
+uses independent Any date/time filters; actual offers require a future date/time.
+Only one rider route is shown on the map at once; Show/Hide route remains separate
+from Offer a ride. Activity owns request cancellation and offer acceptance/decline.
+Use existing driver-request-buttons for equal 44px action targets, and the shared
+20px modal action gap. Nested picker dialogs own focus above their parent dialog.
+The empty-history message must not appear alongside posted-request activity.
+
 25 October: [calendar-led setup](CALENDAR_SEARCH_2026-10-25.md) supersedes the
 older Find/Offer address/departure rules below. Shared address sheets are full
 screen on phones and centred dialogs on desktop, with Back/Escape/focus return.

@@ -1589,6 +1589,11 @@ export function decideRequest(
 ) {
   expireStaleRides(db, now);
   const session = requireSession(db, rawSessionToken, now);
+  return decideRequestForDriver(db, session, rideId, requestId, decision, now);
+}
+
+/** Internal service entry: caller must authorize the actor before invoking. */
+export function decideRequestForDriver(db: Db, session: Session, rideId: string, requestId: string, decision: "ACCEPT" | "DECLINE", now = new Date()) {
   const ride = rideRow(db, rideId);
   if (!ride) throw new Error("RIDE_NOT_FOUND");
   requireDriver(ride, session);

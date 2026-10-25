@@ -10,6 +10,12 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+Rider-demand screens reuse the existing typography and map palette. Header
+secondary actions use 14px text with 44px targets; paired actions reuse
+driver-request-buttons (12px labels, 44px minimum height, 8px gap, no primary
+shadow). Request cards have 16px separation; modal route summaries stack to avoid
+crowding narrow screens. Existing line/surface/radius tokens remain unchanged.
+
 Personal details reuses Profile's 14px ink/bold labels and regular values, 12px
 field/content spacing and existing primary/secondary controls. Photo previews
 are 96px circles; compact participant avatars are 24px with a 6px name gap,

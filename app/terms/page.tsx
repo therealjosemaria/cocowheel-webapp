@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      revision={{ date: "2026-10-24", label: "24 October 2026" }}
+      revision={{ date: "2026-10-25", label: "25 October 2026" }}
     >
       <p>
         These terms describe participation in the GUMWHEEL carpool pilot. Please
@@ -22,6 +22,7 @@ export default function TermsPage() {
       <h2>The pilot</h2>
       <p>
         GUMWHEEL helps drivers publish routes and riders request to join them.
+        Riders can also post a journey they need so drivers can offer a ride.
         It does not itself drive passengers or process payments. The pilot is
         open to people with a verified email address. Email verification does not
         mean a university endorses the service or that participants have passed
@@ -33,12 +34,17 @@ export default function TermsPage() {
         impersonate someone, submit misleading information, harass participants,
         misuse their locations or payment details, or attempt to bypass security
         or disrupt the service. One account can have only one active driver
-        offer or rider request at a time, across devices.
+        offer or request to join a ride at a time, across devices. A separate
+        posted journey request does not reserve a ride; only one such request
+        may be open per account.
       </p>
       <h2>Arranging a ride</h2>
       <p>
         A request is not a confirmed pickup. The driver chooses whether to
-        accept one rider. Confirm the pickup point, destination and displayed
+        accept one rider. When a driver responds to a posted journey request,
+        the rider instead accepts or declines that offer. Responding also
+        publishes the driver’s ride for others to find; availability is checked
+        again at acceptance. Confirm the pickup point, destination and displayed
         fare together. The rider shares the pickup code only when meeting the
         intended driver; the driver enters it to start the ride. The code is a
         coordination step, not proof of safety or identity.
@@ -48,7 +54,8 @@ export default function TermsPage() {
         After pickup confirmation, either participant can mark the ride
         complete. Completing or cancelling a ride does not prove payment, issue
         a refund or erase its history. Available offers can expire
-        automatically.
+        automatically. You can cancel a posted journey request in Activity;
+        doing so, or declining an offer, does not cancel the driver’s public ride.
       </p>
       <h2>Safety and responsibility</h2>
       <p>

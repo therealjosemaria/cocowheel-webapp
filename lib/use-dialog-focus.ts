@@ -6,12 +6,14 @@ export function useDialogFocus(
   ref: RefObject<HTMLElement | null>,
   close: () => void,
   busy = false,
+  enabled = true,
 ) {
   const state = useRef({ close, busy });
   useEffect(() => {
     state.current = { close, busy };
   }, [close, busy]);
   useEffect(() => {
+    if (!enabled) return;
     const dialog = ref.current;
     if (!dialog) return;
     const previous = document.activeElement;
@@ -23,6 +25,10 @@ export function useDialogFocus(
       );
     (buttons()[0] ?? dialog).focus();
     const keyboard = (event: KeyboardEvent) => {
+      // A picker or confirmation can be opened above a dialog. Only the top
+      // dialog owns keyboard trapping; the underlying form keeps its draft.
+      const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]');
+      if (dialogs.length && dialogs[dialogs.length - 1] !== dialog) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -57,5 +63,5 @@ export function useDialogFocus(
       if (previous instanceof HTMLElement && previous.isConnected)
         previous.focus({ preventScroll: true });
     };
-  }, [ref]);
+  }, [ref, enabled]);
 }

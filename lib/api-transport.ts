@@ -18,6 +18,19 @@ export function apiErrorMessage(
   error: unknown,
   fallback = "We couldn’t complete that action. Please try again.",
 ) {
+  if (error instanceof ApiError) {
+    const messages: Record<string, string> = {
+      DEMAND_ALREADY_OPEN: "You already have a posted request. Manage it in Activity.",
+      DEMAND_UNAVAILABLE: "This request or offer is no longer available. Refresh to see the latest details.",
+      DEMAND_NOT_FOUND: "This request is no longer available.",
+      DEMAND_ROUTE_INCOMPATIBLE: "This rider is outside your route. Try another request.",
+      REQUEST_TIME_INCOMPATIBLE: "Choose a departure within the rider’s requested time window.",
+      INVALID_REQUEST_TIME: "Choose a valid future date and time, or Any date and Any time.",
+      INVALID_DEMAND: "Choose both addresses before continuing.",
+      OPEN_ITEM_EXISTS: "You already have an open ride or request. Manage it in Activity first.",
+    };
+    if (messages[error.code]) return messages[error.code];
+  }
   if (error instanceof ApiError && error.code === "INVALID_VEHICLE_PLATE")
     return PLATE_ERROR;
   return error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE"

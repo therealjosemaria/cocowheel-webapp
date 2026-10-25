@@ -152,9 +152,11 @@ export default function VehicleDetails() {
 export function VehiclePlatePrompt({
   close,
   confirm,
+  submitLabel = "Save & accept",
 }: {
   close: () => void;
   confirm: (plate: string) => Promise<void>;
+  submitLabel?: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   const [plate, setPlate] = useState("");
@@ -184,7 +186,7 @@ export function VehiclePlatePrompt({
               setError(
                 apiErrorMessage(
                   reason,
-                  "We couldn’t accept this rider. Please try again.",
+                  "We couldn’t complete that action. Please try again.",
                 ),
               );
             } finally {
@@ -202,7 +204,7 @@ export function VehiclePlatePrompt({
           {error && <p role="alert">{error}</p>}
           <div className="cancel-prompt-actions">
             <button className="primary" disabled={busy || !plate.trim()}>
-              {busy ? "Saving…" : "Save & accept"}
+              {busy ? "Saving…" : submitLabel}
             </button>
             <button
               type="button"

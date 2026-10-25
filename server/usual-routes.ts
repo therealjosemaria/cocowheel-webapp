@@ -172,7 +172,7 @@ export function saveSearchRoute(db: Db, principal: string, body: Record<string, 
 export function corridorMatches(
   origin: Pin,
   destination: Pin,
-  route: UsualRoute,
+  route: Pick<UsualRoute, "origin" | "destination">,
 ) {
   const scale = Math.cos((origin.latitude * Math.PI) / 180);
   const point = (p: Pin) => [

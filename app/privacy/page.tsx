@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-24", label: "24 October 2026" }}
+      revision={{ date: "2026-10-25", label: "25 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL carpool pilot handles
@@ -40,6 +40,15 @@ export default function PrivacyPage() {
         your message and contact details to respond.
       </p>
       <p>
+        Posting a ride request shares its pickup and destination addresses,
+        requested schedule and public username with signed-in people searching
+        for riders. This is separate from your private saved usual route.
+        You can cancel a posted request in Activity. Expired, cancelled and
+        fulfilled requests and driver responses remain in your activity history.
+        Responding as a driver also publishes your offered route for other riders
+        to find. Neither action shares live GPS before a ride is accepted.
+      </p>
+      <p>
         For paid rides, we store your PayID to enable payment. Free rides do not
         store or reveal a ride payment identifier. Riders can see your
         payment preference, but your PayID details remain hidden from them until
@@ -47,7 +56,8 @@ export default function PrivacyPage() {
       </p>
       <p>
         We store the vehicle details you provide to help your rider recognise
-        your car. A number plate is required before accepting a rider; make,
+        your car. A number plate is required before accepting a rider or sending
+        an offer in response to a posted rider request; make,
         model and colour are optional. Vehicle details are not public and are
         shared only with the accepted rider. We retain a copy with that ride’s
         history; later profile edits do not change that copy. These details are
@@ -91,7 +101,8 @@ export default function PrivacyPage() {
         during the active trip, and remains visible to the driver.
       </p>
       <p>
-        Rider request details are shared with the relevant driver and rider, not
+        Requests to join a specific driver’s ride are shared with that driver
+        and the requesting rider, not
         other riders. Driver PayID details become visible to the paired rider
         after pickup confirmation and may remain in their ride history. The
         authorised administrator can inspect records for support and operation,

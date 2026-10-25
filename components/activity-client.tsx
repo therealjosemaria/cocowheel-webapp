@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import { RiderDemandActivity } from "./rider-demands";
 import { fareLabel } from "@/lib/fare";
 import RideStatusText from "./ride-status-text";
 
@@ -35,6 +36,7 @@ export default function ActivityClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
+  const [hasPostedActivity, setHasPostedActivity] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -158,8 +160,9 @@ export default function ActivityClient() {
               ))}
             </section>
           ) : null}
+          <RiderDemandActivity onHasActivity={setHasPostedActivity} />
           {activity.length === 0 ? (
-            current.length ? null : (
+            current.length || hasPostedActivity ? null : (
               <p className="intro">
                 Completed, cancelled, and expired rides will appear here.
               </p>

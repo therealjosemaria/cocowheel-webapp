@@ -28,6 +28,7 @@ export default function AppNavigation() {
     rider: RatingSummary;
   } | null>(null);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
+  const [demandOffers, setDemandOffers] = useState(0);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
   const messageThreads =
@@ -134,8 +135,10 @@ export default function AppNavigation() {
       const activity = await cocowheelsApi<{
         current: ActiveRide | null;
         currents: ActiveRide[];
+        pendingDemandOffers?: number;
       }>("/api/current");
       setActiveRide(activity.current);
+      setDemandOffers(activity.pendingDemandOffers ?? 0);
       window.dispatchEvent(
         new CustomEvent("cocowheels:current-updated", {
           detail: activity.currents,
@@ -144,6 +147,7 @@ export default function AppNavigation() {
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
+        setDemandOffers(0);
         setAccountKey(null);
         setCanAdmin(false);
         setRatings(null);
@@ -291,7 +295,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Profile: ${identityLabel}${updates.length + messageCount ? `, ${updates.length + messageCount} unread updates` : ""}`}
+          aria-label={`Profile: ${identityLabel}${updates.length + messageCount + demandOffers ? `, ${updates.length + messageCount + demandOffers} updates` : ""}`}
           onClick={() => {
             clearTimeout(identityCloseTimer.current);
             setOpen(false);
@@ -309,11 +313,11 @@ export default function AppNavigation() {
           {guestName && (
             <ProfileMenuPhoto key={guestName} username={guestName} />
           )}
-          {updates.length + messageCount > 0 && (
+          {updates.length + messageCount + demandOffers > 0 && (
             <span className="profile-update-badge" aria-hidden="true">
-              {updates.length + messageCount > 99
+              {updates.length + messageCount + demandOffers > 99
                 ? "99+"
-                : updates.length + messageCount}
+                : updates.length + messageCount + demandOffers}
             </span>
           )}
         </button>
@@ -358,6 +362,7 @@ export default function AppNavigation() {
               </div>
             </div>
           )}
+          {guestName && demandOffers > 0 && <Link className="secondary" href="/activity#ride-requests" onClick={() => setIdentityOpen(false)}>{demandOffers} ride offer{demandOffers === 1 ? "" : "s"} to review</Link>}
           {guestName && activeRide && (
             <ActiveRideLink
               item={activeRide}
