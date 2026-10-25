@@ -651,6 +651,7 @@ button:disabled {
 .demand-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .demand-heading > h1 { margin-bottom: 0; }
 .demand-heading > .text-button { flex: 0 0 auto; font-size: var(--text-small); min-height: 44px; margin: 0; }
+.demand-heading.demand-navigation-heading { flex-direction: column; align-items: flex-start; gap: 8px; }
 .demand-map { height: 260px; overflow: hidden; border-radius: var(--radius-control); }
 .demand-prompt { max-height: calc(100dvh - 32px); overflow-y: auto; }
 .demand-prompt > .demand-fields, .demand-prompt > .save-route-profile-note { margin-block: 16px; }

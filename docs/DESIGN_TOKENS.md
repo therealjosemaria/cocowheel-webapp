@@ -15,6 +15,8 @@ secondary actions use 14px text with 44px targets; paired actions reuse
 driver-request-buttons (12px labels, 44px minimum height, 8px gap, no primary
 shadow). Request cards have 16px separation; modal route summaries stack to avoid
 crowding narrow screens. Existing line/surface/radius tokens remain unchanged.
+Discovery's back action stacks above the heading at all widths, left-aligned,
+with an 8px gap and the existing 14px text / 44px target. DOM order matches display.
 Find someone who needs a ride now reuses the quiet centred save-search-route action wrapper below
 Offer a ride (scoped 12px top padding, regular text, 44px target). Standalone save-route
 wrappers retain their 4px padding. The discovery view uses a concise Search button

@@ -12,6 +12,8 @@ below the primary Offer a ride action,
 lets drivers search along entered endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.
 The secondary action has 12px top spacing; discovery uses a concise Search button.
+Discovery's Back to offering (or Edit search from results) sits above the heading,
+left-aligned with a back arrow on mobile and desktop; navigation behaviour is unchanged.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride

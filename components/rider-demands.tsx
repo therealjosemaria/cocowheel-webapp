@@ -244,9 +244,9 @@ export function FindRiders({
   }
   return (
     <div className="form-page demand-page">
-      <div className="demand-heading">
-        <h1 className="page-title">Find someone who needs a ride</h1>
+      <div className="demand-heading demand-navigation-heading">
         <button
+          type="button"
           className="text-button"
           onClick={
             results
@@ -257,8 +257,10 @@ export function FindRiders({
               : back
           }
         >
+          <span aria-hidden="true">← </span>
           {results ? "Edit search" : "Back to offering"}
         </button>
+        <h1 className="page-title">Find someone who needs a ride</h1>
       </div>
       {results && searched ? (
         <div className="form-panel-content">

@@ -98,12 +98,23 @@ with sync_playwright() as p:
         assert writes[-1]['withdrawLiftRequestId']=='request-1'
         page.goto(BASE+'/?start=driver')
         page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
+        page.wait_for_timeout(300)
+        back=page.get_by_role('button',name='Back to offering',exact=True)
+        heading=page.get_by_role('heading',name='Find someone who needs a ride',exact=True)
+        assert back.bounding_box()['y']+back.bounding_box()['height'] <= heading.bounding_box()['y']
+        assert abs(back.bounding_box()['x']-heading.bounding_box()['x']) < 1
+        back.click()
+        expect(page.get_by_role('button',name='OFFER A RIDE',exact=True)).to_be_visible()
+        page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
+        page.wait_for_timeout(300)
         capture('driver-search')
         page.get_by_role('button',name='SEARCH',exact=True).click()
         page.get_by_role('dialog',name='Route required').get_by_role('button',name='OKAY').click()
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='SEARCH',exact=True).click()
         expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()
+        edit=page.get_by_role('button',name='Edit search',exact=True)
+        assert edit.bounding_box()['y']+edit.bounding_box()['height'] <= heading.bounding_box()['y']
         page.get_by_role('button',name='Show route',exact=True).first.click()
         expect(page.get_by_role('button',name='Hide route',exact=True)).to_have_count(1)
         page.get_by_role('button',name='Show route',exact=True).click()

@@ -12,6 +12,9 @@ button, available before entering addresses. Related alternative actions belong
 together, not beside the page title. Neither action publishes without review.
 Separate the discovery action from Offer a ride with 12px top padding. Inside
 discovery, keep the descriptive heading but use Search for the primary button.
+Back navigation precedes the heading in DOM and visual order, at the top-left,
+not below it. Discovery places Back to offering / Edit search above its heading
+on mobile and desktop, with a decorative left arrow and the existing 44px target.
 Use Your ride request for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
 Post review starts with regular body text: Let drivers know you need a ride.

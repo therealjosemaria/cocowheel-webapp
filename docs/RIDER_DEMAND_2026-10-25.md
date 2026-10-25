@@ -203,6 +203,16 @@ No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
 
+Back-navigation refinement on baseline `a1cc879`: Back to offering and the results
+view's Edit search now precede the discovery heading in DOM and visual order on
+all widths, with a decorative arrow, 8px gap and existing 44px target. No navigation
+handler, API, permission or lifecycle change. The isolated browser script checks
+placement, alignment and returning to Offer a ride, alongside existing flows.
+`scripts/check-rider-demands.py` passed at 320/390/844/1440px with mocked APIs;
+lint and production build passed. Full mobile/desktop discovery screens visually
+reviewed for heading hierarchy, spacing and navigation placement. No API restart
+needed; physical devices and deployed frontend remain unverified.
+
 1. Rider: Find a ride → addresses/date/time → search → Ask for a ride.
    Review visibility/expiry, go back once, then post. Open View your ride request.
 2. Driver (another account): Offer a ride → Find someone who needs a ride, enter a matching route.
