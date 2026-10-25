@@ -241,6 +241,14 @@ No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
 
+26 October, baseline `86b0eda`: discovery's initial back label is now simply
+Back, superseding Back to offering below. Edit search, placement, styling and
+navigation handlers are unchanged. Targeted component ESLint and isolated
+Chromium checks at 390/1440px passed (exact label, above-heading placement,
+return to Offer and no overflow). Whole-screen captures reviewed at both sizes
+for typography, emphasis and spacing. No API restart required; production
+frontend and physical-device checks remain unverified.
+
 Back-navigation refinement on baseline `a1cc879`: Back to offering and the results
 view's Edit search now precede the discovery heading in DOM and visual order on
 all widths, with an 8px gap and existing 44px target. The initial decorative arrow

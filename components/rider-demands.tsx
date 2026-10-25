@@ -253,7 +253,7 @@ export function FindRiders({
               : back
           }
         >
-          {results ? "Edit search" : "Back to offering"}
+          {results ? "Edit search" : "Back"}
         </button>
         <h1 className="page-title">Find someone who needs a ride</h1>
       </div>

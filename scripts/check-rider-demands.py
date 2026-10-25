@@ -101,7 +101,7 @@ with sync_playwright() as p:
         page.goto(BASE+'/?start=driver')
         page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
         page.wait_for_timeout(300)
-        back=page.get_by_role('button',name='Back to offering',exact=True)
+        back=page.get_by_role('button',name='Back',exact=True)
         heading=page.get_by_role('heading',name='Find someone who needs a ride',exact=True)
         assert back.bounding_box()['y']+back.bounding_box()['height'] <= heading.bounding_box()['y']
         assert abs(back.bounding_box()['x']-heading.bounding_box()['x']) < 1
