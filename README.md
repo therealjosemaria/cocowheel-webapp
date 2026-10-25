@@ -4,7 +4,8 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 ## Rider-posted requests (25 October 2026)
 
-Find's results area includes **Ask for a lift** with an explicit address,
+Find's bottom action area includes **Ask for a ride** beside **Save route**, below
+Request to join and outside the ride list, with an explicit address,
 schedule and visibility review. This publishes one request per verified account;
 it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
 below the primary Offer a ride action,
@@ -22,8 +23,8 @@ until acceptance. Profile's existing polling includes a pending-offer badge.
 No new email type, live-GPS discovery or calendar sync is introduced.
 
 The redundant Choose a ride heading is removed. Joining an existing offer now
-says Request to join someone’s ride; posted demand says Your lift request.
-Offering while an open lift request exists requires “Withdraw your lift request
+says Request to join; posted demand says Your ride request.
+Offering while an open ride request exists requires “Withdraw your ride request
 and offer a ride?” with Go back / Withdraw & offer. Consent names the exact
 request ID; withdrawal and publication commit together or both roll back.
 This also applies when responding to another rider. No history is deleted.

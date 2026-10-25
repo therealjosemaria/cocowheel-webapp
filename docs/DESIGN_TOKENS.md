@@ -16,11 +16,13 @@ driver-request-buttons (12px labels, 44px minimum height, 8px gap, no primary
 shadow). Request cards have 16px separation; modal route summaries stack to avoid
 crowding narrow screens. Existing line/surface/radius tokens remain unchanged.
 Find someone who needs a ride now reuses the quiet centred save-search-route action wrapper below
-Offer a ride (scoped 12px top padding, regular text, 44px target). Other save-route
-actions retain their 4px padding. The discovery view uses a concise Search button
-under its descriptive heading. Ask for a lift
-retains its header-action sizing without a redundant heading. Longer join labels
-wrap naturally; do not shrink fonts. Switching uses existing safe/danger modal
+Offer a ride (scoped 12px top padding, regular text, 44px target). Standalone save-route
+wrappers retain their 4px padding. The discovery view uses a concise Search button
+under its descriptive heading. Ask for a ride and Save route share a centred,
+wrapping secondary row below Request to join: 12px top/horizontal gap, regular
+text, equal 44px minimum targets and 8px/12px button padding. Saved-request links
+retain the same target. No duplicate wrapper padding or list placement.
+Switching uses existing safe/danger modal
 buttons and body typography, not a new heading or palette.
 
 Personal details reuses Profile's 14px ink/bold labels and regular values, 12px
@@ -145,8 +147,9 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   Cancel controls; preferences headings retain the existing section typography.
   No new spacing, colour or typography tokens are introduced.
 
-- Find's Save route reuses text-button below Request to join, centred with a 4px
-  top gap and minimum 44px tap target, no border/fill/shadow, regular small text.
+- Find's Save route reuses text-button beside Ask for a ride below Request to join,
+  in the 12px-spaced secondary row described above, with a minimum 44px tap target,
+  no border/fill/shadow and regular text.
   It remains outside results. Consent/replacement reuse cancel-prompt,
   left-aligned body text; the Profile note uses small/muted/regular tokens after
   a single line break, with no extra paragraph gap.

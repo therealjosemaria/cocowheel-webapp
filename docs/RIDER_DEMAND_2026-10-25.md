@@ -5,8 +5,8 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
-- Find a ride retains its existing form and search. Ask for a lift sits above
-  listings, below the map/legend; the Choose a ride heading is now removed.
+- Find a ride retains its existing form and search. Ask for a ride sits beside
+  Save route below Request to join, outside listings; no Choose a ride heading.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
 - Offer a ride includes Find someone who needs a ride below its primary action. It copies already-entered
@@ -41,7 +41,7 @@ do not need withdrawal. No new schema, TTL or active-ride rule. Legacy saved-rou
 publication also encounters the core consent gate, but has no new UI shortcut.
 Self-discovery, self-offering and self-joining remain blocked server-side.
 
-Visible copy uses lift request / Withdrawn; internal identifiers and CANCELLED
+Visible copy now uses ride request / Withdrawn; internal identifiers and CANCELLED
 remain unchanged. Review uses a regular sentence, Post request / Go back, with
 no redundant title. Activity remains above completed ride history. No new tab.
 
@@ -178,10 +178,33 @@ The earlier restart record above applies only to the base feature: this new
 backend consent gate still needs a separately authorized API restart. A push
 does not verify frontend deployment.
 
+## Secondary-action refinement (25 October 2026)
+
+Baseline `e2a76d0`: restored Request to join in chooser and public preview.
+Ask for a ride now sits beside Save route in the bottom action area, outside
+results and their live region. Both remain independent: posting reviews the
+public request; saving preserves its private-route/email-consent flow.
+Visible lift wording becomes ride in posting, Activity and switch/withdrawal
+dialogs. Internal identifiers/API payloads, backend gates and history are unchanged.
+No API restart is required for this copy/layout change; the earlier backend
+activation remains pending separately.
+
+Checks: `npm test` passed 177/177; lint and production build passed. The browser
+commands above verify adjacent 44px targets outside results, independent saved
+route handling, posting review/focus return and Activity wording. Join/message
+entry checks passed chooser/preview at 320/393/1440px. Initial browser launch
+failed because local :3201 was stopped; started only the local frontend. An initial
+geometry assertion sampled the entrance animation; waiting 300ms before measuring
+resolved it without changing the UI. Screenshots reviewed populated/empty chooser,
+review dialogs and Activity on mobile/desktop. External maps/photos are blocked
+fixtures, not production rendering evidence. Calendar/save-route/usual-route
+legacy selectors updated only; those separate scripts were not rerun this pass.
+No production writes; physical devices and deployed frontend remain unverified.
+
 ## Manual walkthrough
 
-1. Rider: Find a ride → addresses/date/time → search → Ask for a lift.
-   Review visibility/expiry, go back once, then post. Open View your lift request.
+1. Rider: Find a ride → addresses/date/time → search → Ask for a ride.
+   Review visibility/expiry, go back once, then post. Open View your ride request.
 2. Driver (another account): Offer a ride → Find someone who needs a ride, enter a matching route.
    Search Any date/time; try narrower filters. Show route on two different cards:
    only the latest should remain shown. Editing search does not publish anything.

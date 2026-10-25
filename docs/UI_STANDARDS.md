@@ -4,18 +4,19 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
-Rider-posted requests: Ask for a lift sits below the map/legend and above listings,
-outside ride choices and Save route, without the former Choose a ride heading.
+Rider-posted requests: Ask for a ride sits beside Save route below Request to join,
+outside the ride list. Both are quiet, independent secondary actions; neither
+belongs in the list or empty-state component. No Choose a ride heading.
 Keep Find someone who needs a ride as a quiet secondary text action below the primary Offer a ride
 button, available before entering addresses. Related alternative actions belong
 together, not beside the page title. Neither action publishes without review.
 Separate the discovery action from Offer a ride with 12px top padding. Inside
 discovery, keep the descriptive heading but use Search for the primary button.
-Use Your lift request for posted demand and Request to join someone’s ride for
-joining a specific offer (supersedes the shorter join wording below).
-Post review starts with regular body text: Let drivers know you need a lift.
+Use Your ride request for posted demand and Request to join for joining a specific
+offer. This supersedes the earlier lift terminology and longer join label.
+Post review starts with regular body text: Let drivers know you need a ride.
 No redundant title. Post request / Go back retains the shared modal action group.
-Switching to driver asks Withdraw your lift request and offer a ride? with safe
+Switching to driver asks Withdraw your ride request and offer a ride? with safe
 Go back first and danger Withdraw & offer second. Preserve form details on failure.
 Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
 ContributionChoice, PaymentFields and the existing plate prompt. Driver browsing
@@ -111,7 +112,7 @@ Omit the routine-privacy helper sentence; saved-route privacy is unchanged.
 Usual route and Matching ride alerts both use RideFieldLabel in matching H2s,
 with existing monochrome route/rider icons, equal sizing and icon/text gaps.
 
-Find's Save route is a centred text-style button below Request to join in the
+Find's Save route is a text-style button beside Ask for a ride below Request to join in the
 bottom action area, separate from ride results/empty-state messaging. No border,
 fill or shadow; reuse small muted regular text and a minimum 44px tap target.
 Same addresses become disabled Route saved on that

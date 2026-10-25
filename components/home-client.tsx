@@ -1390,7 +1390,6 @@ function RideSelection({
         </span>
       </div>
       <section className="ride-options" aria-live="polite">
-        <div className="demand-heading"><PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} /></div>
         {searching ? null : visibleCandidates.length ? (
           <div className="ride-option-list">
             {visibleCandidates.map((candidate) => {
@@ -1439,9 +1438,12 @@ function RideSelection({
           disabled={busy || !selectedCandidate}
           onClick={() => request()}
         >
-          {busy ? "REQUESTING…" : "REQUEST TO JOIN SOMEONE’S RIDE"}
+          {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
         </button>
-        <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
+        <div className="save-search-route ride-search-secondary-actions">
+          <PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} />
+          <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
+        </div>
       </div>
     </div>
   );

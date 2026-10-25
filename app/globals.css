@@ -3126,6 +3126,21 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
   text-align: center;
 }
 .save-search-route.driver-discovery-action { padding-top: 12px; }
+.ride-search-secondary-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  padding-top: 12px;
+}
+.ride-search-secondary-actions > .save-search-route { padding: 0; }
+.ride-search-secondary-actions > .text-button {
+  margin: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-weight: var(--weight-regular);
+}
 .save-search-route > button {
   margin: 0;
   min-height: 44px;

@@ -69,13 +69,13 @@ with sync_playwright() as p:
         page.get_by_placeholder('Where to?', exact=True).fill('University')
         page.locator('.place-search').last.get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=destination['label'], exact=True).click()
-        expect(page.get_by_role('button', name='Ask for a lift', exact=True)).to_have_count(0)
+        expect(page.get_by_role('button', name='Ask for a ride', exact=True)).to_have_count(0)
         page.get_by_placeholder('Where from?', exact=True).fill('Town Hall')
         page.locator('.place-search').first.get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
         assert state['searches'][-1]['countryCode'] == 'au'
         assert state['searches'][-1]['bias'] == {'latitude':destination['latitude'], 'longitude':destination['longitude']}
-        expect(page.get_by_role('button', name='Ask for a lift', exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Ask for a ride', exact=True)).to_be_visible()
         expect(page.locator('.ride-option')).to_have_count(1)
         expect(page.locator('.ride-option-departure')).to_have_text('Departs in 1 hr')
         expect(page.locator('.ride-option-main small').first).to_contain_text('10 min away')
@@ -97,10 +97,10 @@ with sync_playwright() as p:
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.get_by_placeholder('Where from?', exact=True).fill('Town')
         expect(page.get_by_placeholder('Where from?', exact=True)).to_be_focused()
-        expect(page.get_by_role('button', name='Ask for a lift', exact=True)).to_have_count(0)
+        expect(page.get_by_role('button', name='Ask for a ride', exact=True)).to_have_count(0)
         page.locator('.place-search').first.get_by_role('button', name='Search', exact=True).click()
         page.get_by_role('button', name=origin['label'], exact=True).click()
-        expect(page.get_by_role('button', name='Ask for a lift', exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Ask for a ride', exact=True)).to_be_visible()
         page.goto('http://127.0.0.1:3090/usual-route')
         expect(page.get_by_role('heading', name='Usual route', exact=True)).to_be_visible()
         expect(page.get_by_role('heading', name='Profile', exact=True)).to_be_visible()
@@ -190,7 +190,7 @@ with sync_playwright() as p:
         state['missing'] = False
         page.get_by_role('button', name='Review matching ride', exact=True).click()
         expect(page).to_have_url('http://127.0.0.1:3090/rides/matching-ride')
-        expect(page.get_by_role('button', name='REQUEST TO JOIN SOMEONE’S RIDE', exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='REQUEST TO JOIN', exact=True)).to_be_visible()
         assert not state['offers']
         page.goto('http://127.0.0.1:3090/usual-route')
         page.get_by_role('button', name='Edit route', exact=True).click()
