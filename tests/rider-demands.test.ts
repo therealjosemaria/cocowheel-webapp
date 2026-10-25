@@ -72,6 +72,31 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+test("discovery accepts optional endpoints without weakening publication or access rules", () => {
+  const { db, rider, driver, other } = fixture();
+  const any = { date: "any", time: "" };
+  const far = { latitude: -37.8, longitude: 145 };
+  try {
+    const near = postDemand(db, rider.token, route, now);
+    const distant = postDemand(db, other.token, { ...route, origin: far, destination: far }, now);
+    assert.equal(searchDemands(db, driver.token, any, now).length, 2);
+    assert.deepEqual(searchDemands(db, driver.token, { ...any, origin }, now).map(r => r.id), [near.id]);
+    assert.deepEqual(searchDemands(db, driver.token, { ...any, destination }, now).map(r => r.id), [near.id]);
+    assert.deepEqual(searchDemands(db, rider.token, any, now).map(r => r.id), [distant.id]);
+    assert.equal(searchDemands(db, driver.token, { ...any, origin: { ...origin, latitude: origin.latitude + .02 } }, now).length, 0);
+    assert.equal(searchDemands(db, driver.token, { ...any, destination: { ...destination, latitude: destination.latitude + .03 } }, now).length, 0);
+    assert.equal(searchDemands(db, driver.token, { ...any, date: "2026-10-29" }, now).length, 0);
+    assert.throws(() => searchDemands(db, null, any, now), /VERIFICATION_REQUIRED/);
+    for (const invalid of [null, {}, { latitude: 91, longitude: 0 }, { latitude: 0, longitude: Infinity }]) {
+      assert.throws(() => searchDemands(db, driver.token, { ...any, origin: invalid }, now), /INVALID_DEMAND/);
+    }
+    assert.throws(() => postDemand(db, driver.token, any, now), /INVALID_DEMAND/);
+    assert.throws(() => offerDemand(db, driver.token, near.id, { ...offerBody, origin: undefined }, now), /INVALID_DEMAND/);
+    cancelDemand(db, other.token, distant.id, now);
+    assert.equal(searchDemands(db, driver.token, any, now).length, 1);
+    assert.equal(searchDemands(db, driver.token, any, new Date(+now + 48 * 3600000)).length, 0);
+  } finally { db.close(); }
+});
 test("switching from a lift request requires exact consent and rolls back failed publication", () => {
   const { db, rider, driver } = fixture();
   try {

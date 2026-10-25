@@ -4,7 +4,7 @@ export type Fix = {
   accuracyMeters: number;
 };
 
-export function distanceMeters(a: Fix, b: Fix) {
+export function distanceMeters(a: Omit<Fix, "accuracyMeters"> & Partial<Pick<Fix, "accuracyMeters">>, b: Omit<Fix, "accuracyMeters"> & Partial<Pick<Fix, "accuracyMeters">>) {
   const rad = Math.PI / 180;
   const dLat = (b.latitude - a.latitude) * rad;
   const dLon = (b.longitude - a.longitude) * rad;

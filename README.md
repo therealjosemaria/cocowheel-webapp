@@ -9,11 +9,16 @@ Request to join and outside the ride list, with an explicit address,
 schedule and visibility review. This publishes one request per verified account;
 it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
 below the primary Offer a ride action,
-lets drivers search along entered endpoints before offering a ride. Shared address,
+lets drivers browse without addresses or filter by either or both endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.
 The secondary action has 12px top spacing; discovery uses a concise Search button.
 Discovery's Back to offering (or Edit search from results) sits above the heading,
 left-aligned and text-only on mobile and desktop; navigation behaviour is unchanged.
+Discovery defaults to independent Any date/Any time. A pickup-only filter uses
+1.5km proximity; destination-only uses 2.5km; both retain corridor matching.
+Offering still requires a complete route and concrete departure. When responding
+to a request, missing search endpoints are filled from that request and shown in
+the existing review before confirmation. See the rider-demand guide for checks.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride

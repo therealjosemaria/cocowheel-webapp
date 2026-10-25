@@ -26,6 +26,7 @@ export function RouteFields({
   draftText,
   onDraftText,
   sheet = false,
+  allowClear = false,
 }: {
   origin?: Pin;
   destination?: Pin;
@@ -36,6 +37,7 @@ export function RouteFields({
   draftText?: { origin: string; destination: string };
   onDraftText?: (field: "origin" | "destination", text: string) => void;
   sheet?: boolean;
+  allowClear?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const [swapped, setSwapped] = useState<{ revision: number; origin: string; destination: string } | null>(null);
@@ -51,7 +53,7 @@ export function RouteFields({
     return () => cancelAnimationFrame(frame);
   }, [sheet]);
   if (sheet) return <SheetRouteFields origin={origin} destination={destination}
-    setOrigin={setOrigin} setDestination={setDestination} countryCode={countryCode} />;
+    setOrigin={setOrigin} setDestination={setDestination} countryCode={countryCode} allowClear={allowClear} />;
   return (
     <div className="route-search-fields" ref={container}>
       <PlaceSearch
@@ -112,9 +114,10 @@ export function RouteFields({
   );
 }
 
-function SheetRouteFields({ origin, destination, setOrigin, setDestination, countryCode }: {
+function SheetRouteFields({ origin, destination, setOrigin, setDestination, countryCode, allowClear }: {
   origin?: Pin; destination?: Pin; setOrigin: (pin: Pin | undefined) => void;
   setDestination: (pin: Pin | undefined) => void; countryCode: string;
+  allowClear: boolean;
 }) {
   const [field, setField] = useState<"origin" | "destination" | null>(null);
   const [drafts, setDrafts] = useState({ origin: "", destination: "" });
@@ -133,7 +136,10 @@ function SheetRouteFields({ origin, destination, setOrigin, setDestination, coun
         placeholder={field === "origin" ? "Where from?" : "Where to?"}
         initialValue={drafts[field] || (selected ? locationText(selected) : "")}
         allowCurrentLocation={field === "origin"} bias={field === "destination" ? origin : undefined} countryCode={countryCode}
-        onEdit={text => setDrafts(old => ({ ...old, [field]: text }))}
+        onEdit={text => {
+          setDrafts(old => ({ ...old, [field]: text }));
+          if (allowClear && !text.trim()) (field === "origin" ? setOrigin : setDestination)(undefined);
+        }}
         choose={pin => { (field === "origin" ? setOrigin : setDestination)(pin); setDrafts(old => ({ ...old, [field]: "" })); setField(null); }} />
     </SearchSheet>}
   </div>;

@@ -15,6 +15,7 @@ export type DemandRoute = {
   date: string;
   time: string;
 };
+export type DemandSearch = Pick<DemandRoute, "date" | "time"> & Partial<Pick<DemandRoute, "origin" | "destination">>;
 export type RiderDemand = DemandRoute & {
   id: string;
   alias: string;
@@ -44,6 +45,11 @@ export function checkedDemandRoute(
   value: unknown,
   now = new Date(),
 ): DemandRoute {
+  const route = checkedDemandSearch(value, now);
+  if (!route.origin || !route.destination) throw new Error("INVALID_DEMAND");
+  return { ...route, origin: route.origin, destination: route.destination };
+}
+export function checkedDemandSearch(value: unknown, now = new Date()): DemandSearch {
   if (!value || typeof value !== "object") throw new Error("INVALID_DEMAND");
   const body = value as Record<string, unknown>;
   const pin = (value: unknown): Pin => {
@@ -83,8 +89,8 @@ export function checkedDemandRoute(
   )
     throw new Error("INVALID_REQUEST_TIME");
   return {
-    origin: pin(body.origin),
-    destination: pin(body.destination),
+    ...(body.origin === undefined ? {} : { origin: pin(body.origin) }),
+    ...(body.destination === undefined ? {} : { destination: pin(body.destination) }),
     date: body.date,
     time: body.time,
   };

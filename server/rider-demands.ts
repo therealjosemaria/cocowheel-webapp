@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   checkedDemandRoute,
+  checkedDemandSearch,
   demandExpiry,
   demandWindows,
   type DemandActivity,
@@ -22,6 +23,7 @@ import { publicName } from "./personal-details";
 import { corridorMatches } from "./usual-routes";
 import { readVehicle, saveVehicle, snapshotVehicle } from "./vehicles";
 import { emptyVehicle } from "../lib/vehicle";
+import { distanceMeters } from "../lib/location-tracking";
 
 type Row = {
   id: string;
@@ -199,7 +201,7 @@ export function searchDemands(
   now = new Date(),
 ) {
   const owner = requireUniversitySession(db, token);
-  const route = checkedDemandRoute(body, now);
+  const route = checkedDemandSearch(body, now);
   refresh(db, now);
   const windows = demandWindows(route, now);
   // Iterate until 50 matches, not 50 arbitrary rows before route/time filtering.
@@ -213,7 +215,13 @@ export function searchDemands(
     const candidate = view(db, row);
     if (
       busyOwner(db, row.owner_id) ||
-      !corridorMatches(route.origin, route.destination, candidate)
+      (route.origin && route.destination
+        ? !corridorMatches(route.origin, route.destination, candidate)
+        : route.origin
+          ? distanceMeters(route.origin, candidate.origin) > 1500
+          : route.destination
+            ? distanceMeters(route.destination, candidate.destination) > 2500
+            : false)
     )
       continue;
     const other = demandWindows(candidate, now, candidate.expiresAt);

@@ -15,7 +15,7 @@ with sync_playwright() as p:
     for width in [320,390,844,1440]:
         context=browser.new_context(viewport={'width':width,'height':900})
         page=context.new_page()
-        errors, writes=[],[]
+        errors, writes, searches=[],[],[]
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.route('**/*', lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
         def api(r):
@@ -29,7 +29,9 @@ with sync_playwright() as p:
             elif path=='place-search': data={'places':[origin if 'origin' in r.request.post_data_json['text'] else destination]}
             elif path=='route-preview': data={'points':[origin,destination],'durationSeconds':600}
             elif path=='search': data={'candidates':[],'serverNow':now.isoformat()}
-            elif path=='rider-demands/search': data={'requests':[request,dict(request,id='request-2',alias='rider002')]}
+            elif path=='rider-demands/search':
+                searches.append(r.request.post_data_json)
+                data={'requests':[request,dict(request,id='request-2',alias='rider002')]}
             elif path=='rider-demands' and r.request.method=='GET': data={'requests':[dict(request,offers=[offer])],'sent':[]}
             elif path=='rider-demands' and r.request.method=='POST':
                 writes.append(r.request.post_data_json); data={'request':request}
@@ -109,7 +111,32 @@ with sync_playwright() as p:
         page.wait_for_timeout(300)
         capture('driver-search')
         page.get_by_role('button',name='SEARCH',exact=True).click()
-        page.get_by_role('dialog',name='Route required').get_by_role('button',name='OKAY').click()
+        expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()
+        assert 'origin' not in searches[-1] and 'destination' not in searches[-1]
+        assert searches[-1]['date']=='any' and searches[-1]['time']==''
+        capture('unfiltered-results')
+        page.locator('.demand-page .activity-card').first.get_by_role('button',name='Offer a ride',exact=True).click()
+        unfiltered_offer=page.get_by_role('dialog',name='Offer a ride',exact=True)
+        expect(unfiltered_offer.get_by_text(origin['label'],exact=True)).to_be_visible()
+        expect(unfiltered_offer.get_by_text(destination['label'],exact=True)).to_be_visible()
+        capture('unfiltered-offer')
+        page.keyboard.press('Escape')
+        page.get_by_role('button',name='Edit search',exact=True).click()
+        address('Where from?','origin')
+        page.get_by_role('button',name='SEARCH',exact=True).click()
+        expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()
+        assert searches[-1]['origin']==origin and 'destination' not in searches[-1]
+        capture('pickup-results')
+        page.get_by_role('button',name='Edit search',exact=True).click()
+        page.get_by_role('button',name='Where from?',exact=True).click()
+        page.get_by_role('dialog',name='Where from?',exact=True).get_by_role('textbox').fill('')
+        page.keyboard.press('Escape')
+        address('Where to?','destination')
+        page.get_by_role('button',name='SEARCH',exact=True).click()
+        expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()
+        assert 'origin' not in searches[-1] and searches[-1]['destination']==destination
+        capture('destination-results')
+        page.get_by_role('button',name='Edit search',exact=True).click()
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='SEARCH',exact=True).click()
         expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()

@@ -11,6 +11,7 @@ import {
   demandSchedule,
   type DemandActivity,
   type DemandRoute,
+  type DemandSearch,
   type RiderDemand,
 } from "@/lib/rider-demand";
 import {
@@ -31,7 +32,7 @@ import ParticipantName from "./participant-name";
 import PaymentFields from "./payment-fields";
 import ContributionChoice from "./contribution-choice";
 import { VehiclePlatePrompt } from "./vehicle-details";
-import { Message, RouteRequiredPrompt } from "./ride-journey-controls";
+import { Message } from "./ride-journey-controls";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
 const location = (pin: Pin) =>
@@ -214,17 +215,12 @@ export function FindRiders({
   const [date, setDate] = useState("any");
   const [time, setTime] = useState("");
   const [results, setResults] = useState<RiderDemand[] | null>(null);
-  const [searched, setSearched] = useState<DemandRoute | null>(null);
+  const [searched, setSearched] = useState<DemandSearch | null>(null);
   const [selected, setSelected] = useState<RiderDemand | null>(null);
   const [offer, setOffer] = useState<RiderDemand | null>(null);
   const [busy, setBusy] = useState(false);
-  const [missing, setMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function search() {
-    if (!origin || !destination) {
-      setMissing(true);
-      return;
-    }
     setBusy(true);
     try {
       const route = { origin, destination, date, time };
@@ -263,18 +259,18 @@ export function FindRiders({
       </div>
       {results && searched ? (
         <div className="form-panel-content">
-          <div className="demand-map">
+          {(searched.origin || searched.destination || selected) && <div className="demand-map">
             <JourneyMap
               pins={[
-                searched.origin,
-                searched.destination,
+                ...(searched.origin ? [searched.origin] : []),
+                ...(searched.destination ? [searched.destination] : []),
                 ...(selected ? [selected.origin, selected.destination] : []),
               ]}
               lines={[
-                {
+                ...(searched.origin && searched.destination ? [{
                   points: [searched.origin, searched.destination],
                   ...DRIVER_ROUTE,
-                },
+                }] : []),
                 ...(selected
                   ? [
                       {
@@ -285,17 +281,19 @@ export function FindRiders({
                   : []),
               ]}
             />
-          </div>
+          </div>}
+          {(selected || (searched.origin && searched.destination)) && <>
           <div className="ride-selection-route-key" aria-label="Map route colours">
-            <span><i className="ride-selection-route-driver" aria-hidden="true" />Your route</span>
-            <span><i className="ride-selection-route-rider" aria-hidden="true" />Rider route</span>
+            {searched.origin && searched.destination && <span><i className="ride-selection-route-driver" aria-hidden="true" />Your route</span>}
+            {selected && <span><i className="ride-selection-route-rider" aria-hidden="true" />Rider route</span>}
           </div>
           <p className="save-route-profile-note">
             Approximate routes
           </p>
+          </>}
           {!results.length && (
             <p className="ride-options-empty">
-              No riders looking along this route yet.
+              No matching ride requests.
             </p>
           )}
           {results.map((request) => (
@@ -321,7 +319,7 @@ export function FindRiders({
           {offer && (
             <DemandOfferForm
               request={offer}
-              route={searched}
+              route={{ ...searched, origin: searched.origin ?? offer.origin, destination: searched.destination ?? offer.destination }}
               close={() => setOffer(null)}
             />
           )}
@@ -330,6 +328,7 @@ export function FindRiders({
         <div className="form-panel-content">
           <RouteFields
             sheet
+            allowClear
             origin={origin}
             destination={destination}
             setOrigin={setOrigin}
@@ -351,11 +350,6 @@ export function FindRiders({
           </button>
         </div>
       )}
-      {missing &&
-        createPortal(
-          <RouteRequiredPrompt close={() => setMissing(false)} />,
-          document.body,
-        )}
       {error &&
         createPortal(
           <Message text={error} close={() => setError(null)} />,

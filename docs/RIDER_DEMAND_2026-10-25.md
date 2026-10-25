@@ -11,7 +11,11 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
   that drivers can see the addresses and the expiry. Success links to Activity.
 - Offer a ride includes Find someone who needs a ride below its primary action. It copies already-entered
   endpoints, allows route edits, and defaults to independent Any date/Any time.
-  Both endpoints are required. Browsing requires email verification, not a ride.
+  Endpoints are optional for browsing, which still requires email verification.
+  No endpoints searches all eligible requests; pickup only uses a 1.5km radius,
+  destination only uses a 2.5km radius. Both endpoints use the corridor below.
+  Clearing an address in its existing search sheet removes that discovery filter.
+  Date and time remain independently optional. No automatic GPS lookup occurs.
 - Search shows up to 50 matching, open requests, newest first. Excludes self and
   owners already occupied by an ordinary open driver ride/rider request. Uses the
   same straight-line corridor as matching alerts: ordered pickup/drop-off, 20%
@@ -23,6 +27,14 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
   routes are never implicitly published. Profile settings/alert consent untouched.
 
 ## Lifecycle
+
+Optional discovery filters (26 October): no empty map is rendered before a
+request is selected when both endpoints are absent. A single endpoint shows a
+pin, not an invented route. Show route retains one rider preview at a time.
+Responding fills missing endpoints from the selected request into the existing
+offer review; publication still validates both endpoints, concrete departure,
+matching, fare/PayID, plate and role-switch consent server-side. No automatic
+publication, new schema, GPS access or alert setting change is introduced.
 
 `OPEN → CANCELLED | EXPIRED | FULFILLED`; no deletion. One OPEN demand per owner,
 enforced with a partial unique index. Posting identical data retries idempotently
@@ -88,12 +100,38 @@ message. Native disclosures and normal ride links retain cancellation/history ac
 
 ## API and storage
 
+### Optional-filter verification — 26 October 2026
+
+Against base `284e37d`: `npm test` passed 178 tests; `npm run lint` and
+`npm run build` passed. The first build caught excess-property compatibility in
+the reused distance helper; its input now accepts optional accuracy while keeping
+the same distance calculation, and the build passed on retest.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-rider-demands.py`
+uses mocked APIs and blocks external traffic: blank, pickup-only, destination-only,
+clear-filter and both-endpoint searches, complete offer review, nested date picker,
+plate/role-switch gates, posting and cancellation are covered at 320/390/844/1440px.
+Whole-screen mobile/desktop visual review covers discovery, results and offer
+review, including spacing, typography and map visibility. Map tiles are blocked
+in this isolated run; native Safari and production authenticated journeys are
+not verified by these checks.
+
+With user approval, zero accepted/active trips were confirmed, a private SQLite
+backup taken, and only `cocowheels-api` restarted. Rides (131), requests (77),
+demands (1) and offers (0) were preserved; integrity passed and no foreign-key
+violations were found. The immediate startup health probe preceded the listener;
+the subsequent localhost and public frontend-proxy health checks passed, and
+unauthenticated discovery returned 401. No live records were created for testing.
+This restart also activates the previously committed role-switch consent gate.
+Frontend deployment after push is separate and not claimed verified here.
+
 All new endpoints require a current verified account; mutations recheck identity
 after reading the bounded JSON body. Existing Origin and body-size protections apply.
 
 - `GET /api/rider-demands`: owner requests/received offers and sent offers.
 - `POST /api/rider-demands`: validated origin/destination/date/time.
-- `POST /api/rider-demands/search`: same route filter; no mutation of user intent.
+- `POST /api/rider-demands/search`: optional origin/destination, required date/time
+  values (`any` / empty string mean unrestricted); supplied malformed endpoints
+  reject rather than silently broadening the search. No mutation of user intent.
 - `POST /api/rider-demands/:id/cancel`: owner only.
 - `POST /api/rider-demands/:id/offer`: driver route/departure/fare/PayID/optional plate.
 - `POST /api/rider-demands/offers/:id/respond`: owner ACCEPT/DECLINE.
