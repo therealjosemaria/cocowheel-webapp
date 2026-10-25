@@ -60,6 +60,12 @@ with sync_playwright() as p:
             warning = page.get_by_role('dialog', name='Route required', exact=True)
             expect(warning.get_by_text('Choose where from and where to.', exact=True)).to_be_visible()
             expect(warning.get_by_role('heading')).to_have_count(0)
+            message_box = warning.locator('p').bounding_box()
+            action_box = warning.locator('.cancel-prompt-actions').bounding_box()
+            assert abs(action_box['y'] - message_box['y'] - message_box['height'] - 20) < 1
+            box = warning.bounding_box()
+            assert abs(box['x'] + box['width'] / 2 - width / 2) < 1
+            assert abs(box['y'] + box['height'] / 2 - 450) < 1
             expect(warning.get_by_role('button', name='OKAY')).to_be_focused()
             page.keyboard.press('Tab')
             expect(warning.get_by_role('button', name='OKAY')).to_be_focused()

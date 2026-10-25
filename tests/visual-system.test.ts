@@ -4,6 +4,15 @@ import test from "node:test";
 
 const css = readFileSync("app/globals.css", "utf8");
 
+test("single-message notices use the shared modal action spacing", () => {
+  for (const file of ["components/ride-journey-controls.tsx", "components/location-tracker.tsx"]) {
+    const source = readFileSync(file, "utf8");
+    assert.match(source, /<p>\{(?:text|switchError)\}<\/p>\s*<div className="cancel-prompt-actions">/);
+  }
+  assert.match(css, /\.cancel-prompt-actions\s*\{[^}]*gap: 8px;[^}]*margin-top: 20px;/);
+  assert.match(css, /\.cancel-prompt-backdrop\s*\{[^}]*position: fixed;[^}]*place-items: center;/);
+});
+
 test("help keeps rider-first visible role paths with four steps each", () => {
   const help = readFileSync("app/help/page.tsx", "utf8");
   assert.doesNotMatch(help, /Sign in with your UniKey|For University of Sydney students only/);

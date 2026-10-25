@@ -28,9 +28,11 @@ export function Message({ text, close, label = "Ride update" }: { text: string; 
         aria-label={label}
       >
         <p>{text}</p>
-        <button className="primary" onClick={close}>
-          OKAY
-        </button>
+        <div className="cancel-prompt-actions">
+          <button type="button" className="primary" onClick={close}>
+            OKAY
+          </button>
+        </div>
       </section>
     </div>
   );

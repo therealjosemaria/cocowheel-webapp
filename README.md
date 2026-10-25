@@ -10,6 +10,10 @@ and where to.” with OKAY. It stays on the form, preserves inputs, and makes no
 search/publication request. The ride-preview missing-route fallback reuses it.
 Route validation precedes departure/payment validation; other validation and
 busy-state protections remain. See [route-warning checks](docs/ROUTE_WARNING_2026-10-25.md).
+Single-message notices now use the same action wrapper as other confirmations:
+20px between message and actions, shared button sizing, and unchanged centred
+placement. Location-switch errors follow the same spacing. See the
+[modal spacing audit](docs/MODAL_SPACING_2026-10-25.md).
 
 Find and Offer now share address-search sheets and separate date/time controls.
 Address entry waits 500ms after typing (minimum three characters); results stay

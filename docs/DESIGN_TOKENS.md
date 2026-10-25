@@ -53,6 +53,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Single-action Message and location-error dialogs use cancel-prompt-actions,
+  matching existing confirmations: 20px above actions, 8px between buttons and
+  shared 44px-minimum action sizing. Preserve the centred 420px-max shell with
+  22px inset and 18px viewport gutters. No new spacing or positioning values.
+
 - Find's Any date calendar choice reuses secondary-button geometry, regular text and a 44px
   minimum target, with 12px below it. Selected uses existing ink/surface colours,
   matching selected calendar days. No new palette or main-form row.

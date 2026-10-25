@@ -281,6 +281,11 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   a picker or making a search/publication request. Escape/OKAY restores focus.
 - Use GO BACK to dismiss a non-destructive confirmation: CANCEL could be mistaken for cancelling the ride.
 - Single-action notices use OKAY. Busy actions prevent duplicate submissions and preserve the user's current context on failure.
+- Always wrap notice buttons in the existing modal action group, including a
+  single OKAY: cancel-prompt-actions supplies the 20px message-to-actions gap,
+  8px between actions and shared button sizing. Do not put a bare button directly
+  after the message. This fixes Message/route warnings and location-switch errors
+  without moving centred notices or intentional bottom-sheet/picker layouts.
 - Existing legacy dialogs may still need accessibility work: keyboard focus containment/restoration and Escape handling should be verified when migrating them; do not assume `aria-modal` alone implements these behaviours.
 
 ## Navigation and layout

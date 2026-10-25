@@ -193,13 +193,15 @@ export default function LocationTracker() {
             aria-label="Location update"
           >
             <p>{switchError}</p>
-            <button
-              type="button"
-              className="primary"
-              onClick={() => setSwitchError(null)}
-            >
-              OKAY
-            </button>
+            <div className="cancel-prompt-actions">
+              <button
+                type="button"
+                className="primary"
+                onClick={() => setSwitchError(null)}
+              >
+                OKAY
+              </button>
+            </div>
           </section>
         </div>
       ) : null}
