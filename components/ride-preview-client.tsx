@@ -1113,7 +1113,7 @@ export default function RidePreviewClient({
                           disabled={joining}
                           onClick={() => void joinRide()}
                         >
-                          {joining ? "REQUESTING…" : "REQUEST TO JOIN"}
+                          {joining ? "REQUESTING…" : "REQUEST TO JOIN SOMEONE’S RIDE"}
                         </button>
                       )}
                     </dd>

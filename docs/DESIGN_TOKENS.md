@@ -15,6 +15,13 @@ secondary actions use 14px text with 44px targets; paired actions reuse
 driver-request-buttons (12px labels, 44px minimum height, 8px gap, no primary
 shadow). Request cards have 16px separation; modal route summaries stack to avoid
 crowding narrow screens. Existing line/surface/radius tokens remain unchanged.
+Find someone who needs a ride now reuses the quiet centred save-search-route action wrapper below
+Offer a ride (scoped 12px top padding, regular text, 44px target). Other save-route
+actions retain their 4px padding. The discovery view uses a concise Search button
+under its descriptive heading. Ask for a lift
+retains its header-action sizing without a redundant heading. Longer join labels
+wrap naturally; do not shrink fonts. Switching uses existing safe/danger modal
+buttons and body typography, not a new heading or palette.
 
 Personal details reuses Profile's 14px ink/bold labels and regular values, 12px
 field/content spacing and existing primary/secondary controls. Photo previews

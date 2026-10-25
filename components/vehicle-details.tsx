@@ -153,16 +153,21 @@ export function VehiclePlatePrompt({
   close,
   confirm,
   submitLabel = "Save & accept",
+  externalError,
+  externalBusy = false,
 }: {
   close: () => void;
   confirm: (plate: string) => Promise<void>;
   submitLabel?: string;
+  externalError?: string | null;
+  externalBusy?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   const [plate, setPlate] = useState("");
   const [busy, setBusy] = useState(false);
+  const pending = busy || externalBusy;
   const [error, setError] = useState<string | null>(null);
-  useDialogFocus(ref, close, busy);
+  useDialogFocus(ref, close, pending);
   return (
     <div className="cancel-prompt-backdrop">
       <section
@@ -177,7 +182,7 @@ export function VehiclePlatePrompt({
           className="vehicle-fields"
           onSubmit={async (event) => {
             event.preventDefault();
-            if (busy || !plate.trim()) return;
+            if (pending || !plate.trim()) return;
             setBusy(true);
             setError(null);
             try {
@@ -199,17 +204,17 @@ export function VehiclePlatePrompt({
             value={plate}
             change={setPlate}
             required
-            disabled={busy}
+            disabled={pending}
           />
-          {error && <p role="alert">{error}</p>}
+          {(error || externalError) && <p role="alert">{error || externalError}</p>}
           <div className="cancel-prompt-actions">
-            <button className="primary" disabled={busy || !plate.trim()}>
-              {busy ? "Saving…" : submitLabel}
+            <button className="primary" disabled={pending || !plate.trim()}>
+              {pending ? "Saving…" : submitLabel}
             </button>
             <button
               type="button"
               className="secondary"
-              disabled={busy}
+              disabled={pending}
               onClick={close}
             >
               Go back

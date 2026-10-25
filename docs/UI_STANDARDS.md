@@ -4,10 +4,19 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
-Rider-posted requests: keep Post a ride request in Choose a ride's heading row
-(below the heading on phones), outside ride choices and Save route. Keep Find
-riders as a secondary text action beside/below Offer a ride's heading, available
-before entering addresses. Neither action publishes without explicit review.
+Rider-posted requests: Ask for a lift sits below the map/legend and above listings,
+outside ride choices and Save route, without the former Choose a ride heading.
+Keep Find someone who needs a ride as a quiet secondary text action below the primary Offer a ride
+button, available before entering addresses. Related alternative actions belong
+together, not beside the page title. Neither action publishes without review.
+Separate the discovery action from Offer a ride with 12px top padding. Inside
+discovery, keep the descriptive heading but use Search for the primary button.
+Use Your lift request for posted demand and Request to join someone’s ride for
+joining a specific offer (supersedes the shorter join wording below).
+Post review starts with regular body text: Let drivers know you need a lift.
+No redundant title. Post request / Go back retains the shared modal action group.
+Switching to driver asks Withdraw your lift request and offer a ride? with safe
+Go back first and danger Withdraw & offer second. Preserve form details on failure.
 Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
 ContributionChoice, PaymentFields and the existing plate prompt. Driver browsing
 uses independent Any date/time filters; actual offers require a future date/time.

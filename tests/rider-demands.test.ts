@@ -72,6 +72,36 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+test("switching from a lift request requires exact consent and rolls back failed publication", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    const posted = postDemand(db, rider.token, route, now);
+    assert.throws(() => publishRide(db, rider.token, offerBody, now), /LIFT_REQUEST_WITHDRAWAL_REQUIRED/);
+    assert.throws(() => publishRide(db, rider.token, { ...offerBody, withdrawLiftRequestId: "wrong" }, now), /LIFT_REQUEST_WITHDRAWAL_REQUIRED/);
+    db.exec("CREATE TRIGGER fail_offer BEFORE INSERT ON rides BEGIN SELECT RAISE(ABORT, 'TEST_FAILURE'); END");
+    assert.throws(() => publishRide(db, rider.token, { ...offerBody, withdrawLiftRequestId: posted.id }, now), /TEST_FAILURE/);
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "OPEN");
+    db.exec("DROP TRIGGER fail_offer");
+    cancelDemand(db, rider.token, posted.id, now);
+    const replacement = postDemand(db, rider.token, route, now);
+    assert.throws(() => publishRide(db, rider.token, { ...offerBody, withdrawLiftRequestId: posted.id }, now), /LIFT_REQUEST_WITHDRAWAL_REQUIRED/);
+    publishRide(db, rider.token, { ...offerBody, withdrawLiftRequestId: replacement.id }, now);
+    assert.ok(demandActivity(db, rider.token, now).requests.every(r => r.status === "CANCELLED"));
+    assert.equal(searchDemands(db, driver.token, route, now).length, 0);
+  } finally { db.close(); }
+});
+test("responding as a driver also requires withdrawal consent for the driver's own lift request", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    const target = postDemand(db, rider.token, route, now);
+    const own = postDemand(db, driver.token, route, now);
+    assert.throws(() => offerDemand(db, driver.token, target.id, offerBody, now), /LIFT_REQUEST_WITHDRAWAL_REQUIRED/);
+    assert.equal(demandActivity(db, driver.token, now).requests[0].status, "OPEN");
+    offerDemand(db, driver.token, target.id, { ...offerBody, withdrawLiftRequestId: own.id }, now);
+    assert.equal(demandActivity(db, driver.token, now).requests[0].status, "CANCELLED");
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "OPEN");
+  } finally { db.close(); }
+});
 test("demand schedules preserve any-date/time independence and Sydney expiry", () => {
   assert.equal(demandExpiry(route, now), "2026-10-27T00:00:00.000Z");
   assert.equal(
@@ -418,11 +448,16 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
     const found = await call("/api/rider-demands/search", driver.token, route);
     assert.equal(found.body.requests.length, 1);
     const schedule = initialDeparture();
+    const driversOwn = await call("/api/rider-demands", driver.token, route);
+    const driverBody = { ...offerBody, scheduledDepartureAt: sydneyInstant(schedule.date, schedule.time) };
+    assert.equal((await call("/api/rides", driver.token, driverBody)).body.error, "LIFT_REQUEST_WITHDRAWAL_REQUIRED");
+    assert.equal((await call("/api/rides", driver.token, { ...driverBody, withdrawLiftRequestId: posted.body.request.id })).body.error, "LIFT_REQUEST_WITHDRAWAL_REQUIRED");
     const offered = await call(
       `/api/rider-demands/${posted.body.request.id}/offer`,
       driver.token,
       {
         ...offerBody,
+        withdrawLiftRequestId: driversOwn.body.request.id,
         scheduledDepartureAt: sydneyInstant(schedule.date, schedule.time),
       },
     );

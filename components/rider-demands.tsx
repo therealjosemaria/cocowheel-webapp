@@ -87,6 +87,7 @@ function DemandPrompt({
   close,
   confirm,
   action,
+  destructive = false,
 }: {
   label: string;
   children: ReactNode;
@@ -94,6 +95,7 @@ function DemandPrompt({
   close: () => void;
   confirm: () => void;
   action: string;
+  destructive?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   useDialogFocus(ref, close, busy);
@@ -110,17 +112,27 @@ function DemandPrompt({
         <p>{label}</p>
         {children}
         <div className="cancel-prompt-actions">
-          <button className="primary" disabled={busy} onClick={confirm}>
+          {destructive && <button className="secondary" disabled={busy} onClick={close}>Go back</button>}
+          <button className={destructive ? "danger" : "primary"} disabled={busy} onClick={confirm}>
             {busy ? "Saving…" : action}
           </button>
-          <button className="secondary" disabled={busy} onClick={close}>
-            Cancel
-          </button>
+          {!destructive && <button className="secondary" disabled={busy} onClick={close}>Go back</button>}
         </div>
       </section>
     </div>,
     document.body,
   );
+}
+
+export async function openLiftRequestId() {
+  const data = await cocowheelsApi<DemandActivity>("/api/rider-demands");
+  const request = data.requests.find((item) => item.status === "OPEN");
+  if (!request) throw new Error("Lift request changed. Please try again.");
+  return request.id;
+}
+
+export function LiftRequestSwitchPrompt(props: { busy: boolean; close: () => void; confirm: () => void }) {
+  return <DemandPrompt label="Withdraw your lift request and offer a ride?" action="Withdraw & offer" destructive {...props}>{null}</DemandPrompt>;
 }
 
 export function PostRideRequest({ route }: { route: DemandRoute }) {
@@ -155,16 +167,16 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
     <>
       {saved ? (
         <Link className="text-button" href="/activity#ride-requests">
-          View your request
+          View your lift request
         </Link>
       ) : (
         <button className="text-button" onClick={() => setReview(true)}>
-          Post a ride request
+          Ask for a lift
         </button>
       )}
       {review && (
         <DemandPrompt
-          label="Post this ride request?"
+          label="Let drivers know you need a lift."
           action="Post request"
           busy={busy}
           close={() => setReview(false)}
@@ -233,7 +245,7 @@ export function FindRiders({
   return (
     <div className="form-page demand-page">
       <div className="demand-heading">
-        <h1 className="page-title">Find riders</h1>
+        <h1 className="page-title">Find someone who needs a ride</h1>
         <button
           className="text-button"
           onClick={
@@ -334,7 +346,7 @@ export function FindRiders({
             disabled={busy}
             onClick={() => void search()}
           >
-            {busy ? "Searching…" : "FIND RIDERS"}
+            {busy ? "Searching…" : "SEARCH"}
           </button>
         </div>
       )}
@@ -375,9 +387,10 @@ function DemandOfferForm({
   const [type, setType] = useState<"MOBILE" | "EMAIL" | "OTHER">("MOBILE");
   const [busy, setBusy] = useState(false);
   const [platePrompt, setPlatePrompt] = useState(false);
+  const [liftSwitch, setLiftSwitch] = useState<{ id: string; plate?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  useDialogFocus(ref, close, busy, !platePrompt);
-  async function send(plate?: string) {
+  useDialogFocus(ref, close, busy, !platePrompt && !liftSwitch);
+  async function send(plate?: string, withdrawLiftRequestId?: string) {
     const at = sydneyInstant(schedule.date, schedule.time);
     if (!at || Date.parse(at) <= Date.now()) {
       setPlatePrompt(false);
@@ -401,12 +414,16 @@ function DemandOfferForm({
         destination: route.destination,
         scheduledDepartureAt: at,
         priceAud: contribution ? Number(fare) : 0,
+        withdrawLiftRequestId,
         ...(contribution ? { payId, payIdType: type } : {}),
         ...(plate ? { plate } : {}),
       });
       window.location.assign("/activity#ride-requests");
     } catch (reason) {
-      if (
+      if (reason instanceof ApiError && reason.code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") {
+        try { setLiftSwitch({ id: await openLiftRequestId(), plate }); }
+        catch (error) { setPlatePrompt(false); setError(apiErrorMessage(error)); }
+      } else if (
         reason instanceof ApiError &&
         reason.code === "VEHICLE_PLATE_REQUIRED"
       )
@@ -464,7 +481,7 @@ function DemandOfferForm({
                 {busy ? "Offering…" : "Offer a ride"}
               </button>
               <button className="secondary" disabled={busy} onClick={close}>
-                Cancel
+                Go back
               </button>
             </div>
           </section>
@@ -473,10 +490,13 @@ function DemandOfferForm({
       {platePrompt && (
         <VehiclePlatePrompt
           submitLabel="Save & offer"
+          externalError={error}
+          externalBusy={busy}
           close={() => setPlatePrompt(false)}
           confirm={(plate) => send(plate)}
         />
       )}
+      {liftSwitch && <LiftRequestSwitchPrompt busy={busy} close={() => setLiftSwitch(null)} confirm={() => { const pending = liftSwitch; setLiftSwitch(null); void send(pending.plate, pending.id).catch(reason => setError(apiErrorMessage(reason))); }} />}
     </>,
     document.body,
   );
@@ -552,7 +572,7 @@ export function RiderDemandActivity({
   if (!data?.requests.length && !data?.sent.length && !error) return null;
   return (
     <section id="ride-requests" className="demand-activity">
-      <h2>Ride requests</h2>
+      <h2>Lift requests</h2>
       {error && (
         <p role="alert">
           {error}{" "}
@@ -570,7 +590,7 @@ export function RiderDemandActivity({
           key={request.id}
           open={request.status === "OPEN"}
         >
-          <summary>Your request</summary>
+          <summary>Your lift request</summary>
           <DemandRouteSummary route={request} />
           {request.status !== "OPEN" && (
             <p className="save-route-profile-note">
@@ -578,7 +598,7 @@ export function RiderDemandActivity({
                 ? "Ride arranged"
                 : request.status === "EXPIRED"
                   ? "Expired"
-                  : "Cancelled"}
+                  : "Withdrawn"}
             </p>
           )}
           {request.status === "OPEN" && (
@@ -592,7 +612,7 @@ export function RiderDemandActivity({
                   disabled={busy}
                   onClick={() => setCancel(request.id)}
                 >
-                  Cancel request
+                  Withdraw request
                 </button>
               </div>
             </>
@@ -663,14 +683,15 @@ export function RiderDemandActivity({
       ))}
       {cancel && (
         <DemandPrompt
-          label="Cancel your ride request?"
-          action="Cancel request"
+          label="Withdraw your lift request?"
+          action="Withdraw request"
+          destructive
           busy={busy}
           close={() => setCancel(null)}
           confirm={() => void act(`/api/rider-demands/${cancel}/cancel`, {})}
         >
           <p className="save-route-profile-note">
-            Drivers will no longer see it in Find riders.
+            Drivers will no longer see your lift request.
           </p>
         </DemandPrompt>
       )}

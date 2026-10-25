@@ -32,9 +32,14 @@ with sync_playwright() as p:
             elif path=='rider-demands' and r.request.method=='GET': data={'requests':[dict(request,offers=[offer])],'sent':[]}
             elif path=='rider-demands' and r.request.method=='POST':
                 writes.append(r.request.post_data_json); data={'request':request}
+            elif path=='rides':
+                writes.append(r.request.post_data_json)
+                r.fulfill(status=409,json={'error':'LIFT_REQUEST_WITHDRAWAL_REQUIRED'} if not r.request.post_data_json.get('withdrawLiftRequestId') else {'error':'INVALID_DEPARTURE_TIME'}); return
             elif path.endswith('/offer'):
                 writes.append(r.request.post_data_json)
-                r.fulfill(status=409,json={'error':'VEHICLE_PLATE_REQUIRED'}); return
+                body=r.request.post_data_json
+                code='VEHICLE_PLATE_REQUIRED' if not body.get('plate') else 'LIFT_REQUEST_WITHDRAWAL_REQUIRED' if not body.get('withdrawLiftRequestId') else 'DEMAND_UNAVAILABLE'
+                r.fulfill(status=409,json={'error':code}); return
             elif path.endswith('/respond') or path.endswith('/cancel'): data={'ok':True}
             else: data={}
             r.fulfill(json=data)
@@ -50,26 +55,42 @@ with sync_playwright() as p:
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='FIND A RIDE',exact=True).click()
-        expect(page.get_by_role('heading',name='Choose a ride')).to_be_visible()
+        expect(page.get_by_role('button',name='Ask for a lift',exact=True)).to_be_visible()
         capture('rider-results')
-        page.get_by_role('button',name='Post a ride request',exact=True).click()
-        dialog=page.get_by_role('dialog',name='Post this ride request?',exact=True)
+        page.get_by_role('button',name='Ask for a lift',exact=True).click()
+        dialog=page.get_by_role('dialog',name='Let drivers know you need a lift.',exact=True)
         expect(dialog.get_by_text('Drivers can see these addresses',exact=False)).to_be_visible()
         capture('post-review')
         page.keyboard.press('Escape')
-        expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_focused()
+        expect(page.get_by_role('button',name='Ask for a lift',exact=True)).to_be_focused()
         assert not writes
-        page.get_by_role('button',name='Post a ride request',exact=True).click()
+        page.get_by_role('button',name='Ask for a lift',exact=True).click()
         dialog.get_by_role('button',name='Post request',exact=True).click()
-        expect(page.get_by_role('link',name='View your request')).to_be_visible()
+        expect(page.get_by_role('link',name='View your lift request')).to_be_visible()
         assert writes[-1]['origin']==origin
         page.goto(BASE+'/?start=driver')
-        page.get_by_role('button',name='Find riders',exact=True).click()
+        offer_button=page.get_by_role('button',name='OFFER A RIDE',exact=True)
+        find_button=page.get_by_role('button',name='Find someone who needs a ride',exact=True)
+        assert find_button.bounding_box()['y'] > offer_button.bounding_box()['y']
+        assert find_button.bounding_box()['y'] - (offer_button.bounding_box()['y'] + offer_button.bounding_box()['height']) >= 12
+        capture('offer-entry')
+        address('Where from?','origin'); address('Where to?','destination')
+        offer_button.click()
+        switch=page.get_by_role('dialog',name='Withdraw your lift request and offer a ride?',exact=True)
+        expect(switch).to_be_visible(); capture('switch')
+        switch.get_by_role('button',name='Go back',exact=True).click()
+        assert not writes[-1].get('withdrawLiftRequestId')
+        offer_button.click()
+        switch.get_by_role('button',name='Withdraw & offer',exact=True).click()
+        page.get_by_role('button',name='OKAY',exact=True).click()
+        assert writes[-1]['withdrawLiftRequestId']=='request-1'
+        page.goto(BASE+'/?start=driver')
+        page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
         capture('driver-search')
-        page.get_by_role('button',name='FIND RIDERS',exact=True).click()
+        page.get_by_role('button',name='SEARCH',exact=True).click()
         page.get_by_role('dialog',name='Route required').get_by_role('button',name='OKAY').click()
         address('Where from?','origin'); address('Where to?','destination')
-        page.get_by_role('button',name='FIND RIDERS',exact=True).click()
+        page.get_by_role('button',name='SEARCH',exact=True).click()
         expect(page.locator('.demand-page').get_by_text('rider001',exact=True)).to_be_visible()
         page.get_by_role('button',name='Show route',exact=True).first.click()
         expect(page.get_by_role('button',name='Hide route',exact=True)).to_have_count(1)
@@ -94,6 +115,13 @@ with sync_playwright() as p:
         dialog.get_by_role('button',name='Offer a ride',exact=True).click()
         plate=page.get_by_role('dialog',name='Add your number plate',exact=True)
         expect(plate).to_be_visible(); capture('plate')
+        plate.get_by_role('textbox').fill('ABC123')
+        plate.get_by_role('button',name='Save & offer',exact=True).click()
+        expect(switch).to_be_visible(); capture('response-switch')
+        switch.get_by_role('button',name='Withdraw & offer',exact=True).click()
+        expect(plate.get_by_role('alert')).to_be_visible()
+        assert writes[-1]['withdrawLiftRequestId']=='request-1'
+        assert writes[-1]['plate']=='ABC123'
         plate.get_by_role('button',name='Go back').click()
         expect(dialog).to_be_visible()
         page.keyboard.press('Escape'); expect(dialog).not_to_be_visible()
@@ -101,8 +129,8 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Accept ride')).to_be_visible()
         expect(page.get_by_text('Completed, cancelled, and expired rides will appear here.')).to_have_count(0)
         capture('activity')
-        page.get_by_role('button',name='Cancel request',exact=True).click()
-        confirm=page.get_by_role('dialog',name='Cancel your ride request?',exact=True)
+        page.get_by_role('button',name='Withdraw request',exact=True).click()
+        confirm=page.get_by_role('dialog',name='Withdraw your lift request?',exact=True)
         expect(confirm).to_be_visible(); capture('cancel')
         page.keyboard.press('Escape')
         page.goto(BASE+'/privacy')

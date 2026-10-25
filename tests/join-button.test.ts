@@ -20,7 +20,7 @@ test("Request to Join does not pass the click event as the selected ride", () =>
       ts.isJsxElement(node) &&
       node.openingElement.tagName.getText(source) === "button" &&
       node.children.some((child) =>
-        child.getText(source).includes('"REQUEST TO JOIN"'),
+        child.getText(source).includes('"REQUEST TO JOIN SOMEONE’S RIDE"'),
       )
     ) {
       const attribute = node.openingElement.attributes.properties.find(

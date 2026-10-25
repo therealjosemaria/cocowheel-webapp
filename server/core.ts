@@ -289,6 +289,7 @@ export type PublicLocation = {
   stale: boolean;
 };
 export type CreateRideInput = {
+  withdrawLiftRequestId?: string;
   origin: Pin;
   destination: Pin;
   scheduledDepartureAt: string;
@@ -1039,6 +1040,12 @@ export function publishRide(
   const publicIdValue = publicId(db);
   const timestamp = iso(now);
   db.transaction(() => {
+    const liftRequest = db.prepare("SELECT id FROM rider_demands WHERE owner_id=? AND status='OPEN' AND expires_at>?").get(session.id, timestamp) as { id: string } | undefined;
+    if (liftRequest) {
+      if (input.withdrawLiftRequestId !== liftRequest.id)
+        throw new Error("LIFT_REQUEST_WITHDRAWAL_REQUIRED");
+      db.prepare("UPDATE rider_demands SET status='CANCELLED' WHERE id=?").run(liftRequest.id);
+    }
     db.prepare(
       `INSERT INTO rides (id, public_id, status, driver_session_id, driver_alias, origin_latitude, origin_longitude, origin_label, destination_latitude, destination_longitude, destination_label, scheduled_departure_at, offer_expires_at, price_aud, driver_payid, driver_payid_type, created_at, last_activity_at)
       VALUES (?, ?, 'PUBLISHED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

@@ -128,13 +128,13 @@ with sync_playwright() as p:
         time_dialog.get_by_role('button', name='DONE', exact=True).click()
         page.screenshot(path=f'/tmp/calendar-find-{width}.png', full_page=True)
         page.get_by_role('button', name='FIND A RIDE', exact=True).click()
-        expect(page.get_by_role('heading', name='Choose a ride')).to_be_visible()
+        expect(page.get_by_role('button', name='Ask for a lift')).to_be_visible()
         page.wait_for_timeout(700)
         assert searches[-1]['departureDate'] == 'any'
         assert searches[-1]['departureTime'] == '12:00'
         page.reload()
         page.get_by_role('button', name='FIND A RIDE', exact=True).click()
-        expect(page.get_by_role('heading', name='Choose a ride')).to_be_visible()
+        expect(page.get_by_role('button', name='Ask for a lift')).to_be_visible()
         page.wait_for_timeout(700)
         assert searches[-1]['departureDate'] == 'any'
         assert searches[-1]['departureTime'] == '12:00'

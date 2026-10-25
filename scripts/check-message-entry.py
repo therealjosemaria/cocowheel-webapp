@@ -47,7 +47,7 @@ with sync_playwright() as p:
             page.goto('http://127.0.0.1:3090'+('/rides/test-ride' if preview else '/?start=rider'))
             hint = page.get_by_text('You can message the driver after requesting.', exact=True)
             expect(hint).to_be_visible()
-            button = page.get_by_role('button', name='REQUEST TO JOIN', exact=True)
+            button = page.get_by_role('button', name='REQUEST TO JOIN SOMEONE’S RIDE', exact=True)
             expect(button).to_be_enabled()
             labels = page.locator('.ride-selection-route-key > span')
             for label in labels.all():

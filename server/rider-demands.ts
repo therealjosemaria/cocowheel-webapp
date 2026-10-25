@@ -295,6 +295,7 @@ export function offerDemand(
       {
         origin: route.origin,
         destination: route.destination,
+        withdrawLiftRequestId: typeof body.withdrawLiftRequestId === "string" ? body.withdrawLiftRequestId : undefined,
         scheduledDepartureAt: body.scheduledDepartureAt as string,
         priceAud: body.priceAud as number,
         payId: body.payId as string | undefined,

@@ -1,6 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
-import { FindRiders, PostRideRequest } from "./rider-demands";
+import { FindRiders, PostRideRequest, LiftRequestSwitchPrompt, openLiftRequestId } from "./rider-demands";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import ScheduleFields from "./schedule-fields";
 import { RouteRequiredPrompt } from "./ride-journey-controls";
@@ -233,6 +233,7 @@ export default function HomeClient({
   const [code, setCode] = useState("");
   const [ownOfferPromptOpen, setOwnOfferPromptOpen] = useState(false);
   const [roleChangePromptOpen, setRoleChangePromptOpen] = useState(false);
+  const [liftSwitchId, setLiftSwitchId] = useState<string | null>(null);
   const [roleChangeTarget, setRoleChangeTarget] = useState<"DRIVER" | "RIDER">(
     "RIDER",
   );
@@ -550,7 +551,7 @@ export default function HomeClient({
     riderRoute?.coordinates === riderRouteCoordinates
       ? riderRoute.durationSeconds
       : null;
-  async function publish() {
+  async function publish(withdrawLiftRequestId?: string) {
     if (!driverPins.origin || !driverPins.destination) {
       setError(null);
       setRouteRequiredPromptOpen(true);
@@ -572,11 +573,17 @@ export default function HomeClient({
           priceAud: contribution ? Number(price) : 0,
           payId: contribution ? payId : "",
           payIdType,
+          withdrawLiftRequestId,
         }),
       });
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
       window.location.assign("/activity");
     } catch (reason) {
+      if (reason instanceof ApiError && reason.code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") {
+        try { setLiftSwitchId(await openLiftRequestId()); }
+        catch (error) { setError(apiErrorMessage(error)); }
+        return;
+      }
       if (
         reason instanceof ApiError &&
         reason.code === "ROLE_CHANGE_REQUIRES_TERMINATION"
@@ -828,6 +835,7 @@ export default function HomeClient({
           close={() => setRoleChangePromptOpen(false)}
         />
       ) : null}
+      {liftSwitchId && <LiftRequestSwitchPrompt busy={busy} close={() => setLiftSwitchId(null)} confirm={() => { const id = liftSwitchId; setLiftSwitchId(null); void publish(id); }} />}
       {routeRequiredPromptOpen ? (
         <RouteRequiredPrompt
           close={() => setRouteRequiredPromptOpen(false)}
@@ -861,7 +869,7 @@ export default function HomeClient({
           setPayId={setPayId}
           payIdType={payIdType}
           setPayIdType={setPayIdType}
-          submit={publish}
+          submit={() => void publish()}
           busy={busy}
         />
       ) : screen === "RIDER" ? (
@@ -1032,7 +1040,7 @@ function DriverForm(props: {
   if (findingRiders) return <FindRiders origin={props.pins.origin} destination={props.pins.destination} back={() => setFindingRiders(false)} />;
   return (
     <div className="form-page">
-      <div className="demand-heading"><h1 className="page-title">Offer a ride</h1><button type="button" className="text-button" onClick={() => setFindingRiders(true)}>Find riders</button></div>
+      <h1 className="page-title">Offer a ride</h1>
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.origin} destination={props.pins.destination}
@@ -1052,6 +1060,7 @@ function DriverForm(props: {
         <button className="primary" disabled={props.busy} onClick={submit}>
           {props.busy ? "Offering…" : "OFFER A RIDE"}
         </button>
+        <div className="save-search-route driver-discovery-action"><button type="button" className="text-button" disabled={props.busy} onClick={() => setFindingRiders(true)}>Find someone who needs a ride</button></div>
       </div>
     </div>
   );
@@ -1381,7 +1390,7 @@ function RideSelection({
         </span>
       </div>
       <section className="ride-options" aria-live="polite">
-        <div className="demand-heading"><h1>Choose a ride</h1><PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} /></div>
+        <div className="demand-heading"><PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} /></div>
         {searching ? null : visibleCandidates.length ? (
           <div className="ride-option-list">
             {visibleCandidates.map((candidate) => {
@@ -1430,7 +1439,7 @@ function RideSelection({
           disabled={busy || !selectedCandidate}
           onClick={() => request()}
         >
-          {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
+          {busy ? "REQUESTING…" : "REQUEST TO JOIN SOMEONE’S RIDE"}
         </button>
         <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
       </div>

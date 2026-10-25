@@ -80,6 +80,15 @@ safety/isolation, pass/fail/findings, explicit exclusions and deployment status.
 Keep earlier results as history; append rather than silently replace a failed
 baseline with a green result. Never commit session tokens, codes, raw user data,
 live GPS or test databases. A testing claim must identify what was actually exercised.
+# Lift-request clarity and role-switch regression — 25 October 2026
+
+Baseline `4b69006`; see [dated lifecycle and verification record](RIDER_DEMAND_2026-10-25.md).
+177 isolated tests passed, including consent identity, rollback and HTTP paths;
+lint/build passed. Mocked browser checks cover mobile/tablet/desktop demand,
+calendar and join-message flows. Reproducible commands, initial sandbox failures,
+the fixed plate-modal state failure and unverified production/device boundaries
+are recorded in that guide. No production load tests or database writes.
+
 # Private messaging regression — 20 October 2026
 
 See [dated report](MESSAGING_CHECK_2026-10-20.md) and [protocol](MESSAGING.md).

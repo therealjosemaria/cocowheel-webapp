@@ -3125,6 +3125,7 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
   padding: 4px 0 0;
   text-align: center;
 }
+.save-search-route.driver-discovery-action { padding-top: 12px; }
 .save-search-route > button {
   margin: 0;
   min-height: 44px;

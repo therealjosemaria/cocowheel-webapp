@@ -4,11 +4,13 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 ## Rider-posted requests (25 October 2026)
 
-Find's results header includes **Post a ride request** with an explicit address,
+Find's results area includes **Ask for a lift** with an explicit address,
 schedule and visibility review. This publishes one request per verified account;
-it does not publish a private saved usual route. Offer's **Find riders** shortcut
+it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
+below the primary Offer a ride action,
 lets drivers search along entered endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.
+The secondary action has 12px top spacing; discovery uses a concise Search button.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride
@@ -18,6 +20,14 @@ private messaging lifecycle. Declining/cancelling a posted request does not canc
 the driver's public offer. Existing one-open-ride limits remain; no seat reservation
 until acceptance. Profile's existing polling includes a pending-offer badge.
 No new email type, live-GPS discovery or calendar sync is introduced.
+
+The redundant Choose a ride heading is removed. Joining an existing offer now
+says Request to join someone’s ride; posted demand says Your lift request.
+Offering while an open lift request exists requires “Withdraw your lift request
+and offer a ride?” with Go back / Withdraw & offer. Consent names the exact
+request ID; withdrawal and publication commit together or both roll back.
+This also applies when responding to another rider. No history is deleted.
+Existing active driver/accepted rider restrictions remain unchanged.
 
 Additive SQLite tables require a separate API restart. See the
 [request lifecycle, privacy, tests and deployment record](docs/RIDER_DEMAND_2026-10-25.md).

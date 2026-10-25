@@ -5,11 +5,11 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
-- Find a ride retains its existing form and search. Choose a ride retains its
-  existing heading; its new secondary Post a ride request action opens a review.
+- Find a ride retains its existing form and search. Ask for a lift sits above
+  listings, below the map/legend; the Choose a ride heading is now removed.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
-- Offer a ride includes Find riders before publication. It copies already-entered
+- Offer a ride includes Find someone who needs a ride below its primary action. It copies already-entered
   endpoints, allows route edits, and defaults to independent Any date/Any time.
   Both endpoints are required. Browsing requires email verification, not a ride.
 - Search shows up to 50 matching, open requests, newest first. Excludes self and
@@ -28,6 +28,22 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 enforced with a partial unique index. Posting identical data retries idempotently
 without extending TTL. A different open request must be cancelled in Activity first.
 Posting is disallowed while the account has an ordinary open ride/request.
+
+Follow-up on base `4b69006`: publishing a driver ride while an unexpired OPEN
+lift request exists returns `LIFT_REQUEST_WITHDRAWAL_REQUIRED` (409), without
+publishing or withdrawing. The UI fetches the owner's current request and asks
+“Withdraw your lift request and offer a ride?” Go back/Escape preserves both
+draft and request. Confirmation sends `withdrawLiftRequestId` through ordinary
+publication or a driver response. The core transaction checks exact ownership
+and ID, changes that request to CANCELLED, and publishes together. Any failure
+rolls back both; a replaced request needs fresh consent. Expired/closed requests
+do not need withdrawal. No new schema, TTL or active-ride rule. Legacy saved-route
+publication also encounters the core consent gate, but has no new UI shortcut.
+Self-discovery, self-offering and self-joining remain blocked server-side.
+
+Visible copy uses lift request / Withdrawn; internal identifiers and CANCELLED
+remain unchanged. Review uses a regular sentence, Post request / Go back, with
+no redundant title. Activity remains above completed ride history. No new tab.
 
 - Any date: exactly 48 hours from posting, even if an Around time is specified.
 - Specific date / Any time: next Sydney midnight.
@@ -132,11 +148,41 @@ demand access returned 401. Frontend deployment is separate: a push does not
 verify it. Physical Safari/device keyboards, real inbox delivery and authenticated
 production walkthrough remain unverified.
 
+## Copy and role-switch follow-up verification (25 October 2026)
+
+Source baseline: `4b69006`, plus this commit's changes. `npm test` passed
+177/177 against isolated fixtures, including exact-request consent, failed-insert
+rollback, stale consent, and authenticated HTTP publication/response paths.
+`npm run lint` and `npm run build` passed. Initial sandbox attempts failed on
+IPC/port permissions before meaningful execution; reruns used permitted local
+execution, not production writes.
+
+Reproduce browser checks with the local frontend on port 3201:
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-rider-demands.py`
+and `scripts/check-calendar-search.py` using the same interpreter. API calls are
+mocked and external requests blocked. Both passed at 320/390/844/1440px.
+`scripts/check-message-entry.py` also passed chooser and preview flows at
+320/393/1440px with its localhost port changed from 3090 to 3201 in memory.
+Save-route/usual-route legacy script selectors were updated, not rerun.
+An additional run overlapped the requested Search-label change and timed out on
+the old button locator; the final run uses the updated locator and checks the
+12px separation of discovery from the primary Offer action.
+
+The first switch browser run exposed lost plate/error state when replacing the
+plate modal. Keeping the plate mounted and forwarding pending/error state fixed
+this; the full rerun verified plate retention and failed-confirmation feedback.
+Whole-screen screenshots reviewed mobile and desktop offer entry, discovery,
+post review, switching and Activity, including long-label wrapping and emphasis.
+No production writes or capacity claims. Physical devices remain unverified.
+The earlier restart record above applies only to the base feature: this new
+backend consent gate still needs a separately authorized API restart. A push
+does not verify frontend deployment.
+
 ## Manual walkthrough
 
-1. Rider: Find a ride → addresses/date/time → search → Post a ride request.
-   Review visibility/expiry, cancel once, then post. Open View your request.
-2. Driver (another account): Offer a ride → Find riders, enter a matching route.
+1. Rider: Find a ride → addresses/date/time → search → Ask for a lift.
+   Review visibility/expiry, go back once, then post. Open View your lift request.
+2. Driver (another account): Offer a ride → Find someone who needs a ride, enter a matching route.
    Search Any date/time; try narrower filters. Show route on two different cards:
    only the latest should remain shown. Editing search does not publish anything.
 3. Offer a ride → choose a compatible future departure. Test free and contribution
@@ -146,3 +192,6 @@ production walkthrough remain unverified.
    or overwrite a different ride. Decline leaves the driver's public ride available.
 5. Cancel an open posted request; confirm it no longer appears to drivers but
    remains in Activity. Saved usual-route settings must be unchanged throughout.
+6. With an open lift request, offer a ride normally or respond to another rider.
+   Go back first: nothing changes. Confirm: the old request is withdrawn only
+   when publication succeeds. Failed or stale attempts preserve the request.
