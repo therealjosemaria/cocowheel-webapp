@@ -13,7 +13,7 @@ lets drivers search along entered endpoints before offering a ride. Shared addre
 date/time, map, modal, fare and vehicle components are reused.
 The secondary action has 12px top spacing; discovery uses a concise Search button.
 Discovery's Back to offering (or Edit search from results) sits above the heading,
-left-aligned with a back arrow on mobile and desktop; navigation behaviour is unchanged.
+left-aligned and text-only on mobile and desktop; navigation behaviour is unchanged.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride
@@ -721,6 +721,9 @@ permissions do not automatically transfer. Do not promise seamless handoff witho
 real-device verification.
 
 ## Product and UI standards
+
+Obtain the owner's approval before introducing a previously unused visual or
+interaction pattern; reuse established patterns by default. See UI_STANDARDS.md.
 
 ### Vehicle details (23 October 2026)
 

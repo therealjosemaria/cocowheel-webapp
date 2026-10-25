@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+**Ask before introducing a new pattern:** before adding a visual treatment,
+icon, control or interaction that GUMWHEEL has not already established, explain
+the proposed difference and obtain the owner's approval. Familiarity elsewhere
+is not permission to introduce it here. Reusing an established pattern or making
+an explicitly requested change does not require redundant approval. When unsure
+whether a pattern is established, check the code/standards and ask before changing it.
+
 Rider-posted requests: Ask for a ride sits beside Save route below Request to join,
 outside the ride list. Both are quiet, independent secondary actions; neither
 belongs in the list or empty-state component. No Choose a ride heading.
@@ -14,7 +21,7 @@ Separate the discovery action from Offer a ride with 12px top padding. Inside
 discovery, keep the descriptive heading but use Search for the primary button.
 Back navigation precedes the heading in DOM and visual order, at the top-left,
 not below it. Discovery places Back to offering / Edit search above its heading
-on mobile and desktop, with a decorative left arrow and the existing 44px target.
+on mobile and desktop, text-only with the existing 44px target; do not add an arrow.
 Use Your ride request for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
 Post review starts with regular body text: Let drivers know you need a ride.

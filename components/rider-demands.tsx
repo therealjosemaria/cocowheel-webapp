@@ -257,7 +257,6 @@ export function FindRiders({
               : back
           }
         >
-          <span aria-hidden="true">← </span>
           {results ? "Edit search" : "Back to offering"}
         </button>
         <h1 className="page-title">Find someone who needs a ride</h1>

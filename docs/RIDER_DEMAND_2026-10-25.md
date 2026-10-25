@@ -205,13 +205,17 @@ No production writes; physical devices and deployed frontend remain unverified.
 
 Back-navigation refinement on baseline `a1cc879`: Back to offering and the results
 view's Edit search now precede the discovery heading in DOM and visual order on
-all widths, with a decorative arrow, 8px gap and existing 44px target. No navigation
+all widths, with an 8px gap and existing 44px target. The initial decorative arrow
+was subsequently removed at the owner's request; these controls remain text-only. No navigation
 handler, API, permission or lifecycle change. The isolated browser script checks
 placement, alignment and returning to Offer a ride, alongside existing flows.
 `scripts/check-rider-demands.py` passed at 320/390/844/1440px with mocked APIs;
 lint and production build passed. Full mobile/desktop discovery screens visually
 reviewed for heading hierarchy, spacing and navigation placement. No API restart
 needed; physical devices and deployed frontend remain unverified.
+Arrow-removal follow-up on `7247676`: targeted component ESLint passed; mocked
+Chromium checks at 390/1440px verified exact text-only Back to offering and return
+navigation. Whole-screen captures reviewed at both sizes. No other control changed.
 
 1. Rider: Find a ride → addresses/date/time → search → Ask for a ride.
    Review visibility/expiry, go back once, then post. Open View your ride request.
