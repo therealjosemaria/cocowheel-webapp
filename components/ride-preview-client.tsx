@@ -25,6 +25,7 @@ import {
   CompleteRide,
   PickupConfirmation,
   Message,
+  RouteRequiredPrompt,
 } from "./ride-journey-controls";
 import CopyPayId from "./copy-payid";
 import {
@@ -616,26 +617,7 @@ export default function RidePreviewClient({
   return (
     <section className="ride-preview" aria-live={ride ? undefined : "polite"}>
       {routeRequiredPromptOpen ? (
-        <div className="location-prompt-backdrop" role="presentation">
-          <section
-            className="location-prompt"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="route-required-title"
-          >
-            <h2 id="route-required-title">Add your route first</h2>
-            <p>Add your pickup and destination to request a ride.</p>
-            <div className="location-prompt-actions">
-              <button
-                type="button"
-                className="primary"
-                onClick={() => setRouteRequiredPromptOpen(false)}
-              >
-                OKAY
-              </button>
-            </div>
-          </section>
-        </div>
+        <RouteRequiredPrompt close={() => setRouteRequiredPromptOpen(false)} />
       ) : null}
       {selfJoinPromptOpen ? (
         <div className="location-prompt-backdrop" role="presentation">

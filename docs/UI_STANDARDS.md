@@ -274,6 +274,11 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 - Buttons are stacked, full width, with equal sizing and consistent rounded corners on mobile and desktop. Ride-action and dialog buttons share 44px minimum height, 10px corners, padding, typography and shadow; equal grid rows accommodate wrapped labels. DOM and visual order must agree; do not use CSS ordering to invert keyboard navigation.
 - Poor-fit and completion confirmations use the centred `cancel-prompt` shell. GPS permission uses the existing bottom-sheet `location-prompt` shell. Do not create a new one-off appearance.
 - Keep one concise message, no redundant visible title. Cancellation retains the established buttons-only design. Give dialogs accessible names even without visible titles.
+- Missing-route warnings in Find, Offer and ride preview share RouteRequiredPrompt,
+  reusing Message: “Choose where from and where to.” plus OKAY, no visible heading.
+  Use the same sentence if one or both endpoints are missing. Find/Offer remain
+  enabled before entry; incomplete submission preserves the form without opening
+  a picker or making a search/publication request. Escape/OKAY restores focus.
 - Use GO BACK to dismiss a non-destructive confirmation: CANCEL could be mistaken for cancelling the ride.
 - Single-action notices use OKAY. Busy actions prevent duplicate submissions and preserve the user's current context on failure.
 - Existing legacy dialogs may still need accessibility work: keyboard focus containment/restoration and Escape handling should be verified when migrating them; do not assume `aria-modal` alone implements these behaviours.

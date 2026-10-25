@@ -4,6 +4,13 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 ## Calendar-led ride setup (25 October 2026)
 
+Find and Offer keep their submit buttons enabled with empty/partial routes.
+Either missing endpoint opens the same sentence-only notice: “Choose where from
+and where to.” with OKAY. It stays on the form, preserves inputs, and makes no
+search/publication request. The ride-preview missing-route fallback reuses it.
+Route validation precedes departure/payment validation; other validation and
+busy-state protections remain. See [route-warning checks](docs/ROUTE_WARNING_2026-10-25.md).
+
 Find and Offer now share address-search sheets and separate date/time controls.
 Address entry waits 500ms after typing (minimum three characters); results stay
 inside a full-screen phone picker or centred desktop dialog. Selection returns

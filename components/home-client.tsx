@@ -2,6 +2,7 @@
 import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import ScheduleFields from "./schedule-fields";
+import { RouteRequiredPrompt } from "./ride-journey-controls";
 import { initialDeparture, lastDepartureDate, sydneyDateTime, sydneyInstant } from "@/lib/ride-schedule";
 import { departureLabel, departureTone } from "@/lib/departure-label";
 import ContributionChoice from "./contribution-choice";
@@ -234,7 +235,7 @@ export default function HomeClient({
   const [roleChangeTarget, setRoleChangeTarget] = useState<"DRIVER" | "RIDER">(
     "RIDER",
   );
-  const [publishRouteRequiredPromptOpen, setPublishRouteRequiredPromptOpen] =
+  const [routeRequiredPromptOpen, setRouteRequiredPromptOpen] =
     useState(false);
   const [riderRoute, setRiderRoute] = useState<{
     coordinates: string;
@@ -549,14 +550,14 @@ export default function HomeClient({
       ? riderRoute.durationSeconds
       : null;
   async function publish() {
+    if (!driverPins.origin || !driverPins.destination) {
+      setError(null);
+      setRouteRequiredPromptOpen(true);
+      return;
+    }
     const departure = sydneyInstant(driverSchedule.date, driverSchedule.time);
     if (!departure || Date.parse(departure) <= Date.now() || driverSchedule.date > lastDepartureDate()) {
       setError("Choose a future departure within the next three months."); return;
-    }
-    if (!driverPins.origin || !driverPins.destination) {
-      setError(null);
-      setPublishRouteRequiredPromptOpen(true);
-      return;
     }
     setBusy(true);
     setError(null);
@@ -826,9 +827,9 @@ export default function HomeClient({
           close={() => setRoleChangePromptOpen(false)}
         />
       ) : null}
-      {publishRouteRequiredPromptOpen ? (
-        <PublishRouteRequiredPrompt
-          close={() => setPublishRouteRequiredPromptOpen(false)}
+      {routeRequiredPromptOpen ? (
+        <RouteRequiredPrompt
+          close={() => setRouteRequiredPromptOpen(false)}
         />
       ) : null}
       {error ? <Message text={error} close={() => setError(null)} /> : null}
@@ -892,7 +893,14 @@ export default function HomeClient({
           busy={busy}
           searching={searching}
           selectionOpen={riderSelectionOpen}
-          openSelection={() => setRiderSelectionOpen(true)}
+          openSelection={() => {
+            if (!riderPins.pickup || !riderPins.destination) {
+              setError(null);
+              setRouteRequiredPromptOpen(true);
+              return;
+            }
+            setRiderSelectionOpen(true);
+          }}
           closeSelection={() => setRiderSelectionOpen(false)}
         />
       ) : null}
@@ -977,26 +985,6 @@ function RoleChangePrompt({
     </div>
   );
 }
-function PublishRouteRequiredPrompt({ close }: { close: () => void }) {
-  return (
-    <div className="location-prompt-backdrop" role="presentation">
-      <section
-        className="location-prompt"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="publish-route-required-title"
-      >
-        <h2 id="publish-route-required-title">Add your route first</h2>
-        <p>Add your starting point and destination to offer a ride.</p>
-        <div className="location-prompt-actions">
-          <button type="button" className="primary" onClick={close}>
-            OKAY
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
 function DriverForm(props: {
   pins: { origin?: Pin; destination?: Pin };
   countryPreference: string | null;
@@ -1018,6 +1006,10 @@ function DriverForm(props: {
   const payIdRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const submit = () => {
+    if (!props.pins.origin || !props.pins.destination) {
+      props.submit();
+      return;
+    }
     priceRef.current?.setCustomValidity(
       Number(props.price) > 0 && validFare(Number(props.price))
         ? "" : CONTRIBUTION_ERROR,
@@ -1106,7 +1098,7 @@ function RiderForm(props: {
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <ScheduleFields date={props.date} time={props.time} setDate={props.setDate} setTime={props.setTime} optional />
-        <button type="button" className="primary" disabled={!props.pins.pickup || !props.pins.destination} onClick={props.openSelection}>FIND A RIDE</button>
+        <button type="button" className="primary" onClick={props.openSelection}>FIND A RIDE</button>
       </div>
     </div>
   );

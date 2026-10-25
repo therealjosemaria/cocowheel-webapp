@@ -10,7 +10,11 @@ function updated() {
   window.dispatchEvent(new Event("focus"));
 }
 
-export function Message({ text, close }: { text: string; close: () => void }) {
+export function RouteRequiredPrompt({ close }: { close: () => void }) {
+  return <Message label="Route required" text="Choose where from and where to." close={close} />;
+}
+
+export function Message({ text, close, label = "Ride update" }: { text: string; close: () => void; label?: string }) {
   const dialog = useRef<HTMLElement | null>(null);
   useDialogFocus(dialog, close);
   return (
@@ -21,7 +25,7 @@ export function Message({ text, close }: { text: string; close: () => void }) {
         className="cancel-prompt"
         role="dialog"
         aria-modal="true"
-        aria-label="Ride update"
+        aria-label={label}
       >
         <p>{text}</p>
         <button className="primary" onClick={close}>
