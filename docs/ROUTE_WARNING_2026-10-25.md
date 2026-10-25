@@ -2,7 +2,7 @@
 
 Baseline: 939524a. Find and Offer now use the same enabled-before-entry behaviour.
 Either missing endpoint opens RouteRequiredPrompt, a thin wrapper around the
-existing Message dialog: regular sentence “Choose where from and where to.”,
+existing Message dialog: regular sentence “Choose ‘Where from’ and ‘Where to’ to continue.”,
 one OKAY action and an accessible Route required name, without a visible heading.
 The ride-preview fallback uses the same component instead of duplicated markup.
 No route-specific headings or second explanatory sentence remain.
@@ -28,3 +28,11 @@ shared component reuse and focus handling. Physical phones and production
 frontend deployment were not verified. The preview fallback was source-reviewed
 to use the same component; its missing-context entry was not separately exercised.
 No API restart is required; a push is not verified frontend deployment.
+
+Copy refinement after 64e4215: added quoted, sentence-case field names and
+“to continue” to explain the next step without role-specific copy. Regular
+weight, centred placement, 20px action gap and all behaviour remain unchanged.
+Retest: 168 tests, lint, build and the same isolated browser command passed at
+320/390/844/1440px. Mobile and desktop whole-screen captures for both roles
+were visually reviewed for wrapping, emphasis and spacing. Physical devices
+and production deployment remain unverified.

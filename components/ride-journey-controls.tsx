@@ -11,7 +11,7 @@ function updated() {
 }
 
 export function RouteRequiredPrompt({ close }: { close: () => void }) {
-  return <Message label="Route required" text="Choose where from and where to." close={close} />;
+  return <Message label="Route required" text="Choose ‘Where from’ and ‘Where to’ to continue." close={close} />;
 }
 
 export function Message({ text, close, label = "Ride update" }: { text: string; close: () => void; label?: string }) {

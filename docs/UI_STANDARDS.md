@@ -275,7 +275,9 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 - Poor-fit and completion confirmations use the centred `cancel-prompt` shell. GPS permission uses the existing bottom-sheet `location-prompt` shell. Do not create a new one-off appearance.
 - Keep one concise message, no redundant visible title. Cancellation retains the established buttons-only design. Give dialogs accessible names even without visible titles.
 - Missing-route warnings in Find, Offer and ride preview share RouteRequiredPrompt,
-  reusing Message: “Choose where from and where to.” plus OKAY, no visible heading.
+  reusing Message: “Choose ‘Where from’ and ‘Where to’ to continue.” plus OKAY,
+  no visible heading. Quoted sentence-case field names identify the controls;
+  keep the whole sentence regular-weight and retain the shared 20px action gap.
   Use the same sentence if one or both endpoints are missing. Find/Offer remain
   enabled before entry; incomplete submission preserves the form without opening
   a picker or making a search/publication request. Escape/OKAY restores focus.

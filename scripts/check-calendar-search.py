@@ -58,7 +58,7 @@ with sync_playwright() as p:
             before = (len(searches), len(offers))
             action.click()
             warning = page.get_by_role('dialog', name='Route required', exact=True)
-            expect(warning.get_by_text('Choose where from and where to.', exact=True)).to_be_visible()
+            expect(warning.get_by_text('Choose ‘Where from’ and ‘Where to’ to continue.', exact=True)).to_be_visible()
             expect(warning.get_by_role('heading')).to_have_count(0)
             message_box = warning.locator('p').bounding_box()
             action_box = warning.locator('.cancel-prompt-actions').bounding_box()
