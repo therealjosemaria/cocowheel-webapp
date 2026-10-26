@@ -1,5 +1,39 @@
 # Rider-posted requests and driver discovery
 
+## Card selection follow-up — 27 October 2026
+
+Baseline 8fc96d8: the card body previously had no selection handler; only Show
+route loaded a preview. An unfiltered search therefore stayed at Sydney without
+routes when a user tapped the card. Identity/summary taps now select that request
+through a native button with an extended card hit area. Keyboard Enter/Space
+uses the same button; aria-pressed and Find's existing selected outline/inset
+marker identify the active request. Show/Hide route still toggles selection;
+Offer a ride is a sibling action outside the extended hit area, never a selection
+or publication side effect. No automatic first-result selection is introduced.
+
+Identity uses the existing ParticipantName photo/placeholder and name, with
+12px inset and Find's 14px bold name size. Shared rider summary cells read
+Contribution; the amount and No contribution offered text are unchanged.
+Leaflet/OSM remain the renderer/basemap. Geoapify attribution appears only once
+the selected road geometry loads through the existing route-preview API; errors
+retain endpoints and the existing retry notice. No backend/provider changes.
+
+Verification: npm test passed 191 tests; final lint and production build passed.
+Using the isolated localhost:3201 frontend, `check-request-maps.py`,
+`check-own-request.py` and `check-rider-contributions.py` all passed at
+320/390/844/1440px (Playwright Python in /tmp/gumwheel-pickup-check-env).
+APIs were mocked and external traffic blocked: body tap, keyboard selection,
+selected marker, one route, cache, failure/retry, independent offer action,
+self-offer warning, contribution display and Activity/details were checked.
+The first run found an ambiguous accessible Show route label; selection now has
+the distinct Select journey from [name] label and the full rerun passed.
+Whole-screen mobile/desktop selection screenshots were reviewed for identity
+spacing, emphasis, contribution wrapping and separate actions. A separate bounded
+public /api/route-preview check using generic Sydney landmarks returned 119
+points, confirming the deployed road provider responds; no user journey was
+changed. Physical-device Safari and the new frontend deployment remain unverified.
+No API restart is required. The earlier messaging scroll assertion was not rerun.
+
 ## Shared results layout — 27 October 2026
 
 Baseline e1ce191: discovery results now reuse the same JourneyResultsLayout,

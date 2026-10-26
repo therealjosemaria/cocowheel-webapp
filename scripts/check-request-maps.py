@@ -35,7 +35,7 @@ with sync_playwright() as p:
                     r.fulfill(status=503, json={'error': 'ROUTE_PREVIEW_UNAVAILABLE'}); return
                 data = {'points': [payload['origin'], {'latitude': -33.895, 'longitude': 151.25}, payload['destination']]}
             elif path.startswith('profile-photo/'):
-                r.fulfill(content_type='image/svg+xml', body='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#e2e8f0"/></svg>'); return
+                r.fulfill(content_type='image/svg+xml', body='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#f1f5f9"/><circle cx="12" cy="8" r="3" fill="#64748b"/><path d="M5 22v-3a7 7 0 0 1 14 0v3" fill="#64748b"/></svg>'); return
             elif r.request.method == 'POST': writes.append(path)
             r.fulfill(json=data)
         page.route('**/api/**', api)
@@ -62,17 +62,27 @@ with sync_playwright() as p:
         assert page.locator('.ride-selection-map').bounding_box()['y'] < listing.bounding_box()['y']
         page.screenshot(path=f'/tmp/request-results-initial-{width}.png', full_page=True)
         assert routes == [], 'No routing calls for unseen request cards'
-        cards.first.get_by_role('button', name='Show route', exact=True).click()
+        expect(cards.first.get_by_text('Contribution', exact=True)).to_be_visible()
+        # Tapping the request body (not Show route) selects and routes it.
+        cards.first.click(position={'x': 50, 'y': 80})
+        expect(cards.first).to_have_class('activity-card journey-request-option selected')
+        expect(cards.first.get_by_role('button', name='Select journey from tester01', exact=True)).to_have_attribute('aria-pressed', 'true')
         expect(page.get_by_text('Road path by', exact=False)).to_be_visible()
         expect(page.locator('.ride-selection-map path.leaflet-interactive[fill="none"]')).to_have_count(1)
         expect(page.get_by_text('Approximate routes', exact=True)).to_have_count(0)
         assert len(routes) == 1 and routes[0]['origin']['latitude'] == origin['latitude']
+        page.screenshot(path=f'/tmp/request-card-selected-{width}.png', full_page=True)
         cards.first.get_by_role('button', name='Hide route').click()
+        expect(cards.first.get_by_role('button', name='Select journey from tester01', exact=True)).to_have_attribute('aria-pressed', 'false')
         cards.first.get_by_role('button', name='Show route').click()
         expect(page.get_by_text('Road path by', exact=False)).to_be_visible()
         assert len(routes) == 1, 'Reuse the existing session road cache'
         failure['enabled'] = True
-        cards.nth(1).get_by_role('button', name='Show route').click()
+        selector = cards.nth(1).get_by_role('button', name='Select journey from other001', exact=True)
+        selector.focus()
+        page.keyboard.press('Enter')
+        expect(cards.nth(1)).to_have_class('activity-card journey-request-option selected')
+        expect(cards.first.get_by_role('button', name='Select journey from tester01', exact=True)).to_have_attribute('aria-pressed', 'false')
         expect(cards.first.get_by_role('button', name='Show route')).to_be_visible()
         expect(page.get_by_text('Road route unavailable.', exact=False)).to_be_visible()
         expect(page.locator('.ride-selection-map path.leaflet-interactive[fill="none"]')).to_have_count(0)
@@ -84,6 +94,7 @@ with sync_playwright() as p:
         cards.nth(1).get_by_role('button',name='Offer a ride',exact=True).click()
         expect(page.get_by_role('dialog',name='Offer a ride',exact=True)).to_be_visible()
         page.keyboard.press('Escape')
+        expect(selector).to_have_attribute('aria-pressed', 'true')
         assert not writes, 'Selecting and reviewing must not publish an offer'
         page.get_by_role('button',name='Back to route search',exact=True).click()
         expect(page.get_by_role('heading',name='Journey requests',exact=True)).to_be_visible()

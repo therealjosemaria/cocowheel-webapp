@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+27 October request-selection follow-up: tapping a discovery card's identity or
+summary selects its route, using Find's existing selected border, pale surface
+and inset marker. A native identity button supports keyboard selection and
+aria-pressed; Show/Hide route and Offer a ride remain separate controls. Reuse
+ParticipantName with a 12px header inset and 14px bold name; no new avatar/icon
+design. Contribution replaces Offered contribution in shared summary cells.
+
 27 October request results supersedes the old form-framed results layout: reuse
 JourneyResultsLayout, JourneyResultsMap and JourneyResultsList with Find's map,
 Back placement and bounded scrolling list. Search retains its existing heading

@@ -91,7 +91,7 @@ export function DemandRouteSummary({
 
 function DemandContribution({ request }: { request: Pick<RiderDemand, "offeredContributionAud"> }) {
   return <div>
-    <dt><RideFieldLabel icon="price">Offered contribution</RideFieldLabel></dt>
+    <dt><RideFieldLabel icon="price">Contribution</RideFieldLabel></dt>
     <dd>{request.offeredContributionAud ? fareLabel(request.offeredContributionAud) : "No contribution offered"}</dd>
   </div>;
 }
@@ -314,8 +314,16 @@ export function FindRiders({
             </p>
           )}
           {results.map((request) => (
-            <article className="activity-card" key={request.id}>
-              <ParticipantName name={request.alias} />
+            <article className={`activity-card journey-request-option${selected?.id === request.id ? " selected" : ""}`} key={request.id}>
+              <button
+                type="button"
+                className="journey-request-select"
+                aria-label={`Select journey from ${request.alias}`}
+                aria-pressed={selected?.id === request.id}
+                onClick={() => setSelected(request)}
+              >
+                <ParticipantName name={request.alias} />
+              </button>
               <DemandRouteSummary route={request} contribution={request} />
               <div className="demand-actions driver-request-buttons">
                 <button

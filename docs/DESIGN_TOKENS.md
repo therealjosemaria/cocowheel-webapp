@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+Request discovery selection shares `.ride-option.selected` styling: ink border,
+subtle surface and 3px inset marker. Identity headers reuse 14px/bold, 12px inset,
+24px participant photos and the existing 6px photo/name gap, with a 44px minimum
+native button. Its extended tap area excludes the separate action buttons.
+
 27 October request results reuse ride-selection-page/map/back/options/list tokens:
 the existing responsive 310px-minimum map and 31svh list cap (240px desktop).
 Request cards use the list's 8px gaps, not the old discovery 16px card margins;

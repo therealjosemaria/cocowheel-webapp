@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+Journey-request cards are selectable by tapping their name or summary, matching
+Find's selected outline/inset marker. Selection loads that request's road route;
+Show/Hide route remains available and Offer a ride stays independent. Identity
+rows reuse the participant photo and compact bold name with a 12px inset. Shared
+rider contribution cells now say Contribution. See the request guide below.
+
 Journey-request discovery now reuses Find a journey's results frame: map above a
 bounded scrolling list, with text Back on the map returning to preserved filters.
 Only explicitly selected rider routes appear on the map; unfiltered discovery
