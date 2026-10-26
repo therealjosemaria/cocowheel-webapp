@@ -34,6 +34,8 @@ import ContributionChoice from "./contribution-choice";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import { Message } from "./ride-journey-controls";
 import RideStatusText from "./ride-status-text";
+import { JourneyUpdateMarker, useJourneyUpdate } from "./journey-update-context";
+import { demandJourneyKey, offerTarget } from "@/lib/journey-updates";
 
 const SELF_OFFER_MESSAGE = "You can’t offer a ride to yourself.";
 const location = (pin: Pin) =>
@@ -488,6 +490,7 @@ function DemandOfferForm({
 
 function RequestedJourneyFields({ request, details = false }: { request: RiderDemand; details?: boolean }) {
   const status = demandStatusLabel(request.status);
+  const update = useJourneyUpdate(demandJourneyKey(request.id));
   return <dl className="activity-card-fields">
     <div><dt><RideFieldLabel icon="status">Status</RideFieldLabel></dt>
       <dd className={`activity-status${request.status === "CANCELLED" ? " cancelled" : request.status === "EXPIRED" ? " expired" : ""}`}><RideStatusText label={status} /></dd></div>
@@ -496,8 +499,9 @@ function RequestedJourneyFields({ request, details = false }: { request: RiderDe
     <div><dt><RideFieldLabel icon="to">Where to?</RideFieldLabel></dt><dd>{location(request.destination)}</dd></div>
     {!details && <div className="activity-card-action">
       <dt><RideFieldLabel icon="view">View</RideFieldLabel></dt>
-      <dd><Link className="activity-open" href={`/activity/requests/${encodeURIComponent(request.id)}`}
-        aria-label={`Details for journey requested from ${location(request.origin)} to ${location(request.destination)}`}>DETAILS</Link></dd>
+      <dd><Link className="activity-open" href={update?.href ?? `/activity/requests/${encodeURIComponent(request.id)}`}
+        aria-label={`Details for journey requested from ${location(request.origin)} to ${location(request.destination)}`}>DETAILS</Link>
+        <JourneyUpdateMarker id={demandJourneyKey(request.id)} /></dd>
     </div>}
   </dl>;
 }
@@ -626,7 +630,7 @@ export function RiderDemandActivity({
               </button>
           </div>}
           {requestId && request.offers.map((offer) => (
-            <div className="demand-offer" key={offer.id}>
+            <div className="demand-offer" id={offerTarget(offer.id)} key={offer.id}>
               <ParticipantName name={offer.driverAlias} />
               <p>
                 {departure(offer.departureAt)} · {fareLabel(offer.priceAud)}

@@ -2,6 +2,52 @@
 
 ## Implemented scope
 
+27 October 2026 (baseline b38fa99): supersedes the unconditional Activity shortcut
+and per-event Profile count below. Navigation groups unread notices/messages by
+ride ID, and unread driver offers by posted-request ID. One group links directly
+to its first unseen request/pickup/offer; messages are the fallback target and use
+the established explicit conversation deep link. Multiple groups link to
+/activity#updates; each relevant card shows Update under DETAILS and highlights
+once when it enters the viewport after that navigation. The label persists until
+review, not just until the highlight ends. No updates links to /activity.
+
+All current rides from the existing /api/current response participate, not just
+current. When pendingDemandOffers is nonzero, the existing header refresh also
+fetches owner-only /api/rider-demands to resolve offer IDs/destinations. No new
+timer or endpoint. A failed lookup never invents a target; initial failure leaves
+the ordinary Activity link, transient failures retain previously loaded notices.
+Overlapping header loads are sequence-guarded; identity changes reset cached
+journeys, and 401/403 clears them. Shared React context carries unread destinations
+to Activity without another polling loop or server-rendered global user state.
+
+Pending offers on OPEN requests use demand-offer:<offerId> keys in the existing
+account-scoped last-500 read storage. The existing observer acknowledges only
+after the offer detail is 60% visible for 700ms in a visible document. Opening
+Profile or Activity summaries does not acknowledge. Messages remain server-owned
+read state; acceptance/request notices keep their existing visibility rules.
+Reviewing an offer does not accept/decline it. Pending offers remain actionable
+in Details after their notification clears. Fulfilled/withdrawn/expired posts do
+not generate notices: the confirmed ride is the single acceptance destination.
+This is frontend-only; permissions, pairing and closure are unchanged. No restart.
+
+Checks (27 October, baseline b38fa99 plus this change): 190 regression tests,
+lint and production build passed. The sandboxed test/build attempts required a
+retry outside the sandbox for local IPC/build support. Notification browser
+checks use scripts/check-journey-update-navigation.py against an isolated :3201
+production preview, mocked APIs and blocked external traffic: offer, driver,
+accepted rider, multiple journeys and no updates at 320/390/844/1440px. Coverage
+includes exact targets, disclosure opening, read persistence, summaries remaining
+unread, per-card highlighting, auth reset and no application writes/errors/overflow.
+The existing scripts/check-profile-posts.py also passed all 28 cases. Whole-screen
+Profile, Activity and driver/rider detail screenshots were reviewed on mobile and
+desktop for hierarchy, spacing, marker weight and unchanged controls. Synthetic
+photo fixtures/map-ready waits were corrected before final visual review. The older
+check-ride-updates.py expectations were updated but its full scenario was not rerun.
+React review checked stable context setters, effect/observer cleanup, account-scoped
+markers and reuse of existing detail targets. Backend owner queries/response shapes
+were inspected; browser APIs were mocked, not a production data-flow certification.
+Physical devices, live providers and deployed frontend remain unverified.
+
 26 October 2026: Profile now has one Your journeys link to /activity for active
 posts, active rides and pending demand offers. This supersedes the Profile
 per-ride link/first-unread anchor behaviour described below. The Profile badge

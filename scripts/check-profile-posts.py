@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright, expect
 
 BASE = 'http://127.0.0.1:3201'
 pin = {'latitude': -33.9, 'longitude': 151.2, 'label': 'Example suburb'}
-post = {'id': 'post-1', 'origin': pin, 'destination': pin, 'status': 'OPEN'}
+post = {'id': 'post-1', 'origin': pin, 'destination': pin, 'status': 'OPEN', 'date': 'any', 'time': '', 'expiresAt': '2099-10-28T01:00:00Z'}
 ride = {'rideId': 'COCO-TEST123', 'status': 'REQUESTED', 'driverAlias': 'driver01',
         'priceAud': 0, 'plannedRoute': {'origin': pin, 'destination': pin},
         'request': {'requestId': 'join-1', 'status': 'PENDING', 'pickup': pin, 'destination': pin}}
@@ -41,28 +41,33 @@ with sync_playwright() as p:
                 elif path == 'history':
                     data = {'driver': [], 'rider': []}
                 elif path == 'rider-demands':
-                    data = {'requests': [], 'sent': []}
+                    data = {'requests': [dict(post, offers=[{'id': 'offer-1', 'rideId': 'COCO-OFFER', 'status': 'PENDING',
+                        'driverAlias': 'driver02', 'departureAt': '2099-10-28T01:00:00Z', 'priceAud': 0}])] if offers else [], 'sent': []}
                 r.fulfill(json=data)
             page.route('**/api/**', api)
             page.goto(BASE + '/?start=rider')
             button = page.get_by_role('button', name='Profile:', exact=False)
-            notifications = offers + (2 if name == 'messages-offer' else 0)
+            notifications = offers + (1 if name == 'messages-offer' else 0)
             expect(button).to_have_attribute('aria-label', 'Profile: tester01' + (f', {notifications} updates' if notifications else ''))
             button.click()
             region = page.get_by_role('region', name='Your journeys', exact=True)
             expect(region.locator('a')).to_have_count(count)
             journey_link = region.get_by_role('link', name='Your journeys', exact=False)
             expect(journey_link).to_have_count(1)
-            expect(journey_link).to_have_attribute('href', '/activity')
+            expected = '/activity#updates' if notifications > 1 else '/activity/requests/post-1#offer-offer-1' if offers else '/activity'
+            expect(journey_link).to_have_attribute('href', expected)
             if notifications:
                 expect(region.get_by_text(f'{notifications} update' + ('s' if notifications != 1 else '') + ' to review')).to_be_visible()
             page.wait_for_timeout(250)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             page.screenshot(path=f'/tmp/profile-post-{name}-{width}.png', full_page=True)
             journey_link.click()
-            expect(page).to_have_url(BASE + '/activity')
+            expect(page).to_have_url(BASE + expected)
             expect(region).not_to_be_visible()
-            expect(page.get_by_role('heading', name='Activity', exact=True)).to_be_visible()
+            if expected.startswith('/activity/requests/'):
+                expect(page.get_by_role('button', name='Accept ride', exact=True)).to_be_visible()
+            else:
+                expect(page.get_by_role('heading', name='Activity', exact=True)).to_be_visible()
             page.wait_for_timeout(350)
             assert not errors, errors
             print(f'PASS {width} {name}: grouping, badge, cards, no overflow/errors', flush=True)

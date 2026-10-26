@@ -16,6 +16,8 @@ import {
 import type { Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
 import RideFieldLabel from "./ride-field-label";
+import { JourneyUpdateMarker, useJourneyUpdate } from "./journey-update-context";
+import { rideJourneyKey } from "@/lib/journey-updates";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
@@ -193,6 +195,7 @@ function ActivityCard({
   const [endPromptOpen, setEndPromptOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
+  const update = useJourneyUpdate(rideJourneyKey(ride.rideId));
   const status = participantStatusLabel(
     ride.status,
     role === "RIDER" ? ride.request?.status : undefined,
@@ -329,11 +332,12 @@ function ActivityCard({
             <dd>
               <Link
                 className="activity-open"
-                href={href}
+                href={update?.href ?? href}
                 aria-label={`Details for ride from ${locationText(route?.origin)} to ${locationText(route?.destination)}`}
               >
                 DETAILS
               </Link>
+              <JourneyUpdateMarker id={rideJourneyKey(ride.rideId)} />
             </dd>
           </div>
           {canEndRequest ? (

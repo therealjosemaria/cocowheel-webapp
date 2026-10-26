@@ -79,11 +79,17 @@ path fulfils an unexpired post atomically; competing invitations become unavaila
 Accepting an invitation withdraws a pending join within the same transaction,
 rolling back on failure. Only one confirmed pairing is permitted. Fulfilled posts
 stay in history and are not reopened automatically if the ride later cancels.
-Profile now consolidates those cards into one **Your journeys** link to Activity
+Profile consolidates those cards into one **Your journeys** link
 when an active post, ride or pending offer exists. It covers both roles and a
 coexisting rider post/pending join, without an accordion. Existing polling and
-the Profile badge remain; the link shows a combined update count when nonzero.
-Opening it neither acknowledges updates nor opens a conversation automatically.
+the Profile badge remain; the count now groups unread updates by journey.
+One updated journey opens its detail/first unread target; multiple journeys open
+Activity with persistent Update indicators and a brief neutral highlight as each
+affected card becomes visible. No updates opens Activity normally. List viewing
+does not acknowledge updates. Driver offers use the existing owner activity API
+when the current poll reports pending offers, and visible offer details reuse
+account-scoped read markers. Fulfilled posts add no duplicate acceptance notice.
+Explicit message-only navigation opens its conversation. See [ride updates](docs/RIDE_UPDATES.md).
 A post alone does not add an unread badge. Success links say View your
 post. Request to join stays enabled without a selection and opens the shared
 “Select a ride from the list to continue.” notice; submission remains protected.

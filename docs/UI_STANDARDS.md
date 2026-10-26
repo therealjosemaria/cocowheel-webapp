@@ -4,6 +4,15 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+27 October notification navigation supersedes the unconditional Profile-to-Activity
+shortcut below. Count journeys needing review, not messages/offers separately.
+One opens its detail and unread target; multiple open Activity#updates. Relevant
+cards keep a regular Update caption beneath DETAILS until content is reviewed,
+with the existing neutral two-second highlight when visible after explicit
+navigation (reduced-motion respected). No automatic scrolling on incoming updates.
+DETAILS follows that card's unread target. No updates uses ordinary Activity.
+Fulfilment of a rider post does not duplicate the accepted-ride notification.
+
 26 October requested-journey details supersedes inline Activity request maps and
 offer controls below. Activity summaries use the ordinary activity-card-fields:
 Status/Where from, Departure/Where to, then a full-width View cell with the same

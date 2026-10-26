@@ -105,6 +105,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Journey update markers reuse active-ride-update text below DETAILS with a 4px
+  gap and regular weight. Activity highlighting reuses request-arrived and its
+  neutral two-second animation/reduced-motion rule; no new colour or badge style.
+
 - Home journey CTAs reuse RideFieldLabel with --icon-label set to --icon-field
   (18px) and an 8px gap. Existing rider/car paths and stroke weight are unchanged.
   Centre the whole group; use currentColor (white on dark, ink on white), with

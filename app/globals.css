@@ -258,6 +258,7 @@ button:disabled {
 }
 .ride-update-notice button { min-height: 44px; background: var(--surface); }
 .request-arrived { animation: request-arrival 2s ease-out; }
+.journey-update-marker { display: block; margin-top: 4px; font-weight: var(--weight-regular); }
 @keyframes request-arrival { from { background-color: var(--surface-subtle); } to { background-color: var(--surface); } }
 @media (prefers-reduced-motion: reduce) { .request-arrived { animation: none; } }
 .navigation-actions {

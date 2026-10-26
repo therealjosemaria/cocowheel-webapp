@@ -46,13 +46,13 @@ with sync_playwright() as p:
                 expect(page.locator('.profile-update-badge')).to_have_count(0)
                 state['accepted'] = True
                 page.evaluate("window.dispatchEvent(new Event('cocowheels:identity-changed'))")
-            expect(page.locator('.profile-update-badge')).to_have_text('2' if driver else '1')
+            expect(page.locator('.profile-update-badge')).to_have_text('1')
             page.get_by_role('button',name='Profile:',exact=False).click()
             card = page.locator('.profile-active-ride')
             expect(card).to_have_count(1)
             expect(card).to_contain_text('Your journeys')
-            expect(card).to_contain_text('2 updates to review' if driver else '1 update to review')
-            expect(card).to_have_attribute('href', '/activity')
+            expect(card).to_contain_text('1 update to review')
+            expect(card).to_have_attribute('href', '/activity/test-ride#request-req0' if driver else '/activity/test-ride?request=req0#pickup-test-ride')
             # Opening Profile does not acknowledge anything.
             expect(page.locator('.profile-update-badge')).to_be_visible()
             expect(page.locator('#guest-identity-popover')).to_have_css('opacity','1')
@@ -115,10 +115,9 @@ with sync_playwright() as p:
                 expect(page.locator('.profile-update-badge')).to_have_text('1')
                 expect(notice).to_be_visible()
                 assert page.evaluate('scrollY') == 0
-                # Profile is now the aggregate Activity shortcut; explicit deep links
-                # still open a specific unseen request without changing that shortcut.
+                # One journey goes straight to its first unseen request.
                 page.get_by_role('button',name='Profile:',exact=False).click()
-                expect(page.locator('.profile-active-ride')).to_have_attribute('href', '/activity')
+                expect(page.locator('.profile-active-ride')).to_have_attribute('href', '/activity/test-ride#request-req2')
                 page.goto('http://127.0.0.1:3090/activity/test-ride#request-req2')
                 expect(page.locator('#request-req2')).to_be_in_viewport()
                 expect(accordions.nth(2)).to_have_attribute('open', '')

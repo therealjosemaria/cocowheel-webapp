@@ -7,12 +7,13 @@ import type { RatingSummary } from "@/lib/rating-types";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { rideUpdates } from "@/lib/ride-updates";
+import { journeyUpdates, journeyUpdatesHref } from "@/lib/journey-updates";
+import { usePublishJourneyUpdates } from "./journey-update-context";
 import RideUpdateNotice, { readSeen } from "./ride-update-notice";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { requestJson } from "@/lib/api-transport";
 import type { ActiveRide } from "./active-ride-link";
-import type { RiderDemand } from "@/lib/rider-demand";
+import type { RiderDemand, DemandActivity } from "@/lib/rider-demand";
 import { activeRideTabForPath } from "@/lib/navigation-state";
 
 export default function AppNavigation() {
@@ -30,15 +31,18 @@ export default function AppNavigation() {
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [activePost, setActivePost] = useState<RiderDemand | null>(null);
   const [demandOffers, setDemandOffers] = useState(0);
+  const [currents, setCurrents] = useState<ActiveRide[]>([]);
+  const [demandActivity, setDemandActivity] = useState<DemandActivity | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
-  const messageThreads =
-    activeRide?.ride.conversations?.filter((c) => c.unread > 0) ?? [];
-  const messageCount = messageThreads.reduce((n, c) => n + c.unread, 0);
-  const updates = useMemo(
-    () => rideUpdates(activeRide).filter((u) => !seen.includes(u.key)),
-    [activeRide, seen],
+  const loadSequence = useRef(0);
+  const { groups, notices: updates } = useMemo(
+    () => journeyUpdates(currents, demandActivity, seen),
+    [currents, demandActivity, seen],
   );
+  const updateCount = groups.length;
+  const publishUpdates = usePublishJourneyUpdates();
+  useEffect(() => { publishUpdates(groups); }, [groups, publishUpdates]);
   const markSeen = useCallback(
     (key: string) => {
       if (!accountKey) return;
@@ -117,6 +121,7 @@ export default function AppNavigation() {
       : pathname === href || pathname.startsWith(`${href}/`);
 
   const loadIdentities = useCallback(async () => {
+    const sequence = ++loadSequence.current;
     try {
       const result = await cocowheelsApi<{
         unikey: string;
@@ -124,12 +129,16 @@ export default function AppNavigation() {
         canAdmin: boolean;
         ratings?: { driver: RatingSummary; rider: RatingSummary };
       }>("/api/university/session");
+      if (sequence !== loadSequence.current) return;
       setGuestName(result.username ?? result.unikey);
       setAccountKey(result.unikey);
       if (seenAccount.current !== result.unikey) {
         seenAccount.current = result.unikey;
         setActiveRide(null);
         setActivePost(null);
+        setCurrents([]);
+        setDemandActivity(null);
+        setDemandOffers(0);
         setSeen(readSeen(result.unikey));
       }
       setCanAdmin(result.canAdmin === true);
@@ -140,16 +149,24 @@ export default function AppNavigation() {
         pendingDemandOffers?: number;
         activeDemand?: RiderDemand | null;
       }>("/api/current");
+      if (sequence !== loadSequence.current) return;
       setActiveRide(activity.current);
       setActivePost(activity.activeDemand ?? null);
+      setCurrents(activity.currents ?? (activity.current ? [activity.current] : []));
       setDemandOffers(activity.pendingDemandOffers ?? 0);
       window.dispatchEvent(
         new CustomEvent("cocowheels:current-updated", {
           detail: activity.currents,
         }),
       );
+      if (activity.pendingDemandOffers) {
+        const demands = await cocowheelsApi<DemandActivity>("/api/rider-demands");
+        if (sequence !== loadSequence.current) return;
+        setDemandActivity(demands);
+      } else setDemandActivity(null);
     } catch (reason) {
-      if (reason instanceof ApiError && reason.status === 401) {
+      if (sequence !== loadSequence.current) return;
+      if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         setGuestName(null);
         setDemandOffers(0);
         setActivePost(null);
@@ -157,6 +174,8 @@ export default function AppNavigation() {
         setCanAdmin(false);
         setRatings(null);
         setActiveRide(null);
+        setCurrents([]);
+        setDemandActivity(null);
         setSeen([]);
         seenAccount.current = null;
         window.dispatchEvent(
@@ -300,7 +319,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Profile: ${identityLabel}${updates.length + messageCount + demandOffers ? `, ${updates.length + messageCount + demandOffers} updates` : ""}`}
+          aria-label={`Profile: ${identityLabel}${updateCount ? `, ${updateCount} updates` : ""}`}
           onClick={() => {
             clearTimeout(identityCloseTimer.current);
             setOpen(false);
@@ -318,11 +337,11 @@ export default function AppNavigation() {
           {guestName && (
             <ProfileMenuPhoto key={guestName} username={guestName} />
           )}
-          {updates.length + messageCount + demandOffers > 0 && (
+          {updateCount > 0 && (
             <span className="profile-update-badge" aria-hidden="true">
-              {updates.length + messageCount + demandOffers > 99
+              {updateCount > 99
                 ? "99+"
-                : updates.length + messageCount + demandOffers}
+                : updateCount}
             </span>
           )}
         </button>
@@ -368,11 +387,11 @@ export default function AppNavigation() {
             </div>
           )}
           {guestName && (activePost || activeRide || demandOffers > 0) && <section className="profile-current-items" aria-label="Your journeys">
-            <Link className="secondary profile-active-ride" href="/activity" onClick={() => setIdentityOpen(false)}>
+            <Link className="secondary profile-active-ride" href={journeyUpdatesHref(groups)} onClick={() => setIdentityOpen(false)}>
               Your journeys
-              {updates.length + messageCount + demandOffers > 0 && (
+              {updateCount > 0 && (
                 <span className="active-ride-update">
-                  {updates.length + messageCount + demandOffers} update{updates.length + messageCount + demandOffers === 1 ? "" : "s"} to review
+                  {updateCount} update{updateCount === 1 ? "" : "s"} to review
                 </span>
               )}
             </Link>

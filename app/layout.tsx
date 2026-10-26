@@ -6,6 +6,7 @@ import LocationTracker from "@/components/location-tracker";
 import UniversityVerification from "@/components/university-verification";
 import ConnectionNotice from "@/components/connection-notice";
 import WebAnalytics from "@/components/web-analytics";
+import { JourneyUpdateProvider } from "@/components/journey-update-context";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <JourneyUpdateProvider>
         <UniversityVerification />
         <ConnectionNotice />
         <main className="app-shell">
@@ -50,6 +52,7 @@ export default function RootLayout({
           <SiteFooter />
         </main>
         <WebAnalytics />
+        </JourneyUpdateProvider>
       </body>
     </html>
   );
