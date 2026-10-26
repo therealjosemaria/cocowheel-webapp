@@ -125,6 +125,11 @@ Find and Offer now share address-search sheets and separate date/time controls.
 Address sheets show Back without repeating Where from?/Where to? as a heading;
 the input placeholder, accessible input name and dialog name remain. Date/time
 picker headings are unchanged. This applies to every shared sheet-mode route form.
+Selected compact endpoint fields omit recognised Australian state/postcode/country
+suffixes while retaining street/unit numbers and locality. Full stored labels
+remain in search results, the reopened editor and hover titles; coordinates,
+submission payloads and Profile's inline editor are unchanged. Unknown overseas
+formats are retained rather than guessing. See the calendar guide for checks.
 Address entry waits 500ms after typing (minimum three characters); results stay
 inside a full-screen phone picker or centred desktop dialog. Selection returns
 to the form. Find submits only when the rider presses Find a ride. Profile keeps

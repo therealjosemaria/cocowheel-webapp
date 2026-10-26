@@ -8,6 +8,7 @@ import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
 import { searchLocation, rememberSearchLocation } from "@/lib/search-location";
 import RideFieldLabel from "./ride-field-label";
 import { SearchSheet } from "./schedule-fields";
+import { compactAddressLabel } from "@/lib/address-label";
 const recentSearches = new Map<string, { at: number; places: Pin[] }>();
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
@@ -124,13 +125,13 @@ function SheetRouteFields({ origin, destination, setOrigin, setDestination, coun
   const selected = field === "origin" ? origin : destination;
   return <div className="route-search-fields sheet-route-fields">
     <button type="button" className={`secondary address-field${origin ? "" : " address-empty"}`} aria-label="Where from?" title={origin ? locationText(origin) : "Where from?"} aria-haspopup="dialog" onClick={() => setField("origin")}>
-      <RideFieldLabel icon="from">{origin ? locationText(origin) : "Where from?"}</RideFieldLabel></button>
+      <RideFieldLabel icon="from">{origin ? compactAddressLabel(origin) : "Where from?"}</RideFieldLabel></button>
     <button type="button" className="secondary route-swap" aria-label="Swap addresses" title="Swap addresses" onClick={() => {
       setOrigin(destination); setDestination(origin);
       setDrafts({ origin: drafts.destination, destination: drafts.origin });
     }}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20V4m-4 4 4-4 4 4M16 4v16m-4-4 4 4 4-4" /></svg></button>
     <button type="button" className={`secondary address-field${destination ? "" : " address-empty"}`} aria-label="Where to?" title={destination ? locationText(destination) : "Where to?"} aria-haspopup="dialog" onClick={() => setField("destination")}>
-      <RideFieldLabel icon="to">{destination ? locationText(destination) : "Where to?"}</RideFieldLabel></button>
+      <RideFieldLabel icon="to">{destination ? compactAddressLabel(destination) : "Where to?"}</RideFieldLabel></button>
     {field && <SearchSheet hideHeading label={field === "origin" ? "Where from?" : "Where to?"} close={() => setField(null)}>
       <PlaceSearch key={field} automatic autoFocus selectOnFocus
         placeholder={field === "origin" ? "Where from?" : "Where to?"}

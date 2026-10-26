@@ -10,6 +10,19 @@ SHARED_ROUTE_FIELDS_2026-10-22 and SEARCH_OVERLAY_2026-10-23. Profile is unchang
 
 ## Behaviour and boundaries
 
+26 October compact selected labels: sheet-mode RouteFields uses the pure
+compactAddressLabel helper only for the visible selected endpoint captions.
+It removes trailing Australia, recognised Australian state names/abbreviations
+and postcodes when Australian context can be identified. It preserves street
+numbers, unit parts and locality rather than blindly taking the first comma part.
+Unknown overseas formats remain intact; absent labels still show coordinates.
+The original Pin is never changed: titles, reopened search text and results retain
+their full existing label. Search/post still submit canonical coordinates only;
+saved-route serialization is unchanged and never receives the compact caption.
+Find, Post and request discovery reuse this behaviour; Profile's inline editor
+and ride-detail/map labels are unchanged. No API/schema/cache/provider changes
+or restart. Existing field sizing, ellipsis and typography remain unchanged.
+
 26 October address-sheet refinement: shared sheet-mode route editors pass
 hideHeading to SearchSheet for addresses only. Where from?/Where to? remains in
 the input placeholder and accessible input/dialog names, without a duplicate
@@ -78,6 +91,18 @@ Alerts remain once on publication, with existing opt-in, matching and delivery
 deadlines; no departure reminders or calendar synchronization is introduced.
 
 ## Verification
+
+Compact labels (26 October, baseline 5fec70a): npm test passed 185 tests;
+lint and production build passed. The browser command below passed at
+320/390/844/1440px with long address fixtures, full search results, full-label
+reopening/title, compact captions after selection/swap/Back, unchanged canonical
+coordinate payloads, no overflow or browser exceptions. The first run's new
+assertion incorrectly expected an origin/full-label search payload; corrected
+to the existing pickup/coordinate-only contract and reran all widths successfully.
+Whole Find/Post screens visually reviewed at 390/1440px: unchanged hierarchy,
+spacing, typography and mobile ellipsis. APIs mocked and external requests
+blocked; physical devices, live provider formats and production deployment
+remain unverified. No backend restart required.
 
 Commands: npm test; npm run lint; npm run build;
 `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-calendar-search.py`.

@@ -5,8 +5,12 @@ from zoneinfo import ZoneInfo
 
 expect.set_options(timeout=20000)
 BASE = 'http://127.0.0.1:3201'
-origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney'}
-destination = {'latitude': -33.88, 'longitude': 151.25, 'label': 'University of Sydney'}
+origin = {'latitude': -33.88, 'longitude': 151.20, 'label': 'Town Hall, Sydney, NSW 2000, Australia'}
+destination = {'latitude': -33.88, 'longitude': 151.25, 'label': 'University of Sydney, NSW 2006, Australia'}
+short_origin = 'Town Hall, Sydney'
+short_destination = 'University of Sydney'
+def coordinates(pin):
+    return {key: pin[key] for key in ['latitude', 'longitude']}
 tomorrow = datetime.now(ZoneInfo('Australia/Sydney')) + timedelta(days=1)
 date_label = tomorrow.strftime('%a, %-d %b')
 with sync_playwright() as p:
@@ -80,7 +84,12 @@ with sync_playwright() as p:
         missing_route('FIND A JOURNEY', 'rider-empty')
         select_address('Where from?', 'Town Hall', origin['label'])
         missing_route('FIND A JOURNEY', 'rider-partial')
-        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(origin['label'])
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(short_origin)
+        expect(page.get_by_role('button', name='Where from?', exact=True)).not_to_contain_text('Australia')
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_have_attribute('title', origin['label'])
+        page.get_by_role('button', name='Where from?', exact=True).click()
+        expect(page.get_by_role('dialog').get_by_role('textbox')).to_have_value(origin['label'])
+        page.get_by_role('dialog').get_by_role('button', name='Back', exact=True).click()
         page.get_by_role('button', name='Swap addresses').click()
         missing_route('FIND A JOURNEY', 'rider-no-origin')
         page.get_by_role('button', name='Swap addresses').click()
@@ -90,7 +99,7 @@ with sync_playwright() as p:
         boxes = [page.get_by_role('button', name=name, exact=True).bounding_box() for name in ['Where from?', 'Where to?']]
         assert abs(boxes[0]['y'] - boxes[1]['y']) < 1
         assert boxes[1]['x'] >= boxes[0]['x'] + boxes[0]['width'] - 1
-        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(destination['label'])
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(short_destination)
         page.get_by_role('button', name='Swap addresses').click()
         date_button = page.get_by_role('button', name='Departure date:')
         original = date_button.inner_text()
@@ -140,13 +149,15 @@ with sync_playwright() as p:
         page.wait_for_timeout(700)
         assert searches[-1]['departureDate'] == 'any'
         assert searches[-1]['departureTime'] == '12:00'
+        assert searches[-1]['pickup'] == coordinates(origin)
+        assert searches[-1]['destination'] == coordinates(destination)
         back_button = page.get_by_role('button', name='Back to route search', exact=True)
         expect(back_button).to_have_text('Back')
         expect(back_button.locator('svg')).to_have_count(0)
         assert back_button.bounding_box()['height'] >= 44
         page.screenshot(path=f'/tmp/journey-map-back-{width}.png', full_page=True)
         back_button.click()
-        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(origin['label'])
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(short_origin)
         page.get_by_role('button', name='FIND A JOURNEY', exact=True).click()
         page.reload()
         page.get_by_role('button', name='FIND A JOURNEY', exact=True).click()
@@ -159,7 +170,7 @@ with sync_playwright() as p:
         # New page has a fresh module cache.
         select_address('Where from?', 'Town Hall', origin['label'])
         missing_route('POST A JOURNEY', 'driver-partial')
-        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(origin['label'])
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(short_origin)
         page.get_by_role('button', name='Swap addresses').click()
         missing_route('POST A JOURNEY', 'driver-no-origin')
         page.get_by_role('button', name='Swap addresses').click()
@@ -182,6 +193,8 @@ with sync_playwright() as p:
         expected_departure = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
         assert datetime.fromisoformat(offers[0]['scheduledDepartureAt'].replace('Z', '+00:00')) == expected_departure
         assert offers[0]['priceAud'] == 0
+        assert offers[0]['origin'] == coordinates(origin)
+        assert offers[0]['destination'] == coordinates(destination)
         assert not errors, errors
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         print(f'PASS {width}px: debounce, separate search, swap, date draft/cancel, time, Sydney payload, no exceptions/overflow')

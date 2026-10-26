@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+26 October compact address display: sheet-mode Where from?/Where to? controls
+reuse compactAddressLabel to remove recognised Australian administrative suffixes,
+not arbitrary comma-separated chunks. Preserve street/unit numbers and locality.
+Full labels remain in search results, reopened editing and existing title hints.
+Keep existing typography, truncation and geometry; no shortened data is saved.
+Unknown overseas formats and Profile's inline editable fields remain unchanged.
+
 26 October address/request-map refinement: address-search sheets omit the visible
 duplicate Where from?/Where to? heading, keeping Back, the input placeholder and
 accessible names. Date/time headings stay visible. Request discovery and owner
