@@ -1,4 +1,5 @@
 import type { Pin } from "./client-types";
+import { validFare } from "./fare";
 import {
   calendarDay,
   dateCaption,
@@ -17,6 +18,7 @@ export type DemandRoute = {
 };
 export type DemandSearch = Pick<DemandRoute, "date" | "time"> & Partial<Pick<DemandRoute, "origin" | "destination">>;
 export type RiderDemand = DemandRoute & {
+  offeredContributionAud?: number;
   isOwn?: boolean;
   id: string;
   alias: string;
@@ -52,6 +54,14 @@ export function checkedDemandRoute(
   const route = checkedDemandSearch(value, now);
   if (!route.origin || !route.destination) throw new Error("INVALID_DEMAND");
   return { ...route, origin: route.origin, destination: route.destination };
+}
+/** Missing/zero means no contribution offered; never a driver's final fare. */
+export function checkedPostedDemand(value: unknown, now = new Date()) {
+  const route = checkedDemandRoute(value, now);
+  const amount = (value as Record<string, unknown>).offeredContributionAud;
+  if (amount === undefined || amount === 0) return route;
+  if (typeof amount !== "number" || !validFare(amount)) throw new Error("INVALID_FIXED_PRICE");
+  return { ...route, offeredContributionAud: amount };
 }
 export function checkedDemandSearch(value: unknown, now = new Date()): DemandSearch {
   if (!value || typeof value !== "object") throw new Error("INVALID_DEMAND");

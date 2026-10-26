@@ -31,6 +31,7 @@ import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import ParticipantName from "./participant-name";
 import PaymentFields from "./payment-fields";
 import ContributionChoice from "./contribution-choice";
+import ContributionAmount from "./contribution-amount";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import { Message } from "./ride-journey-controls";
 import RideStatusText from "./ride-status-text";
@@ -54,9 +55,11 @@ const post = <T,>(path: string, body: unknown, verified = true) =>
 export function DemandRouteSummary({
   route,
   showSchedule = true,
+  contribution,
 }: {
   route: DemandRoute;
   showSchedule?: boolean;
+  contribution?: RiderDemand;
 }) {
   return (
     <dl className="activity-card-fields demand-fields">
@@ -80,8 +83,16 @@ export function DemandRouteSummary({
           <dd>{demandSchedule(route)}</dd>
         </div>
       )}
+      {contribution && <DemandContribution request={contribution} />}
     </dl>
   );
+}
+
+function DemandContribution({ request }: { request: Pick<RiderDemand, "offeredContributionAud"> }) {
+  return <div>
+    <dt><RideFieldLabel icon="price">Offered contribution</RideFieldLabel></dt>
+    <dd>{request.offeredContributionAud ? fareLabel(request.offeredContributionAud) : "No contribution offered"}</dd>
+  </div>;
 }
 
 function DemandPrompt({
@@ -142,6 +153,10 @@ export function LiftRequestSwitchPrompt(props: { busy: boolean; close: () => voi
 }
 
 export function PostRideRequest({ route }: { route: DemandRoute }) {
+  const [contribution, setContribution] = useState(false);
+  const [fare, setFare] = useState("");
+  const [amountError, setAmountError] = useState<string | null>(null);
+  const amountRef = useRef<HTMLInputElement>(null);
   const [review, setReview] = useState(false);
   const [saved, setSaved] = useState(false);
   const [replacement, setReplacement] = useState<string | null>(null);
@@ -152,6 +167,9 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
       setSaved(false);
       setReview(false);
       setReplacement(null);
+      setContribution(false);
+      setFare("");
+      setAmountError(null);
     };
     window.addEventListener("cocowheels:identity-changed", reset);
     return () =>
@@ -159,9 +177,17 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
   }, []);
   async function save(replaceDemandId?: string) {
     if (busy) return;
+    if (contribution && (!validFare(Number(fare)) || Number(fare) <= 0)) {
+      setAmountError(CONTRIBUTION_ERROR);
+      const disclosure = amountRef.current?.closest("details");
+      if (disclosure) disclosure.open = true;
+      amountRef.current?.focus();
+      return;
+    }
+    setAmountError(null);
     setBusy(true);
     try {
-      await post("/api/rider-demands", { ...route, ...(replaceDemandId ? { replaceDemandId } : {}) }, false);
+      await post("/api/rider-demands", { ...route, offeredContributionAud: contribution ? Number(fare) : 0, ...(replaceDemandId ? { replaceDemandId } : {}) }, false);
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
       setReview(false);
       setSaved(true);
@@ -174,7 +200,7 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
         } catch (lookupError) {
           setError(apiErrorMessage(lookupError));
         }
-      } else setError(apiErrorMessage(reason));
+      } else setError(reason instanceof ApiError && reason.code === "INVALID_FIXED_PRICE" ? CONTRIBUTION_ERROR : apiErrorMessage(reason));
     } finally {
       setBusy(false);
     }
@@ -199,6 +225,10 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
           confirm={() => void save()}
         >
           <DemandRouteSummary route={route} />
+          <ContributionChoice rider checked={contribution} onChange={(checked) => { setContribution(checked); setAmountError(null); }} fare={fare}>
+            <ContributionAmount label="Amount" fare={fare} setFare={(value) => { setFare(value); setAmountError(null); }} inputRef={amountRef} />
+          </ContributionChoice>
+          {amountError && <p role="alert">{amountError}</p>}
           <p className="save-route-profile-note">
             Drivers can see these addresses and offer you a ride.
             <br />
@@ -214,6 +244,7 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
         )}
       {replacement && <DemandPrompt label="Replace your ride request?" action="Replace" cancelLabel="Cancel" busy={busy} close={() => setReplacement(null)} confirm={() => void save(replacement)}>
         <DemandRouteSummary route={route} />
+        <dl className="activity-card-fields demand-fields"><DemandContribution request={{ offeredContributionAud: contribution ? Number(fare) : 0 }} /></dl>
       </DemandPrompt>}
     </>
   );
@@ -287,7 +318,7 @@ export function FindRiders({
           {results.map((request) => (
             <article className="activity-card" key={request.id}>
               <ParticipantName name={request.alias} />
-              <DemandRouteSummary route={request} />
+              <DemandRouteSummary route={request} contribution={request} />
               <div className="demand-actions driver-request-buttons">
                 <button
                   className="secondary"
@@ -433,7 +464,7 @@ function DemandOfferForm({
             className="cancel-prompt demand-prompt"
           >
             <p>Offer {request.alias} a ride?</p>
-            <DemandRouteSummary route={route} showSchedule={false} />
+            <DemandRouteSummary route={route} showSchedule={false} contribution={request} />
             <p className="save-route-profile-note">
               Requested: {demandSchedule(request)}
             </p>
@@ -497,6 +528,7 @@ function RequestedJourneyFields({ request, details = false }: { request: RiderDe
     <div><dt><RideFieldLabel icon="from">Where from?</RideFieldLabel></dt><dd>{location(request.origin)}</dd></div>
     <div><dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt><dd>{demandSchedule(request)}</dd></div>
     <div><dt><RideFieldLabel icon="to">Where to?</RideFieldLabel></dt><dd>{location(request.destination)}</dd></div>
+    <DemandContribution request={request} />
     {!details && <div className="activity-card-action">
       <dt><RideFieldLabel icon="view">View</RideFieldLabel></dt>
       <dd><Link className="activity-open" href={update?.href ?? `/activity/requests/${encodeURIComponent(request.id)}`}

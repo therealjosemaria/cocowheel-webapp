@@ -73,6 +73,36 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+test("rider contributions validate, survive discovery/replacement/history, and do not set the driver's fare", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    for (const amount of [-1, 0.5, 10000.01, 1.001, NaN, Infinity, null, "10", true]) {
+      assert.throws(() => postDemand(db, rider.token, { ...route, offeredContributionAud: amount }, now), /INVALID_FIXED_PRICE/);
+    }
+    const legacy = postDemand(db, rider.token, route, now);
+    assert.equal(legacy.offeredContributionAud, undefined);
+    assert.equal(postDemand(db, rider.token, { ...route, offeredContributionAud: 0 }, now).id, legacy.id);
+    let previous = legacy;
+    for (const amount of [1, 10.25, 10000]) {
+      assert.throws(() => postDemand(db, rider.token, { ...route, offeredContributionAud: amount }, now), /DEMAND_ALREADY_OPEN/);
+      const next = postDemand(db, rider.token, { ...route, offeredContributionAud: amount, replaceDemandId: previous.id }, now);
+      assert.equal(next.offeredContributionAud, amount);
+      assert.equal(postDemand(db, rider.token, { ...route, offeredContributionAud: amount }, now).id, next.id);
+      assert.equal(searchDemands(db, driver.token, route, now)[0].offeredContributionAud, amount);
+      const historical = demandActivity(db, rider.token, now).requests.find(item => item.id === previous.id)!;
+      assert.equal(historical.status, "CANCELLED");
+      assert.equal(historical.offeredContributionAud, previous.offeredContributionAud);
+      previous = next;
+    }
+    const offered = offerDemand(db, driver.token, previous.id, offerBody, now);
+    assert.equal(offered.priceAud, 0);
+    assert.equal(offered.status, "PENDING");
+    assert.equal(activeDemand(db, rider.token, now)?.status, "OPEN");
+    respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now);
+    assert.equal(demandActivity(db, rider.token, now).requests.find(item => item.id === previous.id)!.offeredContributionAud, 10000);
+    assert.equal(getRide(db, offered.rideId, rider.session, now).priceAud, 0);
+  } finally { db.close(); }
+});
 test("ordinary acceptance fulfils the public post and prevents accepting another invitation", () => {
   const { db, rider, driver, other } = fixture();
   try {
@@ -541,12 +571,17 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
   }
   try {
     assert.equal((await call("/api/rider-demands")).status, 401);
-    const posted = await call("/api/rider-demands", rider.token, route);
+    const invalidContribution = await call("/api/rider-demands", rider.token, { ...route, offeredContributionAud: "10" });
+    assert.equal(invalidContribution.status, 400);
+    assert.equal(invalidContribution.body.error, "INVALID_FIXED_PRICE");
+    const posted = await call("/api/rider-demands", rider.token, { ...route, offeredContributionAud: 10.25 });
     assert.equal(posted.status, 201);
+    assert.equal(posted.body.request.offeredContributionAud, 10.25);
     assert.equal((await call("/api/current", rider.token)).body.activeDemand.id, posted.body.request.id);
     assert.equal((await call("/api/current", other.token)).body.activeDemand, null);
     const found = await call("/api/rider-demands/search", driver.token, route);
     assert.equal(found.body.requests.length, 1);
+    assert.equal(found.body.requests[0].offeredContributionAud, 10.25);
     assert.equal(found.body.requests[0].isOwn, false);
     const ownFound = await call("/api/rider-demands/search", rider.token, { date: "any", time: "" });
     assert.equal(ownFound.body.requests[0].id, posted.body.request.id);

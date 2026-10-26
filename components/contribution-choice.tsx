@@ -9,22 +9,24 @@ export default function ContributionChoice({
   fare,
   children,
   controls,
+  rider = false,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   fare: string;
   children: ReactNode;
   controls?: ReactNode;
+  rider?: boolean;
 }) {
   return (
     <details className="contribution-choice">
       <summary>
-        Fare ·{" "}
+        {rider ? "Offered contribution" : "Fare"} ·{" "}
         {checked
           ? Number(fare) > 0 && validFare(Number(fare))
             ? fareLabel(Number(fare))
             : "Contribution"
-          : "Free"}
+          : rider ? "None" : "Free"}
       </summary>
       <div className="contribution-body">
         <label className="usual-alert-choice">
@@ -33,7 +35,7 @@ export default function ContributionChoice({
             checked={checked}
             onChange={(event) => onChange(event.target.checked)}
           />
-          Ask for a contribution
+          {rider ? "Offer a contribution" : "Ask for a contribution"}
         </label>
         {checked ? children : null}
         {controls}

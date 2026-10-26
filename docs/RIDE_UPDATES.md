@@ -2,6 +2,27 @@
 
 ## Implemented scope
 
+27 October Activity status refinement (baseline c6c868e, alongside pending rider
+contribution changes): ActivityCard no longer substitutes Fare for an offered
+journey's Status. It always renders Status/Where from, Driver/Where to, Fare/View.
+The participant-aware Ride offered result is displayed as Available in Activity
+only. Pending/withdrawn/declined rider outcomes still take precedence; accepted,
+underway and historical statuses retain their existing labels. Reuse status icon,
+RideStatusText and grid tokens without new badges, colour or animation. No backend,
+availability, expiry, notification or pairing change; no API restart required.
+
+Checks: lint and production build pass; 11 status/visual-system regressions pass.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-activity-spacing.py`
+passes at 320/390/844/1440px against localhost:3201 with mocked APIs/external
+traffic blocked. Fixtures include published and requested driver offers, pending
+rider, accepted driver, posted demands, sent offers and cancelled history. Status,
+Fare, DETAILS, existing actions and 10px card gaps are checked with no overflow or
+page errors. Full mobile/desktop Activity screenshots reviewed for labels, icon
+prominence, typography and spacing. Physical devices and production deployment
+remain unverified. The initial commit/push was held by the execution approval
+checker; the owner subsequently confirmed pushing both updates to the existing
+GitHub repository's main branch.
+
 27 October 2026 (baseline b38fa99): supersedes the unconditional Activity shortcut
 and per-event Profile count below. Navigation groups unread notices/messages by
 ride ID, and unread driver offers by posted-request ID. One group links directly

@@ -21,7 +21,11 @@ with sync_playwright() as p:
             path = r.request.url.split('/api/')[-1].split('?')[0]
             data = {}
             if path == 'university/session': data = {'unikey': 'tester01'}
-            elif path == 'current': data = {'current': None, 'currents': []}
+            elif path == 'current': data = {'current': None, 'currents': [
+                {'role':'DRIVER','ride':dict(ride,rideId='COCO-OPEN',status='PUBLISHED')},
+                {'role':'DRIVER','ride':dict(ride,rideId='COCO-REQUESTED',status='REQUESTED')},
+                {'role':'RIDER','ride':dict(ride,rideId='COCO-PENDING',status='REQUESTED',request={'requestId':'pending-1','status':'PENDING'})},
+                {'role':'DRIVER','ride':dict(ride,rideId='COCO-ACCEPTED',status='ACCEPTED')}]}
             elif path == 'history': data = {'driver': [ride, dict(ride, rideId='COCO-TEST456')], 'rider': []}
             elif path == 'rider-demands':
                 data = {'requests': [dict(post, status='OPEN', expiresAt='2026-10-28T01:00:00Z', offers=[offer]),
@@ -32,7 +36,16 @@ with sync_playwright() as p:
         page.route('**/api/**', api)
         page.goto(BASE + '/activity')
         cards = page.locator('.activity-card')
-        expect(cards).to_have_count(5)
+        expect(cards).to_have_count(9)
+        current = page.locator('.activity-current .activity-card')
+        expect(current.get_by_text('Available', exact=True)).to_have_count(2)
+        expect(current.get_by_text('Request pending', exact=True)).to_be_visible()
+        expect(current.get_by_text('Awaiting pickup', exact=True)).to_be_visible()
+        for card in current.all():
+            expect(card.locator('dt').first).to_have_text('Status')
+            expect(card.get_by_text('Fare',exact=True)).to_be_visible()
+            expect(card.get_by_text('Free',exact=True)).to_be_visible()
+            expect(card.get_by_role('link',name='Details for ride',exact=False)).to_be_visible()
         expect(page.locator('.demand-activity .activity-role').filter(has_text='Journey requested')).to_have_count(2)
         expect(page.locator('.demand-activity .activity-role').filter(has_text='Journey offered')).to_have_count(1)
         expect(page.get_by_text('Your post', exact=True)).to_have_count(0)
@@ -43,7 +56,7 @@ with sync_playwright() as p:
         expect(page.get_by_role('button', name='Accept ride', exact=True)).to_have_count(0)
         expect(page.locator('.demand-activity .activity-open')).to_have_count(2)
         expect(page.locator('.demand-activity .activity-role svg')).to_have_count(3)
-        boxes = [cards.nth(i).bounding_box() for i in range(5)]
+        boxes = [cards.nth(i).bounding_box() for i in range(9)]
         for before, after in zip(boxes, boxes[1:]):
             assert abs(after['y'] - before['y'] - before['height'] - 10) < 1
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

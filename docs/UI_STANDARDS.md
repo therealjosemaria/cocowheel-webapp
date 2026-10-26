@@ -4,6 +4,20 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+27 October Activity status: ordinary ride cards always begin with Status/Where
+from, then Driver/Where to, then Fare/View. Available replaces the Activity-only
+Ride offered caption for PUBLISHED/REQUESTED journeys with no overriding rider
+request outcome. Reuse status icon, RideStatusText and existing cell tokens; no
+new badge or colour. Pending, accepted, underway and historical labels remain.
+
+27 October rider contributions: Request this journey's review reuses
+ContributionChoice with Offer a contribution, initially unchecked, and the shared
+ContributionAmount input labelled Amount. Keep Find's search unchanged; no rider
+PayID. Discovery, replacement, driver response review and owner Activity/details
+reuse the price icon and Offered contribution cell, showing No contribution
+offered when absent, never Free. Driver fare controls keep their existing wording
+and free default; proposed amounts never silently prefill the final fare.
+
 27 October notification navigation supersedes the unconditional Profile-to-Activity
 shortcut below. Count journeys needing review, not messages/offers separately.
 One opens its detail and unread target; multiple open Activity#updates. Relevant

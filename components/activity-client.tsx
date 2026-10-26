@@ -196,11 +196,11 @@ function ActivityCard({
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
   const update = useJourneyUpdate(rideJourneyKey(ride.rideId));
-  const status = participantStatusLabel(
+  const participantStatus = participantStatusLabel(
     ride.status,
     role === "RIDER" ? ride.request?.status : undefined,
   );
-  const showStatus = status !== "Ride offered";
+  const status = participantStatus === "Ride offered" ? "Available" : participantStatus;
   const statusClass = [
     "Cancelled",
     "Declined",
@@ -287,16 +287,10 @@ function ActivityCard({
         <dl className="activity-card-fields">
           <div>
             <dt>
-              <RideFieldLabel icon={showStatus ? "status" : "price"}>
-                {showStatus ? "Status" : "Fare"}
-              </RideFieldLabel>
+              <RideFieldLabel icon="status">Status</RideFieldLabel>
             </dt>
-            <dd className={showStatus ? statusClass : undefined}>
-              {showStatus ? (
-                <RideStatusText label={status} />
-              ) : (
-                fareLabel(ride.priceAud)
-              )}
+            <dd className={statusClass}>
+              <RideStatusText label={status} />
             </dd>
           </div>
           <div>
@@ -317,14 +311,12 @@ function ActivityCard({
             </dt>
             <dd>{locationText(route?.destination)}</dd>
           </div>
-          {showStatus ? (
-            <div>
-              <dt>
-                <RideFieldLabel icon="price">Fare</RideFieldLabel>
-              </dt>
-              <dd>{fareLabel(ride.priceAud)}</dd>
-            </div>
-          ) : null}
+          <div>
+            <dt>
+              <RideFieldLabel icon="price">Fare</RideFieldLabel>
+            </dt>
+            <dd>{fareLabel(ride.priceAud)}</dd>
+          </div>
           <div className="activity-card-action">
             <dt>
               <RideFieldLabel icon="view">View</RideFieldLabel>

@@ -655,7 +655,7 @@ button:disabled {
 .demand-map .map-shell, .demand-map .map-loading { height: 100%; }
 .demand-prompt { max-height: calc(100dvh - 32px); overflow-y: auto; }
 .demand-prompt > .demand-fields, .demand-prompt > .save-route-profile-note { margin-block: 16px; }
-.demand-fields > div:last-child { grid-column: 1 / -1; }
+.demand-fields > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .demand-actions { padding: 12px; }
 .demand-actions > button { min-width: 0; }
 .demand-single-action > button { grid-column: 1 / -1; }

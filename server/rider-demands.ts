@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   checkedDemandRoute,
+  checkedPostedDemand,
   checkedDemandSearch,
   demandExpiry,
   demandWindows,
@@ -121,7 +122,7 @@ export function postDemand(
   now = new Date(),
 ) {
   const owner = requireUniversitySession(db, token);
-  const route = checkedDemandRoute(body, now);
+  const route = checkedPostedDemand(body, now);
   const replacement = (body as Record<string, unknown>).replaceDemandId;
   if (replacement !== undefined && (typeof replacement !== "string" || !replacement)) throw new Error("INVALID_DEMAND");
   const expires = demandExpiry(route, now);

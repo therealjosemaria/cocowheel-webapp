@@ -1,5 +1,11 @@
 # Coco Wheels visual system
 
+27 October: rider contribution review reuses contribution-choice/body and field
+tokens, the existing decimal input and regular modal error copy. Offered
+contribution cells use the existing price icon, caption and value typography.
+Discovery's four cells form two rows; only an odd final demand cell spans both
+columns. Modal cells remain single-column. No new colour, spacing or font tokens.
+
 Modal alignment (26 October 2026): shared dialog shells explicitly left-align
 copy. Journey review cells remove their nested horizontal padding, retaining
 vertical spacing and icons; their left edge matches the message and action group.

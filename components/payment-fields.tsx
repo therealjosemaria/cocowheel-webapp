@@ -1,7 +1,7 @@
 "use client";
 import type { Ref } from "react";
 import { PAYID_MAX_LENGTH } from "@/lib/input-validation";
-import { validFareDraft } from "@/lib/fare";
+import ContributionAmount from "./contribution-amount";
 import type { UsualRoute } from "@/lib/usual-route";
 
 export default function PaymentFields({
@@ -25,23 +25,7 @@ export default function PaymentFields({
 }) {
   return (
     <div className="usual-payment">
-      <label className="field">
-        You receive
-        <input
-          ref={priceRef}
-          required
-          type="text"
-          inputMode="decimal"
-          maxLength={8}
-          value={fare}
-          onChange={(event) => {
-            if (validFareDraft(event.target.value)) {
-              event.target.setCustomValidity("");
-              setFare(event.target.value);
-            }
-          }}
-        />
-      </label>
+      <ContributionAmount fare={fare} setFare={setFare} inputRef={priceRef} />
       <fieldset className="payid-field">
         <legend>Your PayID</legend>
         <div

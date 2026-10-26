@@ -1,5 +1,65 @@
 # Rider-posted requests and driver discovery
 
+## Optional rider contribution — 27 October 2026
+
+Request this journey review now offers an initially unchecked Offer a contribution
+control, with Amount revealed when checked. It reuses ContributionChoice and the
+ContributionAmount input extracted unchanged from PaymentFields. Find search,
+Save route, matching/ordering, alert consent and driver fare defaults are unchanged.
+No rider PayID is collected. Driver response review displays the rider's proposed
+amount separately from the driver's free/contribution controls. The final fare
+remains the driver's explicit choice, and the rider must accept that offer.
+No automatic payment, reservation, fare transfer or acceptance is introduced.
+
+POST /api/rider-demands accepts optional numeric offeredContributionAud. Missing
+or zero means no contribution offered and is normalized to an omitted JSON field,
+preserving legacy idempotent retries. Positive values must be A$1–A$10,000 with
+at most two decimal places; strings, null, booleans, nonfinite, negative and
+out-of-range amounts reject with HTTP 400 INVALID_FIXED_PRICE. Frontend uses the
+same amount rules and clear contribution error text; invalid drafts stay in
+review, reveal/focus Amount and make no request. Unticking sends zero regardless
+of the retained draft. Backend validation is authoritative.
+
+The optional value persists in rider_demands.body; no SQL schema migration or
+rewrite of old posts. Owner/current/discovery responses include it when present.
+Only the amount is public, not payment identifiers. Identical posts including the
+amount retry without renewing expiry; changed amounts require explicit atomic
+replacement and preserve the old amount in history. Existing ownership, expiry,
+48-hour any-date TTL, role conflicts and offer acceptance rules are unchanged.
+
+Review replacement, discovery, driver response review and owner Activity/details
+use Offered contribution with the existing price icon. Missing amounts read No
+contribution offered, not Free. The disclosure summary uses Offered contribution
+· None until enabled; no extra search field or navigation step is introduced.
+
+Verification on baseline c6c868e: 191 regressions, lint and production build
+passed. The final targeted HTTP/backend and visual-token rerun passed 22 tests.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-rider-contributions.py`
+uses localhost:3201 with mocked APIs and blocked external providers. It checks
+320/390/844/1440px: default opt-in, invalid/decimal input, cancellation/replacement,
+zero after unticking, driver discovery, unchanged driver PayID/fare and owner
+details. Initial run hit a stale preview after rebuild; restarting only the local
+preview resolved it. Visual review caught a full-width fourth discovery cell;
+the existing odd-final-cell rule now preserves a compact two-row summary.
+Physical devices, real provider tiles and authenticated production walkthrough
+remain unverified. API activation is recorded separately below; push alone does
+not verify frontend deployment.
+
+Final four-width browser rerun passed, including Activity summary and scrollable
+driver review dismissal. Whole affected mobile/desktop screens were visually
+reviewed: contribution review, replacement, discovery, driver response, Activity
+and owner details; shared labels/icons, wrapping, button gaps and emphasis checked.
+React review retained existing effects/handlers, extracted one reusable input,
+kept native labelled controls, and added no dependencies or extra API polling.
+
+With user approval, only cocowheels-api restarted at 02:03:07 AEDT on 27 October
+after two zero-underway-trip checks and a private verified SQLite online backup.
+Counts stayed 132 rides, 78 ride requests, 7 rider posts and 0 offers. Integrity
+passed and foreign-key errors were zero. Local and public-proxy health returned
+ok; unauthenticated discovery remained 401. No live test posts or emails were
+created. This activates the backend contribution support, not a verification of
+the subsequent frontend deployment.
+
 Implemented against base revision `8634351`, 25 October 2026. This is one-rider
 demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 

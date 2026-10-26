@@ -1,5 +1,17 @@
 # GUMWHEEL
 
+Activity always shows a Status cell for ordinary ride cards, including Available
+for an unpaired published driver journey. Fare remains its own cell. Pending rider
+requests and subsequent lifecycle statuses keep their existing labels; this changes
+only Activity presentation, not availability, expiry or pairing rules.
+
+27 October: riders can optionally Offer a contribution in the Request this
+journey review, reusing the existing disclosure and amount input. It starts off;
+enabled amounts are A$1–A$10,000 with up to two decimals. No rider PayID is asked.
+The amount is shown in discovery, driver response review and owner Activity/details;
+it is a proposal, not a payment or the driver's final fare. Final driver offers
+still require explicit rider acceptance. See [rider requests](docs/RIDER_DEMAND_2026-10-25.md).
+
 Modal copy is explicitly left-aligned; journey review details share the opening
 message's left edge instead of adding a nested card inset. Picker navigation and
 centred controls are unchanged. See the [alignment audit](docs/MODAL_ALIGNMENT_2026-10-26.md).
