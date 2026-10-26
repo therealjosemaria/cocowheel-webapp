@@ -4,6 +4,11 @@ import test from "node:test";
 
 const css = readFileSync("app/globals.css", "utf8");
 
+test("modal shells left-align copy and review fields do not add a second inset", () => {
+  assert.match(css, /\.cancel-prompt,\s*\.location-prompt,\s*\.university-dialog,\s*\.search-sheet\s*\{ text-align: left; \}/);
+  assert.match(css, /\.demand-prompt \.demand-fields > div\s*\{ padding-inline: 0; \}/);
+});
+
 test("single-message notices use the shared modal action spacing", () => {
   for (const file of ["components/ride-journey-controls.tsx", "components/location-tracker.tsx"]) {
     const source = readFileSync(file, "utf8");

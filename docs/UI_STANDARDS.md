@@ -304,6 +304,13 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 
 ## Dialogs and actions
 
+- Modal shells explicitly left-align headings and explanatory copy, independent
+  of the surrounding screen. Journey review fields use the same left edge as the
+  opening message, without adding the activity-card inset inside the dialog.
+  Keep intentional centred button captions, calendar grids and wheel options;
+  picker Back controls retain their existing header layout. See the
+  [modal alignment audit](MODAL_ALIGNMENT_2026-10-26.md) for coverage.
+
 - UniKey code sending preserves existing labels and appends ` in Ns` below one
   minute or rounded-up ` in N min` at 60 seconds or longer while
   unavailable (for example “Send code in 45s”). Disable only code-sending controls

@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+Modal alignment (26 October 2026): shared dialog shells explicitly left-align
+copy. Journey review cells remove their nested horizontal padding, retaining
+vertical spacing and icons; their left edge matches the message and action group.
+Shell padding remains 22px for confirmations/location prompts, 24px for sign-in,
+and 16px for desktop search sheets (12px horizontal on mobile, with vertical
+safe-area handling). Intentional centred picker/button content is unchanged.
+
 Audited 12 October 2026. Source of truth: `app/globals.css` `:root` tokens and shared semantic selectors. Read alongside `UI_STANDARDS.md` before extending any screen.
 
 ## Audit findings

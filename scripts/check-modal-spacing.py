@@ -38,6 +38,8 @@ with sync_playwright() as p:
             expect(text).to_have_css('text-align', 'left')
             text_box = text.bounding_box()
             actions = dialog.locator('.cancel-prompt-actions').bounding_box()
+            assert abs(text_box['x'] - actions['x']) < 1
+            assert abs(text_box['x'] - dialog.bounding_box()['x'] - 22) < 1
             assert abs(actions['y'] - text_box['y'] - text_box['height'] - 20) < 1
             buttons = dialog.get_by_role('button').all()
             first, second = [button.bounding_box() for button in buttons]

@@ -660,6 +660,7 @@ button:disabled {
 .demand-page .activity-card { padding-top: 0; }
 .demand-page .activity-card + .activity-card { margin-top: 16px; }
 .demand-prompt .demand-fields { grid-template-columns: 1fr; }
+.demand-prompt .demand-fields > div { padding-inline: 0; }
 .demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }
 .demand-activity { display: grid; gap: 10px; scroll-margin-top: 24px; }
 .demand-activity .save-route-profile-note, .demand-activity .activity-card > p,
@@ -3153,7 +3154,10 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
   box-shadow: none;
   font-weight: var(--weight-regular);
 }
-.save-route-prompt > p { text-align: left; }
+.cancel-prompt,
+.location-prompt,
+.university-dialog,
+.search-sheet { text-align: left; }
 .save-route-profile-note { font-size: var(--text-small); color: var(--muted); font-weight: var(--weight-regular); }
 
 .usual-route-body { gap: 12px; }

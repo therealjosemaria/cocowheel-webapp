@@ -57,6 +57,12 @@ with sync_playwright() as p:
             dialog.get_by_role('button',name=origin['label'] if text=='origin' else destination['label'],exact=True).click()
         def capture(name):
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), name
+            for modal in page.locator('.demand-prompt:visible').all():
+                message = modal.locator(':scope > p').first
+                expect(message).to_have_css('text-align', 'left')
+                left = message.bounding_box()['x']
+                for field in modal.locator('.demand-fields dt, .demand-fields dd').all():
+                    assert abs(field.bounding_box()['x'] - left) < 1, (name, 'indented modal field')
             page.screenshot(path=f'/tmp/demand-{name}-{width}.png',full_page=True)
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
@@ -164,6 +170,11 @@ with sync_playwright() as p:
         expect(unfiltered_offer.get_by_text(origin['label'],exact=True)).to_be_visible()
         expect(unfiltered_offer.get_by_text(destination['label'],exact=True)).to_be_visible()
         capture('unfiltered-offer')
+        if os.environ.get('GUMWHEEL_MODAL_AUDIT_ONLY') == '1':
+            assert not errors, errors
+            print(f'PASS {width}: rider review, replacement, role switch and driver offer modal alignment', flush=True)
+            context.close()
+            continue
         page.keyboard.press('Escape')
         page.get_by_role('button',name='Edit search',exact=True).click()
         address('Where from?','origin')

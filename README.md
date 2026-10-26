@@ -1,5 +1,9 @@
 # GUMWHEEL
 
+Modal copy is explicitly left-aligned; journey review details share the opening
+message's left edge instead of adding a nested card inset. Picker navigation and
+centred controls are unchanged. See the [alignment audit](docs/MODAL_ALIGNMENT_2026-10-26.md).
+
 ## Journey action wording (26 October 2026)
 
 Home, desktop/mobile navigation, search/post forms, matching-email entry and Help
