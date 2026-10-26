@@ -1,6 +1,7 @@
 """Isolated rider-demand UI checks: all API responses mocked, external traffic blocked."""
 from playwright.sync_api import sync_playwright, expect
 from datetime import datetime, timedelta, timezone
+import os
 
 BASE = 'http://127.0.0.1:3201'
 expect.set_options(timeout=20000)
@@ -60,14 +61,14 @@ with sync_playwright() as p:
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='FIND A JOURNEY',exact=True).click()
-        expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_visible()
-        ask=page.get_by_role('button',name='Post a ride request',exact=True)
+        expect(page.get_by_role('button',name='Request this journey',exact=True)).to_be_visible()
+        ask=page.get_by_role('button',name='Request this journey',exact=True)
         save=page.get_by_role('button',name='Save route',exact=True)
         page.wait_for_timeout(300)
         capture('rider-results')
         expect(page.locator('.ride-options button.text-button')).to_have_count(0)
         expect(page.locator('.ride-search-secondary-actions button').first).to_have_text('Save route')
-        expect(page.locator('.ride-search-secondary-actions button').nth(1)).to_have_text('Post a ride request')
+        expect(page.locator('.ride-search-secondary-actions button').nth(1)).to_have_text('Request this journey')
         if width == 320:
             assert save.bounding_box()['y']+save.bounding_box()['height'] <= ask.bounding_box()['y']
         else:
@@ -85,8 +86,8 @@ with sync_playwright() as p:
         capture('select-ride-notice')
         page.get_by_role('button',name='OKAY',exact=True).click()
         assert not writes
-        page.get_by_role('button',name='Post a ride request',exact=True).click()
-        dialog=page.get_by_role('dialog',name='Post a ride request',exact=True)
+        page.get_by_role('button',name='Request this journey',exact=True).click()
+        dialog=page.get_by_role('dialog',name='Request this journey',exact=True)
         expect(dialog.get_by_text('Drivers can see these addresses',exact=False)).to_be_visible()
         buttons=dialog.locator('.cancel-prompt-actions > button')
         expect(buttons).to_have_count(2)
@@ -96,18 +97,18 @@ with sync_playwright() as p:
         assert dialog.locator('.cancel-prompt-actions').evaluate('(el) => getComputedStyle(el).gap') == '8px'
         capture('post-review')
         page.keyboard.press('Escape')
-        expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_focused()
+        expect(page.get_by_role('button',name='Request this journey',exact=True)).to_be_focused()
         assert not writes
-        page.get_by_role('button',name='Post a ride request',exact=True).click()
-        dialog.get_by_role('button',name='Post',exact=True).click()
+        page.get_by_role('button',name='Request this journey',exact=True).click()
+        dialog.get_by_role('button',name='Request',exact=True).click()
         replace=page.get_by_role('dialog',name='Replace your ride request?',exact=True)
         expect(replace).to_be_visible()
         capture('replace-post')
         replace.get_by_role('button',name='Cancel',exact=True).click()
         expect(replace).not_to_be_visible()
         assert not writes
-        page.get_by_role('button',name='Post a ride request',exact=True).click()
-        dialog.get_by_role('button',name='Post',exact=True).click()
+        page.get_by_role('button',name='Request this journey',exact=True).click()
+        dialog.get_by_role('button',name='Request',exact=True).click()
         expect(replace).to_be_visible()
         replace.get_by_role('button',name='Replace',exact=True).click()
         expect(page.get_by_role('link',name='View your post')).to_be_visible()
@@ -120,6 +121,11 @@ with sync_playwright() as p:
         page.wait_for_timeout(250)
         capture('profile-post')
         profile.click()
+        if os.environ.get('GUMWHEEL_REQUEST_COPY_ONLY') == '1':
+            assert not errors, errors
+            print(f'PASS {width}: request wording, Save route unchanged, review/cancel/replace, focus and spacing', flush=True)
+            context.close()
+            continue
         page.goto(BASE+'/?start=driver')
         offer_button=page.get_by_role('button',name='POST A JOURNEY',exact=True)
         find_button=page.get_by_role('button',name='Find riders',exact=True)

@@ -10,7 +10,7 @@ and Help role headings/driver first step. Preserve existing capitalization,
 typography, order and colours; the posting busy label is Posting….
 This supersedes earlier Find a ride / Offer a ride navigation labels below.
 Do not mechanically rename direct Offer a ride responses to individual riders,
-Request to join, Post a ride request, status labels or internal identifiers.
+Request to join, Request this journey, status labels or internal identifiers.
 
 **Ask before introducing a new pattern:** before adding a visual treatment,
 icon, control or interaction that GUMWHEEL has not already established, explain
@@ -19,7 +19,7 @@ is not permission to introduce it here. Reusing an established pattern or making
 an explicitly requested change does not require redundant approval. When unsure
 whether a pattern is established, check the code/standards and ask before changing it.
 
-Rider-posted requests: Save route sits left of Post a ride request below Request to join,
+Rider-posted requests: Save route sits left of Request this journey below Request to join,
 outside the ride list. Both are quiet, independent secondary actions; neither
 belongs in the list or empty-state component. No Choose a ride heading.
 Allow the longer post action to wrap naturally in this shared action row on small
@@ -38,8 +38,8 @@ not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.
 Use Your post for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
-Post review starts with regular body text: Post a ride request, matching its trigger.
-No additional title or subtitle. Post / Go back retains the shared modal action group.
+Post review starts with regular body text: Request this journey, matching its trigger.
+No additional title or subtitle. Request / Go back retains the shared modal action group.
 If another post exists, reuse that modal for Replace your ride request?, the new
 route summary and Replace / Cancel. Cancel preserves the old post and current
 search. Explicit replacement names the previous post; never withdraw then post
@@ -145,7 +145,7 @@ Omit the routine-privacy helper sentence; saved-route privacy is unchanged.
 Usual route and Matching ride alerts both use RideFieldLabel in matching H2s,
 with existing monochrome route/rider icons, equal sizing and icon/text gaps.
 
-Find's Save route is a text-style button left of Post a ride request below Request to join in the
+Find's Save route is a text-style button left of Request this journey below Request to join in the
 bottom action area, separate from ride results/empty-state messaging. No border,
 fill or shadow; reuse small muted regular text and a minimum 44px tap target.
 Same addresses become disabled Route saved on that

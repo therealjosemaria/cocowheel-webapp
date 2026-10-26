@@ -5,6 +5,23 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October rider wording: Request this journey replaces Post a ride request
+on the results action and its review modal. The confirmation is Request / Go back.
+Save route is unchanged, as are Request to join, replacement confirmation,
+success/Profile/Activity post labels, publication payloads, expiry and email
+consent. Historical Post a ride request wording below is superseded for these
+two surfaces only. No backend change or API restart.
+Verification on baseline `0c3e163`: lint, production build and visual-system
+regression passed. Run `GUMWHEEL_REQUEST_COPY_ONLY=1 /tmp/gumwheel-pickup-check-env/bin/python scripts/check-rider-demands.py`
+for the focused request flow: passed 320/390/844/1440px with mocked APIs and
+external traffic blocked on local production build :3201. Checked unchanged
+Save route, review/cancel/focus restoration, equal modal controls, explicit
+replacement payload and success link; no console errors or overflow. Whole-screen
+results and review-modal screenshots visually checked at 390/1440px for hierarchy,
+spacing and wrapping. This focused mode does not retest driver-map transitions
+or close the earlier Leaflet finding below. Physical devices and deployed frontend
+remain unverified; full source/staged diffs reviewed before commit/push.
+
 26 October follow-up (`62e4c3a` baseline): the driver discovery shortcut and
 search/results heading now say Find riders. This is two text-node changes only;
 Post a journey, Search, Back, layout, filters and offers are unchanged.

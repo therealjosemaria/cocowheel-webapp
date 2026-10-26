@@ -184,13 +184,13 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
         </Link>
       ) : (
         <button className="text-button" onClick={() => setReview(true)}>
-          Post a ride request
+          Request this journey
         </button>
       )}
       {review && (
         <DemandPrompt
-          label="Post a ride request"
-          action="Post"
+          label="Request this journey"
+          action="Request"
           busy={busy}
           close={() => setReview(false)}
           confirm={() => void save()}

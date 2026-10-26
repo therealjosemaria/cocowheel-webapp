@@ -55,7 +55,7 @@ with sync_playwright() as p:
         page.screenshot(path=f'/tmp/save-route-consent-{width}.png',full_page=True)
         dialog.get_by_role('button',name='Not now',exact=True).click()
         expect(page.get_by_role('button',name='Route saved',exact=True)).to_be_disabled()
-        expect(page.get_by_role('button', name='Post a ride request',exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Request this journey',exact=True)).to_be_visible()
         assert state['saved']['alerts'] is False
         page.screenshot(path=f'/tmp/save-route-screen-{width}.png',full_page=True)
         # Same route does not rewrite or reactivate an existing opt-out.
@@ -78,7 +78,7 @@ with sync_playwright() as p:
         dialog.get_by_role('button',name='Notify me',exact=True).click()
         expect(dialog).to_have_count(0)
         assert state['saved']['alerts'] is True
-        expect(page.get_by_role('button', name='Post a ride request',exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Request this journey',exact=True)).to_be_visible()
         # Enabled alerts skip consent on replacement.
         state['saved']['origin']={**origin,'longitude':151.1}
         find(); page.get_by_role('button',name='Save route',exact=True).click()

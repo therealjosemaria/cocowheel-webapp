@@ -13,10 +13,10 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 ## Rider-posted requests (25 October 2026)
 
-Find's bottom action area places **Save route** on the left and **Post a ride request** on the right, below
+Find's bottom action area places **Save route** on the left and **Request this journey** on the right, below
 Request to join and outside the ride list, with an explicit address,
-schedule and visibility review. The review label matches the trigger: Post a ride
-request. Post / Go back use the shared equal-size modal buttons, with unchanged
+schedule and visibility review. The review label matches the trigger: Request
+this journey. Request / Go back use the shared equal-size modal buttons, with unchanged
 route and privacy details. This publishes one request per verified account.
 Posting a different request offers Replace / Cancel confirmation. Replacement
 atomically withdraws the exact previous post and creates the new one, retaining
