@@ -286,7 +286,13 @@ the shared modal/buttons. `scripts/check-rider-demands.py` passes at
 spacing, typography and emphasis. The final 13-test rider-demand suite also
 passes with HTTP replacement assertions. No production writes or test emails.
 Physical devices and deployed frontend remain unverified.
-API activation requires a separately approved restart; currently pending.
+With user approval, API revision `497f159` was activated at 11:34:29 AEDT on
+26 October after confirming zero accepted/active trips, taking a private SQLite
+backup and rechecking zero underway trips. Only cocowheels-api was restarted.
+Counts remained 131 rides, 77 requests, 2 posts and 0 offers; backup and live
+database integrity/FK checks pass. Immediate health checks caught the startup
+window (local connection refused/public 502); subsequent local and public health
+checks pass with the service active/running. No live replacement test was made.
 
 ### Post review wording — 26 October, baseline `4586c0d`
 
