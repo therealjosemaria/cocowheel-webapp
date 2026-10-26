@@ -937,10 +937,10 @@ function Home({
         className="role-card role-card-primary"
         onClick={() => onBegin("RIDER")}
       >
-        FIND A RIDE
+        FIND A JOURNEY
       </button>
       <button className="role-card" onClick={() => onBegin("DRIVER")}>
-        OFFER A RIDE
+        POST A JOURNEY
       </button>
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />
@@ -1044,7 +1044,7 @@ function DriverForm(props: {
   if (findingRiders) return <FindRiders origin={props.pins.origin} destination={props.pins.destination} back={() => setFindingRiders(false)} />;
   return (
     <div className="form-page">
-      <h1 className="page-title">Offer a ride</h1>
+      <h1 className="page-title">Post a journey</h1>
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.origin} destination={props.pins.destination}
@@ -1062,7 +1062,7 @@ function DriverForm(props: {
           />
         </ContributionChoice>
         <button className="primary" disabled={props.busy} onClick={submit}>
-          {props.busy ? "Offering…" : "OFFER A RIDE"}
+          {props.busy ? "Posting…" : "POST A JOURNEY"}
         </button>
         <div className="save-search-route driver-discovery-action"><button type="button" className="text-button" disabled={props.busy} onClick={() => setFindingRiders(true)}>Find someone who needs a ride</button></div>
       </div>
@@ -1107,7 +1107,7 @@ function RiderForm(props: {
   }
   return (
     <div className="form-page rider-form-page">
-      <h1 className="page-title">Find a ride</h1>
+      <h1 className="page-title">Find a journey</h1>
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.pickup} destination={props.pins.destination}
@@ -1115,7 +1115,7 @@ function RiderForm(props: {
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <ScheduleFields date={props.date} time={props.time} setDate={props.setDate} setTime={props.setTime} optional />
-        <button type="button" className="primary" onClick={props.openSelection}>FIND A RIDE</button>
+        <button type="button" className="primary" onClick={props.openSelection}>FIND A JOURNEY</button>
       </div>
     </div>
   );

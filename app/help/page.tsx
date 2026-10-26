@@ -7,7 +7,7 @@ export default function HelpPage() {
         <h1 className="page-title">How it works</h1>
         <div className="help-role-paths">
           <section className="help-role help-role-rider" aria-labelledby="rider-steps-heading">
-            <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a ride</RideFieldLabel></h2>
+            <h2 id="rider-steps-heading"><RideFieldLabel icon="rider">Find a journey</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
               <li>Choose your destination.</li>
               <li>Request to join a ride.</li>
@@ -16,9 +16,9 @@ export default function HelpPage() {
             </ol>
           </section>
           <section className="help-role help-role-driver" aria-labelledby="driver-steps-heading">
-            <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Offer a ride</RideFieldLabel></h2>
+            <h2 id="driver-steps-heading"><RideFieldLabel icon="driver">Post a journey</RideFieldLabel></h2>
             <ol className="how-it-works-steps">
-              <li>Offer a ride.</li>
+              <li>Post a journey.</li>
               <li>Accept a rider.</li>
               <li>Meet your rider.</li>
               <li>Share the journey.</li>

@@ -70,19 +70,19 @@ with sync_playwright() as p:
         page.locator('.place-search').last.get_by_role('button',name='Search',exact=True).click()
         page.get_by_role('button',name=destination['label'],exact=True).click()
         page.get_by_placeholder('Where from?',exact=True).fill('Town')
-        page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
+        page.get_by_role('button',name='POST A JOURNEY',exact=True).click()
         expect(page.get_by_role('dialog')).to_contain_text('Add your route first')
         assert not state['writes']
         page.get_by_role('button',name='OKAY',exact=True).click()
         page.locator('.place-search').first.get_by_role('button',name='Search',exact=True).click()
         page.get_by_role('button',name=origin['label'],exact=True).click()
-        page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
+        page.get_by_role('button',name='POST A JOURNEY',exact=True).click()
         expect(page.get_by_role('dialog')).to_be_visible()
         assert state['writes'][-1]['priceAud']==0 and state['writes'][-1]['payId']==''
         page.get_by_role('button',name='OKAY',exact=True).click()
         checkbox.check()
         page.get_by_label('You receive', exact=True).fill('1.50')
-        page.get_by_role('button',name='OFFER A RIDE',exact=True).click()
+        page.get_by_role('button',name='POST A JOURNEY',exact=True).click()
         expect(page.get_by_role('dialog')).to_be_visible()
         assert state['writes'][-1]['priceAud']==1.5 and state['writes'][-1]['payId']=='driver@example.com'
         for role in ['RIDER','DRIVER']:

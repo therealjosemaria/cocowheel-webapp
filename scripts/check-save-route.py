@@ -113,7 +113,7 @@ with sync_playwright() as p:
         expect(page.locator('.contribution-choice')).to_have_count(0)
         expect(page.get_by_text('9:00 am–11:00 am',exact=False)).to_be_visible()
         expect(page.get_by_text('Sydney time',exact=False)).to_have_count(0)
-        expect(page.get_by_role('button',name='OFFER A RIDE',exact=True)).to_have_count(0)
+        expect(page.get_by_role('button',name='POST A JOURNEY',exact=True)).to_have_count(0)
         expect(page.get_by_role('button',name='Replace saved route',exact=True)).to_have_count(0)
         before=copy.deepcopy(state['saved'])
         page.get_by_role('button',name='Edit route',exact=True).click()

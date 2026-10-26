@@ -44,7 +44,7 @@ with sync_playwright() as p:
         expect(page.locator('link[rel="apple-touch-icon"]')).to_have_attribute('href','/brand/gumwheel-original.png')
         expect(page.get_by_role('button',name='target',exact=False)).to_have_attribute('aria-pressed','true')
         if width == 1440:
-            expect(page.get_by_role('navigation',name='Primary navigation').get_by_role('button',name='Find a ride',exact=True)).to_have_attribute('aria-pressed','true')
+            expect(page.get_by_role('navigation',name='Primary navigation').get_by_role('button',name='Find a journey',exact=True)).to_have_attribute('aria-pressed','true')
         assert state['searches'][-1]['pickup']['latitude']==origin['latitude']
         assert state['searches'][-1]['departureDate'] == departure.astimezone(ZoneInfo('Australia/Sydney')).strftime('%Y-%m-%d')
         page.screenshot(path=f'/tmp/email-match-{width}.png',full_page=True)

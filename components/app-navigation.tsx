@@ -253,7 +253,7 @@ export default function AppNavigation() {
           onClick={() => startRide("rider")}
           aria-pressed={activeRideTab === "rider"}
         >
-          Find a ride
+          Find a journey
         </button>
         <button
           type="button"
@@ -265,7 +265,7 @@ export default function AppNavigation() {
           onClick={() => startRide("driver")}
           aria-pressed={activeRideTab === "driver"}
         >
-          Offer a ride
+          Post a journey
         </button>
         {canAdmin && (
           <Link
@@ -511,7 +511,7 @@ export default function AppNavigation() {
               aria-pressed={activeRideTab === "rider"}
               tabIndex={open ? undefined : -1}
             >
-              Find a ride
+              Find a journey
             </button>
             <button
               type="button"
@@ -524,7 +524,7 @@ export default function AppNavigation() {
               aria-pressed={activeRideTab === "driver"}
               tabIndex={open ? undefined : -1}
             >
-              Offer a ride
+              Post a journey
             </button>
             {canAdmin && (
               <Link

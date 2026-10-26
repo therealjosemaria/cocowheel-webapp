@@ -1,5 +1,10 @@
 # Calendar-led Find / Offer — 25 October 2026
 
+26 October wording update: the main paths now read Find a journey / Post a journey
+on Home, in both menus and on the forms. The posting progress label is Posting….
+The historical Find/Offer names below describe the same unchanged flows. Date,
+time, address, validation and API contracts are unchanged; no API restart needed.
+
 Baseline `ecceae6`. Supersedes Find/Offer portions of DEPARTURE_PICKER_2026-10-23,
 SHARED_ROUTE_FIELDS_2026-10-22 and SEARCH_OVERLAY_2026-10-23. Profile is unchanged.
 

@@ -180,7 +180,7 @@ with sync_playwright() as p:
         expect(page.get_by_role('radio', name='Now', exact=True)).to_have_count(0)
         expect(page.get_by_role('radio', name='In 30 min', exact=True)).to_have_count(0)
         page.screenshot(path=f'/tmp/usual-route-saved-{width}.png', full_page=True)
-        expect(page.get_by_role('button', name='OFFER A RIDE', exact=True)).to_have_count(0)
+        expect(page.get_by_role('button', name='POST A JOURNEY', exact=True)).to_have_count(0)
         assert not state['offers']
         page.goto('http://127.0.0.1:3090/usual-route?ride=matching-ride')
         state['missing'] = True

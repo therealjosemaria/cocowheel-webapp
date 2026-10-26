@@ -59,7 +59,7 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/demand-{name}-{width}.png',full_page=True)
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
-        page.get_by_role('button',name='FIND A RIDE',exact=True).click()
+        page.get_by_role('button',name='FIND A JOURNEY',exact=True).click()
         expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_visible()
         ask=page.get_by_role('button',name='Post a ride request',exact=True)
         save=page.get_by_role('button',name='Save route',exact=True)
@@ -121,7 +121,7 @@ with sync_playwright() as p:
         capture('profile-post')
         profile.click()
         page.goto(BASE+'/?start=driver')
-        offer_button=page.get_by_role('button',name='OFFER A RIDE',exact=True)
+        offer_button=page.get_by_role('button',name='POST A JOURNEY',exact=True)
         find_button=page.get_by_role('button',name='Find someone who needs a ride',exact=True)
         assert find_button.bounding_box()['y'] > offer_button.bounding_box()['y']
         assert find_button.bounding_box()['y'] - (offer_button.bounding_box()['y'] + offer_button.bounding_box()['height']) >= 12
@@ -144,7 +144,7 @@ with sync_playwright() as p:
         assert back.bounding_box()['y']+back.bounding_box()['height'] <= heading.bounding_box()['y']
         assert abs(back.bounding_box()['x']-heading.bounding_box()['x']) < 1
         back.click()
-        expect(page.get_by_role('button',name='OFFER A RIDE',exact=True)).to_be_visible()
+        expect(page.get_by_role('button',name='POST A JOURNEY',exact=True)).to_be_visible()
         page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
         page.wait_for_timeout(300)
         capture('driver-search')

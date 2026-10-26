@@ -4,6 +4,14 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+26 October: the main rider/driver paths are Find a journey / Post a journey,
+including Home CTAs, both menus, form headings/actions, matching-email entry
+and Help role headings/driver first step. Preserve existing capitalization,
+typography, order and colours; the posting busy label is Posting….
+This supersedes earlier Find a ride / Offer a ride navigation labels below.
+Do not mechanically rename direct Offer a ride responses to individual riders,
+Request to join, Post a ride request, status labels or internal identifiers.
+
 **Ask before introducing a new pattern:** before adding a visual treatment,
 icon, control or interaction that GUMWHEEL has not already established, explain
 the proposed difference and obtain the owner's approval. Familiarity elsewhere
@@ -448,6 +456,23 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 Otherwise it assigns POOR. This is a coarse geometric/time heuristic. It does **not** compare road polylines, traffic, real detour distance/time, pickup-before-drop-off order, or the driver's latest GPS. Reversed journeys or geographic barriers can therefore be misclassified. Do not describe GOOD as guaranteed compatibility or POOR as impossible. Road-following map geometry is separate. Changing these thresholds or the algorithm needs an explicit product decision and tests.
 
 ## Verification and maintenance
+
+Journey wording (26 October 2026): npm test (181 passed), npm run lint and
+npm run build passed. scripts/check-home-order.py and check-calendar-search.py
+passed at 320/390/844/1440px on localhost:3201, with all APIs mocked and external
+traffic blocked. Checked navigation, active state, keyboard order, colours,
+missing-route notices and unchanged search/post payloads. Whole-screen Home,
+menus, both forms and Help were visually reviewed on mobile and desktop: existing
+hierarchy, spacing and wrapping preserved. React review found text-only changes,
+no added state, effects, requests or dependencies. Initial browser attempts were
+blocked by sandbox permissions and an absent preview; after starting the preview,
+checks passed. The sandboxed build stalled; an unsandboxed build passed.
+Physical devices and production deployment remain unverified. No API restart.
+Matching-email entry checks also passed at 320/390/1440px using
+GUMWHEEL_TEST_BASE=http://127.0.0.1:3201 and scripts/check-matching-email.py:
+target selection, alternatives, sign-in resume and mute focus, with no writes.
+The first attempt used the script's old :3090 default and could not connect;
+rerunning against the running preview passed.
 
 Home order correction (22 October 2026, baseline `025abcb`):
 `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-home-order.py` passed

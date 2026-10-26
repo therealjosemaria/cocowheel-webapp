@@ -1,5 +1,14 @@
 # GUMWHEEL
 
+## Journey action wording (26 October 2026)
+
+Home, desktop/mobile navigation, search/post forms, matching-email entry and Help
+now use **Find a journey** and **Post a journey**. These supersede Find a ride /
+Offer a ride for the two main paths. Direct offers to a specific rider, Request
+to join, rider-posted requests and ride statuses retain their distinct wording.
+This is frontend copy only; routes, API identifiers and lifecycle are unchanged.
+See [UI standards](docs/UI_STANDARDS.md) for scope and verification.
+
 GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-verified accounts.
 
 ## Rider-posted requests (25 October 2026)

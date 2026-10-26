@@ -22,8 +22,8 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.ok(help.indexOf('id="rider-steps-heading"') < help.indexOf('id="driver-steps-heading"'));
   const lists = [...help.matchAll(/<ol className="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
   assert.equal(lists.length, 2);
-  assert.match(help, /<RideFieldLabel icon="rider">Find a ride<\/RideFieldLabel>/);
-  assert.match(help, /<RideFieldLabel icon="driver">Offer a ride<\/RideFieldLabel>/);
+  assert.match(help, /<RideFieldLabel icon="rider">Find a journey<\/RideFieldLabel>/);
+  assert.match(help, /<RideFieldLabel icon="driver">Post a journey<\/RideFieldLabel>/);
   assert.match(help, /className="help-role help-role-rider"/);
   assert.match(help, /className="help-role help-role-driver"/);
   assert.match(css, /background: color-mix\(in srgb, var\(--help-role-accent\) 6%, var\(--surface\)\);/);
@@ -33,7 +33,7 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.match(css, /\.how-it-works-steps li::marker\s*\{[^}]*font-weight: var\(--weight-regular\);/);
   assert.deepEqual(steps, [
     ["Choose your destination.", "Request to join a ride.", "Meet your driver.", "Share the journey."],
-    ["Offer a ride.", "Accept a rider.", "Meet your rider.", "Share the journey."],
+    ["Post a journey.", "Accept a rider.", "Meet your rider.", "Share the journey."],
   ]);
   assert.match(css, /\.help-section h2,\s*\.help-role h2\s*\{/);
   assert.match(css, /\.how-it-works-steps\s*\{[^}]*gap: 8px;/);
