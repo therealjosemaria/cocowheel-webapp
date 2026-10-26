@@ -31,7 +31,7 @@ export function SearchSheet({ label, close, children }: { label: string; close: 
   }, []);
   return createPortal(<div ref={backdrop} className="location-prompt-backdrop search-sheet-backdrop">
     <section ref={ref} tabIndex={-1} className="search-sheet" role="dialog" aria-modal="true" aria-label={label}>
-      <header className="search-sheet-header"><button type="button" className="text-button" onClick={close} aria-label="Go back">←</button><h2>{label}</h2></header>
+      <header className="search-sheet-header"><button type="button" className="text-button" onClick={close}>Back</button><h2>{label}</h2></header>
       {children}
     </section>
   </div>, document.body);

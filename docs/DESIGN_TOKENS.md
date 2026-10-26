@@ -17,6 +17,14 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+26 October Profile/navigation refinement supersedes the grouped-card description
+below: Profile has one secondary Your journeys link using existing
+profile-active-ride and regular small update-copy styling. No new icon, accordion
+or palette. Map Back reuses text-button typography and the existing white map
+control surface/border/shadow, control radius, 8px/12px padding and at least 44px
+height/width, replacing its circular arrow. Shared date/time picker headers use
+the existing text-button Back control with unchanged spacing and 44px targets.
+
 Profile's Your rides region groups existing active-ride/post links with a 12px
 grid gap. Post cards reuse the rider icon and existing notification caption;
 no new border, palette or heading. Save route precedes Request this journey

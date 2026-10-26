@@ -10,6 +10,13 @@ SHARED_ROUTE_FIELDS_2026-10-22 and SEARCH_OVERLAY_2026-10-23. Profile is unchang
 
 ## Behaviour and boundaries
 
+26 October navigation refinement: shared date/time picker headers now display
+Back instead of the arrow; the map's existing top-left return control also says
+Back with a text-sized rounded box and 44px minimum target. Picker Back still
+discards uncommitted choices and restores focus; map Back preserves the search
+form values. Address picker Back, Swap, date/time semantics and API payloads are
+unchanged. This is frontend-only and does not require an API restart.
+
 Both forms share RouteFields in sheet mode, reusing PlaceSearch, location bias,
 validation, manual GPS and provider transport. Origin/destination open a modal
 search screen (phone full-screen, desktop centred). Back/Escape restores focus

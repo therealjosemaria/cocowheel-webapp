@@ -8,11 +8,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { rideUpdates } from "@/lib/ride-updates";
-import { conversationTarget } from "@/lib/messaging-types";
 import RideUpdateNotice, { readSeen } from "./ride-update-notice";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { requestJson } from "@/lib/api-transport";
-import ActiveRideLink, { ActivePostLink, type ActiveRide } from "./active-ride-link";
+import type { ActiveRide } from "./active-ride-link";
 import type { RiderDemand } from "@/lib/rider-demand";
 import { activeRideTabForPath } from "@/lib/navigation-state";
 
@@ -368,36 +367,15 @@ export default function AppNavigation() {
               </div>
             </div>
           )}
-          {guestName && (activePost || activeRide || demandOffers > 0) && <section className="profile-current-items" aria-label="Your rides">
-          {activePost && <ActivePostLink offers={demandOffers} onClick={() => setIdentityOpen(false)} />}
-          {!activePost && demandOffers > 0 && <Link className="secondary" href="/activity#ride-requests" onClick={() => setIdentityOpen(false)}>{demandOffers} ride offer{demandOffers === 1 ? "" : "s"} to review</Link>}
-          {guestName && activeRide && (
-            <ActiveRideLink
-              item={activeRide}
-              compact
-              notification={
-                messageCount
-                  ? `${messageCount} unread message${messageCount === 1 ? "" : "s"}`
-                  : updates[0]?.driver
-                    ? `${updates.length} new rider request${updates.length === 1 ? "" : "s"}`
-                    : updates[0]?.message
-              }
-              notificationTarget={
-                messageThreads[0]
-                  ? conversationTarget(messageThreads[0].requestId)
-                  : updates[0]?.target
-              }
-              onClick={() => {
-                setIdentityOpen(false);
-                if (messageThreads[0])
-                  window.dispatchEvent(
-                    new CustomEvent("cocowheels:open-conversation", {
-                      detail: conversationTarget(messageThreads[0].requestId),
-                    }),
-                  );
-              }}
-            />
-          )}
+          {guestName && (activePost || activeRide || demandOffers > 0) && <section className="profile-current-items" aria-label="Your journeys">
+            <Link className="secondary profile-active-ride" href="/activity" onClick={() => setIdentityOpen(false)}>
+              Your journeys
+              {updates.length + messageCount + demandOffers > 0 && (
+                <span className="active-ride-update">
+                  {updates.length + messageCount + demandOffers} update{updates.length + messageCount + demandOffers === 1 ? "" : "s"} to review
+                </span>
+              )}
+            </Link>
           </section>}
           {guestName && (
             <div className="profile-actions">

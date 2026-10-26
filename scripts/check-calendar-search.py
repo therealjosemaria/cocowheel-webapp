@@ -93,9 +93,10 @@ with sync_playwright() as p:
         original = date_button.inner_text()
         date_button.click()
         dialog = page.get_by_role('dialog', name='Departure date', exact=True)
+        expect(dialog.get_by_role('button', name='Back', exact=True)).to_be_visible()
         dialog.get_by_role('button', name=date_label, exact=True).click()
         page.screenshot(path=f'/tmp/calendar-picker-{width}.png', full_page=True)
-        page.keyboard.press('Escape')
+        dialog.get_by_role('button', name='Back', exact=True).click()
         expect(date_button).to_have_text(original)
         expect(date_button).to_be_focused()
         date_button.click()
@@ -103,6 +104,10 @@ with sync_playwright() as p:
         dialog.get_by_role('button', name='DONE', exact=True).click()
         page.get_by_role('button', name='Departure time:').click()
         dialog = page.get_by_role('dialog', name='Departure time', exact=True)
+        expect(dialog.get_by_role('button', name='Back', exact=True)).to_be_visible()
+        dialog.get_by_role('button', name='Back', exact=True).click()
+        expect(page.get_by_role('button', name='Departure time:')).to_be_focused()
+        page.get_by_role('button', name='Departure time:').click()
         dialog.get_by_role('button', name='12:00 pm', exact=True).click()
         dialog.get_by_role('button', name='DONE', exact=True).click()
         # Any date and clock time are independent, including draft cancellation/reset.
@@ -132,6 +137,14 @@ with sync_playwright() as p:
         page.wait_for_timeout(700)
         assert searches[-1]['departureDate'] == 'any'
         assert searches[-1]['departureTime'] == '12:00'
+        back_button = page.get_by_role('button', name='Back to route search', exact=True)
+        expect(back_button).to_have_text('Back')
+        expect(back_button.locator('svg')).to_have_count(0)
+        assert back_button.bounding_box()['height'] >= 44
+        page.screenshot(path=f'/tmp/journey-map-back-{width}.png', full_page=True)
+        back_button.click()
+        expect(page.get_by_role('button', name='Where from?', exact=True)).to_contain_text(origin['label'])
+        page.get_by_role('button', name='FIND A JOURNEY', exact=True).click()
         page.reload()
         page.get_by_role('button', name='FIND A JOURNEY', exact=True).click()
         expect(page.get_by_role('button', name='Request this journey')).to_be_visible()

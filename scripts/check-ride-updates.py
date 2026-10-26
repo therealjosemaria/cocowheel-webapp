@@ -50,7 +50,9 @@ with sync_playwright() as p:
             page.get_by_role('button',name='Profile:',exact=False).click()
             card = page.locator('.profile-active-ride')
             expect(card).to_have_count(1)
-            expect(card).to_contain_text('2 new rider requests' if driver else 'driver1234 accepted your request')
+            expect(card).to_contain_text('Your journeys')
+            expect(card).to_contain_text('2 updates to review' if driver else '1 update to review')
+            expect(card).to_have_attribute('href', '/activity')
             # Opening Profile does not acknowledge anything.
             expect(page.locator('.profile-update-badge')).to_be_visible()
             expect(page.locator('#guest-identity-popover')).to_have_css('opacity','1')
@@ -113,9 +115,11 @@ with sync_playwright() as p:
                 expect(page.locator('.profile-update-badge')).to_have_text('1')
                 expect(notice).to_be_visible()
                 assert page.evaluate('scrollY') == 0
-                # The same existing card navigates to the specific unseen request.
+                # Profile is now the aggregate Activity shortcut; explicit deep links
+                # still open a specific unseen request without changing that shortcut.
                 page.get_by_role('button',name='Profile:',exact=False).click()
-                page.locator('.profile-active-ride').click()
+                expect(page.locator('.profile-active-ride')).to_have_attribute('href', '/activity')
+                page.goto('http://127.0.0.1:3090/activity/test-ride#request-req2')
                 expect(page.locator('#request-req2')).to_be_in_viewport()
                 expect(accordions.nth(2)).to_have_attribute('open', '')
                 expect(page.locator('.profile-update-badge')).to_have_count(0)

@@ -65,14 +65,18 @@ path fulfils an unexpired post atomically; competing invitations become unavaila
 Accepting an invitation withdraws a pending join within the same transaction,
 rolling back on failure. Only one confirmed pairing is permitted. Fulfilled posts
 stay in history and are not reopened automatically if the ride later cancels.
-Profile groups Your post and active-ride cards together, reusing existing polling
-and styling; a post alone does not add an unread badge. Success links say View your
+Profile now consolidates those cards into one **Your journeys** link to Activity
+when an active post, ride or pending offer exists. It covers both roles and a
+coexisting rider post/pending join, without an accordion. Existing polling and
+the Profile badge remain; the link shows a combined update count when nonzero.
+Opening it neither acknowledges updates nor opens a conversation automatically.
+A post alone does not add an unread badge. Success links say View your
 post. Request to join stays enabled without a selection and opens the shared
 “Select a ride from the list to continue.” notice; submission remains protected.
 Activity posts are always-open cards, like ride history, with the shared rider
 icon beside Journey requested; sent offers say Journey offered, without a separate
 Posts and offers heading. These Activity labels replace Your post / Your offer;
-Profile links and action wording are unchanged.
+Other action wording is unchanged.
 Post, sent-offer and ride-history cards use consistent
 10px spacing, including the boundary between posts and history.
 
@@ -88,6 +92,13 @@ Additive SQLite tables require a separate API restart. See the
 [request lifecycle, privacy, tests and deployment record](docs/RIDER_DEMAND_2026-10-25.md).
 
 ## Calendar-led ride setup (25 October 2026)
+
+26 October navigation refinement: the map's back control and shared date/time
+picker back controls display **Back**, replacing arrow-only captions. Existing
+return/cancel, draft and focus behaviour is retained; map position is unchanged
+with a text-sized rounded control and a 44px minimum target. Address pickers
+already use Back. Swap/directional controls are unchanged. Frontend-only;
+no API restart. See UI standards for verification.
 
 Find and Offer keep their submit buttons enabled with empty/partial routes.
 Either missing endpoint opens the same sentence-only notice: “Choose ‘Where from’

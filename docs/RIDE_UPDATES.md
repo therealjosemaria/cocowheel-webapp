@@ -2,6 +2,15 @@
 
 ## Implemented scope
 
+26 October 2026: Profile now has one Your journeys link to /activity for active
+posts, active rides and pending demand offers. This supersedes the Profile
+per-ride link/first-unread anchor behaviour described below. The Profile badge
+and link's combined update count reuse the existing updates + unread messages +
+pending demand offers calculation. Opening the shortcut does not mark anything
+read or dispatch conversation-opening events. Activity is the shared entry point
+for both roles; in-ride notices, explicit deep links and acknowledgement rules
+remain unchanged. No new polling, API or server change.
+
 20 October accordion refinement: pending request details start collapsed. The
 identity cell remains the acknowledgement target, so a visible closed summary
 does not clear the request. Explicit notice/Profile anchor navigation opens its

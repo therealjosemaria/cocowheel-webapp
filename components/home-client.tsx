@@ -1375,13 +1375,11 @@ function RideSelection({
         />
         <button
           type="button"
-          className="ride-selection-back"
+          className="text-button ride-selection-back"
           aria-label="Back to route search"
           onClick={back}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
+          Back
         </button>
       </div>
       <div className="ride-selection-route-key" aria-label="Map route colours">

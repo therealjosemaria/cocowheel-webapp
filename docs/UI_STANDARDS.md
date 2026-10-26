@@ -4,6 +4,19 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+26 October Profile/navigation refinement: one Your journeys link to /activity
+replaces the Profile popover's separate active-post/ride links. Show it under
+the existing active-post/ride/pending-offer condition; retain the Profile badge
+and existing polling, and show one combined update count inside the link when
+nonzero. Do not add an accordion, acknowledge updates on navigation, or open a
+conversation automatically. Activity retains the distinct items and actions.
+This supersedes older Profile card/anchor instructions below; in-ride notices,
+explicit deep links and Home's active-ride card are unchanged.
+Backward navigation uses the word Back rather than an arrow-only caption,
+including map and shared date/time pickers. Preserve existing placement and
+handlers; picker Back discards the draft and restores focus. Keep directional
+icons such as Swap and calendar navigation, and modal Go back dismissal labels.
+
 Home CTA icons precede their labels: rider for Find a journey, car for Post a
 journey. Reuse RideFieldLabel; centre icon and text as one group, with monochrome
 icons inheriting button text colour. Icons are decorative; accessible names remain
@@ -489,6 +502,29 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
 Otherwise it assigns POOR. This is a coarse geometric/time heuristic. It does **not** compare road polylines, traffic, real detour distance/time, pickup-before-drop-off order, or the driver's latest GPS. Reversed journeys or geographic barriers can therefore be misclassified. Do not describe GOOD as guaranteed compatibility or POOR as impossible. Road-following map geometry is separate. Changing these thresholds or the algorithm needs an explicit product decision and tests.
 
 ## Verification and maintenance
+
+Profile/Back refinement (26 October 2026, baseline c94b9f0): npm test passed
+183 tests; lint and production build passed. On isolated localhost:3201 with
+mocked APIs and external traffic blocked, run
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-profile-posts.py`
+and `.../python scripts/check-calendar-search.py`. Profile passed 28 cases
+(seven states at 320/390/844/1440px), including post+pending join, driver,
+confirmed rider, pending offers, combined unread-message/offer counts and one
+link to Activity. Calendar checks passed all four widths: Back captions,
+date draft cancellation, time focus return, map-to-form values, unchanged
+search/post payloads and no overflow/page errors. Whole-screen mobile/desktop
+Profile (with/without updates), map and date/time sheets were visually reviewed
+for hierarchy, spacing and button fit. Review found a legacy text-button bottom
+margin misaligning picker headers; reset that shared header margin and rebuilt
+and retested. Initial Profile fixture lacked Activity arrays and then expected
+an outdated heading; corrected both. A run during rebuilding hit stale preview
+assets; final runs used a restarted isolated preview and passed.
+React review: existing state/polling reused, no new effects or dependencies;
+semantic Link/button controls and picker focus/cancel handlers retained.
+The older check-ride-updates.py assertions were updated for aggregate Profile
+navigation and preserved explicit deep links, but that broader script was not
+rerun. Physical-device Safari and deployed frontend remain unverified. No API
+restart or production data mutation; full source/staged diff review required.
 
 Journey wording (26 October 2026): npm test (181 passed), npm run lint and
 npm run build passed. scripts/check-home-order.py and check-calendar-search.py

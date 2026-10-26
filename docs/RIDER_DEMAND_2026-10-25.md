@@ -5,6 +5,14 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October Profile refinement: the former Your post and active-ride links are
+consolidated into one Your journeys link to /activity. It appears for an active
+post, active ride or pending offer, including a public post plus pending join.
+The link retains the existing secondary style and shows the combined update
+count; the Profile trigger badge is unchanged. No accordion or extra requests.
+Navigation does not accept/withdraw a request or mark messages read. This
+supersedes earlier Profile grouping/link descriptions below. No API restart.
+
 26 October discovery wording (baseline 62e4b5c): See journey requests replaces
 Find riders on the driver shortcut; both search and results headings now say
 Journey requests. This supersedes the historical Find riders copy below.
