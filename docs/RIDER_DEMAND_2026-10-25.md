@@ -79,7 +79,7 @@ API restart. Source and staged diffs reviewed before commit/push.
   destination only uses a 2.5km radius. Both endpoints use the corridor below.
   Clearing an address in its existing search sheet removes that discovery filter.
   Date and time remain independently optional. No automatic GPS lookup occurs.
-- Search shows up to 50 matching, open requests, newest first. Excludes self and
+- Search shows up to 50 matching, open requests, newest first. Includes self; excludes
   owners already occupied by an open driver ride or confirmed rider pairing (not
   a pending join). Uses the
   same straight-line corridor as matching alerts: ordered pickup/drop-off, 20%
@@ -91,6 +91,31 @@ API restart. Source and staged diffs reviewed before commit/push.
   routes are never implicitly published. Profile settings/alert consent untouched.
 
 ## Lifecycle
+
+Own-request discovery (26 October, baseline dbb4107) supersedes self-exclusion:
+authenticated search returns isOwn, computed from the session and stored owner,
+without exposing owner/session IDs. Own rows receive identical route/date/time,
+busy-owner, expiry and result-limit checks; they are not pinned or guaranteed a
+slot beyond the 50-result limit. Closed requests remain excluded. No schema or
+stored-record change. Frontend uses the existing Message modal before offer
+review for isOwn=true. Missing/false metadata cannot authorize a self-offer:
+offerDemand still rejects stored ownership with OWN_RIDE_JOIN_NOT_ALLOWED (409)
+before publication/vehicle writes. The offer form translates that fallback into
+the same specific sentence. No self-join policy change for driver journeys.
+API restart is required separately from frontend push; activation is unverified.
+
+Checks: npm test passed 183 tests; lint and production build passed. Targeted
+`node --import tsx --test tests/rider-demands.test.ts` passed 13 tests after adding
+explicit own withdrawn/expired exclusions. Coverage includes empty-filter own
+visibility, per-viewer flags, unchanged filters/authentication, and an HTTP 409
+when submitting a forged isOwn=false self-offer, with zero rides created.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-own-request.py` checks
+320/390/844/1440px against local :3201 with mocked APIs and blocked external traffic:
+own and other cards, unchanged empty-filter payload, Message/OKAY, Escape/focus,
+no known-self POST, server-error fallback and no overflow/page errors. Whole-screen
+mobile/desktop review covers cards and warning, typography and spacing. Placeholder
+photo fixtures were corrected after initial captures. No production writes or
+test emails. Physical devices and deployed frontend remain unverified.
 
 Optional discovery filters (26 October): no empty map is rendered before a
 request is selected when both endpoints are absent. A single endpoint shows a

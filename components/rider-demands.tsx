@@ -35,6 +35,7 @@ import { VehiclePlatePrompt } from "./vehicle-details";
 import { Message } from "./ride-journey-controls";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
+const SELF_OFFER_MESSAGE = "You can’t offer a ride to yourself.";
 const location = (pin: Pin) =>
   pin.label || `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`;
 const departure = (at: string) => {
@@ -325,7 +326,7 @@ export function FindRiders({
                 >
                   {selected?.id === request.id ? "Hide route" : "Show route"}
                 </button>
-                <button className="primary" onClick={() => setOffer(request)}>
+                <button className="primary" onClick={() => request.isOwn ? setError(SELF_OFFER_MESSAGE) : setOffer(request)}>
                   Offer a ride
                 </button>
               </div>
@@ -430,7 +431,10 @@ function DemandOfferForm({
       });
       window.location.assign("/activity#ride-requests");
     } catch (reason) {
-      if (reason instanceof ApiError && reason.code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") {
+      if (reason instanceof ApiError && reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED") {
+        setPlatePrompt(false);
+        setError(SELF_OFFER_MESSAGE);
+      } else if (reason instanceof ApiError && reason.code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") {
         try { setLiftSwitch({ id: await openLiftRequestId(), plate }); }
         catch (error) { setPlatePrompt(false); setError(apiErrorMessage(error)); }
       } else if (

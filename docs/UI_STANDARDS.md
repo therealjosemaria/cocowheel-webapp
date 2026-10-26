@@ -52,6 +52,11 @@ button, available before entering addresses. Related alternative actions belong
 together, not beside the page title. Neither action publishes without review.
 Separate the discovery action from Post a journey with 12px top padding. Inside
 discovery, use Journey requests for the heading and Search for the primary button.
+Own open journey requests use the same discovery card and filters, with no badge
+or disabled action. Offer a ride opens the shared Message/OKAY modal saying
+“You can’t offer a ride to yourself.” Preserve focus return and the list; never
+open offer/plate review or submit for a known own request. Server rejection is
+still authoritative, including when ownership metadata is missing or stale.
 Back navigation precedes the heading in DOM and visual order, at the top-left,
 not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.

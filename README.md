@@ -41,6 +41,12 @@ Offering still requires a complete route and concrete departure. When responding
 to a request, missing search endpoints are filled from that request and shown in
 the existing review before confirmation. See the rider-demand guide for checks.
 
+Discovery includes the signed-in owner's open request under the same filters,
+expiry and 50-result limit as other requests. A server-computed isOwn flag drives
+the shared “You can’t offer a ride to yourself.” notice; no self-offer submission
+is made through that control. Server-side self-offer rejection remains mandatory.
+No account IDs are exposed. This backend change requires a separate API restart.
+
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride
 and send an offer to the request's owner. The rider accepts/declines in Activity;

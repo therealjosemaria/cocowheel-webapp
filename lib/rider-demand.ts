@@ -17,6 +17,7 @@ export type DemandRoute = {
 };
 export type DemandSearch = Pick<DemandRoute, "date" | "time"> & Partial<Pick<DemandRoute, "origin" | "destination">>;
 export type RiderDemand = DemandRoute & {
+  isOwn?: boolean;
   id: string;
   alias: string;
   status: "OPEN" | "CANCELLED" | "FULFILLED" | "EXPIRED";

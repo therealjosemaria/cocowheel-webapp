@@ -222,9 +222,9 @@ export function searchDemands(
   const found: RiderDemand[] = [];
   for (const value of db
     .prepare(
-      "SELECT * FROM rider_demands WHERE status='OPEN' AND owner_id<>? ORDER BY created_at DESC",
+      "SELECT * FROM rider_demands WHERE status='OPEN' ORDER BY created_at DESC",
     )
-    .iterate(owner.id)) {
+    .iterate()) {
     const row = value as Row;
     const candidate = view(db, row);
     if (
@@ -241,7 +241,7 @@ export function searchDemands(
     const other = demandWindows(candidate, now, candidate.expiresAt);
     if (!windows.some(([a, b]) => other.some(([c, d]) => a < d && c < b)))
       continue;
-    found.push(candidate);
+    found.push({ ...candidate, isOwn: row.owner_id === owner.id });
     if (found.length === 50) break;
   }
   return found;

@@ -124,7 +124,12 @@ test("discovery accepts optional endpoints without weakening publication or acce
     assert.equal(searchDemands(db, driver.token, any, now).length, 2);
     assert.deepEqual(searchDemands(db, driver.token, { ...any, origin }, now).map(r => r.id), [near.id]);
     assert.deepEqual(searchDemands(db, driver.token, { ...any, destination }, now).map(r => r.id), [near.id]);
-    assert.deepEqual(searchDemands(db, rider.token, any, now).map(r => r.id), [distant.id]);
+    const ownResults = searchDemands(db, rider.token, any, now);
+    assert.deepEqual(new Set(ownResults.map(r => r.id)), new Set([near.id, distant.id]));
+    assert.equal(ownResults.find(r => r.id === near.id)?.isOwn, true);
+    assert.equal(ownResults.find(r => r.id === distant.id)?.isOwn, false);
+    assert.equal(searchDemands(db, driver.token, any, now).every(r => r.isOwn === false), true);
+    assert.equal(searchDemands(db, rider.token, { ...any, date: "2026-10-29" }, now).length, 0);
     assert.equal(searchDemands(db, driver.token, { ...any, origin: { ...origin, latitude: origin.latitude + .02 } }, now).length, 0);
     assert.equal(searchDemands(db, driver.token, { ...any, destination: { ...destination, latitude: destination.latitude + .03 } }, now).length, 0);
     assert.equal(searchDemands(db, driver.token, { ...any, date: "2026-10-29" }, now).length, 0);
@@ -254,7 +259,7 @@ test("posting, idempotency, private activity, route and time matching, cancellat
       () => postDemand(db, rider.token, { ...route, time: "12:00" }, now),
       /DEMAND_ALREADY_OPEN/,
     );
-    assert.equal(searchDemands(db, rider.token, route, now).length, 0);
+    assert.equal(searchDemands(db, rider.token, route, now)[0].isOwn, true);
     assert.equal(searchDemands(db, driver.token, route, now).length, 1);
     assert.equal(
       searchDemands(
@@ -277,8 +282,10 @@ test("posting, idempotency, private activity, route and time matching, cancellat
     );
     cancelDemand(db, rider.token, posted.id, now);
     assert.equal(searchDemands(db, driver.token, route, now).length, 0);
+    assert.equal(searchDemands(db, rider.token, route, now).length, 0);
     const again = postDemand(db, rider.token, route, now);
     assert.notEqual(again.id, posted.id);
+    assert.equal(searchDemands(db, rider.token, route, new Date(+now + 48 * 3600000)).length, 0);
     assert.equal(
       searchDemands(db, driver.token, route, new Date(+now + 48 * 3600000))
         .length,
@@ -540,6 +547,15 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
     assert.equal((await call("/api/current", other.token)).body.activeDemand, null);
     const found = await call("/api/rider-demands/search", driver.token, route);
     assert.equal(found.body.requests.length, 1);
+    assert.equal(found.body.requests[0].isOwn, false);
+    const ownFound = await call("/api/rider-demands/search", rider.token, { date: "any", time: "" });
+    assert.equal(ownFound.body.requests[0].id, posted.body.request.id);
+    assert.equal(ownFound.body.requests[0].isOwn, true);
+    assert.equal("owner_id" in ownFound.body.requests[0], false);
+    const selfOffer = await call(`/api/rider-demands/${posted.body.request.id}/offer`, rider.token, { ...offerBody, isOwn: false });
+    assert.equal(selfOffer.status, 409);
+    assert.equal(selfOffer.body.error, "OWN_RIDE_JOIN_NOT_ALLOWED");
+    assert.equal((db.prepare("SELECT count(*) n FROM rides").get() as { n: number }).n, 0);
     const ownPost = await call("/api/rider-demands", other.token, route);
     const revised = { ...route, destination: { ...destination, label: "Updated destination" } };
     const stale = await call("/api/rider-demands", other.token, { ...revised, replaceDemandId: posted.body.request.id });
