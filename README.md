@@ -58,12 +58,14 @@ and styling; a post alone does not add an unread badge. Success links say View y
 post. Request to join stays enabled without a selection and opens the shared
 “Select a ride from the list to continue.” notice; submission remains protected.
 Activity posts are always-open cards, like ride history, with the shared rider
-icon beside Your post, without a separate Posts and offers heading.
+icon beside Journey requested; sent offers say Journey offered, without a separate
+Posts and offers heading. These Activity labels replace Your post / Your offer;
+Profile links and action wording are unchanged.
 Post, sent-offer and ride-history cards use consistent
 10px spacing, including the boundary between posts and history.
 
 The redundant Choose a ride heading is removed. Joining an existing offer now
-says Request to join; posted demand says Your post.
+says Request to join; posted demand in Activity says Journey requested.
 Offering while an open post exists requires “Withdraw your post
 and offer a ride?” with Go back / Withdraw & offer. Consent names the exact
 request ID; withdrawal and publication commit together or both roll back.

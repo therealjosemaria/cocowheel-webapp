@@ -598,7 +598,7 @@ export function RiderDemandActivity({
           className="activity-card"
           key={request.id}
         >
-          <span className="activity-role"><RideFieldIcon icon="rider" />Your post</span>
+          <span className="activity-role"><RideFieldIcon icon="rider" />Journey requested</span>
           <DemandRouteSummary route={request} />
           {request.status !== "OPEN" && (
             <p className="save-route-profile-note">
@@ -677,7 +677,7 @@ export function RiderDemandActivity({
       ))}
       {data?.sent.map((offer) => (
         <article className="activity-card" key={offer.id}>
-          <span className="activity-role"><RideFieldIcon icon="driver" />Your offer</span>
+          <span className="activity-role"><RideFieldIcon icon="driver" />Journey offered</span>
           <p>
             {departure(offer.departureAt)} ·{" "}
             {offer.status === "PENDING"

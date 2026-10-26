@@ -23,7 +23,7 @@ Rider-posted requests: Save route sits left of Request this journey below Reques
 outside the ride list. Both are quiet, independent secondary actions; neither
 belongs in the list or empty-state component. No Choose a ride heading.
 Allow the longer post action to wrap naturally in this shared action row on small
-screens. Success says View your post; its Activity summary says Your post.
+screens. Success says View your post; its Activity summary says Journey requested.
 Profile groups the post and active ride in one Your rides region with existing
 card styling and 12px gaps, without an extra visible heading. A post alone is not
 an unread notification. Empty-selection Request to join stays enabled and opens
@@ -36,7 +36,7 @@ discovery, use Find riders for the heading and Search for the primary button.
 Back navigation precedes the heading in DOM and visual order, at the top-left,
 not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.
-Use Your post for posted demand and Request to join for joining a specific
+Use Journey requested for Activity's posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
 Post review starts with regular body text: Request this journey, matching its trigger.
 No additional title or subtitle. Request / Go back retains the shared modal action group.
@@ -55,10 +55,11 @@ Use existing driver-request-buttons for equal 44px action targets, and the share
 20px modal action gap. Nested picker dialogs own focus above their parent dialog.
 The empty-history message must not appear alongside posted-request activity.
 Activity posts stay expanded, using article cards rather than accordions.
-Your post and Your offer reuse the existing Activity role label with shared
+Journey requested and Journey offered reuse the existing Activity role label with shared
 rider/driver icons. Use the same 10px card gap within and between current rides,
 posts/offers and history. Omit the redundant Posts and offers heading; retain
-the page title and each card's role label.
+the page title and each card's role label. These labels replace generic Your post /
+Your offer, not lifecycle statuses. Profile links and action wording are unchanged.
 
 25 October: [calendar-led setup](CALENDAR_SEARCH_2026-10-25.md) supersedes the
 older Find/Offer address/departure rules below. Shared address sheets are full

@@ -5,6 +5,18 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October Activity wording (baseline 703e6c2): rider post cards now say Journey
+requested and sent driver offers say Journey offered. These supersede the older
+Activity Your post / Your offer references below. Profile/success links, statuses,
+icons, actions, API identifiers and lifecycle are unchanged. No API restart needed.
+Lint, production build and visual-system regression passed. The extended
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-activity-spacing.py`
+passed at 320/390/844/1440px on local :3201 with mocked APIs and external traffic
+blocked: both labels, unchanged 10px card gaps, shared icons, expanded history,
+withdrawal modal and no overflow/page errors. Full-page screenshots reviewed at
+390/1440px for label fit, hierarchy and spacing. Source/staged diffs reviewed;
+physical devices and production deployment remain unverified.
+
 26 October rider wording: Request this journey replaces Post a ride request
 on the results action and its review modal. The confirmation is Request / Go back.
 Save route is unchanged, as are Request to join, replacement confirmation,
