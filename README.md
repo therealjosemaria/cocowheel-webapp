@@ -45,7 +45,10 @@ Discovery includes the signed-in owner's open request under the same filters,
 expiry and 50-result limit as other requests. A server-computed isOwn flag drives
 the shared “You can’t offer a ride to yourself.” notice; no self-offer submission
 is made through that control. Server-side self-offer rejection remains mandatory.
-No account IDs are exposed. This backend change requires a separate API restart.
+No account IDs are exposed. Activated on 26 October at 19:14:55 AEDT from
+`5e001ec` after a private verified backup and zero-underway-trip checks. Local
+and public health checks passed; the signed-in production browser walkthrough
+remains unverified. See the rider-demand guide for the activation record.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride

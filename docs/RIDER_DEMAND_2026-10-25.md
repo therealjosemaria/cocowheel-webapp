@@ -102,7 +102,21 @@ review for isOwn=true. Missing/false metadata cannot authorize a self-offer:
 offerDemand still rejects stored ownership with OWN_RIDE_JOIN_NOT_ALLOWED (409)
 before publication/vehicle writes. The offer form translates that fallback into
 the same specific sentence. No self-join policy change for driver journeys.
-API restart is required separately from frontend push; activation is unverified.
+API restart is required separately from frontend push. Activated from `5e001ec`
+on 26 October 2026 at 19:14:55 AEDT with the owner's authorization. The old API
+process had been running since 11:34:29, before the own-request visibility fix.
+Verified the running process's database file and port using open-file/socket
+metadata (without reading credentials). Zero accepted/active trips were checked
+before a private SQLite online backup and again immediately before restarting
+only `cocowheels-api`. Backup and live integrity checks passed with zero foreign-key
+errors. Counts remained 131 rides, 77 ride requests, 5 rider posts and 0 offers;
+one post was open and unexpired after restart. Local `/health` and public
+`https://www.gumwheel.com/api/health` returned status ok; unauthenticated discovery
+still returned 401. No live test rides, offers or emails were created.
+The isolated `node --import tsx --test tests/rider-demands.test.ts` rerun passed
+all 13 tests with local socket access (the sandboxed attempt exited unsuccessfully).
+This activation changes no UI or application source; previous mobile/desktop
+checks below apply. Signed-in production discovery has not been browser-verified.
 
 Checks: npm test passed 183 tests; lint and production build passed. Targeted
 `node --import tsx --test tests/rider-demands.test.ts` passed 13 tests after adding
