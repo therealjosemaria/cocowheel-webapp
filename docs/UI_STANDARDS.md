@@ -4,6 +4,17 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+26 October requested-journey details supersedes inline Activity request maps and
+offer controls below. Activity summaries use the ordinary activity-card-fields:
+Status/Where from, Departure/Where to, then a full-width View cell with the same
+DETAILS link as driver/rider ride history. Status uses the shared icon and
+RideStatusText with Open, Withdrawn, Fulfilled or Expired. Keep 10px card gaps.
+Details opens one request on its own page, with text-only Back above the card,
+road map/legend, the same fields, then eligible withdrawal and received offers.
+Reuse existing panels, map, buttons and confirmation; no new main-menu item or
+accordion. Closed posts have no withdrawal/accept/decline controls. Discovery's
+Show/Hide route remains unchanged. Profile still has one Your journeys link.
+
 26 October compact address display: sheet-mode Where from?/Where to? controls
 reuse compactAddressLabel to remove recognised Australian administrative suffixes,
 not arbitrary comma-separated chunks. Preserve street/unit numbers and locality.

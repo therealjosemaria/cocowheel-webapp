@@ -8,6 +8,7 @@ import type { Pin, Ride } from "@/lib/client-types";
 import {
   demandExpiry,
   demandSchedule,
+  demandStatusLabel,
   type DemandActivity,
   type DemandRoute,
   type DemandSearch,
@@ -32,6 +33,7 @@ import PaymentFields from "./payment-fields";
 import ContributionChoice from "./contribution-choice";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import { Message } from "./ride-journey-controls";
+import RideStatusText from "./ride-status-text";
 
 const SELF_OFFER_MESSAGE = "You can’t offer a ride to yourself.";
 const location = (pin: Pin) =>
@@ -484,24 +486,52 @@ function DemandOfferForm({
   );
 }
 
+function RequestedJourneyFields({ request, details = false }: { request: RiderDemand; details?: boolean }) {
+  const status = demandStatusLabel(request.status);
+  return <dl className="activity-card-fields">
+    <div><dt><RideFieldLabel icon="status">Status</RideFieldLabel></dt>
+      <dd className={`activity-status${request.status === "CANCELLED" ? " cancelled" : request.status === "EXPIRED" ? " expired" : ""}`}><RideStatusText label={status} /></dd></div>
+    <div><dt><RideFieldLabel icon="from">Where from?</RideFieldLabel></dt><dd>{location(request.origin)}</dd></div>
+    <div><dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt><dd>{demandSchedule(request)}</dd></div>
+    <div><dt><RideFieldLabel icon="to">Where to?</RideFieldLabel></dt><dd>{location(request.destination)}</dd></div>
+    {!details && <div className="activity-card-action">
+      <dt><RideFieldLabel icon="view">View</RideFieldLabel></dt>
+      <dd><Link className="activity-open" href={`/activity/requests/${encodeURIComponent(request.id)}`}
+        aria-label={`Details for journey requested from ${location(request.origin)} to ${location(request.destination)}`}>DETAILS</Link></dd>
+    </div>}
+  </dl>;
+}
+
+const ignoreActivity = () => {};
+export function RiderDemandDetails({ requestId }: { requestId: string }) {
+  return <section className="activity-page"><div className="activity-panel">
+    <div className="activity-panel-content demand-detail-content">
+      <Link className="text-button" href="/activity">Back</Link>
+      <RiderDemandActivity key={requestId} requestId={requestId} onHasActivity={ignoreActivity} />
+    </div>
+  </div></section>;
+}
+
 export function RiderDemandActivity({
   onHasActivity,
+  requestId,
 }: {
   onHasActivity: (value: boolean) => void;
+  requestId?: string;
 }) {
   const [data, setData] = useState<DemandActivity | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
   const [cancel, setCancel] = useState<string | null>(null);
-  const [shownRoute, setShownRoute] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const reset = () => {
       setData(null);
       onHasActivity(false);
       setError(null);
       setCancel(null);
-      setShownRoute(null);
+      setLoading(true);
       setRevision((v) => v + 1);
     };
     window.addEventListener("cocowheels:identity-changed", reset);
@@ -524,13 +554,16 @@ export function RiderDemandActivity({
         }
       } catch (reason) {
         if (controller.signal.aborted) return;
-        if (reason instanceof ApiError && reason.status === 401) {
+        if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
           setData(null);
           onHasActivity(false);
+          setError(requestId ? apiErrorMessage(reason) : null);
         } else setError(apiErrorMessage(reason));
       } finally {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
+          setLoading(false);
           timer = setTimeout(() => void load(), 15000);
+        }
       }
     };
     void load();
@@ -538,7 +571,7 @@ export function RiderDemandActivity({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [revision, onHasActivity]);
+  }, [revision, onHasActivity, requestId]);
   async function act(path: string, body: unknown) {
     if (busy) return;
     setBusy(true);
@@ -553,7 +586,9 @@ export function RiderDemandActivity({
       setBusy(false);
     }
   }
-  if (!data?.requests.length && !data?.sent.length && !error) return null;
+  if (requestId && loading) return <div aria-busy="true" />;
+  if (!requestId && !data?.requests.length && !data?.sent.length && !error) return null;
+  const requests = requestId ? data?.requests.filter(request => request.id === requestId) : data?.requests;
   return (
     <section id="ride-requests" className="demand-activity">
       {error && (
@@ -567,34 +602,21 @@ export function RiderDemandActivity({
           </button>
         </p>
       )}
-      {data?.requests.map((request) => (
+      {requestId && !error && !requests?.length && <p role="status">This journey request is not available.</p>}
+      {requests?.map((request) => (
         <article
           className="activity-card"
           key={request.id}
         >
           <span className="activity-role"><RideFieldIcon icon="rider" />Journey requested</span>
-          {shownRoute === request.id && <RequestRouteMap rider={request} riderLabel="Your route" />}
-          <DemandRouteSummary route={request} />
-          {request.status !== "OPEN" && (
-            <p className="save-route-profile-note">
-              {request.status === "FULFILLED"
-                ? "Fulfilled"
-                : request.status === "EXPIRED"
-                  ? "Expired"
-                  : "Withdrawn"}
-            </p>
-          )}
-          {request.status === "OPEN" && (
+          {requestId && <RequestRouteMap rider={request} riderLabel="Your route" />}
+          <RequestedJourneyFields request={request} details={Boolean(requestId)} />
+          {requestId && request.status === "OPEN" && (
             <p className="save-route-profile-note">
               Visible until {departure(request.expiresAt)}
             </p>
           )}
-          <div className={`demand-actions driver-request-buttons${request.status === "OPEN" ? "" : " demand-single-action"}`}>
-            <button type="button" className="secondary" aria-pressed={shownRoute === request.id}
-              onClick={() => setShownRoute(shownRoute === request.id ? null : request.id)}>
-              {shownRoute === request.id ? "Hide route" : "Show route"}
-            </button>
-            {request.status === "OPEN" && (
+          {requestId && request.status === "OPEN" && <div className="demand-actions driver-request-buttons demand-single-action">
               <button
                 className="secondary"
                 disabled={busy}
@@ -602,15 +624,14 @@ export function RiderDemandActivity({
               >
                 Withdraw post
               </button>
-            )}
-          </div>
-          {request.offers.map((offer) => (
+          </div>}
+          {requestId && request.offers.map((offer) => (
             <div className="demand-offer" key={offer.id}>
               <ParticipantName name={offer.driverAlias} />
               <p>
                 {departure(offer.departureAt)} · {fareLabel(offer.priceAud)}
               </p>
-              {offer.status === "PENDING" ? (
+              {offer.status === "PENDING" && request.status === "OPEN" ? (
                 <div className="demand-actions driver-request-buttons">
                   <button
                     className="primary"
@@ -638,7 +659,7 @@ export function RiderDemandActivity({
                   </button>
                 </div>
               ) : (
-                <p>{offer.status.toLowerCase()}</p>
+                <p>{offer.status === "PENDING" ? "Unavailable" : offer.status.toLowerCase()}</p>
               )}
               {offer.status === "ACCEPTED" && (
                 <Link className="text-button" href={`/rides/${offer.rideId}`}>
@@ -647,14 +668,14 @@ export function RiderDemandActivity({
               )}
             </div>
           ))}
-          {request.status === "OPEN" && !request.offers.length && (
+          {requestId && request.status === "OPEN" && !request.offers.length && (
             <p className="save-route-profile-note">
               No offers yet. Check back here for replies.
             </p>
           )}
         </article>
       ))}
-      {data?.sent.map((offer) => (
+      {!requestId && data?.sent.map((offer) => (
         <article className="activity-card" key={offer.id}>
           <span className="activity-role"><RideFieldIcon icon="driver" />Journey offered</span>
           <p>

@@ -39,6 +39,9 @@ export type DemandActivity = {
   requests: Array<RiderDemand & { offers: DemandOffer[] }>;
   sent: DemandOffer[];
 };
+export function demandStatusLabel(status: RiderDemand["status"]) {
+  return { OPEN: "Open", CANCELLED: "Withdrawn", FULFILLED: "Fulfilled", EXPIRED: "Expired" }[status];
+}
 export function demandSchedule(route: Pick<DemandRoute, "date" | "time">) {
   return `${route.date === "any" ? "Any date" : dateCaption(route.date)} · ${route.time ? `Around ${timeCaption(route.time)}` : "Any time"}`;
 }

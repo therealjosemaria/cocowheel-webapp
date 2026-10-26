@@ -664,6 +664,7 @@ button:disabled {
 .demand-prompt .demand-fields > div { padding-inline: 0; }
 .demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }
 .demand-activity { display: grid; gap: 10px; scroll-margin-top: 24px; }
+.demand-detail-content > .text-button { display: inline-flex; align-items: center; min-height: 44px; margin: 0 0 16px; }
 .demand-activity .save-route-profile-note, .demand-activity .activity-card > p,
 .demand-activity .activity-card > .text-button, .demand-activity .activity-card > .secondary,
 .demand-activity .activity-card > .ride-field-label { margin: 12px; }

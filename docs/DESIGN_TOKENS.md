@@ -17,6 +17,13 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+26 October requested-journey summary/detail refinement: reuse activity-card-fields,
+activity-card-action/activity-open and status/endpoint/departure/view icons.
+Four summary cells form two rows; View spans the last row on the Activity list.
+Detail Back is an inline-flex text-button with a 44px minimum target and 16px
+bottom gap to clear the existing card role label. RequestRouteMap and existing
+offer/withdraw action groups stay unchanged; no new palette or font scale.
+
 26 October request-map refinement: reuse the 260px demand-map viewport in
 discovery and Activity, with its map-shell filling the viewport so attribution
 and controls remain visible. Existing route legend, colours, card fields and

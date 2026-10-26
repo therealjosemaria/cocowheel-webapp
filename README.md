@@ -43,8 +43,12 @@ the existing review before confirmation. See the rider-demand guide for checks.
 
 Request discovery and Activity now share road-route previews through the existing
 Geoapify route-preview API and session road-path cache, retaining Leaflet/OSM as
-the map renderer/basemap. Activity's Journey requested cards provide Show route /
-Hide route for open and historical posts, with only one expanded map at a time.
+the map renderer/basemap. Activity's Journey requested cards show Status (Open,
+Withdrawn, Fulfilled or Expired) and the shared DETAILS control. This opens
+`/activity/requests/[requestId]` with the road map, matching summary fields,
+received offers and eligible withdrawal/respond actions. Back returns to Activity.
+This replaces Activity's inline Show/Hide route and offer controls; discovery
+retains its independent Show/Hide route behaviour. Closed requests remain viewable.
 Discovery still shows only the selected rider alongside any complete driver
 search route. No routine/live GPS is added. The blanket Approximate routes helper
 is removed; failures show endpoints without a straight-line substitute and a
@@ -62,7 +66,7 @@ remains unverified. See the rider-demand guide for the activation record.
 
 Any-date requests last 48 hours; dated requests last through the selected Sydney
 day or the end of their ±1-hour window. Driver responses publish an ordinary ride
-and send an offer to the request's owner. The rider accepts/declines in Activity;
+and send an offer to the request's owner. The rider accepts/declines through Activity → Details;
 acceptance atomically reuses the existing request, plate snapshot, pickup-code and
 private messaging lifecycle. Declining/cancelling a posted request does not cancel
 the driver's public offer. Existing one-open-ride limits remain; no seat reservation

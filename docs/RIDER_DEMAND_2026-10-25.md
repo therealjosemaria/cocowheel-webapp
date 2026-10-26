@@ -5,6 +5,47 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October dedicated requested-journey details (baseline 79079f1) supersedes
+Activity's inline Show/Hide route described below. The Activity request card
+contains Status, endpoints, Departure and the shared View/DETAILS control.
+Labels map OPEN→Open, CANCELLED→Withdrawn, FULFILLED→Fulfilled, EXPIRED→Expired.
+`/activity/requests/[requestId]` opens the selected request's shared road map,
+summary, expiry (open only), withdrawal confirmation and received offers.
+Back returns to Activity. Driver sent-offer cards and discovery are unchanged.
+Only open requests expose withdrawal and pending-offer response controls;
+accepted offers retain View ride. Closure/history is not deleted or reopened.
+
+List/detail reuse RiderDemandActivity's owner-only GET /api/rider-demands,
+15-second polling and existing mutations/redirect after acceptance. There is no
+new endpoint or public detail API. Selection is from the authenticated owner's
+returned requests, not public discovery; missing/other-owner IDs show unavailable.
+The existing latest-50-owner-requests limit remains: an older bookmarked request
+outside that response is unavailable, not deleted. Identity changes clear data;
+401/403 clears protected details, failures allow retry. Loaded data survives
+transient errors with the error visible. The private detail URL is not in the
+analytics allowlist. No backend restart, schema, lifecycle, GPS or provider change.
+
+The former map/offer/withdraw controls move from Activity into Details; no route
+lookup occurs just from listing Activity. Request previews retain their existing
+cache, stale-response guard, attribution and routing failure/retry treatment.
+
+Verification, 26 October 2026 (79079f1 plus this change): `npm test` passed
+186 tests; lint and production build passed. Against the isolated production
+preview on port 3201, run `scripts/check-request-details.py`,
+`scripts/check-request-maps.py` and `scripts/check-activity-spacing.py` with
+Playwright Python. All passed at 320, 390, 844 and 1440px, with synthetic owner
+APIs and blocked external providers; no production writes. Checks cover status
+labels, navigation, acceptance redirect/failure, decline, withdrawal, closed and
+missing requests, identity/access reset, retry, shared route cache and card gaps.
+Whole-screen mobile/desktop screenshots were reviewed for summary/detail spacing,
+typography, icons, Back placement and open/closed actions. Initial harness failures
+were an ambiguous alert selector and assets changing during a preview rebuild;
+scoping the selector and restarting the finished build resolved both on retest.
+Photo fixtures and map-ready screenshot waits were also corrected before final
+visual review. The broader check-rider-demands.py selectors were updated but that
+whole script was not rerun. Physical devices, live provider tiles and deployed
+frontend behaviour remain unverified; a push alone does not verify deployment.
+
 26 October road-preview refinement supersedes straight-line map previews below.
 RequestRouteMap is shared by discovery and Activity and calls the existing
 POST /api/route-preview for complete endpoint pairs. Existing Geoapify road
