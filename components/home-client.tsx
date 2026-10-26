@@ -1445,8 +1445,8 @@ function RideSelection({
           {busy ? "REQUESTING…" : "REQUEST TO JOIN"}
         </button>
         <div className="save-search-route ride-search-secondary-actions">
-          <PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} />
           <SaveSearchRoute key={`${pickup.latitude},${pickup.longitude}:${destination.latitude},${destination.longitude}`} origin={pickup} destination={destination} />
+          <PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} />
         </div>
       </div>
     </div>

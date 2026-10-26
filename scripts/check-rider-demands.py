@@ -58,13 +58,19 @@ with sync_playwright() as p:
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='FIND A RIDE',exact=True).click()
-        expect(page.get_by_role('button',name='Post where you need to go',exact=True)).to_be_visible()
-        ask=page.get_by_role('button',name='Post where you need to go',exact=True)
+        expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_visible()
+        ask=page.get_by_role('button',name='Post a ride request',exact=True)
         save=page.get_by_role('button',name='Save route',exact=True)
         page.wait_for_timeout(300)
         capture('rider-results')
         expect(page.locator('.ride-options button.text-button')).to_have_count(0)
-        assert ask.bounding_box()['y'] <= save.bounding_box()['y']
+        expect(page.locator('.ride-search-secondary-actions button').first).to_have_text('Save route')
+        expect(page.locator('.ride-search-secondary-actions button').nth(1)).to_have_text('Post a ride request')
+        if width == 320:
+            assert save.bounding_box()['y']+save.bounding_box()['height'] <= ask.bounding_box()['y']
+        else:
+            assert abs(ask.bounding_box()['y']-save.bounding_box()['y']) < 1
+            assert save.bounding_box()['x']+save.bounding_box()['width'] <= ask.bounding_box()['x']
         assert ask.bounding_box()['height'] >= 44 and save.bounding_box()['height'] >= 44
         capture('rider-results')
         save.click()
@@ -77,14 +83,14 @@ with sync_playwright() as p:
         capture('select-ride-notice')
         page.get_by_role('button',name='OKAY',exact=True).click()
         assert not writes
-        page.get_by_role('button',name='Post where you need to go',exact=True).click()
+        page.get_by_role('button',name='Post a ride request',exact=True).click()
         dialog=page.get_by_role('dialog',name='Let drivers know you need a ride.',exact=True)
         expect(dialog.get_by_text('Drivers can see these addresses',exact=False)).to_be_visible()
         capture('post-review')
         page.keyboard.press('Escape')
-        expect(page.get_by_role('button',name='Post where you need to go',exact=True)).to_be_focused()
+        expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_focused()
         assert not writes
-        page.get_by_role('button',name='Post where you need to go',exact=True).click()
+        page.get_by_role('button',name='Post a ride request',exact=True).click()
         dialog.get_by_role('button',name='Post',exact=True).click()
         expect(page.get_by_role('link',name='View your post')).to_be_visible()
         assert writes[-1]['origin']==origin

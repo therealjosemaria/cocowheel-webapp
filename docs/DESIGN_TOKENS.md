@@ -12,8 +12,8 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 Profile's Your rides region groups existing active-ride/post links with a 12px
 grid gap. Post cards reuse the rider icon and existing notification caption;
-no new border, palette or heading. Longer Post where you need to go copy retains
-the existing wrapping secondary action row beside Save route.
+no new border, palette or heading. Save route precedes Post a ride request
+in the existing wrapping secondary action row (left/right when on one row).
 
 Rider-demand screens reuse the existing typography and map palette. Header
 secondary actions use 14px text with 44px targets; paired actions reuse
@@ -25,7 +25,7 @@ with an 8px gap and the existing 14px text / 44px target. DOM order matches disp
 Find someone who needs a ride now reuses the quiet centred save-search-route action wrapper below
 Offer a ride (scoped 12px top padding, regular text, 44px target). Standalone save-route
 wrappers retain their 4px padding. The discovery view uses a concise Search button
-under its descriptive heading. Ask for a ride and Save route share a centred,
+under its descriptive heading. Save route and Post a ride request share a centred,
 wrapping secondary row below Request to join: 12px top/horizontal gap, regular
 text, equal 44px minimum targets and 8px/12px button padding. Saved-request links
 retain the same target. No duplicate wrapper padding or list placement.
@@ -154,7 +154,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
   Cancel controls; preferences headings retain the existing section typography.
   No new spacing, colour or typography tokens are introduced.
 
-- Find's Save route reuses text-button beside Ask for a ride below Request to join,
+- Find's Save route reuses text-button left of Post a ride request below Request to join,
   in the 12px-spaced secondary row described above, with a minimum 44px tap target,
   no border/fill/shadow and regular text.
   It remains outside results. Consent/replacement reuse cancel-prompt,

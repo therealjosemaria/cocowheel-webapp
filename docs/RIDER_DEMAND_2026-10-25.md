@@ -5,8 +5,8 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
-- Find a ride retains its existing form and search. Post where you need to go sits beside
-  Save route below Request to join, outside listings; no Choose a ride heading.
+- Find a ride retains its existing form and search. Save route sits left of
+  Post a ride request below Request to join, outside listings; no Choose a ride heading.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
 - Offer a ride includes Find someone who needs a ride below its primary action. It copies already-entered
@@ -261,6 +261,22 @@ legacy selectors updated only; those separate scripts were not rerun this pass.
 No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
+
+### Post action wording and order — 26 October, baseline `0828fa7`
+
+The rider action is now Post a ride request, following Save route in DOM and
+visual order. Existing styles and handlers are reused; driver wording and all
+API/lifecycle behaviour are unchanged. The row keeps its existing wrap at 320px
+(Save route above Post a ride request), and stays left/right at 390/844/1440px.
+The four-width `scripts/check-rider-demands.py` mocked browser suite checks order,
+44px targets, overflow, save/post flows and focus return. Initial test assertions
+incorrectly targeted a nested wrapper and required one row at 320px; corrected
+the tests to reflect the existing responsive layout, without changing CSS.
+Whole-screen 320/390/1440px captures reviewed for spacing, typography and emphasis.
+Lint, production build and all six `tests/visual-system.test.ts` checks pass.
+React review found no new state, effects, fetching or accessibility changes.
+Other browser scripts only received selector-copy updates and were not rerun.
+No API restart needed; physical-device and frontend deployment checks unverified.
 
 ### Post/join coexistence checks — 26 October, baseline `a63393b`
 

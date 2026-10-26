@@ -11,7 +11,7 @@ is not permission to introduce it here. Reusing an established pattern or making
 an explicitly requested change does not require redundant approval. When unsure
 whether a pattern is established, check the code/standards and ask before changing it.
 
-Rider-posted requests: Post where you need to go sits beside Save route below Request to join,
+Rider-posted requests: Save route sits left of Post a ride request below Request to join,
 outside the ride list. Both are quiet, independent secondary actions; neither
 belongs in the list or empty-state component. No Choose a ride heading.
 Allow the longer post action to wrap naturally in this shared action row on small
@@ -128,7 +128,7 @@ Omit the routine-privacy helper sentence; saved-route privacy is unchanged.
 Usual route and Matching ride alerts both use RideFieldLabel in matching H2s,
 with existing monochrome route/rider icons, equal sizing and icon/text gaps.
 
-Find's Save route is a text-style button beside Ask for a ride below Request to join in the
+Find's Save route is a text-style button left of Post a ride request below Request to join in the
 bottom action area, separate from ride results/empty-state messaging. No border,
 fill or shadow; reuse small muted regular text and a minimum 44px tap target.
 Same addresses become disabled Route saved on that

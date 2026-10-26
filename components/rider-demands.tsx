@@ -173,7 +173,7 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
         </Link>
       ) : (
         <button className="text-button" onClick={() => setReview(true)}>
-          Post where you need to go
+          Post a ride request
         </button>
       )}
       {review && (
