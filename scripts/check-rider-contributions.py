@@ -83,7 +83,7 @@ with sync_playwright() as p:
         expect(page.get_by_text('A$10.25',exact=True)).to_be_visible()
         expect(page.get_by_text('No contribution offered',exact=True)).to_be_visible()
         capture('discovery')
-        page.locator('.demand-page .activity-card').first.get_by_role('button',name='Offer a ride',exact=True).click()
+        page.locator('.journey-request-results .activity-card').first.get_by_role('button',name='Offer a ride',exact=True).click()
         offer = page.get_by_role('dialog',name='Offer a ride',exact=True)
         expect(offer.get_by_text('A$10.25',exact=True)).to_be_visible()
         expect(offer.locator('summary')).to_have_text('Fare · Free')

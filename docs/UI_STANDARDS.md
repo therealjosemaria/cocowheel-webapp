@@ -4,6 +4,14 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+27 October request results supersedes the old form-framed results layout: reuse
+JourneyResultsLayout, JourneyResultsMap and JourneyResultsList with Find's map,
+Back placement and bounded scrolling list. Search retains its existing heading
+and filters; results omit the duplicate large heading. Request cards retain
+shared field typography and distinct Show/Hide route and Offer a ride controls.
+No auto-selection or all-request map pins; blank search shows an unmarked map.
+Only the explicit selected request and supplied driver filter endpoints are mapped.
+
 27 October Activity status: ordinary ride cards always begin with Status/Where
 from, then Driver/Where to, then Fare/View. Available replaces the Activity-only
 Ride offered caption for PUBLISHED/REQUESTED journeys with no overriding rider

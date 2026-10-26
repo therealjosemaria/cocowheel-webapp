@@ -32,7 +32,7 @@ with sync_playwright() as p:
         page.goto(BASE + '/?start=driver')
         page.get_by_role('button', name='See journey requests', exact=True).click()
         page.get_by_role('button', name='SEARCH', exact=True).click()
-        cards = page.locator('.demand-page .activity-card')
+        cards = page.locator('.journey-request-results .activity-card')
         expect(cards).to_have_count(2)
         assert searches == [{'date': 'any', 'time': ''}]
         own = cards.first.get_by_role('button', name='Offer a ride', exact=True)

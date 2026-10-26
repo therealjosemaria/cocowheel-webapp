@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import { JourneyResultsLayout, JourneyResultsMap, JourneyResultsList } from "./journey-results-layout";
 import RideFieldLabel from "./ride-field-label";
 import { FindRiders, PostRideRequest, LiftRequestSwitchPrompt, openLiftRequestId } from "./rider-demands";
 import { VehiclePlatePrompt } from "./vehicle-details";
@@ -1339,8 +1340,8 @@ function RideSelection({
   ];
 
   return (
-    <div className="ride-selection-page">
-      <div className="ride-selection-map">
+    <JourneyResultsLayout>
+      <JourneyResultsMap back={back}>
         <JourneyMap
           pins={mapPins}
           fitPins={[
@@ -1373,15 +1374,7 @@ function RideSelection({
             },
           ]}
         />
-        <button
-          type="button"
-          className="text-button ride-selection-back"
-          aria-label="Back to route search"
-          onClick={back}
-        >
-          Back
-        </button>
-      </div>
+      </JourneyResultsMap>
       <div className="ride-selection-route-key" aria-label="Map route colours">
         <span>
           <i className="ride-selection-route-rider" aria-hidden="true" />
@@ -1392,9 +1385,9 @@ function RideSelection({
           Driver route
         </span>
       </div>
-      <section className="ride-options" aria-live="polite">
+      <JourneyResultsList label="Available journeys">
         {searching ? null : visibleCandidates.length ? (
-          <div className="ride-option-list">
+          <>
             {visibleCandidates.map((candidate) => {
               const estimate = estimates[candidate.rideId];
               return (
@@ -1428,11 +1421,11 @@ function RideSelection({
                 </button>
               );
             })}
-          </div>
+          </>
         ) : (
           <p className="ride-options-empty">No rides available</p>
         )}
-      </section>
+      </JourneyResultsList>
       <div className="ride-selection-action">
         <p className="request-message-hint">{REQUEST_MESSAGE_HINT}</p>
         <button
@@ -1448,7 +1441,7 @@ function RideSelection({
           <PostRideRequest key={JSON.stringify([pickup, destination, date, time])} route={{origin: pickup, destination, date, time}} />
         </div>
       </div>
-    </div>
+    </JourneyResultsLayout>
   );
 }
 function RideStatus({

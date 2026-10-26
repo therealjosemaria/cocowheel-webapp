@@ -1,5 +1,11 @@
 # Coco Wheels visual system
 
+27 October request results reuse ride-selection-page/map/back/options/list tokens:
+the existing responsive 310px-minimum map and 31svh list cap (240px desktop).
+Request cards use the list's 8px gaps, not the old discovery 16px card margins;
+12px top inset separates them from the map/legend. Shared card fonts, icons and
+44px paired controls remain. Activity's 260px request map is unchanged.
+
 27 October: rider contribution review reuses contribution-choice/body and field
 tokens, the existing decimal input and regular modal error copy. Offered
 contribution cells use the existing price icon, caption and value typography.

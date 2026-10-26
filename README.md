@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Journey-request discovery now reuses Find a journey's results frame: map above a
+bounded scrolling list, with text Back on the map returning to preserved filters.
+Only explicitly selected rider routes appear on the map; unfiltered discovery
+starts with an unmarked Sydney map, not every request's pickup. Request cards keep
+their contribution and separate Show/Hide route and Offer a ride actions. See the
+[request guide](docs/RIDER_DEMAND_2026-10-25.md) for scope and checks.
+
 Activity always shows a Status cell for ordinary ride cards, including Available
 for an unpaired published driver journey. Fare remains its own cell. Pending rider
 requests and subsequent lifecycle statuses keep their existing labels; this changes
@@ -45,8 +52,8 @@ below the primary Post a journey action, opens the **Journey requests** view and
 lets drivers browse without addresses or filter by either or both endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.
 The secondary action has 12px top spacing; discovery uses a concise Search button.
-Discovery's Back (or Edit search from results) sits above the heading,
-left-aligned and text-only on mobile and desktop; navigation behaviour is unchanged.
+Discovery's search-form Back sits above the heading; results use the shared
+text Back control on the map. Both preserve their existing return destinations.
 Discovery defaults to independent Any date/Any time. A pickup-only filter uses
 1.5km proximity; destination-only uses 2.5km; both retain corridor matching.
 Offering still requires a complete route and concrete departure. When responding

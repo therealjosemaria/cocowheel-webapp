@@ -661,6 +661,8 @@ button:disabled {
 .demand-single-action > button { grid-column: 1 / -1; }
 .demand-page .activity-card { padding-top: 0; }
 .demand-page .activity-card + .activity-card { margin-top: 16px; }
+.journey-request-results .ride-options { padding-top: 12px; }
+.journey-request-results .activity-card { padding-top: 0; }
 .demand-prompt .demand-fields { grid-template-columns: 1fr; }
 .demand-prompt .demand-fields > div { padding-inline: 0; }
 .demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }

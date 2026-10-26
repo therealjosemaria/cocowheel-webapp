@@ -1,5 +1,6 @@
 """Request maps: isolated frontend, mocked API/road paths, no provider or live writes."""
 from playwright.sync_api import sync_playwright, expect
+import json
 
 BASE = 'http://127.0.0.1:3201'
 origin = {'latitude': -33.90, 'longitude': 151.20, 'label': 'Example origin, Sydney'}
@@ -13,7 +14,7 @@ with sync_playwright() as p:
         context = browser.new_context(viewport={'width': width, 'height': 900})
         page = context.new_page()
         errors, routes, writes = [], [], []
-        failure = {'enabled': False}
+        failure = {'enabled': False, 'empty': False}
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.route('**/*', lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
         def api(r):
@@ -22,8 +23,11 @@ with sync_playwright() as p:
             if path == 'university/session': data = {'unikey': 'tester01'}
             elif path == 'current': data = {'current': None, 'currents': []}
             elif path == 'history': data = {'driver': [], 'rider': []}
+            elif path == 'search': data = {'candidates': [dict(rideId='COCO-TEST',driverAlias='driver01',status='PUBLISHED',priceAud=0,
+                scheduledDepartureAt='2099-10-27T01:00:00Z',redactedCorridor=[origin,destination],directionFit='GOOD',
+                pickupDistanceMeters=200,destinationDistanceMeters=200,isOwnOffer=False)], 'serverNow':'2026-10-27T00:00:00Z'}
             elif path == 'rider-demands': data = {'requests': [post, dict(second, status='CANCELLED')], 'sent': []}
-            elif path == 'rider-demands/search': data = {'requests': [post, second]}
+            elif path == 'rider-demands/search': data = {'requests': [] if failure['empty'] else [post, second] + [dict(second,id=f'extra-{i}') for i in range(18)]}
             elif path == 'route-preview':
                 payload = r.request.post_data_json
                 routes.append(payload)
@@ -35,15 +39,32 @@ with sync_playwright() as p:
             elif r.request.method == 'POST': writes.append(path)
             r.fulfill(json=data)
         page.route('**/api/**', api)
+        page.add_init_script('sessionStorage.setItem("cocowheels:find-ride-draft:v1", JSON.stringify({...'+json.dumps({'pickup':origin,'destination':destination,'departureAt':None})+',savedAt:Date.now()}));')
+        page.goto(BASE + '/?start=rider')
+        expect(page.locator('.ride-option')).to_have_count(1)
+        page.locator('.ride-option').click()
+        expect(page.locator('.ride-option')).to_have_attribute('aria-pressed','true')
+        expect(page.get_by_role('button',name='REQUEST TO JOIN',exact=True)).to_be_enabled()
+        page.screenshot(path=f'/tmp/shared-results-rider-{width}.png',full_page=True)
+        page.get_by_role('button',name='Back to route search',exact=True).click()
+        expect(page.get_by_role('button',name='Where from?',exact=True)).to_be_visible()
+        page.evaluate('sessionStorage.clear()')
+        routes.clear()
         page.goto(BASE + '/?start=driver')
         page.get_by_role('button', name='See journey requests', exact=True).click()
         page.get_by_role('button', name='SEARCH', exact=True).click()
-        cards = page.locator('.demand-page .activity-card')
-        expect(cards).to_have_count(2)
+        cards = page.locator('.journey-request-results .activity-card')
+        expect(cards).to_have_count(20)
+        expect(page.locator('.ride-selection-map .leaflet-container')).to_be_visible()
+        expect(page.locator('.ride-selection-map path.leaflet-interactive')).to_have_count(0)
+        listing = page.locator('.ride-option-list')
+        assert listing.evaluate('(el) => el.scrollHeight > el.clientHeight')
+        assert page.locator('.ride-selection-map').bounding_box()['y'] < listing.bounding_box()['y']
+        page.screenshot(path=f'/tmp/request-results-initial-{width}.png', full_page=True)
         assert routes == [], 'No routing calls for unseen request cards'
         cards.first.get_by_role('button', name='Show route', exact=True).click()
         expect(page.get_by_text('Road path by', exact=False)).to_be_visible()
-        expect(page.locator('.demand-map path.leaflet-interactive[fill="none"]')).to_have_count(1)
+        expect(page.locator('.ride-selection-map path.leaflet-interactive[fill="none"]')).to_have_count(1)
         expect(page.get_by_text('Approximate routes', exact=True)).to_have_count(0)
         assert len(routes) == 1 and routes[0]['origin']['latitude'] == origin['latitude']
         cards.first.get_by_role('button', name='Hide route').click()
@@ -54,12 +75,23 @@ with sync_playwright() as p:
         cards.nth(1).get_by_role('button', name='Show route').click()
         expect(cards.first.get_by_role('button', name='Show route')).to_be_visible()
         expect(page.get_by_text('Road route unavailable.', exact=False)).to_be_visible()
-        expect(page.locator('.demand-map path.leaflet-interactive[fill="none"]')).to_have_count(0)
+        expect(page.locator('.ride-selection-map path.leaflet-interactive[fill="none"]')).to_have_count(0)
         failure['enabled'] = False
         page.get_by_role('button', name='Try again', exact=True).click()
         expect(page.get_by_text('Road path by', exact=False)).to_be_visible()
         expect(page.get_by_text('Road route unavailable.', exact=False)).to_have_count(0)
         page.screenshot(path=f'/tmp/request-map-discovery-{width}.png', full_page=True)
+        cards.nth(1).get_by_role('button',name='Offer a ride',exact=True).click()
+        expect(page.get_by_role('dialog',name='Offer a ride',exact=True)).to_be_visible()
+        page.keyboard.press('Escape')
+        assert not writes, 'Selecting and reviewing must not publish an offer'
+        page.get_by_role('button',name='Back to route search',exact=True).click()
+        expect(page.get_by_role('heading',name='Journey requests',exact=True)).to_be_visible()
+        failure['empty'] = True
+        page.get_by_role('button',name='SEARCH',exact=True).click()
+        expect(page.get_by_text('No matching ride requests.',exact=True)).to_be_visible()
+        expect(page.locator('.ride-selection-map .leaflet-container')).to_be_visible()
+        page.screenshot(path=f'/tmp/request-results-empty-{width}.png', full_page=True)
         page.goto(BASE + '/activity')
         cards = page.locator('.demand-activity .activity-card')
         expect(cards).to_have_count(2)

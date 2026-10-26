@@ -6,6 +6,7 @@ import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi } from "@/lib/api-client";
 import { cachedRoadPath, cacheRoadPath } from "@/lib/ride-preview-cache";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
+import { JourneyResultsMap } from "./journey-results-layout";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
 type Route = { origin?: Pin; destination?: Pin };
@@ -69,10 +70,12 @@ export default function RequestRouteMap({
   driver,
   rider,
   riderLabel = "Rider route",
+  back,
 }: {
   driver?: Route;
   rider?: Route;
   riderLabel?: string;
+  back?: () => void;
 }) {
   const [revision, setRevision] = useState(0);
   const driverPath = useRoadPath(driver, revision);
@@ -89,16 +92,15 @@ export default function RequestRouteMap({
       : []),
     ...(riderPath.points ? [{ points: riderPath.points, ...RIDER_ROUTE }] : []),
   ];
-  return (
-    <>
-      <div className="demand-map">
-        <JourneyMap
+  const map = <JourneyMap
           pins={pins}
           lines={lines}
           roadPathAttribution={lines.length > 0}
           animateViewport={false}
-        />
-      </div>
+        />;
+  return (
+    <>
+      {back ? <JourneyResultsMap back={back}>{map}</JourneyResultsMap> : <div className="demand-map">{map}</div>}
       {((driver?.origin && driver.destination) || rider) && (
         <div
           className="ride-selection-route-key"

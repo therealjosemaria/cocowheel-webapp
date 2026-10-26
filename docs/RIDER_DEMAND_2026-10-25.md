@@ -1,5 +1,41 @@
 # Rider-posted requests and driver discovery
 
+## Shared results layout — 27 October 2026
+
+Baseline e1ce191: discovery results now reuse the same JourneyResultsLayout,
+JourneyResultsMap and JourneyResultsList components as Find a journey. The map
+is first, followed by existing route legend/failure feedback and a bounded
+scrolling request list. Back on the map returns to the preserved search fields;
+the original search form retains its heading/Back. Results omit the former large
+heading and form inset. Existing detailed cards and their paired Show/Hide route
+and Offer a ride actions remain: selection is separate from publication.
+
+The map stays mounted when no route is selected, defaulting to Sydney with no
+request pins for an unfiltered search. Supplied search endpoints may appear;
+only the explicitly selected request is mapped/routed, never all results. This
+supersedes the earlier instruction to omit the empty discovery map. No GPS lookup,
+new provider, API, TTL, matching, authorization or acceptance change. Road cache,
+retry/attribution and Activity's smaller request map remain unchanged. Find's
+candidate selection and separate Request to join action are unchanged.
+
+Verification commands: npm test, npm run lint, npm run build, and
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-request-maps.py` against
+localhost:3201. Browser checks block external traffic and mock APIs; 20 requests
+exercise contained scrolling, no unseen routes, single-route toggling, cache,
+failure/retry, offer review without publication, Back/empty results, and owner
+Activity/history. The script also checks Find's selected result and Back.
+Physical devices, live provider tiles and deployed frontend remain unverified.
+No backend restart is needed.
+
+Local checks on 27 October: 191 unit tests passed. Mocked request-map,
+own-request and rider-contribution browser checks passed at 320, 390, 844 and
+1440px. Mobile and desktop screenshots reviewed for map/list placement, card
+spacing, typography and action separation, including Find's existing results.
+The broader `check-message-entry.py` harness (with its localhost port changed
+from 3090 to 3201) failed its line-90 `window.scrollY < 100` assertion after
+focusing the message composer. That scroll assertion remains unresolved; this
+is not a claim that the full messaging browser suite passed.
+
 ## Optional rider contribution — 27 October 2026
 
 Request this journey review now offers an initially unchecked Offer a contribution

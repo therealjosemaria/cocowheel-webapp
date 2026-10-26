@@ -27,6 +27,7 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { RouteFields } from "./route-fields";
 import ScheduleFields from "./schedule-fields";
 import RequestRouteMap from "./request-route-map";
+import { JourneyResultsLayout, JourneyResultsList } from "./journey-results-layout";
 import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import ParticipantName from "./participant-name";
 import PaymentFields from "./payment-fields";
@@ -288,28 +289,25 @@ export function FindRiders({
     }
   }
   return (
-    <div className="form-page demand-page">
-      <div className="demand-heading demand-navigation-heading">
+    <div className={results && searched ? "journey-request-results" : "form-page demand-page"}>
+      {!results && <div className="demand-heading demand-navigation-heading">
         <button
           type="button"
           className="text-button"
-          onClick={
-            results
-              ? () => {
-                  setResults(null);
-                  setOffer(null);
-                }
-              : back
-          }
+          onClick={back}
         >
-          {results ? "Edit search" : "Back"}
+          Back
         </button>
         <h1 className="page-title">Journey requests</h1>
-      </div>
+      </div>}
       {results && searched ? (
-        <div className="form-panel-content">
-          {(searched.origin || searched.destination || selected) &&
-            <RequestRouteMap driver={searched} rider={selected ?? undefined} />}
+        <JourneyResultsLayout>
+          <RequestRouteMap driver={searched} rider={selected ?? undefined} back={() => {
+            setResults(null);
+            setOffer(null);
+            setSelected(null);
+          }} />
+          <JourneyResultsList label="Journey requests">
           {!results.length && (
             <p className="ride-options-empty">
               No matching ride requests.
@@ -335,6 +333,7 @@ export function FindRiders({
               </div>
             </article>
           ))}
+          </JourneyResultsList>
           {offer && (
             <DemandOfferForm
               request={offer}
@@ -342,7 +341,7 @@ export function FindRiders({
               close={() => setOffer(null)}
             />
           )}
-        </div>
+        </JourneyResultsLayout>
       ) : (
         <div className="form-panel-content">
           <RouteFields
