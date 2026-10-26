@@ -128,12 +128,12 @@ function DemandPrompt({
 export async function openLiftRequestId() {
   const data = await cocowheelsApi<DemandActivity>("/api/rider-demands");
   const request = data.requests.find((item) => item.status === "OPEN");
-  if (!request) throw new Error("Ride request changed. Please try again.");
+  if (!request) throw new Error("Your post changed. Please try again.");
   return request.id;
 }
 
 export function LiftRequestSwitchPrompt(props: { busy: boolean; close: () => void; confirm: () => void }) {
-  return <DemandPrompt label="Withdraw your ride request and offer a ride?" action="Withdraw & offer" destructive {...props}>{null}</DemandPrompt>;
+  return <DemandPrompt label="Withdraw your post and offer a ride?" action="Withdraw & offer" destructive {...props}>{null}</DemandPrompt>;
 }
 
 export function PostRideRequest({ route }: { route: DemandRoute }) {
@@ -155,6 +155,7 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
     setBusy(true);
     try {
       await post("/api/rider-demands", route, false);
+      window.dispatchEvent(new Event("cocowheels:identity-changed"));
       setReview(false);
       setSaved(true);
     } catch (reason) {
@@ -168,17 +169,17 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
     <>
       {saved ? (
         <Link className="text-button" href="/activity#ride-requests">
-          View your ride request
+          View your post
         </Link>
       ) : (
         <button className="text-button" onClick={() => setReview(true)}>
-          Ask for a ride
+          Post where you need to go
         </button>
       )}
       {review && (
         <DemandPrompt
           label="Let drivers know you need a ride."
-          action="Post request"
+          action="Post"
           busy={busy}
           close={() => setReview(false)}
           confirm={() => void save()}
@@ -567,7 +568,7 @@ export function RiderDemandActivity({
   if (!data?.requests.length && !data?.sent.length && !error) return null;
   return (
     <section id="ride-requests" className="demand-activity">
-      <h2>Ride requests</h2>
+      <h2>Posts and offers</h2>
       {error && (
         <p role="alert">
           {error}{" "}
@@ -585,12 +586,12 @@ export function RiderDemandActivity({
           key={request.id}
           open={request.status === "OPEN"}
         >
-          <summary>Your ride request</summary>
+          <summary>Your post</summary>
           <DemandRouteSummary route={request} />
           {request.status !== "OPEN" && (
             <p className="save-route-profile-note">
               {request.status === "FULFILLED"
-                ? "Ride arranged"
+                ? "Fulfilled"
                 : request.status === "EXPIRED"
                   ? "Expired"
                   : "Withdrawn"}
@@ -607,7 +608,7 @@ export function RiderDemandActivity({
                   disabled={busy}
                   onClick={() => setCancel(request.id)}
                 >
-                  Withdraw request
+                  Withdraw post
                 </button>
               </div>
             </>
@@ -678,8 +679,8 @@ export function RiderDemandActivity({
       ))}
       {cancel && (
         <DemandPrompt
-          label="Withdraw your ride request?"
-          action="Withdraw request"
+          label="Withdraw your post?"
+          action="Withdraw post"
           destructive
           busy={busy}
           close={() => setCancel(null)}

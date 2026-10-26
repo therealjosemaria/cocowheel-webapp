@@ -4,7 +4,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import type { Db } from "./core";
-import { postDemand, demandActivity, searchDemands, cancelDemand, offerDemand, respondToDemandOffer, pendingDemandOffers } from "./rider-demands";
+import { postDemand, demandActivity, searchDemands, cancelDemand, offerDemand, respondToDemandOffer, pendingDemandOffers, activeDemand } from "./rider-demands";
 import { ratingSummary, submitRating } from "./ratings";
 import {
   readConversation,
@@ -778,6 +778,7 @@ export function createApiServer(
             currents,
             guestAlias: guestAlias(database, token),
             pendingDemandOffers: pendingDemandOffers(database, token),
+            activeDemand: activeDemand(database, token),
           },
           cors,
         );

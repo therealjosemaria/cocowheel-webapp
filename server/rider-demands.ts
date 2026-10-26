@@ -10,6 +10,7 @@ import {
 } from "../lib/rider-demand";
 import {
   currentOpenRides,
+  cancelPendingRequest,
   decideRequestForDriver,
   expireStaleRides,
   findSession,
@@ -108,7 +109,7 @@ function busyOwner(db: Db, owner: string) {
     db
       .prepare(
         `SELECT 1 FROM rides WHERE driver_session_id=? AND status IN ('PUBLISHED','REQUESTED','ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE')
-    UNION ALL SELECT 1 FROM ride_requests q JOIN rides r ON r.id=q.ride_id WHERE q.rider_session_id=? AND q.status IN ('PENDING','ACCEPTED') AND r.status IN ('PUBLISHED','REQUESTED','ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE') LIMIT 1`,
+    UNION ALL SELECT 1 FROM ride_requests q JOIN rides r ON r.id=q.ride_id WHERE q.rider_session_id=? AND q.status='ACCEPTED' AND r.status IN ('ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE') LIMIT 1`,
       )
       .get(owner, owner),
   );
@@ -175,6 +176,13 @@ export function demandActivity(
   ).map((row) => offerView(db, row, now));
   return { requests, sent };
 }
+export function activeDemand(db: Db, token: string | null, now = new Date()): RiderDemand | null {
+  const owner = findSession(db, token, now);
+  if (!owner || busyOwner(db, owner.id)) return null;
+  const row = db.prepare("SELECT * FROM rider_demands WHERE owner_id=? AND status='OPEN' AND expires_at>?").get(owner.id, now.toISOString()) as Row | undefined;
+  return row ? view(db, row) : null;
+}
+
 export function pendingDemandOffers(
   db: Db,
   token: string | null,
@@ -352,11 +360,15 @@ export function respondToDemandOffer(
       ).run(id);
       return null; // Driver's ordinary public offer remains available.
     }
-    if (currentOpenRides(db, token, now).length)
+    const current = currentOpenRides(db, token, now);
+    if (current.some(item => item.role !== "RIDER" || item.ride.request?.status !== "PENDING"))
       throw new Error("OPEN_ITEM_EXISTS");
     const posted = view(db, row);
     const vehicle = readVehicle(db, offer.driver_session_id);
     if (!vehicle?.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
+    // Explicitly accepting this offer replaces pending joins atomically. A failure
+    // below rolls these withdrawals back along with the new pairing.
+    for (const item of current) cancelPendingRequest(db, token, item.ride.rideId, now);
     const joined = requestRide(
       db,
       token,

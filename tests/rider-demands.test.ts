@@ -21,6 +21,7 @@ import {
   cancelDemand,
   demandActivity,
   pendingDemandOffers,
+  activeDemand,
 } from "../server/rider-demands";
 import {
   checkedDemandRoute,
@@ -72,6 +73,47 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+test("ordinary acceptance fulfils the public post and prevents accepting another invitation", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const posted = postDemand(db, rider.token, route, now);
+    const first = publishRide(db, driver.token, offerBody, now).ride;
+    const joined = requestRide(db, rider.token, first.rideId, { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt }, now);
+    assert.equal(activeDemand(db, rider.token, now)?.id, posted.id);
+    assert.equal(activeDemand(db, other.token, now), null);
+    assert.equal(searchDemands(db, other.token, route, now).length, 1);
+    const alternative = offerDemand(db, other.token, posted.id, offerBody, now);
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "OPEN");
+    decideRequest(db, driver.token, first.rideId, joined.ride.request!.requestId, "ACCEPT", now);
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "FULFILLED");
+    assert.equal(demandActivity(db, rider.token, now).requests[0].offers[0].status, "UNAVAILABLE");
+    assert.equal(activeDemand(db, rider.token, now), null);
+    assert.equal(pendingDemandOffers(db, rider.token, now), 0);
+    assert.throws(() => respondToDemandOffer(db, rider.token, alternative.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+    assert.equal(db.prepare("SELECT count(*) n FROM rides WHERE status='ACCEPTED'").get()!.n, 1);
+  } finally { db.close(); }
+});
+
+test("accepting an invitation rolls pending join withdrawal back on failure, then wins against stale acceptance", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const first = publishRide(db, driver.token, offerBody, now).ride;
+    const joined = requestRide(db, rider.token, first.rideId, { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt }, now);
+    const posted = postDemand(db, rider.token, route, now); // Posting after a pending join is allowed too.
+    const alternative = offerDemand(db, other.token, posted.id, offerBody, now);
+    db.exec("CREATE TRIGGER fail_accept BEFORE UPDATE OF status ON rides WHEN NEW.status='ACCEPTED' BEGIN SELECT RAISE(ABORT,'TEST_FAILURE'); END");
+    assert.throws(() => respondToDemandOffer(db, rider.token, alternative.id, "ACCEPT", now), /TEST_FAILURE/);
+    assert.equal(getRide(db, first.rideId, rider.session, now).request!.status, "PENDING");
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "OPEN");
+    db.exec("DROP TRIGGER fail_accept");
+    respondToDemandOffer(db, rider.token, alternative.id, "ACCEPT", now);
+    assert.throws(() => decideRequest(db, driver.token, first.rideId, joined.ride.request!.requestId, "ACCEPT", now), /REQUEST_UNAVAILABLE/);
+    assert.equal(getRide(db, first.rideId, driver.session, now).status, "PUBLISHED");
+    assert.equal(demandActivity(db, rider.token, now).requests[0].status, "FULFILLED");
+    assert.equal(respondToDemandOffer(db, rider.token, alternative.id, "ACCEPT", now)!.status, "ACCEPTED");
+  } finally { db.close(); }
+});
+
 test("discovery accepts optional endpoints without weakening publication or access rules", () => {
   const { db, rider, driver, other } = fixture();
   const any = { date: "any", time: "" };
@@ -335,7 +377,7 @@ test("decline does not cancel the driver's ride; cancelling or competing accepta
     db.close();
   }
 });
-test("paid offer hides PayID from discovery; busy rider cannot accept; exact time fit enforced", () => {
+test("paid offer hides PayID, replaces a pending join on acceptance and enforces time fit", () => {
   const { db, rider, driver, other } = fixture();
   try {
     const demand = postDemand(
@@ -385,13 +427,11 @@ test("paid offer hides PayID from discovery; busy rider cannot accept; exact tim
       },
       now,
     );
-    assert.throws(
-      () => respondToDemandOffer(db, rider.token, offer.id, "ACCEPT", now),
-      /OPEN_ITEM_EXISTS/,
-    );
+    assert.equal(respondToDemandOffer(db, rider.token, offer.id, "ACCEPT", now)!.status, "ACCEPTED");
+    assert.equal(getRide(db, elsewhere.rideId, rider.session, now).request?.status, "CANCELLED");
     assert.equal(
       getRide(db, offer.rideId, driver.session, now).status,
-      "PUBLISHED",
+      "ACCEPTED",
     );
   } finally {
     db.close();
@@ -470,6 +510,8 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
     assert.equal((await call("/api/rider-demands")).status, 401);
     const posted = await call("/api/rider-demands", rider.token, route);
     assert.equal(posted.status, 201);
+    assert.equal((await call("/api/current", rider.token)).body.activeDemand.id, posted.body.request.id);
+    assert.equal((await call("/api/current", other.token)).body.activeDemand, null);
     const found = await call("/api/rider-demands/search", driver.token, route);
     assert.equal(found.body.requests.length, 1);
     const schedule = initialDeparture();
@@ -495,6 +537,7 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
     const accepted = await call(endpoint, rider.token, { decision: "ACCEPT" });
     assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     assert.equal(accepted.body.ride.status, "ACCEPTED");
+    assert.equal((await call("/api/current", rider.token)).body.activeDemand, null);
     assert.equal(
       (await call("/api/current", driver.token)).body.current.ride.status,
       "ACCEPTED",

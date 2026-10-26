@@ -1628,6 +1628,9 @@ export function decideRequestForDriver(db: Db, session: Session, rideId: string,
     if (!["PUBLISHED", "REQUESTED"].includes(ride.status))
       throw new Error("RIDE_UNAVAILABLE");
     db.transaction(() => {
+      if (hasOpenDriverRide(db, request.rider_session_id) || db.prepare(
+        "SELECT 1 FROM ride_requests q JOIN rides r ON r.id=q.ride_id WHERE q.rider_session_id=? AND q.status='ACCEPTED' AND r.status IN ('ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE') LIMIT 1",
+      ).get(request.rider_session_id)) throw new Error("OPEN_ITEM_EXISTS");
       db.prepare(
         "UPDATE ride_requests SET status = 'ACCEPTED', decided_at = ? WHERE id = ? AND status = 'PENDING'",
       ).run(timestamp, request.id);
@@ -1638,6 +1641,7 @@ export function decideRequestForDriver(db: Db, session: Session, rideId: string,
         "UPDATE rides SET status = 'ACCEPTED', accepted_request_id = ?, accepted_at = ?, last_activity_at = ? WHERE id = ?",
       ).run(request.id, timestamp, timestamp, ride.id);
       issuePickupCode(db, ride.id, now);
+      db.prepare("UPDATE rider_demands SET status=CASE WHEN expires_at>? THEN 'FULFILLED' ELSE 'EXPIRED' END WHERE owner_id=? AND status='OPEN'").run(timestamp, request.rider_session_id);
       event(db, ride.id, "RIDER_ACCEPTED", "DRIVER", now);
     })();
   }

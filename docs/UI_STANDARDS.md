@@ -11,9 +11,15 @@ is not permission to introduce it here. Reusing an established pattern or making
 an explicitly requested change does not require redundant approval. When unsure
 whether a pattern is established, check the code/standards and ask before changing it.
 
-Rider-posted requests: Ask for a ride sits beside Save route below Request to join,
+Rider-posted requests: Post where you need to go sits beside Save route below Request to join,
 outside the ride list. Both are quiet, independent secondary actions; neither
 belongs in the list or empty-state component. No Choose a ride heading.
+Allow the longer post action to wrap naturally in this shared action row on small
+screens. Success says View your post; its Activity summary says Your post.
+Profile groups the post and active ride in one Your rides region with existing
+card styling and 12px gaps, without an extra visible heading. A post alone is not
+an unread notification. Empty-selection Request to join stays enabled and opens
+the shared sentence-only modal; retain temporary submission disabling.
 Keep Find someone who needs a ride as a quiet secondary text action below the primary Offer a ride
 button, available before entering addresses. Related alternative actions belong
 together, not beside the page title. Neither action publishes without review.
@@ -22,11 +28,11 @@ discovery, keep the descriptive heading but use Search for the primary button.
 Back navigation precedes the heading in DOM and visual order, at the top-left,
 not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.
-Use Your ride request for posted demand and Request to join for joining a specific
+Use Your post for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
 Post review starts with regular body text: Let drivers know you need a ride.
-No redundant title. Post request / Go back retains the shared modal action group.
-Switching to driver asks Withdraw your ride request and offer a ride? with safe
+No redundant title. Post / Go back retains the shared modal action group.
+Switching to driver asks Withdraw your post and offer a ride? with safe
 Go back first and danger Withdraw & offer second. Preserve form details on failure.
 Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
 ContributionChoice, PaymentFields and the existing plate prompt. Driver browsing

@@ -12,7 +12,8 @@ import { conversationTarget } from "@/lib/messaging-types";
 import RideUpdateNotice, { readSeen } from "./ride-update-notice";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import { requestJson } from "@/lib/api-transport";
-import ActiveRideLink, { type ActiveRide } from "./active-ride-link";
+import ActiveRideLink, { ActivePostLink, type ActiveRide } from "./active-ride-link";
+import type { RiderDemand } from "@/lib/rider-demand";
 import { activeRideTabForPath } from "@/lib/navigation-state";
 
 export default function AppNavigation() {
@@ -28,6 +29,7 @@ export default function AppNavigation() {
     rider: RatingSummary;
   } | null>(null);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
+  const [activePost, setActivePost] = useState<RiderDemand | null>(null);
   const [demandOffers, setDemandOffers] = useState(0);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
@@ -128,6 +130,7 @@ export default function AppNavigation() {
       if (seenAccount.current !== result.unikey) {
         seenAccount.current = result.unikey;
         setActiveRide(null);
+        setActivePost(null);
         setSeen(readSeen(result.unikey));
       }
       setCanAdmin(result.canAdmin === true);
@@ -136,8 +139,10 @@ export default function AppNavigation() {
         current: ActiveRide | null;
         currents: ActiveRide[];
         pendingDemandOffers?: number;
+        activeDemand?: RiderDemand | null;
       }>("/api/current");
       setActiveRide(activity.current);
+      setActivePost(activity.activeDemand ?? null);
       setDemandOffers(activity.pendingDemandOffers ?? 0);
       window.dispatchEvent(
         new CustomEvent("cocowheels:current-updated", {
@@ -148,6 +153,7 @@ export default function AppNavigation() {
       if (reason instanceof ApiError && reason.status === 401) {
         setGuestName(null);
         setDemandOffers(0);
+        setActivePost(null);
         setAccountKey(null);
         setCanAdmin(false);
         setRatings(null);
@@ -362,7 +368,9 @@ export default function AppNavigation() {
               </div>
             </div>
           )}
-          {guestName && demandOffers > 0 && <Link className="secondary" href="/activity#ride-requests" onClick={() => setIdentityOpen(false)}>{demandOffers} ride offer{demandOffers === 1 ? "" : "s"} to review</Link>}
+          {guestName && (activePost || activeRide || demandOffers > 0) && <section className="profile-current-items" aria-label="Your rides">
+          {activePost && <ActivePostLink offers={demandOffers} onClick={() => setIdentityOpen(false)} />}
+          {!activePost && demandOffers > 0 && <Link className="secondary" href="/activity#ride-requests" onClick={() => setIdentityOpen(false)}>{demandOffers} ride offer{demandOffers === 1 ? "" : "s"} to review</Link>}
           {guestName && activeRide && (
             <ActiveRideLink
               item={activeRide}
@@ -390,6 +398,7 @@ export default function AppNavigation() {
               }}
             />
           )}
+          </section>}
           {guestName && (
             <div className="profile-actions">
               <Link

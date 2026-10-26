@@ -12,6 +12,13 @@ import { revealDetailsAncestors } from "@/lib/reveal-details";
 
 export type ActiveRide = { role: "DRIVER" | "RIDER"; ride: Ride };
 
+export function ActivePostLink({ onClick, offers }: { onClick: () => void; offers: number }) {
+  return <Link href="/activity#ride-requests" className="secondary profile-active-ride" onClick={onClick}>
+    <strong><RideFieldLabel icon="rider">Your post</RideFieldLabel></strong>
+    {offers > 0 && <span className="active-ride-update">{offers} ride offer{offers === 1 ? "" : "s"} to review</span>}
+  </Link>;
+}
+
 export default function ActiveRideLink({
   item,
   compact = false,

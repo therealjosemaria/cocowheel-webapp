@@ -4,7 +4,7 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 ## Rider-posted requests (25 October 2026)
 
-Find's bottom action area includes **Ask for a ride** beside **Save route**, below
+Find's bottom action area includes **Post where you need to go** beside **Save route**, below
 Request to join and outside the ride list, with an explicit address,
 schedule and visibility review. This publishes one request per verified account;
 it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
@@ -29,9 +29,20 @@ the driver's public offer. Existing one-open-ride limits remain; no seat reserva
 until acceptance. Profile's existing polling includes a pending-offer badge.
 No new email type, live-GPS discovery or calendar sync is introduced.
 
+26 October: a public post can coexist with one pending request to join a driver.
+It remains discoverable until acceptance, withdrawal or expiry. Either acceptance
+path fulfils an unexpired post atomically; competing invitations become unavailable.
+Accepting an invitation withdraws a pending join within the same transaction,
+rolling back on failure. Only one confirmed pairing is permitted. Fulfilled posts
+stay in history and are not reopened automatically if the ride later cancels.
+Profile groups Your post and active-ride cards together, reusing existing polling
+and styling; a post alone does not add an unread badge. Success links say View your
+post. Request to join stays enabled without a selection and opens the shared
+“Select a ride from the list to continue.” notice; submission remains protected.
+
 The redundant Choose a ride heading is removed. Joining an existing offer now
-says Request to join; posted demand says Your ride request.
-Offering while an open ride request exists requires “Withdraw your ride request
+says Request to join; posted demand says Your post.
+Offering while an open post exists requires “Withdraw your post
 and offer a ride?” with Go back / Withdraw & offer. Consent names the exact
 request ID; withdrawal and publication commit together or both roll back.
 This also applies when responding to another rider. No history is deleted.

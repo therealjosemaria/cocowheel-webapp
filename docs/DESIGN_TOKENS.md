@@ -10,6 +10,11 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+Profile's Your rides region groups existing active-ride/post links with a 12px
+grid gap. Post cards reuse the rider icon and existing notification caption;
+no new border, palette or heading. Longer Post where you need to go copy retains
+the existing wrapping secondary action row beside Save route.
+
 Rider-demand screens reuse the existing typography and map palette. Header
 secondary actions use 14px text with 44px targets; paired actions reuse
 driver-request-buttons (12px labels, 44px minimum height, 8px gap, no primary

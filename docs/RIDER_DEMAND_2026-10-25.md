@@ -5,7 +5,7 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
-- Find a ride retains its existing form and search. Ask for a ride sits beside
+- Find a ride retains its existing form and search. Post where you need to go sits beside
   Save route below Request to join, outside listings; no Choose a ride heading.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
@@ -17,7 +17,8 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
   Clearing an address in its existing search sheet removes that discovery filter.
   Date and time remain independently optional. No automatic GPS lookup occurs.
 - Search shows up to 50 matching, open requests, newest first. Excludes self and
-  owners already occupied by an ordinary open driver ride/rider request. Uses the
+  owners already occupied by an open driver ride or confirmed rider pairing (not
+  a pending join). Uses the
   same straight-line corridor as matching alerts: ordered pickup/drop-off, 20%
   behind-origin allowance, 1.5km pickup and 2.5km destination lateral tolerances.
   This is not a driving-detour guarantee. Map lines are approximate, disclosed as
@@ -39,7 +40,27 @@ publication, new schema, GPS access or alert setting change is introduced.
 `OPEN → CANCELLED | EXPIRED | FULFILLED`; no deletion. One OPEN demand per owner,
 enforced with a partial unique index. Posting identical data retries idempotently
 without extending TTL. A different open request must be cancelled in Activity first.
-Posting is disallowed while the account has an ordinary open ride/request.
+Posting is disallowed while the account has an open driver ride or confirmed
+rider pairing. One pending join can coexist with a post, in either creation order.
+Ordinary driver acceptance atomically marks an unexpired OPEN post FULFILLED;
+elapsed posts become EXPIRED instead. Accepting a posted offer cancels a pending
+join using the existing cancellation path, then creates/accepts the new pairing
+in the same transaction. Any failure restores the pending join and post. Whichever
+acceptance completes first prevents the competing acceptance; ordinary pending
+join limits remain one. Other invitations become unavailable through the post's
+closed status; their drivers' public offers remain available. No history deletion
+or automatic reopening after cancellation, and no retroactive data rewrite.
+
+Profile's existing current poll returns owner-only activeDemand or null. Your post
+and active ride links share one Your rides region and existing card styling.
+Pending offers are described within the post card; only real offers contribute
+to the badge. Posting dispatches the existing identity refresh.
+Until the API restart supplies activeDemand, the existing offer
+review link remains available when there are pending offers. Success says
+View your post; Activity says Your post, Fulfilled, Withdraw post, Posts and offers.
+Request to join with no selected candidate opens the existing Message modal:
+Select a ride from the list to continue. No network request or navigation occurs.
+It is disabled only during submission, preserving duplicate-submit protection.
 
 Follow-up on base `4b69006`: publishing a driver ride while an unexpired OPEN
 lift request exists returns `LIFT_REQUEST_WITHDRAWAL_REQUIRED` (409), without
@@ -53,8 +74,8 @@ do not need withdrawal. No new schema, TTL or active-ride rule. Legacy saved-rou
 publication also encounters the core consent gate, but has no new UI shortcut.
 Self-discovery, self-offering and self-joining remain blocked server-side.
 
-Visible copy now uses ride request / Withdrawn; internal identifiers and CANCELLED
-remain unchanged. Review uses a regular sentence, Post request / Go back, with
+Visible copy now uses Your post / Withdrawn; internal identifiers and CANCELLED
+remain unchanged. Review uses a regular sentence, Post / Go back, with
 no redundant title. Activity remains above completed ride history. No new tab.
 
 - Any date: exactly 48 hours from posting, even if an Around time is specified.
@@ -240,6 +261,35 @@ legacy selectors updated only; those separate scripts were not rerun this pass.
 No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
+
+### Post/join coexistence checks — 26 October, baseline `a63393b`
+
+`npm test`: 180 passed; `npm run lint` and `npm run build`: passed. Synthetic
+in-memory tests cover both creation orders, both acceptance orders, stale second
+acceptance rejection, idempotent invitation acceptance, visibility while pending,
+owner-only current-post response, and rollback after an injected acceptance fault.
+No live database writes or email-provider calls were used for these checks.
+
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-rider-demands.py` passed
+at 320/390/844/1440px: renamed post flow, enabled empty-selection join/modal,
+Profile post without an unread badge, discovery, offering, withdrawal and Activity.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-profile-posts.py` passed
+twelve cases at 390/1440px: post alone, post+pending join, post+offer, confirmed rider,
+published driver and the older API's offer-link fallback. These use local :3201 with mocked APIs and external traffic
+blocked. Whole-screen visuals reviewed for the new modal, secondary action wrap,
+Profile cards, heading weights and spacing. Initial Profile captures exposed
+stacked legacy button margins; removed within the new group and verified 12px
+spacing on retest. Placeholder image fixtures were corrected for visual review.
+
+This is not a production load or multi-process concurrency certification. The
+atomicity tests use the existing synchronous SQLite transaction model. Native
+Safari, authenticated production walkthrough and frontend deployment are not
+verified. With user approval, a private database backup was taken and only
+`cocowheels-api` restarted at 11:01:48 AEDT after confirming zero underway trips.
+Backup and post-restart counts match: 131 rides, 77 requests, 2 posts and 0 offers.
+Both databases pass integrity and foreign-key checks; local and public health
+checks pass. Unauthenticated current-state access still returns 401. No schema
+or configuration change was needed; no live test writes or emails were sent.
 
 26 October, baseline `86b0eda`: discovery's initial back label is now simply
 Back, superseding Back to offering below. Edit search, placement, styling and

@@ -21,7 +21,7 @@ with sync_playwright() as p:
         def api(r):
             path=r.request.url.split('/api/')[-1].split('?')[0]
             if path=='university/session': data={'unikey':'rider001'}
-            elif path=='current': data={'current':None,'currents':[],'pendingDemandOffers':1}
+            elif path=='current': data={'current':None,'currents':[],'pendingDemandOffers':0,'activeDemand':request if any('date' in body for body in writes) else None}
             elif path=='history': data={'driver':[],'rider':[]}
             elif path=='usual-route': data={'route':{'origin':origin,'destination':destination,'alerts':True},'alertsAvailable':True}
             elif path.startswith('profile-photo/'):
@@ -58,30 +58,43 @@ with sync_playwright() as p:
         page.goto(BASE+'/?start=rider')
         address('Where from?','origin'); address('Where to?','destination')
         page.get_by_role('button',name='FIND A RIDE',exact=True).click()
-        expect(page.get_by_role('button',name='Ask for a ride',exact=True)).to_be_visible()
-        ask=page.get_by_role('button',name='Ask for a ride',exact=True)
+        expect(page.get_by_role('button',name='Post where you need to go',exact=True)).to_be_visible()
+        ask=page.get_by_role('button',name='Post where you need to go',exact=True)
         save=page.get_by_role('button',name='Save route',exact=True)
         page.wait_for_timeout(300)
         capture('rider-results')
         expect(page.locator('.ride-options button.text-button')).to_have_count(0)
-        assert abs(ask.bounding_box()['y']-save.bounding_box()['y']) < 1
-        assert ask.bounding_box()['x']+ask.bounding_box()['width'] <= save.bounding_box()['x']
+        assert ask.bounding_box()['y'] <= save.bounding_box()['y']
         assert ask.bounding_box()['height'] >= 44 and save.bounding_box()['height'] >= 44
         capture('rider-results')
         save.click()
         expect(page.get_by_role('button',name='Route saved',exact=True)).to_be_disabled()
         assert not writes
-        page.get_by_role('button',name='Ask for a ride',exact=True).click()
+        join=page.get_by_role('button',name='REQUEST TO JOIN',exact=True)
+        expect(join).to_be_enabled()
+        join.click()
+        expect(page.get_by_text('Select a ride from the list to continue.',exact=True)).to_be_visible()
+        capture('select-ride-notice')
+        page.get_by_role('button',name='OKAY',exact=True).click()
+        assert not writes
+        page.get_by_role('button',name='Post where you need to go',exact=True).click()
         dialog=page.get_by_role('dialog',name='Let drivers know you need a ride.',exact=True)
         expect(dialog.get_by_text('Drivers can see these addresses',exact=False)).to_be_visible()
         capture('post-review')
         page.keyboard.press('Escape')
-        expect(page.get_by_role('button',name='Ask for a ride',exact=True)).to_be_focused()
+        expect(page.get_by_role('button',name='Post where you need to go',exact=True)).to_be_focused()
         assert not writes
-        page.get_by_role('button',name='Ask for a ride',exact=True).click()
-        dialog.get_by_role('button',name='Post request',exact=True).click()
-        expect(page.get_by_role('link',name='View your ride request')).to_be_visible()
+        page.get_by_role('button',name='Post where you need to go',exact=True).click()
+        dialog.get_by_role('button',name='Post',exact=True).click()
+        expect(page.get_by_role('link',name='View your post')).to_be_visible()
         assert writes[-1]['origin']==origin
+        profile=page.get_by_role('button',name='Profile:',exact=False)
+        profile.click()
+        expect(page.locator('#guest-identity-popover').get_by_role('link',name='Your post',exact=True)).to_be_visible()
+        assert 'updates' not in profile.get_attribute('aria-label')
+        page.wait_for_timeout(250)
+        capture('profile-post')
+        profile.click()
         page.goto(BASE+'/?start=driver')
         offer_button=page.get_by_role('button',name='OFFER A RIDE',exact=True)
         find_button=page.get_by_role('button',name='Find someone who needs a ride',exact=True)
@@ -90,7 +103,7 @@ with sync_playwright() as p:
         capture('offer-entry')
         address('Where from?','origin'); address('Where to?','destination')
         offer_button.click()
-        switch=page.get_by_role('dialog',name='Withdraw your ride request and offer a ride?',exact=True)
+        switch=page.get_by_role('dialog',name='Withdraw your post and offer a ride?',exact=True)
         expect(switch).to_be_visible(); capture('switch')
         switch.get_by_role('button',name='Go back',exact=True).click()
         assert not writes[-1].get('withdrawLiftRequestId')
@@ -179,8 +192,8 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Accept ride')).to_be_visible()
         expect(page.get_by_text('Completed, cancelled, and expired rides will appear here.')).to_have_count(0)
         capture('activity')
-        page.get_by_role('button',name='Withdraw request',exact=True).click()
-        confirm=page.get_by_role('dialog',name='Withdraw your ride request?',exact=True)
+        page.get_by_role('button',name='Withdraw post',exact=True).click()
+        confirm=page.get_by_role('dialog',name='Withdraw your post?',exact=True)
         expect(confirm).to_be_visible(); capture('cancel')
         page.keyboard.press('Escape')
         page.goto(BASE+'/privacy')

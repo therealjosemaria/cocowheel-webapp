@@ -691,7 +691,11 @@ export default function HomeClient({
     candidate = selectedCandidate,
     confirmed = false,
   ) {
-    if (!candidate || !riderPins.pickup || !riderPins.destination) return;
+    if (!candidate) {
+      setError("Select a ride from the list to continue.");
+      return;
+    }
+    if (!riderPins.pickup || !riderPins.destination) return;
     if (candidate.isOwnOffer) {
       setOwnOfferPromptOpen(true);
       return;
@@ -1435,7 +1439,7 @@ function RideSelection({
         <button
           type="button"
           className="primary"
-          disabled={busy || !selectedCandidate}
+          disabled={busy}
           onClick={() => request()}
         >
           {busy ? "REQUESTING…" : "REQUEST TO JOIN"}

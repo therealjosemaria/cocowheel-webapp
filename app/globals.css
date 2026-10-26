@@ -931,6 +931,12 @@ p {
   font-size: var(--text-small);
   overflow-wrap: anywhere;
 }
+.profile-current-items {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.profile-current-items > .secondary { margin: 0; }
 .profile-active-ride {
   display: flex;
   align-items: center;
