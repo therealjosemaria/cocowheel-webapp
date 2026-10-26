@@ -54,7 +54,8 @@ and styling; a post alone does not add an unread badge. Success links say View y
 post. Request to join stays enabled without a selection and opens the shared
 “Select a ride from the list to continue.” notice; submission remains protected.
 Activity posts are always-open cards, like ride history, with the shared rider
-icon beside Your post. Post, sent-offer and ride-history cards use consistent
+icon beside Your post, without a separate Posts and offers heading.
+Post, sent-offer and ride-history cards use consistent
 10px spacing, including the boundary between posts and history.
 
 The redundant Choose a ride heading is removed. Joining an existing offer now

@@ -76,6 +76,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 ## Icons, controls and spacing
 
 - Activity uses 10px between cards, including post-to-history boundaries.
+  No separate Posts and offers heading or reserved heading margin.
   Posts and sent offers reuse activity-role (caption/bold, 16px icon, 6px gap)
   and the normal 18px card top inset. Posts are always open; no summary arrow.
 

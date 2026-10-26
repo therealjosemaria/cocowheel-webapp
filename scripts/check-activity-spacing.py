@@ -33,6 +33,7 @@ with sync_playwright() as p:
         page.goto(BASE + '/activity')
         cards = page.locator('.activity-card')
         expect(cards).to_have_count(5)
+        expect(page.get_by_role('heading', name='Posts and offers', exact=True)).to_have_count(0)
         expect(page.locator('.demand-activity details')).to_have_count(0)
         expect(page.get_by_text('Withdrawn', exact=True)).to_be_visible()
         expect(page.get_by_role('button', name='Accept ride', exact=True)).to_be_visible()
@@ -41,7 +42,7 @@ with sync_playwright() as p:
         for before, after in zip(boxes, boxes[1:]):
             assert abs(after['y'] - before['y'] - before['height'] - 10) < 1
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-        page.screenshot(path=f'/tmp/activity-spacing-{width}.png', full_page=True)
+        page.screenshot(path=f'/tmp/activity-spacing-{width}.png', full_page=True, animations='disabled')
         page.get_by_role('button', name='Withdraw post', exact=True).click()
         expect(page.get_by_role('dialog', name='Withdraw your post?', exact=True)).to_be_visible()
         page.keyboard.press('Escape')

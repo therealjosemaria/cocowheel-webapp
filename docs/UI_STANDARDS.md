@@ -57,7 +57,8 @@ The empty-history message must not appear alongside posted-request activity.
 Activity posts stay expanded, using article cards rather than accordions.
 Your post and Your offer reuse the existing Activity role label with shared
 rider/driver icons. Use the same 10px card gap within and between current rides,
-posts/offers and history; keep the section heading distinct from card content.
+posts/offers and history. Omit the redundant Posts and offers heading; retain
+the page title and each card's role label.
 
 25 October: [calendar-led setup](CALENDAR_SEARCH_2026-10-25.md) supersedes the
 older Find/Offer address/departure rules below. Shared address sheets are full

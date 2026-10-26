@@ -582,7 +582,6 @@ export function RiderDemandActivity({
   if (!data?.requests.length && !data?.sent.length && !error) return null;
   return (
     <section id="ride-requests" className="demand-activity">
-      <h2>Posts and offers</h2>
       {error && (
         <p role="alert">
           {error}{" "}

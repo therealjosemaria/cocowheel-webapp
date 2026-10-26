@@ -66,7 +66,16 @@ Pending offers are described within the post card; only real offers contribute
 to the badge. Posting dispatches the existing identity refresh.
 Until the API restart supplies activeDemand, the existing offer
 review link remains available when there are pending offers. Success says
-View your post; Activity says Your post, Fulfilled, Withdraw post, Posts and offers.
+View your post; Activity says Your post, Fulfilled and Withdraw post.
+The redundant Posts and offers heading is removed (26 October); card labels,
+actions and 10px inter-card spacing remain unchanged.
+Removal checks: `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-activity-spacing.py`
+passed at 320/390/844/1440px on localhost:3201 with mocked APIs and external
+traffic blocked. Whole-page 390/1440px screenshots reviewed for hierarchy,
+spacing, icons and unchanged rider-post/driver-offer/history actions. Lint,
+production build and the visual-system regression test passed. Full source and
+staged diffs reviewed. Physical devices and production deployment unverified;
+no backend change or restart required.
 Request to join with no selected candidate opens the existing Message modal:
 Select a ride from the list to continue. No network request or navigation occurs.
 It is disabled only during submission, preserving duplicate-submit protection.

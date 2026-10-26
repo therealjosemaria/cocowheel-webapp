@@ -662,7 +662,6 @@ button:disabled {
 .demand-prompt .demand-fields { grid-template-columns: 1fr; }
 .demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }
 .demand-activity { display: grid; gap: 10px; scroll-margin-top: 24px; }
-.demand-activity h2 { font-size: var(--text-body); margin: 0 0 6px; }
 .demand-activity .save-route-profile-note, .demand-activity .activity-card > p,
 .demand-activity .activity-card > .text-button, .demand-activity .activity-card > .secondary,
 .demand-activity .activity-card > .ride-field-label { margin: 12px; }
