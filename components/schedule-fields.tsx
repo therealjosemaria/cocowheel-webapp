@@ -6,7 +6,7 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import RideFieldLabel from "./ride-field-label";
 import { calendarDay, dateCaption, lastDepartureDate, sydneyDateTime, sydneyInstant, timeCaption } from "@/lib/ride-schedule";
 
-export function SearchSheet({ label, close, children }: { label: string; close: () => void; children: ReactNode }) {
+export function SearchSheet({ label, close, children, hideHeading = false }: { label: string; close: () => void; children: ReactNode; hideHeading?: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
   useDialogFocus(ref, close);
@@ -31,7 +31,7 @@ export function SearchSheet({ label, close, children }: { label: string; close: 
   }, []);
   return createPortal(<div ref={backdrop} className="location-prompt-backdrop search-sheet-backdrop">
     <section ref={ref} tabIndex={-1} className="search-sheet" role="dialog" aria-modal="true" aria-label={label}>
-      <header className="search-sheet-header"><button type="button" className="text-button" onClick={close}>Back</button><h2>{label}</h2></header>
+      <header className="search-sheet-header"><button type="button" className="text-button" onClick={close}>Back</button>{!hideHeading && <h2>{label}</h2>}</header>
       {children}
     </section>
   </div>, document.body);

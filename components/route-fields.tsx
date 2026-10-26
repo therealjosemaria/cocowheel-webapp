@@ -131,7 +131,7 @@ function SheetRouteFields({ origin, destination, setOrigin, setDestination, coun
     }}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 20V4m-4 4 4-4 4 4M16 4v16m-4-4 4 4 4-4" /></svg></button>
     <button type="button" className={`secondary address-field${destination ? "" : " address-empty"}`} aria-label="Where to?" title={destination ? locationText(destination) : "Where to?"} aria-haspopup="dialog" onClick={() => setField("destination")}>
       <RideFieldLabel icon="to">{destination ? locationText(destination) : "Where to?"}</RideFieldLabel></button>
-    {field && <SearchSheet label={field === "origin" ? "Where from?" : "Where to?"} close={() => setField(null)}>
+    {field && <SearchSheet hideHeading label={field === "origin" ? "Where from?" : "Where to?"} close={() => setField(null)}>
       <PlaceSearch key={field} automatic autoFocus selectOnFocus
         placeholder={field === "origin" ? "Where from?" : "Where to?"}
         initialValue={drafts[field] || (selected ? locationText(selected) : "")}

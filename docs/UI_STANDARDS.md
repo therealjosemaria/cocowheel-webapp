@@ -4,6 +4,19 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+26 October address/request-map refinement: address-search sheets omit the visible
+duplicate Where from?/Where to? heading, keeping Back, the input placeholder and
+accessible names. Date/time headings stay visible. Request discovery and owner
+Activity reuse RequestRouteMap with JourneyMap, shared road-path cache/API and
+driver/rider colours. Activity uses the existing Show route / Hide route pair
+beside Withdraw post for open posts, full-width Show route for historical posts;
+one request map at a time. Keep cards expanded and existing offer actions intact.
+No permanent Approximate routes helper. Failed road routing shows endpoints and
+the existing helper/text-button treatment for Road route unavailable / Try again;
+never imply a straight line is a road route. Activity legend says Your route;
+discovery retains Your route / Rider route. Geoapify attribution appears only
+when road geometry is rendered; Leaflet/OSM attribution remains.
+
 26 October Profile/navigation refinement: one Your journeys link to /activity
 replaces the Profile popover's separate active-post/ride links. Show it under
 the existing active-post/ride/pending-offer condition; retain the Profile badge

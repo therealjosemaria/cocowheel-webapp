@@ -10,6 +10,13 @@ SHARED_ROUTE_FIELDS_2026-10-22 and SEARCH_OVERLAY_2026-10-23. Profile is unchang
 
 ## Behaviour and boundaries
 
+26 October address-sheet refinement: shared sheet-mode route editors pass
+hideHeading to SearchSheet for addresses only. Where from?/Where to? remains in
+the input placeholder and accessible input/dialog names, without a duplicate
+visible heading beside Back. Find, Post and request discovery share the change;
+date/time picker headings and Profile's inline editor are unchanged. No search,
+debounce, selection, focus, GPS or API changes.
+
 26 October navigation refinement: shared date/time picker headers now display
 Back instead of the arrow; the map's existing top-left return control also says
 Back with a text-sized rounded box and 44px minimum target. Picker Back still

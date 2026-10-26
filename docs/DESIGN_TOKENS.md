@@ -17,6 +17,14 @@ All existing font-size declarations now reference the scale below. Equivalent fo
 
 ## Typography
 
+26 October request-map refinement: reuse the 260px demand-map viewport in
+discovery and Activity, with its map-shell filling the viewport so attribution
+and controls remain visible. Existing route legend, colours, card fields and
+two-column driver-request-buttons are reused; no new palette or typography.
+Address sheets retain the existing header row with Back only; date/time headings
+are unaffected. Route-failure helper and Try again use existing note/text-button
+tokens rather than a new alert banner.
+
 26 October Profile/navigation refinement supersedes the grouped-card description
 below: Profile has one secondary Your journeys link using existing
 profile-active-ride and regular small update-copy styling. No new icon, accordion

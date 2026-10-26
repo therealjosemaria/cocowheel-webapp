@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { Pin, Ride } from "@/lib/client-types";
 import {
@@ -26,7 +25,7 @@ import { payIdInputError } from "@/lib/input-validation";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { RouteFields } from "./route-fields";
 import ScheduleFields from "./schedule-fields";
-import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
+import RequestRouteMap from "./request-route-map";
 import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import ParticipantName from "./participant-name";
 import PaymentFields from "./payment-fields";
@@ -34,7 +33,6 @@ import ContributionChoice from "./contribution-choice";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import { Message } from "./ride-journey-controls";
 
-const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
 const SELF_OFFER_MESSAGE = "You can’t offer a ride to yourself.";
 const location = (pin: Pin) =>
   pin.label || `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`;
@@ -275,38 +273,8 @@ export function FindRiders({
       </div>
       {results && searched ? (
         <div className="form-panel-content">
-          {(searched.origin || searched.destination || selected) && <div className="demand-map">
-            <JourneyMap
-              pins={[
-                ...(searched.origin ? [searched.origin] : []),
-                ...(searched.destination ? [searched.destination] : []),
-                ...(selected ? [selected.origin, selected.destination] : []),
-              ]}
-              lines={[
-                ...(searched.origin && searched.destination ? [{
-                  points: [searched.origin, searched.destination],
-                  ...DRIVER_ROUTE,
-                }] : []),
-                ...(selected
-                  ? [
-                      {
-                        points: [selected.origin, selected.destination],
-                        ...RIDER_ROUTE,
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </div>}
-          {(selected || (searched.origin && searched.destination)) && <>
-          <div className="ride-selection-route-key" aria-label="Map route colours">
-            {searched.origin && searched.destination && <span><i className="ride-selection-route-driver" aria-hidden="true" />Your route</span>}
-            {selected && <span><i className="ride-selection-route-rider" aria-hidden="true" />Rider route</span>}
-          </div>
-          <p className="save-route-profile-note">
-            Approximate routes
-          </p>
-          </>}
+          {(searched.origin || searched.destination || selected) &&
+            <RequestRouteMap driver={searched} rider={selected ?? undefined} />}
           {!results.length && (
             <p className="ride-options-empty">
               No matching ride requests.
@@ -526,12 +494,14 @@ export function RiderDemandActivity({
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
   const [cancel, setCancel] = useState<string | null>(null);
+  const [shownRoute, setShownRoute] = useState<string | null>(null);
   useEffect(() => {
     const reset = () => {
       setData(null);
       onHasActivity(false);
       setError(null);
       setCancel(null);
+      setShownRoute(null);
       setRevision((v) => v + 1);
     };
     window.addEventListener("cocowheels:identity-changed", reset);
@@ -603,6 +573,7 @@ export function RiderDemandActivity({
           key={request.id}
         >
           <span className="activity-role"><RideFieldIcon icon="rider" />Journey requested</span>
+          {shownRoute === request.id && <RequestRouteMap rider={request} riderLabel="Your route" />}
           <DemandRouteSummary route={request} />
           {request.status !== "OPEN" && (
             <p className="save-route-profile-note">
@@ -614,21 +585,25 @@ export function RiderDemandActivity({
             </p>
           )}
           {request.status === "OPEN" && (
-            <>
-              <p className="save-route-profile-note">
-                Visible until {departure(request.expiresAt)}
-              </p>
-              <div className="demand-actions driver-request-buttons demand-single-action">
-                <button
-                  className="secondary"
-                  disabled={busy}
-                  onClick={() => setCancel(request.id)}
-                >
-                  Withdraw post
-                </button>
-              </div>
-            </>
+            <p className="save-route-profile-note">
+              Visible until {departure(request.expiresAt)}
+            </p>
           )}
+          <div className={`demand-actions driver-request-buttons${request.status === "OPEN" ? "" : " demand-single-action"}`}>
+            <button type="button" className="secondary" aria-pressed={shownRoute === request.id}
+              onClick={() => setShownRoute(shownRoute === request.id ? null : request.id)}>
+              {shownRoute === request.id ? "Hide route" : "Show route"}
+            </button>
+            {request.status === "OPEN" && (
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() => setCancel(request.id)}
+              >
+                Withdraw post
+              </button>
+            )}
+          </div>
           {request.offers.map((offer) => (
             <div className="demand-offer" key={offer.id}>
               <ParticipantName name={offer.driverAlias} />

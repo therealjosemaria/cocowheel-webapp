@@ -39,7 +39,10 @@ with sync_playwright() as p:
         def select_address(label, text, result):
             page.get_by_role('button', name=label, exact=True).click()
             dialog = page.get_by_role('dialog', name=label, exact=True)
+            expect(dialog.get_by_role('heading')).to_have_count(0)
+            expect(dialog.get_by_role('button', name='Back', exact=True)).to_be_visible()
             field = dialog.get_by_role('textbox')
+            expect(field).to_have_attribute('placeholder', label)
             field.fill(text[:2])
             page.wait_for_timeout(600)
             before = len(lookups)

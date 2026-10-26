@@ -5,6 +5,42 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October road-preview refinement supersedes straight-line map previews below.
+RequestRouteMap is shared by discovery and Activity and calls the existing
+POST /api/route-preview for complete endpoint pairs. Existing Geoapify road
+geometry, session road-path cache and server provider cache are reused without
+changing their retention. Only searched driver endpoints and a selected rider
+are routed in discovery; Activity routes only the post explicitly opened with
+Show route. Hide/switch preserves cards and offer actions; only one Activity
+post map is visible. Closed posts can still be viewed, not offered/withdrawn.
+Coordinate-keyed results prevent a prior selection's route from rendering for
+the next one; effect cleanup aborts requests and ignores stale completions.
+Polling new object identities with unchanged coordinates does not refetch paths.
+No extra polling, live GPS, provider configuration or backend change. Matching
+remains the existing corridor heuristic; road display does not change eligibility.
+Remove the permanent Approximate routes text. Until geometry loads, show pins;
+on failure/empty geometry, retain pins without a straight line and show Road route
+unavailable with Try again. Successful paths retain required Geoapify attribution.
+Activity says Your route; discovery distinguishes Your route and Rider route.
+Request previews disable fit/zoom/fade animation to avoid a reproduced Leaflet
+teardown error on rapid Hide/switch. JourneyMap's default animation and live-trip
+following are unchanged for all existing callers.
+
+Verification (26 October, source based on 4b6e366): 183 regression tests, lint
+and production build passed. Against an isolated frontend on port 3201,
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-request-maps.py` and
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-calendar-search.py`
+passed at 320/390/844/1440px with mocked APIs and external traffic blocked.
+Checks cover lazy routing, cache reuse across discovery/Activity, failure/retry,
+single selected route, open/history controls, no writes, browser errors or
+horizontal overflow, and address-sheet accessible names without visible headings.
+The first rapid-toggle run reproduced Leaflet's `_leaflet_pos` teardown error;
+disabling animations for these previews resolved it in all four reruns.
+Whole-screen screenshots reviewed at 390/1440px for address sheets, discovery
+and Activity: typography, spacing, actions, legends and map controls. Map tiles
+were intentionally blocked, so live provider rendering, physical devices and
+production deployment remain unverified. No API restart is needed.
+
 26 October Profile refinement: the former Your post and active-ride links are
 consolidated into one Your journeys link to /activity. It appears for an active
 post, active ride or pending offer, including a public post plus pending join.

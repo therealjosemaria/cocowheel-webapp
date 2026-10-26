@@ -41,6 +41,16 @@ Offering still requires a complete route and concrete departure. When responding
 to a request, missing search endpoints are filled from that request and shown in
 the existing review before confirmation. See the rider-demand guide for checks.
 
+Request discovery and Activity now share road-route previews through the existing
+Geoapify route-preview API and session road-path cache, retaining Leaflet/OSM as
+the map renderer/basemap. Activity's Journey requested cards provide Show route /
+Hide route for open and historical posts, with only one expanded map at a time.
+Discovery still shows only the selected rider alongside any complete driver
+search route. No routine/live GPS is added. The blanket Approximate routes helper
+is removed; failures show endpoints without a straight-line substitute and a
+Road route unavailable / Try again notice. No routing requests for unopened
+Activity posts or unselected discovery requests, and no new polling or API.
+
 Discovery includes the signed-in owner's open request under the same filters,
 expiry and 50-result limit as other requests. A server-computed isOwn flag drives
 the shared “You can’t offer a ride to yourself.” notice; no self-offer submission
@@ -112,6 +122,9 @@ placement. Location-switch errors follow the same spacing. See the
 [modal spacing audit](docs/MODAL_SPACING_2026-10-25.md).
 
 Find and Offer now share address-search sheets and separate date/time controls.
+Address sheets show Back without repeating Where from?/Where to? as a heading;
+the input placeholder, accessible input name and dialog name remain. Date/time
+picker headings are unchanged. This applies to every shared sheet-mode route form.
 Address entry waits 500ms after typing (minimum three characters); results stay
 inside a full-screen phone picker or centred desktop dialog. Selection returns
 to the form. Find submits only when the rider presses Find a ride. Profile keeps

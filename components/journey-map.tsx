@@ -102,12 +102,14 @@ function Fit({
   followPins,
   recenterPin,
   followZoom = 16,
+  animate = true,
 }: {
   pins: Pin[];
   lines: Line[];
   followPins?: Pin[];
   recenterPin?: Pin;
   followZoom?: number;
+  animate?: boolean;
 }) {
   const map = useMap();
   const manualView = useRef(false);
@@ -194,7 +196,7 @@ function Fit({
     if (recenterEnabled || manualView.current || points.length === 0) return;
     if (points.length === 1) {
       map.setView([points[0].latitude, points[0].longitude], 16, {
-        animate: true,
+        animate,
       });
       return;
     }
@@ -202,11 +204,11 @@ function Fit({
       points.map(
         (point) => [point.latitude, point.longitude] as [number, number],
       ),
-      { padding: [48, 48], maxZoom: 16, animate: true },
+      { padding: [48, 48], maxZoom: 16, animate },
     );
     // Coordinates—not freshly allocated prop arrays—are the meaningful fit trigger.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, pointKey, recenterEnabled]);
+  }, [map, pointKey, recenterEnabled, animate]);
   return null;
 }
 function sameIndexes(left: Set<number>, right: Set<number>) {
@@ -467,6 +469,7 @@ export default function JourneyMap({
   markerLabels,
   labelPins,
   roadPathAttribution = false,
+  animateViewport = true,
 }: {
   pins?: Pin[];
   fitPins?: Pin[];
@@ -479,6 +482,7 @@ export default function JourneyMap({
   markerLabels?: Array<MarkerLabel | undefined>;
   labelPins?: Pin[];
   roadPathAttribution?: boolean;
+  animateViewport?: boolean;
 }) {
   return (
     <div className="map-shell">
@@ -487,6 +491,9 @@ export default function JourneyMap({
         zoom={15}
         scrollWheelZoom={false}
         zoomControl={false}
+        zoomAnimation={animateViewport}
+        markerZoomAnimation={animateViewport}
+        fadeAnimation={animateViewport}
         attributionControl={false}
         className="journey-map"
       >
@@ -513,6 +520,7 @@ export default function JourneyMap({
         />
         <MapClick onPick={onPick} />
         <Fit
+          animate={animateViewport}
           pins={fitPins ?? pins}
           lines={lines}
           followPins={followPins}
