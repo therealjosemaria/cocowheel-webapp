@@ -178,7 +178,7 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
       )}
       {review && (
         <DemandPrompt
-          label="Let drivers know you need a ride."
+          label="Post a ride request"
           action="Post"
           busy={busy}
           close={() => setReview(false)}

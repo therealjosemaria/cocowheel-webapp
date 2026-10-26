@@ -84,8 +84,14 @@ with sync_playwright() as p:
         page.get_by_role('button',name='OKAY',exact=True).click()
         assert not writes
         page.get_by_role('button',name='Post a ride request',exact=True).click()
-        dialog=page.get_by_role('dialog',name='Let drivers know you need a ride.',exact=True)
+        dialog=page.get_by_role('dialog',name='Post a ride request',exact=True)
         expect(dialog.get_by_text('Drivers can see these addresses',exact=False)).to_be_visible()
+        buttons=dialog.locator('.cancel-prompt-actions > button')
+        expect(buttons).to_have_count(2)
+        styles=buttons.evaluate_all('(els) => els.map(el => { const s=getComputedStyle(el); const b=el.getBoundingClientRect(); return {width:b.width,height:b.height,font:s.fontFamily,size:s.fontSize,weight:s.fontWeight,padding:s.padding,radius:s.borderRadius}; })')
+        assert styles[0] == styles[1], styles
+        assert styles[0]['height'] >= 44
+        assert dialog.locator('.cancel-prompt-actions').evaluate('(el) => getComputedStyle(el).gap') == '8px'
         capture('post-review')
         page.keyboard.press('Escape')
         expect(page.get_by_role('button',name='Post a ride request',exact=True)).to_be_focused()

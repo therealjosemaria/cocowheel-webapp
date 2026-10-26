@@ -262,6 +262,18 @@ No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
 
+### Post review wording — 26 October, baseline `4586c0d`
+
+The review's visible opening label and accessible dialog name now match the
+trigger: Post a ride request. Retain regular body typography, route/departure
+details and privacy/expiry copy. Post / Go back already share cancel-prompt-actions;
+no custom button CSS was needed. The four-width mocked rider-demand browser suite
+passes at 320/390/844/1440px, including equal computed button dimensions, font
+family/size/weight, padding, corners, 44px minimum height and 8px action gap.
+Mobile/desktop full-screen modal captures reviewed for spacing and hierarchy.
+Targeted ESLint and six visual-system tests pass. No backend change/restart;
+physical devices and live frontend deployment remain unverified.
+
 ### Activity card consistency — 26 October, baseline `dabed67`
 
 Posts now use always-open articles, including withdrawn/expired/fulfilled posts.

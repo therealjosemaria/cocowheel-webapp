@@ -6,7 +6,9 @@ GUMWHEEL is a mobile-first, one-driver/one-rider carpool web app with email-veri
 
 Find's bottom action area places **Save route** on the left and **Post a ride request** on the right, below
 Request to join and outside the ride list, with an explicit address,
-schedule and visibility review. This publishes one request per verified account;
+schedule and visibility review. The review label matches the trigger: Post a ride
+request. Post / Go back use the shared equal-size modal buttons, with unchanged
+route and privacy details. This publishes one request per verified account;
 it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
 below the primary Offer a ride action,
 lets drivers browse without addresses or filter by either or both endpoints before offering a ride. Shared address,

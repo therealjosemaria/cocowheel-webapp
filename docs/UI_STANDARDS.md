@@ -30,8 +30,8 @@ not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.
 Use Your post for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
-Post review starts with regular body text: Let drivers know you need a ride.
-No redundant title. Post / Go back retains the shared modal action group.
+Post review starts with regular body text: Post a ride request, matching its trigger.
+No additional title or subtitle. Post / Go back retains the shared modal action group.
 Switching to driver asks Withdraw your post and offer a ride? with safe
 Go back first and danger Withdraw & offer second. Preserve form details on failure.
 Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
