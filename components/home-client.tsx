@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import RideFieldLabel from "./ride-field-label";
 import { FindRiders, PostRideRequest, LiftRequestSwitchPrompt, openLiftRequestId } from "./rider-demands";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import ScheduleFields from "./schedule-fields";
@@ -937,10 +938,10 @@ function Home({
         className="role-card role-card-primary"
         onClick={() => onBegin("RIDER")}
       >
-        FIND A JOURNEY
+        <RideFieldLabel icon="rider">FIND A JOURNEY</RideFieldLabel>
       </button>
       <button className="role-card" onClick={() => onBegin("DRIVER")}>
-        POST A JOURNEY
+        <RideFieldLabel icon="driver">POST A JOURNEY</RideFieldLabel>
       </button>
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />

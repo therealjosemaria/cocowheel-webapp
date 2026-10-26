@@ -21,6 +21,20 @@ with sync_playwright() as p:
         page.goto(BASE + '/')
         buttons = page.locator('.role-choice > button')
         expect(buttons).to_have_text(['FIND A JOURNEY', 'POST A JOURNEY'])
+        for button in buttons.all():
+            icon = button.locator('svg')
+            expect(icon).to_have_attribute('aria-hidden', 'true')
+            expect(icon).to_have_attribute('focusable', 'false')
+            expect(icon).to_have_attribute('stroke', 'currentColor')
+            group = button.locator('.ride-field-label').bounding_box()
+            box = button.bounding_box()
+            assert abs(group['x'] + group['width']/2 - box['x'] - box['width']/2) < 1
+            assert abs(group['y'] + group['height']/2 - box['y'] - box['height']/2) < 1
+            icon_box = icon.bounding_box()
+            label_box = button.locator('.ride-field-label > span').bounding_box()
+            assert icon_box['width'] == icon_box['height'] == 18
+            assert abs(label_box['x'] - icon_box['x'] - icon_box['width'] - 8) < 1
+            assert icon.evaluate('(el) => getComputedStyle(el).stroke') == button.evaluate('(el) => getComputedStyle(el).color')
         assert buttons.nth(0).bounding_box()['y'] < buttons.nth(1).bounding_box()['y']
         assert buttons.nth(0).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(17, 24, 39)'
         assert buttons.nth(1).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(255, 255, 255)'

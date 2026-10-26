@@ -82,6 +82,11 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Home journey CTAs reuse RideFieldLabel with --icon-label set to --icon-field
+  (18px) and an 8px gap. Existing rider/car paths and stroke weight are unchanged.
+  Centre the whole group; use currentColor (white on dark, ink on white), with
+  unchanged button dimensions, typography, shadows and focus/pressed states.
+
 - Activity uses 10px between cards, including post-to-history boundaries.
   No separate Posts and offers heading or reserved heading margin.
   Posts and sent offers reuse activity-role (caption/bold, 16px icon, 6px gap)

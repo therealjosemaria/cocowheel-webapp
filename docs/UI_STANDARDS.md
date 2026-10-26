@@ -4,6 +4,25 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+Home CTA icons precede their labels: rider for Find a journey, car for Post a
+journey. Reuse RideFieldLabel; centre icon and text as one group, with monochrome
+icons inheriting button text colour. Icons are decorative; accessible names remain
+the visible labels. This descriptive-icon convention is separate from the brand
+wordmark/artwork composition, which remains unchanged. It follows
+[AgDS icon guidance](https://design-system.agriculture.gov.au/components/icon);
+it is our convention, not a universal rule. Menu and form buttons are unchanged.
+
+Home icon checks (26 October, baseline 31f5f45): lint, production build and
+visual-system regression pass. `scripts/check-home-order.py` using
+`/tmp/gumwheel-pickup-check-env/bin/python` on localhost:3201 passes at
+320/390/844/1440px with mocked APIs and external requests blocked. Checks include
+18px decorative icons, 8px leading gaps, group centring, inherited stroke colour,
+keyboard order, both destinations and unchanged menus/discovery. Whole Home
+screens visually reviewed at 390/1440px for hierarchy, icon prominence, contrast
+and spacing (Post shows its keyboard focus outline in these captures). No page
+exceptions or overflow. Physical devices and production deployment unverified;
+no backend change or restart. Full source/staged diffs reviewed before push.
+
 26 October: the main rider/driver paths are Find a journey / Post a journey,
 including Home CTAs, both menus, form headings/actions, matching-email entry
 and Help role headings/driver first step. Preserve existing capitalization,

@@ -6,6 +6,9 @@ centred controls are unchanged. See the [alignment audit](docs/MODAL_ALIGNMENT_2
 
 ## Journey action wording (26 October 2026)
 
+Home's two journey buttons reuse the rider/car icons before their labels, centred
+together and inheriting the button text colour. Menus and the brand are unchanged.
+
 Home, desktop/mobile navigation, search/post forms, matching-email entry and Help
 now use **Find a journey** and **Post a journey**. These supersede Find a ride /
 Offer a ride for the two main paths. Direct offers to a specific rider, Request

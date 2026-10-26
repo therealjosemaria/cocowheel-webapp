@@ -963,6 +963,10 @@ p {
   background: var(--ink);
   box-shadow: 0 2px 0 #042b38;
 }
+.role-card .ride-field-label {
+  --icon-label: var(--icon-field);
+  gap: 8px;
+}
 .role-card:active,
 .candidate:active {
   transform: scale(0.99);

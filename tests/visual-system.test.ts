@@ -4,6 +4,13 @@ import test from "node:test";
 
 const css = readFileSync("app/globals.css", "utf8");
 
+test("home CTAs reuse the rider and driver label icons", () => {
+  const source = readFileSync("components/home-client.tsx", "utf8");
+  assert.match(source, /<RideFieldLabel icon="rider">FIND A JOURNEY<\/RideFieldLabel>/);
+  assert.match(source, /<RideFieldLabel icon="driver">POST A JOURNEY<\/RideFieldLabel>/);
+  assert.match(css, /\.role-card \.ride-field-label\s*\{\s*--icon-label: var\(--icon-field\);\s*gap: 8px;/);
+});
+
 test("modal shells left-align copy and review fields do not add a second inset", () => {
   assert.match(css, /\.cancel-prompt,\s*\.location-prompt,\s*\.university-dialog,\s*\.search-sheet\s*\{ text-align: left; \}/);
   assert.match(css, /\.demand-prompt \.demand-fields > div\s*\{ padding-inline: 0; \}/);
