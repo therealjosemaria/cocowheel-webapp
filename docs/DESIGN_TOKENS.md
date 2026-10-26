@@ -22,8 +22,8 @@ shadow). Request cards have 16px separation; modal route summaries stack to avoi
 crowding narrow screens. Existing line/surface/radius tokens remain unchanged.
 Discovery's back action stacks above the heading at all widths, left-aligned,
 with an 8px gap and the existing 14px text / 44px target. DOM order matches display.
-Find someone who needs a ride now reuses the quiet centred save-search-route action wrapper below
-Offer a ride (scoped 12px top padding, regular text, 44px target). Standalone save-route
+Find riders now reuses the quiet centred save-search-route action wrapper below
+Post a journey (scoped 12px top padding, regular text, 44px target). Standalone save-route
 wrappers retain their 4px padding. The discovery view uses a concise Search button
 under its descriptive heading. Save route and Post a ride request share a centred,
 wrapping secondary row below Request to join: 12px top/horizontal gap, regular

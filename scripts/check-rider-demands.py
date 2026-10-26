@@ -122,7 +122,7 @@ with sync_playwright() as p:
         profile.click()
         page.goto(BASE+'/?start=driver')
         offer_button=page.get_by_role('button',name='POST A JOURNEY',exact=True)
-        find_button=page.get_by_role('button',name='Find someone who needs a ride',exact=True)
+        find_button=page.get_by_role('button',name='Find riders',exact=True)
         assert find_button.bounding_box()['y'] > offer_button.bounding_box()['y']
         assert find_button.bounding_box()['y'] - (offer_button.bounding_box()['y'] + offer_button.bounding_box()['height']) >= 12
         capture('offer-entry')
@@ -137,15 +137,15 @@ with sync_playwright() as p:
         page.get_by_role('button',name='OKAY',exact=True).click()
         assert writes[-1]['withdrawLiftRequestId']=='request-1'
         page.goto(BASE+'/?start=driver')
-        page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
+        page.get_by_role('button',name='Find riders',exact=True).click()
         page.wait_for_timeout(300)
         back=page.get_by_role('button',name='Back',exact=True)
-        heading=page.get_by_role('heading',name='Find someone who needs a ride',exact=True)
+        heading=page.get_by_role('heading',name='Find riders',exact=True)
         assert back.bounding_box()['y']+back.bounding_box()['height'] <= heading.bounding_box()['y']
         assert abs(back.bounding_box()['x']-heading.bounding_box()['x']) < 1
         back.click()
         expect(page.get_by_role('button',name='POST A JOURNEY',exact=True)).to_be_visible()
-        page.get_by_role('button',name='Find someone who needs a ride',exact=True).click()
+        page.get_by_role('button',name='Find riders',exact=True).click()
         page.wait_for_timeout(300)
         capture('driver-search')
         page.get_by_role('button',name='SEARCH',exact=True).click()

@@ -21,8 +21,8 @@ route and privacy details. This publishes one request per verified account.
 Posting a different request offers Replace / Cancel confirmation. Replacement
 atomically withdraws the exact previous post and creates the new one, retaining
 history and invalidating its pending offers; stale confirmation is rejected.
-It does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
-below the primary Offer a ride action,
+It does not publish a private saved usual route. The **Find riders** shortcut,
+below the primary Post a journey action, shares its label with the discovery heading and
 lets drivers browse without addresses or filter by either or both endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.
 The secondary action has 12px top spacing; discovery uses a concise Search button.

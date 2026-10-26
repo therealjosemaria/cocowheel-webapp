@@ -270,7 +270,7 @@ export function FindRiders({
         >
           {results ? "Edit search" : "Back"}
         </button>
-        <h1 className="page-title">Find someone who needs a ride</h1>
+        <h1 className="page-title">Find riders</h1>
       </div>
       {results && searched ? (
         <div className="form-panel-content">

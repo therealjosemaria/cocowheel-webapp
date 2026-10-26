@@ -5,11 +5,29 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October follow-up (`62e4c3a` baseline): the driver discovery shortcut and
+search/results heading now say Find riders. This is two text-node changes only;
+Post a journey, Search, Back, layout, filters and offers are unchanged.
+Lint, production build and visual-system regression passed. The extended
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-home-order.py` passed
+at 320/390/844/1440px against local production build :3201, with mocked APIs and
+external traffic blocked: shortcut spacing, headings, empty results, Edit search,
+Back, menus and no overflow/page errors. Whole-page posting/search/results images
+reviewed at 390/1440px for typography, emphasis and spacing. React review confirmed
+no state, effects or request changes. Physical devices/deployment unverified.
+The broad `scripts/check-rider-demands.py` run reached its first-width final
+console assertion but failed with `Cannot read properties of undefined (reading
+'_leaflet_pos')`; its map coverage is not claimed as passing or resolved here.
+Initial browser attempt could not connect because the local preview was stopped;
+the built frontend was started before the above checks. No production writes or
+API restart. Source and staged diffs reviewed before commit/push.
+
 - Find a ride retains its existing form and search. Save route sits left of
   Post a ride request below Request to join, outside listings; no Choose a ride heading.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
-- Offer a ride includes Find someone who needs a ride below its primary action. It copies already-entered
+- Post a journey includes Find riders below its primary action. Its destination
+  heading also says Find riders, in search and results. It copies already-entered
   endpoints, allows route edits, and defaults to independent Any date/Any time.
   Endpoints are optional for browsing, which still requires email verification.
   No endpoints searches all eligible requests; pickup only uses a 1.5km radius,
@@ -403,7 +421,7 @@ navigation. Whole-screen captures reviewed at both sizes. No other control chang
 
 1. Rider: Find a ride → addresses/date/time → search → Ask for a ride.
    Review visibility/expiry, go back once, then post. Open View your ride request.
-2. Driver (another account): Offer a ride → Find someone who needs a ride, enter a matching route.
+2. Driver (another account): Post a journey → Find riders, enter a matching route.
    Search Any date/time; try narrower filters. Show route on two different cards:
    only the latest should remain shown. Editing search does not publish anything.
 3. Offer a ride → choose a compatible future departure. Test free and contribution

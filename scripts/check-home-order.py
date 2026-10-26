@@ -14,6 +14,8 @@ with sync_playwright() as p:
         def api(route):
             path = route.request.url.split('/api/')[-1].split('?')[0]
             data = {'unikey': 'ride1234'} if path == 'university/session' else {'current': None, 'currents': []}
+            if path == 'rider-demands/search':
+                data = {'requests': []}
             route.fulfill(json=data)
         page.route('**/api/**', api)
         page.goto(BASE + '/')
@@ -36,6 +38,19 @@ with sync_playwright() as p:
         expect(page.get_by_role('heading', name='Post a journey', exact=True)).to_be_visible()
         page.screenshot(path=f'/tmp/journey-post-{width}.png', full_page=True, animations='disabled')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        discovery = page.get_by_role('button', name='Find riders', exact=True)
+        primary = page.get_by_role('button', name='POST A JOURNEY', exact=True)
+        assert discovery.bounding_box()['y'] - (primary.bounding_box()['y'] + primary.bounding_box()['height']) >= 12
+        discovery.click()
+        expect(page.get_by_role('heading', name='Find riders', exact=True)).to_be_visible()
+        page.screenshot(path=f'/tmp/find-riders-search-{width}.png', full_page=True, animations='disabled')
+        page.get_by_role('button', name='SEARCH', exact=True).click()
+        expect(page.get_by_role('button', name='Edit search', exact=True)).to_be_visible()
+        expect(page.get_by_role('heading', name='Find riders', exact=True)).to_be_visible()
+        page.screenshot(path=f'/tmp/find-riders-results-{width}.png', full_page=True, animations='disabled')
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        page.get_by_role('button', name='Edit search', exact=True).click()
+        page.get_by_role('button', name='Back', exact=True).click()
         mobile = width < 1000
         if mobile:
             page.get_by_role('button', name='Open menu', exact=True).click()
