@@ -607,15 +607,13 @@ button:disabled {
 .ride-preview > .page-title {
   font-size: var(--text-page);
 }
-.activity-list {
+.activity-list,
+.activity-current {
   display: grid;
   gap: 10px;
 }
-.activity-current {
-  margin-bottom: 18px;
-}
-.activity-current:last-child {
-  margin-bottom: 0;
+.activity-panel-content > :is(.activity-current, .demand-activity, .activity-list) + :is(.activity-current, .demand-activity, .activity-list) {
+  margin-top: 10px;
 }
 .activity-card {
   position: relative;
@@ -659,13 +657,12 @@ button:disabled {
 .demand-actions { padding: 12px; }
 .demand-actions > button { min-width: 0; }
 .demand-single-action > button { grid-column: 1 / -1; }
-.demand-page .activity-card, .demand-activity .activity-card { padding-top: 0; }
+.demand-page .activity-card { padding-top: 0; }
 .demand-page .activity-card + .activity-card { margin-top: 16px; }
 .demand-prompt .demand-fields { grid-template-columns: 1fr; }
 .demand-prompt .demand-fields > div:nth-child(odd) { border-right: 0; }
-.demand-activity { display: grid; gap: 16px; scroll-margin-top: 24px; }
-.demand-activity h2 { font-size: var(--text-body); margin: 0; }
-.demand-activity summary { cursor: pointer; padding: 12px; font-size: var(--text-small); }
+.demand-activity { display: grid; gap: 10px; scroll-margin-top: 24px; }
+.demand-activity h2 { font-size: var(--text-body); margin: 0 0 6px; }
 .demand-activity .save-route-profile-note, .demand-activity .activity-card > p,
 .demand-activity .activity-card > .text-button, .demand-activity .activity-card > .secondary,
 .demand-activity .activity-card > .ride-field-label { margin: 12px; }

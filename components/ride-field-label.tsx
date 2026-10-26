@@ -35,7 +35,7 @@ export default function RideFieldLabel({
   );
 }
 
-function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
+export function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
   let content: ReactNode = null;
   switch (icon) {
     case "route":

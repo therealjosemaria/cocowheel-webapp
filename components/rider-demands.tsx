@@ -27,7 +27,7 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { RouteFields } from "./route-fields";
 import ScheduleFields from "./schedule-fields";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
-import RideFieldLabel from "./ride-field-label";
+import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import ParticipantName from "./participant-name";
 import PaymentFields from "./payment-fields";
 import ContributionChoice from "./contribution-choice";
@@ -581,12 +581,11 @@ export function RiderDemandActivity({
         </p>
       )}
       {data?.requests.map((request) => (
-        <details
+        <article
           className="activity-card"
           key={request.id}
-          open={request.status === "OPEN"}
         >
-          <summary>Your post</summary>
+          <span className="activity-role"><RideFieldIcon icon="rider" />Your post</span>
           <DemandRouteSummary route={request} />
           {request.status !== "OPEN" && (
             <p className="save-route-profile-note">
@@ -661,11 +660,11 @@ export function RiderDemandActivity({
               No offers yet. Check back here for replies.
             </p>
           )}
-        </details>
+        </article>
       ))}
       {data?.sent.map((offer) => (
         <article className="activity-card" key={offer.id}>
-          <RideFieldLabel icon="driver">Your offer</RideFieldLabel>
+          <span className="activity-role"><RideFieldIcon icon="driver" />Your offer</span>
           <p>
             {departure(offer.departureAt)} ·{" "}
             {offer.status === "PENDING"

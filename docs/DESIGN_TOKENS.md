@@ -75,6 +75,10 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Activity uses 10px between cards, including post-to-history boundaries.
+  Posts and sent offers reuse activity-role (caption/bold, 16px icon, 6px gap)
+  and the normal 18px card top inset. Posts are always open; no summary arrow.
+
 - Single-action Message and location-error dialogs use cancel-prompt-actions,
   matching existing confirmations: 20px above actions, 8px between buttons and
   shared 44px-minimum action sizing. Preserve the centred 420px-max shell with

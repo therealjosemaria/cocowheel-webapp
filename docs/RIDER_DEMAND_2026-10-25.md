@@ -262,6 +262,25 @@ No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
 
+### Activity card consistency — 26 October, baseline `dabed67`
+
+Posts now use always-open articles, including withdrawn/expired/fulfilled posts.
+Your post uses the shared rider icon in the existing Activity role label; sent
+offers use the corresponding driver icon/label. Post cards no longer override
+the standard top inset. Card gaps are 10px within all Activity groups and between
+posts and history, replacing 16px within posts and zero at that boundary.
+Current-ride groups also use the same gap. Section heading spacing is retained.
+No API, lifecycle, visibility or action handlers changed; no restart needed.
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-activity-spacing.py`
+passes at 320/390/844/1440px with mocked APIs and external traffic blocked:
+two posts, a sent offer and two driver-history cards have equal 10px gaps,
+visible closed-post content, shared icons, working withdrawal modal and no
+horizontal overflow or browser exceptions. Whole mobile/desktop screens reviewed
+for hierarchy, icon size and spacing; fixture photo responses corrected before
+final review. Lint/build and six visual-system tests pass. React review preserves
+existing keys, polling and handlers while reusing the shared icon renderer.
+Physical devices and deployed frontend remain unverified; no live data changed.
+
 ### Post action wording and order — 26 October, baseline `0828fa7`
 
 The rider action is now Post a ride request, following Save route in DOM and
