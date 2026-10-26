@@ -1065,7 +1065,7 @@ function DriverForm(props: {
         <button className="primary" disabled={props.busy} onClick={submit}>
           {props.busy ? "Posting…" : "POST A JOURNEY"}
         </button>
-        <div className="save-search-route driver-discovery-action"><button type="button" className="text-button" disabled={props.busy} onClick={() => setFindingRiders(true)}>Find riders</button></div>
+        <div className="save-search-route driver-discovery-action"><button type="button" className="text-button" disabled={props.busy} onClick={() => setFindingRiders(true)}>See journey requests</button></div>
       </div>
     </div>
   );

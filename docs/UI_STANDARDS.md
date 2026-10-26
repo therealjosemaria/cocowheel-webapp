@@ -47,11 +47,11 @@ Profile groups the post and active ride in one Your rides region with existing
 card styling and 12px gaps, without an extra visible heading. A post alone is not
 an unread notification. Empty-selection Request to join stays enabled and opens
 the shared sentence-only modal; retain temporary submission disabling.
-Keep Find riders as a quiet secondary text action below the primary Post a journey
+Keep See journey requests as a quiet secondary text action below the primary Post a journey
 button, available before entering addresses. Related alternative actions belong
 together, not beside the page title. Neither action publishes without review.
 Separate the discovery action from Post a journey with 12px top padding. Inside
-discovery, use Find riders for the heading and Search for the primary button.
+discovery, use Journey requests for the heading and Search for the primary button.
 Back navigation precedes the heading in DOM and visual order, at the top-left,
 not below it. Discovery places Back / Edit search above its heading
 on mobile and desktop, text-only with the existing 44px target; do not add an arrow.

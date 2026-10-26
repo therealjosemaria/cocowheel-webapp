@@ -5,6 +5,22 @@ demand, not multi-seat pooling, a recurring booking or calendar synchronization.
 
 ## Entry and visibility
 
+26 October discovery wording (baseline 62e4b5c): See journey requests replaces
+Find riders on the driver shortcut; both search and results headings now say
+Journey requests. This supersedes the historical Find riders copy below.
+Only two UI text nodes change; layout, filters, visibility, self-offer rules,
+handlers and API contracts are unchanged. No backend restart is required.
+Lint, production build and visual-system regression passed. The updated
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-home-order.py` passed
+at 320/390/844/1440px against localhost:3201 with mocked APIs and external traffic
+blocked: button/heading copy, 12px action separation, search/results navigation,
+Back/Edit search and unchanged menus, without page errors or overflow. Full-screen
+posting views reviewed at 390/1440px, mobile search and desktop results reviewed
+for typography, spacing and emphasis. React checklist found only two text-node
+changes: no hooks, state, fetch, authorization or interaction changes. The broader
+rider-demand script received selector updates only and was not rerun. Physical
+devices and production deployment remain unverified. Source/staged diff reviewed.
+
 26 October Activity wording (baseline 703e6c2): rider post cards now say Journey
 requested and sent driver offers say Journey offered. These supersede the older
 Activity Your post / Your offer references below. Profile/success links, statuses,
@@ -55,8 +71,8 @@ API restart. Source and staged diffs reviewed before commit/push.
   Post a ride request below Request to join, outside listings; no Choose a ride heading.
   The exact searched endpoints/date/time are shown, with explicit disclosure
   that drivers can see the addresses and the expiry. Success links to Activity.
-- Post a journey includes Find riders below its primary action. Its destination
-  heading also says Find riders, in search and results. It copies already-entered
+- Post a journey includes See journey requests below its primary action. Its destination
+  heading says Journey requests, in search and results. It copies already-entered
   endpoints, allows route edits, and defaults to independent Any date/Any time.
   Endpoints are optional for browsing, which still requires email verification.
   No endpoints searches all eligible requests; pickup only uses a 1.5km radius,
@@ -450,7 +466,7 @@ navigation. Whole-screen captures reviewed at both sizes. No other control chang
 
 1. Rider: Find a ride → addresses/date/time → search → Ask for a ride.
    Review visibility/expiry, go back once, then post. Open View your ride request.
-2. Driver (another account): Post a journey → Find riders, enter a matching route.
+2. Driver (another account): Post a journey → See journey requests, enter a matching route.
    Search Any date/time; try narrower filters. Show route on two different cards:
    only the latest should remain shown. Editing search does not publish anything.
 3. Offer a ride → choose a compatible future departure. Test free and contribution
