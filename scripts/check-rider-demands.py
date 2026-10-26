@@ -34,6 +34,8 @@ with sync_playwright() as p:
                 data={'requests':[request,dict(request,id='request-2',alias='rider002')]}
             elif path=='rider-demands' and r.request.method=='GET': data={'requests':[dict(request,offers=[offer])],'sent':[]}
             elif path=='rider-demands' and r.request.method=='POST':
+                if not r.request.post_data_json.get('replaceDemandId'):
+                    r.fulfill(status=409,json={'error':'DEMAND_ALREADY_OPEN'}); return
                 writes.append(r.request.post_data_json); data={'request':request}
             elif path=='rides':
                 writes.append(r.request.post_data_json)
@@ -98,8 +100,19 @@ with sync_playwright() as p:
         assert not writes
         page.get_by_role('button',name='Post a ride request',exact=True).click()
         dialog.get_by_role('button',name='Post',exact=True).click()
+        replace=page.get_by_role('dialog',name='Replace your ride request?',exact=True)
+        expect(replace).to_be_visible()
+        capture('replace-post')
+        replace.get_by_role('button',name='Cancel',exact=True).click()
+        expect(replace).not_to_be_visible()
+        assert not writes
+        page.get_by_role('button',name='Post a ride request',exact=True).click()
+        dialog.get_by_role('button',name='Post',exact=True).click()
+        expect(replace).to_be_visible()
+        replace.get_by_role('button',name='Replace',exact=True).click()
         expect(page.get_by_role('link',name='View your post')).to_be_visible()
         assert writes[-1]['origin']==origin
+        assert writes[-1]['replaceDemandId']=='request-1'
         profile=page.get_by_role('button',name='Profile:',exact=False)
         profile.click()
         expect(page.locator('#guest-identity-popover').get_by_role('link',name='Your post',exact=True)).to_be_visible()

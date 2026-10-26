@@ -39,7 +39,16 @@ publication, new schema, GPS access or alert setting change is introduced.
 
 `OPEN → CANCELLED | EXPIRED | FULFILLED`; no deletion. One OPEN demand per owner,
 enforced with a partial unique index. Posting identical data retries idempotently
-without extending TTL. A different open request must be cancelled in Activity first.
+without extending TTL. A different open request requires Replace / Cancel
+confirmation, using the existing modal. POST may include replaceDemandId naming
+the owner's exact current OPEN post. Withdrawal (CANCELLED) and insertion are
+one transaction: any failure restores the old post. Old pending offers become
+unavailable through the closed post; their public driver rides remain unchanged.
+Stale/missing/foreign replacement targets return DEMAND_CHANGED (409); a new
+review is required. Identical retries return the current post without renewal.
+The frontend handles DEMAND_ALREADY_OPEN by fetching the current owner-only post
+and asking Replace your ride request? with the new route summary; Cancel makes
+no mutation and leaves the rider on Find. Other errors use the shared notice.
 Posting is disallowed while the account has an open driver ride or confirmed
 rider pairing. One pending join can coexist with a post, in either creation order.
 Ordinary driver acceptance atomically marks an unexpired OPEN post FULFILLED;
@@ -261,6 +270,23 @@ legacy selectors updated only; those separate scripts were not rerun this pass.
 No production writes; physical devices and deployed frontend remain unverified.
 
 ## Manual walkthrough
+
+### Explicit post replacement — 26 October, baseline `a3a40b8`
+
+The new replaceDemandId contract above is covered by isolated SQLite tests for
+missing consent, another account's post, stale/closed targets, identical retries,
+history retention, invalidated old offers and an injected insert failure that
+must restore the original OPEN post. An HTTP test checks 409 DEMAND_CHANGED and
+201 replacement. Initial test fixture incorrectly passed a Date to the numeric
+initialDeparture helper; corrected to the existing offerBody fixture and retested.
+181 regressions pass; lint/build pass. Browser checks use mocked APIs only,
+exercise Cancel without writes and Replace with the exact prior ID, and preserve
+the shared modal/buttons. `scripts/check-rider-demands.py` passes at
+320/390/844/1440px; full mobile/desktop replacement-modal captures reviewed for
+spacing, typography and emphasis. The final 13-test rider-demand suite also
+passes with HTTP replacement assertions. No production writes or test emails.
+Physical devices and deployed frontend remain unverified.
+API activation requires a separately approved restart; currently pending.
 
 ### Post review wording — 26 October, baseline `4586c0d`
 

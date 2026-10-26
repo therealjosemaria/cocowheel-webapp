@@ -122,6 +122,8 @@ export function postDemand(
 ) {
   const owner = requireUniversitySession(db, token);
   const route = checkedDemandRoute(body, now);
+  const replacement = (body as Record<string, unknown>).replaceDemandId;
+  if (replacement !== undefined && (typeof replacement !== "string" || !replacement)) throw new Error("INVALID_DEMAND");
   const expires = demandExpiry(route, now);
   if (Date.parse(expires) <= +now) throw new Error("INVALID_REQUEST_TIME");
   return db.transaction(() => {
@@ -132,7 +134,11 @@ export function postDemand(
       .get(owner.id) as Row | undefined;
     if (existing) {
       if (existing.body === JSON.stringify(route)) return view(db, existing); // Retry, not renewal.
-      throw new Error("DEMAND_ALREADY_OPEN");
+      if (replacement === undefined) throw new Error("DEMAND_ALREADY_OPEN");
+      if (replacement !== existing.id) throw new Error("DEMAND_CHANGED");
+      db.prepare("UPDATE rider_demands SET status='CANCELLED' WHERE id=? AND owner_id=? AND status='OPEN'").run(existing.id, owner.id);
+    } else if (replacement !== undefined) {
+      throw new Error("DEMAND_CHANGED");
     }
     const id = randomUUID();
     db.prepare("INSERT INTO rider_demands VALUES (?,?,?,'OPEN',?,?)").run(

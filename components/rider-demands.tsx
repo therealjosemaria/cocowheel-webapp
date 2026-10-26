@@ -89,6 +89,7 @@ function DemandPrompt({
   confirm,
   action,
   destructive = false,
+  cancelLabel = "Go back",
 }: {
   label: string;
   children: ReactNode;
@@ -97,6 +98,7 @@ function DemandPrompt({
   confirm: () => void;
   action: string;
   destructive?: boolean;
+  cancelLabel?: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   useDialogFocus(ref, close, busy);
@@ -117,7 +119,7 @@ function DemandPrompt({
           <button className={destructive ? "danger" : "primary"} disabled={busy} onClick={confirm}>
             {busy ? "Saving…" : action}
           </button>
-          {!destructive && <button className="secondary" disabled={busy} onClick={close}>Go back</button>}
+          {!destructive && <button className="secondary" disabled={busy} onClick={close}>{cancelLabel}</button>}
         </div>
       </section>
     </div>,
@@ -139,28 +141,37 @@ export function LiftRequestSwitchPrompt(props: { busy: boolean; close: () => voi
 export function PostRideRequest({ route }: { route: DemandRoute }) {
   const [review, setReview] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [replacement, setReplacement] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const reset = () => {
       setSaved(false);
       setReview(false);
+      setReplacement(null);
     };
     window.addEventListener("cocowheels:identity-changed", reset);
     return () =>
       window.removeEventListener("cocowheels:identity-changed", reset);
   }, []);
-  async function save() {
+  async function save(replaceDemandId?: string) {
     if (busy) return;
     setBusy(true);
     try {
-      await post("/api/rider-demands", route, false);
+      await post("/api/rider-demands", { ...route, ...(replaceDemandId ? { replaceDemandId } : {}) }, false);
       window.dispatchEvent(new Event("cocowheels:identity-changed"));
       setReview(false);
       setSaved(true);
     } catch (reason) {
       setReview(false);
-      setError(apiErrorMessage(reason));
+      setReplacement(null);
+      if (reason instanceof ApiError && reason.code === "DEMAND_ALREADY_OPEN") {
+        try {
+          setReplacement(await openLiftRequestId());
+        } catch (lookupError) {
+          setError(apiErrorMessage(lookupError));
+        }
+      } else setError(apiErrorMessage(reason));
     } finally {
       setBusy(false);
     }
@@ -198,6 +209,9 @@ export function PostRideRequest({ route }: { route: DemandRoute }) {
           <Message text={error} close={() => setError(null)} />,
           document.body,
         )}
+      {replacement && <DemandPrompt label="Replace your ride request?" action="Replace" cancelLabel="Cancel" busy={busy} close={() => setReplacement(null)} confirm={() => void save(replacement)}>
+        <DemandRouteSummary route={route} />
+      </DemandPrompt>}
     </>
   );
 }

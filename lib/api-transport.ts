@@ -21,6 +21,7 @@ export function apiErrorMessage(
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
       DEMAND_ALREADY_OPEN: "You already have a posted request. Manage it in Activity.",
+      DEMAND_CHANGED: "Your post changed. Please review it and try again.",
       DEMAND_UNAVAILABLE: "This request or offer is no longer available. Refresh to see the latest details.",
       DEMAND_NOT_FOUND: "This request is no longer available.",
       DEMAND_ROUTE_INCOMPATIBLE: "This rider is outside your route. Try another request.",

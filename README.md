@@ -8,8 +8,11 @@ Find's bottom action area places **Save route** on the left and **Post a ride re
 Request to join and outside the ride list, with an explicit address,
 schedule and visibility review. The review label matches the trigger: Post a ride
 request. Post / Go back use the shared equal-size modal buttons, with unchanged
-route and privacy details. This publishes one request per verified account;
-it does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
+route and privacy details. This publishes one request per verified account.
+Posting a different request offers Replace / Cancel confirmation. Replacement
+atomically withdraws the exact previous post and creates the new one, retaining
+history and invalidating its pending offers; stale confirmation is rejected.
+It does not publish a private saved usual route. Offer's **Find someone who needs a ride** shortcut,
 below the primary Offer a ride action,
 lets drivers browse without addresses or filter by either or both endpoints before offering a ride. Shared address,
 date/time, map, modal, fare and vehicle components are reused.

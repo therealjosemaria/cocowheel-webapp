@@ -137,7 +137,7 @@ function errorStatus(error: unknown) {
   const code = error instanceof Error ? error.message : "REQUEST_FAILED";
   if (code === "DEMAND_NOT_FOUND") return 404;
   if (code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") return 409;
-  if (["DEMAND_ALREADY_OPEN", "DEMAND_UNAVAILABLE"].includes(code)) return 409;
+  if (["DEMAND_ALREADY_OPEN", "DEMAND_UNAVAILABLE", "DEMAND_CHANGED"].includes(code)) return 409;
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
   if (code === "VEHICLE_PLATE_REQUIRED") return 409;

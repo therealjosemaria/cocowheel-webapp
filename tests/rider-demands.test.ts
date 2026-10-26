@@ -212,6 +212,32 @@ test("demand schedules preserve any-date/time independence and Sydney expiry", (
     /INVALID_REQUEST_TIME/,
   );
 });
+test("replacing a post needs exact consent, retains history and rolls back on failure", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const original = postDemand(db, rider.token, route, now);
+    const foreign = postDemand(db, other.token, route, now);
+    const oldOffer = offerDemand(db, driver.token, original.id, offerBody, now);
+    const changed = { ...route, time: "12:00" };
+    assert.throws(() => postDemand(db, rider.token, changed, now), /DEMAND_ALREADY_OPEN/);
+    assert.throws(() => postDemand(db, rider.token, { ...changed, replaceDemandId: foreign.id }, now), /DEMAND_CHANGED/);
+    db.exec("CREATE TRIGGER fail_post BEFORE INSERT ON rider_demands BEGIN SELECT RAISE(ABORT, 'test failure'); END");
+    assert.throws(() => postDemand(db, rider.token, { ...changed, replaceDemandId: original.id }, now), /test failure/);
+    assert.equal(activeDemand(db, rider.token, now)?.id, original.id);
+    db.exec("DROP TRIGGER fail_post");
+    const replaced = postDemand(db, rider.token, { ...changed, replaceDemandId: original.id }, now);
+    assert.notEqual(replaced.id, original.id);
+    assert.equal(demandActivity(db, rider.token, now).requests.find(p => p.id === original.id)?.status, "CANCELLED");
+    assert.equal(demandActivity(db, rider.token, now).requests.find(p => p.id === original.id)?.offers[0].status, "UNAVAILABLE");
+    assert.throws(() => respondToDemandOffer(db, rider.token, oldOffer.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+    assert.equal(activeDemand(db, other.token, now)?.id, foreign.id);
+    assert.equal(postDemand(db, rider.token, { ...changed, replaceDemandId: original.id }, now).id, replaced.id);
+    assert.throws(() => postDemand(db, rider.token, { ...route, replaceDemandId: original.id }, now), /DEMAND_CHANGED/);
+    cancelDemand(db, rider.token, replaced.id, now);
+    assert.throws(() => postDemand(db, rider.token, { ...route, replaceDemandId: replaced.id }, now), /DEMAND_CHANGED/);
+  } finally { db.close(); }
+});
+
 test("posting, idempotency, private activity, route and time matching, cancellation and expiry", () => {
   const { db, rider, driver, other } = fixture();
   try {
@@ -514,6 +540,15 @@ test("HTTP workflow authenticates and creates a real accepted ride without provi
     assert.equal((await call("/api/current", other.token)).body.activeDemand, null);
     const found = await call("/api/rider-demands/search", driver.token, route);
     assert.equal(found.body.requests.length, 1);
+    const ownPost = await call("/api/rider-demands", other.token, route);
+    const revised = { ...route, destination: { ...destination, label: "Updated destination" } };
+    const stale = await call("/api/rider-demands", other.token, { ...revised, replaceDemandId: posted.body.request.id });
+    assert.equal(stale.status, 409);
+    assert.equal(stale.body.error, "DEMAND_CHANGED");
+    const replaced = await call("/api/rider-demands", other.token, { ...revised, replaceDemandId: ownPost.body.request.id });
+    assert.equal(replaced.status, 201);
+    assert.notEqual(replaced.body.request.id, ownPost.body.request.id);
+    assert.equal((await call(`/api/rider-demands/${replaced.body.request.id}/cancel`, other.token, {})).status, 200);
     const schedule = initialDeparture();
     const driversOwn = await call("/api/rider-demands", driver.token, route);
     const driverBody = { ...offerBody, scheduledDepartureAt: sydneyInstant(schedule.date, schedule.time) };

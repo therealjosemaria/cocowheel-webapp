@@ -32,6 +32,10 @@ Use Your post for posted demand and Request to join for joining a specific
 offer. This supersedes the earlier lift terminology and longer join label.
 Post review starts with regular body text: Post a ride request, matching its trigger.
 No additional title or subtitle. Post / Go back retains the shared modal action group.
+If another post exists, reuse that modal for Replace your ride request?, the new
+route summary and Replace / Cancel. Cancel preserves the old post and current
+search. Explicit replacement names the previous post; never withdraw then post
+as separate client calls. Stale confirmation asks the rider to review again.
 Switching to driver asks Withdraw your post and offer a ride? with safe
 Go back first and danger Withdraw & offer second. Preserve form details on failure.
 Reuse RouteFields, ScheduleFields, JourneyMap, RideFieldLabel, ParticipantName,
