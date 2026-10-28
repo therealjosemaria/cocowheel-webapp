@@ -73,6 +73,17 @@ and a real link click passed. No app workaround was needed for that harness issu
 The 58/100 external audit remains the dated baseline; no newer score is claimed.
 Physical-device Safari and search-provider rendering remain unverified.
 
+### Production verification of the refinement
+
+29 October 2026 at 10:15 AEDT: passive public HTTP checks confirmed a882577’s
+Home WebSite/Organization JSON-LD, Help’s Markdown alternate link, public About
+content, and a five-URL sitemap. `/llms.txt` and `/help.md` returned 200 with the
+expected text MIME types and noindex/follow headers; Markdown retained its HTTP
+canonical to Help. Observed Cache-Control: `/help.md` → `public, max-age=3600`, `/llms.txt` → `public, max-age=3600`.
+The first check still served the old build; one follow-up confirmed the new
+output. This verifies deployment responses, not Google indexing, assistant
+recommendations or a new external audit score. No backend restart was required.
+
 ## Previous implementation and deployment
 
 Baseline: bc616eb. Home's single visible heading is “Share your journey.” This
