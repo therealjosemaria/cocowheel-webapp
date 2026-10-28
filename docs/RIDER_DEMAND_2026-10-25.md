@@ -1,5 +1,44 @@
 # Rider-posted requests and driver discovery
 
+## Sent-offer visibility, withdrawal and validation — 28 October follow-up
+
+Baseline 2a443f4. Read-only investigation found two proposals (one pending, one
+declined) linked to driver accounts and deployed Activity assets with sent-offer
+support. The reported disappearance was not reproduced; no data loss established.
+Sending now anchors the exact offer in Activity after asynchronous loading rather
+than the generic request section. Cards expose status, endpoints, departure and
+fare using existing Activity fields, plus Withdraw offer while pending.
+
+POST /api/rider-demands/offers/:id/withdraw verifies the driver from persisted
+proposal/offer ownership, inside the existing transaction. An additive
+rider_demand_offer_withdrawals table records offer ID, owner and timestamp without
+rewriting original CHECK constraints or deleting history. Responses expose
+WITHDRAWN to both sides; pending notification counts exclude it. Repeated own
+withdrawal succeeds; foreign callers fail. Acceptance after withdrawal fails,
+withdrawal after acceptance fails, and a new proposal may be sent after withdrawal.
+Both original direct offers and proposals are supported. Withdrawing only removes
+the invitation; any public journey remains available. Cancel that separately using
+its existing ride controls if desired. This supersedes the lack of a withdrawal
+control in the first proposal implementation. API restart required.
+
+Paid-offer review rejects blank amount and blank PayID before submission for
+Mobile/Email/Other. The existing optional payIdInputError remains optional for
+other consumers. Shared backend-error mapping now explains INVALID_FIXED_PRICE,
+PAYID_REQUIRED, INVALID_PAYID and INVALID_PAYID_TYPE; server validation remains
+authoritative and unchanged. Free offers do not require PayID.
+
+Checks (28 October): `npm test` passes 200 tests; lint and production build pass.
+Regressions cover driver ownership, both offer types, repeated withdrawal,
+withdraw/accept ordering, retained public journey/history, reoffering, pending
+counts and actionable backend payment messages. `scripts/check-journey-replacement.py`
+passes at 320/390/844/1440px against localhost:3201 with all APIs mocked: blank
+amount, all three empty PayID choices, no invalid submissions, card navigation,
+confirmation, withdrawal and rider acceptance controls disappearing. No new
+test failures. Whole-screen mobile/desktop review checked shared cells, icons,
+spacing, buttons and modal errors; no overflow or browser exceptions. Real-device
+Safari and authenticated production accounts remain untested. Public assets and
+aggregate DB counts were inspected read-only; no live offers were altered.
+
 ## Public driver journey + direct proposal — 28 October 2026
 
 Baseline e7b1ed3. A driver with a PUBLISHED/REQUESTED journey may send direct

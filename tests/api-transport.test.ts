@@ -11,6 +11,14 @@ import {
 } from "../lib/api-transport";
 
 const originalFetch = globalThis.fetch;
+test("payment errors give actionable instructions", () => {
+  for (const [code, expected] of [
+    ["PAYID_REQUIRED", "Enter your PayID to receive a contribution."],
+    ["INVALID_FIXED_PRICE", "Enter an amount from $1 to $10,000, with up to two decimal places."],
+    ["INVALID_PAYID", "Check your PayID and try again."],
+    ["INVALID_PAYID_TYPE", "Choose Mobile, Email or Other for your PayID."],
+  ]) assert.equal(apiErrorMessage(new ApiError(code, 400)), expected);
+});
 test("backend plate rejection uses the same instruction as frontend validation", async () => {
   globalThis.fetch = async () => Response.json({ error: "INVALID_VEHICLE_PLATE" }, { status: 400 });
   for (const method of ["POST", "PATCH"]) {

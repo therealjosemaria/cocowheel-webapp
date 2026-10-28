@@ -424,7 +424,9 @@ function DemandOfferForm({
       setError(CONTRIBUTION_ERROR);
       return;
     }
-    const invalidPayId = contribution && payIdInputError(payId, type);
+    const invalidPayId = contribution && (!payId.trim()
+      ? "Enter your PayID to receive a contribution."
+      : payIdInputError(payId, type));
     if (invalidPayId) {
       setError(invalidPayId);
       return;
@@ -432,7 +434,7 @@ function DemandOfferForm({
     setBusy(true);
     setError(null);
     try {
-      await post(`/api/rider-demands/${request.id}/offer`, {
+      const result = await post<{ offer: { id: string } }>(`/api/rider-demands/${request.id}/offer`, {
         origin: route.origin,
         destination: route.destination,
         scheduledDepartureAt: at,
@@ -442,7 +444,7 @@ function DemandOfferForm({
         ...(contribution ? { payId, payIdType: type } : {}),
         ...(plate ? { plate } : {}),
       });
-      window.location.assign("/activity#ride-requests");
+      window.location.assign(`/activity#${offerTarget(result.offer.id)}`);
     } catch (reason) {
       if (reason instanceof ApiError && reason.code === "POSTED_JOURNEY_REPLACEMENT_REQUIRED") {
         setPlatePrompt(false);
@@ -584,13 +586,32 @@ export function RiderDemandActivity({
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
   const [cancel, setCancel] = useState<string | null>(null);
+  const [withdrawOffer, setWithdrawOffer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const followedOffer = useRef<string | null>(null);
+  useEffect(() => {
+    if (requestId || !data) return;
+    const follow = () => {
+      const offer = data.sent.find(item => window.location.hash === `#${offerTarget(item.id)}`);
+      if (!offer || followedOffer.current === offer.id) return;
+      const card = document.getElementById(offerTarget(offer.id));
+      if (!card) return;
+      followedOffer.current = offer.id;
+      card.scrollIntoView({ block: "center", behavior: "instant" });
+      card.classList.add("request-arrived");
+    };
+    follow();
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
+  }, [data, requestId]);
   useEffect(() => {
     const reset = () => {
       setData(null);
       onHasActivity(false);
       setError(null);
       setCancel(null);
+      setWithdrawOffer(null);
+      followedOffer.current = null;
       setLoading(true);
       setRevision((v) => v + 1);
     };
@@ -638,9 +659,11 @@ export function RiderDemandActivity({
     try {
       const result = await post<{ ride?: Ride }>(path, body);
       setCancel(null);
+      setWithdrawOffer(null);
       setRevision((v) => v + 1);
       if (result.ride) window.location.assign(`/rides/${result.ride.rideId}`);
     } catch (reason) {
+      setWithdrawOffer(null);
       setError(apiErrorMessage(reason));
     } finally {
       setBusy(false);
@@ -736,19 +759,26 @@ export function RiderDemandActivity({
         </article>
       ))}
       {!requestId && data?.sent.map((offer) => (
-        <article className="activity-card" key={offer.id}>
+        <article className="activity-card" id={offerTarget(offer.id)} key={offer.id}>
           <span className="activity-role"><RideFieldIcon icon="driver" />Journey offered</span>
-          <p>
-            {departure(offer.departureAt)} ·{" "}
-            {offer.status === "PENDING"
-              ? "Awaiting reply"
-              : offer.status.toLowerCase()}
-          </p>
-          {offer.pendingReplacement ? <DemandRouteSummary route={{ origin: offer.origin, destination: offer.destination, date: "any", time: "" }} showSchedule={false} /> : <Link className="text-button" href={`/rides/${offer.rideId}`}>
+          <dl className="activity-card-fields">
+            <div><dt><RideFieldLabel icon="status">Status</RideFieldLabel></dt><dd className="activity-status"><RideStatusText label={offer.status === "PENDING" ? "Awaiting reply" : offer.status.charAt(0) + offer.status.slice(1).toLowerCase()} /></dd></div>
+            <div><dt><RideFieldLabel icon="from">Where from?</RideFieldLabel></dt><dd>{location(offer.origin)}</dd></div>
+            <div><dt><RideFieldLabel icon="departure">Departure</RideFieldLabel></dt><dd>{departure(offer.departureAt)}</dd></div>
+            <div><dt><RideFieldLabel icon="to">Where to?</RideFieldLabel></dt><dd>{location(offer.destination)}</dd></div>
+            <div><dt><RideFieldLabel icon="price">Fare</RideFieldLabel></dt><dd>{fareLabel(offer.priceAud)}</dd></div>
+            <div className="activity-card-action"><dt><RideFieldLabel icon="action">Offer</RideFieldLabel></dt><dd>
+              {offer.status === "PENDING" ? <button className="text-button" disabled={busy} onClick={() => setWithdrawOffer(offer.id)}>Withdraw offer</button> : <span>{offer.status === "ACCEPTED" ? "Confirmed" : "Closed"}</span>}
+            </dd></div>
+          </dl>
+          {!offer.pendingReplacement && <Link className="text-button" href={`/rides/${offer.rideId}`}>
             View ride
           </Link>}
         </article>
       ))}
+      {withdrawOffer && <DemandPrompt label="Withdraw this offer?" action="Withdraw offer" destructive busy={busy} close={() => setWithdrawOffer(null)} confirm={() => void act(`/api/rider-demands/offers/${withdrawOffer}/withdraw`, {})}>
+        <p className="save-route-profile-note">Your posted journey will stay available.</p>
+      </DemandPrompt>}
       {cancel && (
         <DemandPrompt
           label="Withdraw your post?"

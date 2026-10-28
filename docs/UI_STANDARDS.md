@@ -4,6 +4,13 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+28 October sent-offer follow-up: Journey offered reuses activity-card-fields,
+RideFieldLabel icons and RideStatusText for Status/Where from, Departure/Where to,
+Fare/Offer. Withdraw offer uses the existing text action and destructive
+DemandPrompt confirmation. Sending navigates to that card and reuses the neutral
+request-arrived highlight once; polling never scrolls repeatedly. Blank paid
+fields show regular inline amount/PayID instructions, not generic errors.
+
 28 October: responding to a posted rider need reviews that rider's endpoints,
 not discovery filters. A driver with an existing public post confirms through
 the shared sentence-only DemandPrompt: If accepted, this will replace your posted

@@ -19,6 +19,7 @@ with sync_playwright() as p:
         context = browser.new_context(viewport={'width': width, 'height': 900})
         page = context.new_page()
         writes, errors = [], []
+        withdrawn = []
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.route('**/*', lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
         def api(r):
@@ -28,7 +29,12 @@ with sync_playwright() as p:
             elif path == 'history': data = {'driver':[], 'rider':[]}
             elif path == 'rider-demands/search': data = {'requests':[request]}
             elif path == 'route-preview': data = {'points':[origin,destination], 'durationSeconds':600}
-            elif path == 'rider-demands': data = {'requests':[dict(request,offers=[offer])], 'sent':[offer]}
+            elif path == 'rider-demands':
+                visible_offer = dict(offer, status='WITHDRAWN' if withdrawn else 'PENDING')
+                data = {'requests':[dict(request,offers=[visible_offer])], 'sent':[visible_offer]}
+            elif path.endswith('/withdraw'):
+                withdrawn.append(path)
+                data = {'ok':True}
             elif path.endswith('/offer'):
                 writes.append(r.request.post_data_json)
                 if not writes[-1].get('replacePostedRideId'):
@@ -45,6 +51,19 @@ with sync_playwright() as p:
         page.get_by_role('button',name='SEARCH',exact=True).click()
         page.locator('.journey-request-results .activity-card').first.get_by_role('button',name='Offer a ride',exact=True).click()
         review = page.get_by_role('dialog',name='Offer a ride',exact=True)
+        review.locator('summary').click()
+        review.get_by_role('checkbox',name='Ask for a contribution').check()
+        review.get_by_role('textbox',name='You receive',exact=True).fill('')
+        review.get_by_role('button',name='Offer a ride',exact=True).click()
+        expect(review.get_by_role('alert')).to_contain_text('Enter an amount from $1')
+        review.get_by_role('textbox',name='You receive',exact=True).fill('5')
+        for label in ['Mobile','Email','Other']:
+            review.get_by_role('radio',name=label,exact=True).click()
+            review.get_by_role('button',name='Offer a ride',exact=True).click()
+            expect(review.get_by_role('alert')).to_have_text('Enter your PayID to receive a contribution.')
+        capture('payment-error')
+        assert not writes
+        review.get_by_role('checkbox',name='Ask for a contribution').uncheck()
         review.get_by_role('button',name='Offer a ride',exact=True).click()
         confirmation = page.get_by_role('dialog',name='If accepted, this will replace your posted journey.',exact=True)
         expect(confirmation).to_be_visible()
@@ -54,7 +73,7 @@ with sync_playwright() as p:
         assert len(writes) == 1 and not writes[0].get('replacePostedRideId')
         review.get_by_role('button',name='Offer a ride',exact=True).click()
         confirmation.get_by_role('button',name='Offer a ride',exact=True).click()
-        page.wait_for_url('**/activity#ride-requests')
+        page.wait_for_url('**/activity#offer-proposal-test')
         expect(page.get_by_text('Awaiting reply')).to_be_visible()
         assert writes[-1]['replacePostedRideId'] == 'source-test'
         assert writes[-1]['origin'] == origin and writes[-1]['destination'] == destination
@@ -64,7 +83,18 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Accept ride',exact=True)).to_be_visible()
         expect(page.get_by_role('button',name='Decline',exact=True)).to_be_visible()
         capture('rider')
+        page.goto(BASE+'/activity#offer-proposal-test')
+        page.get_by_role('button',name='Withdraw offer',exact=True).click()
+        withdrawal = page.get_by_role('dialog',name='Withdraw this offer?',exact=True)
+        capture('withdraw')
+        withdrawal.get_by_role('button',name='Withdraw offer',exact=True).click()
+        expect(page.get_by_text('Withdrawn',exact=True)).to_be_visible()
+        expect(page.get_by_role('button',name='Withdraw offer',exact=True)).to_have_count(0)
+        page.goto(BASE+'/activity/requests/'+request['id'])
+        expect(page.get_by_role('button',name='Accept ride',exact=True)).to_have_count(0)
+        expect(page.get_by_text('withdrawn',exact=True)).to_be_visible()
+        assert len(withdrawn) == 1
         assert not errors, errors
-        print(f'PASS {width}: confirmation, cancel, consent payload, sent and rider views', flush=True)
+        print(f'PASS {width}: payment errors, confirmation, consent, sent/rider views and withdrawal', flush=True)
         context.close()
     browser.close()

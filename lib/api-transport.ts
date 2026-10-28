@@ -1,4 +1,5 @@
 import { PLATE_ERROR } from "./vehicle";
+import { CONTRIBUTION_ERROR } from "./fare";
 
 export const CONNECTION_MESSAGE =
   "We can’t reach the server. Please try again shortly.";
@@ -20,6 +21,10 @@ export function apiErrorMessage(
 ) {
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
+      INVALID_FIXED_PRICE: CONTRIBUTION_ERROR,
+      PAYID_REQUIRED: "Enter your PayID to receive a contribution.",
+      INVALID_PAYID: "Check your PayID and try again.",
+      INVALID_PAYID_TYPE: "Choose Mobile, Email or Other for your PayID.",
       DEMAND_ALREADY_OPEN: "You already have a posted request. Manage it in Activity.",
       DEMAND_CHANGED: "Your post changed. Please review it and try again.",
       DEMAND_UNAVAILABLE: "This request or offer is no longer available. Refresh to see the latest details.",

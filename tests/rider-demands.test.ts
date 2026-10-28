@@ -18,6 +18,7 @@ import {
   searchDemands,
   offerDemand,
   respondToDemandOffer,
+  withdrawDemandOffer,
   cancelDemand,
   demandActivity,
   pendingDemandOffers,
@@ -103,6 +104,41 @@ test("posted driver can propose a distinct journey, then replace atomically at a
     assert.equal(demandActivity(db, driver.token, now).sent.filter(item => item.id === offered.id).length, 1);
     assert.equal(pendingDemandOffers(db, rider.token, now), 0);
     assert.equal((db.prepare("SELECT count(*) n FROM rides WHERE status='ACCEPTED'").get() as { n: number }).n, 1);
+  } finally { db.close(); }
+});
+
+for (const hasSource of [false, true]) test(`driver can withdraw a sent offer (existing post: ${hasSource}) without closing their journey`, () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const source = hasSource ? publishRide(db, driver.token, offerBody, now).ride : null;
+    const requested = postDemand(db, rider.token, route, now);
+    const offered = offerDemand(db, driver.token, requested.id, { ...offerBody, ...(source ? { replacePostedRideId: source.rideId } : {}) }, now);
+    assert.equal(demandActivity(db, driver.token, now).sent[0].id, offered.id);
+    assert.throws(() => withdrawDemandOffer(db, other.token, offered.id, now), /RIDE_ACCESS_DENIED/);
+    withdrawDemandOffer(db, driver.token, offered.id, now);
+    withdrawDemandOffer(db, driver.token, offered.id, now);
+    assert.equal(demandActivity(db, driver.token, now).sent[0].status, "WITHDRAWN");
+    assert.equal(demandActivity(db, rider.token, now).requests[0].offers[0].status, "WITHDRAWN");
+    assert.equal(pendingDemandOffers(db, rider.token, now), 0);
+    assert.throws(() => respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+    assert.equal(getRide(db, source?.rideId ?? offered.rideId, driver.session, now).status, "PUBLISHED");
+    const replacement = offerDemand(db, driver.token, requested.id, { ...offerBody, replacePostedRideId: source?.rideId ?? offered.rideId }, now);
+    assert.notEqual(replacement.id, offered.id);
+    respondToDemandOffer(db, rider.token, replacement.id, "ACCEPT", now);
+    assert.throws(() => withdrawDemandOffer(db, driver.token, replacement.id, now), /DEMAND_UNAVAILABLE/);
+  } finally { db.close(); }
+});
+
+test("paid direct offers reject missing or invalid payment details without creating offers", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    const requested = postDemand(db, rider.token, route, now);
+    for (const payIdType of ["MOBILE", "EMAIL", "OTHER"]) {
+      assert.throws(() => offerDemand(db, driver.token, requested.id, { ...offerBody, priceAud: 5, payId: "", payIdType }, now), /PAYID_REQUIRED/);
+    }
+    assert.throws(() => offerDemand(db, driver.token, requested.id, { ...offerBody, priceAud: -1 }, now), /INVALID_FIXED_PRICE/);
+    assert.throws(() => offerDemand(db, driver.token, requested.id, { ...offerBody, priceAud: 5, payId: "bad", payIdType: "EMAIL" }, now), /INVALID_PAYID/);
+    assert.equal(demandActivity(db, driver.token, now).sent.length, 0);
   } finally { db.close(); }
 });
 

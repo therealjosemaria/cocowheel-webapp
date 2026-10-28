@@ -123,6 +123,13 @@ CREATE TABLE IF NOT EXISTS rider_demand_proposals (
 );
 CREATE INDEX IF NOT EXISTS rider_demand_proposals_request ON rider_demand_proposals(demand_id);
 
+-- Withdrawal applies to either kind of offer without rewriting historical tables.
+CREATE TABLE IF NOT EXISTS rider_demand_offer_withdrawals (
+  offer_id TEXT PRIMARY KEY,
+  driver_id TEXT NOT NULL REFERENCES guest_sessions(id),
+  created_at TEXT NOT NULL
+);
+
 -- External map-provider responses are reusable but temporary. These tables are
 -- intentionally independent from a guest's ride history and clean themselves
 -- after seven days.

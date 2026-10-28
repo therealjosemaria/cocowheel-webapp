@@ -36,7 +36,7 @@ export type DemandOffer = {
   priceAud: number;
   origin: Pin;
   destination: Pin;
-  status: "PENDING" | "ACCEPTED" | "DECLINED" | "UNAVAILABLE";
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "UNAVAILABLE" | "WITHDRAWN";
 };
 export type DemandActivity = {
   requests: Array<RiderDemand & { offers: DemandOffer[] }>;

@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+Sent driver offers appear in Activity as Journey offered cards with status,
+endpoints, departure and fare. Sending opens the exact card; pending offers can
+be withdrawn with confirmation without closing the driver's public journey.
+Withdrawn offers remain in history and cannot be accepted. Paid-offer validation
+now gives explicit amount/PayID instructions, including blank PayID fields.
+
 Drivers with an unpaired public journey can also offer to fulfil a rider's
 requested journey. Explicit confirmation explains that acceptance replaces the
 existing post. Until then only a private pending proposal is stored; the public

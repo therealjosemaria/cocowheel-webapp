@@ -74,7 +74,7 @@ function proposalView(db: Db, row: ProposalRow, now: Date): DemandOffer {
     driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     departureAt: input.scheduledDepartureAt, priceAud: input.priceAud,
     origin: input.origin, destination: input.destination,
-    status: row.status === "PENDING" &&
+    status: offerWithdrawn(db, row.id) ? "WITHDRAWN" : row.status === "PENDING" &&
       (!["PUBLISHED", "REQUESTED"].includes(row.ride_status) ||
         Date.parse(input.scheduledDepartureAt) <= +now || demand(db, row.demand_id).status !== "OPEN")
       ? "UNAVAILABLE" : row.status,
@@ -85,6 +85,9 @@ function refresh(db: Db, now: Date) {
   db.prepare(
     "UPDATE rider_demands SET status='EXPIRED' WHERE status='OPEN' AND expires_at<=?",
   ).run(now.toISOString());
+}
+function offerWithdrawn(db: Db, id: string) {
+  return Boolean(db.prepare("SELECT 1 FROM rider_demand_offer_withdrawals WHERE offer_id=?").get(id));
 }
 function demand(db: Db, id: string) {
   const row = db.prepare("SELECT * FROM rider_demands WHERE id=?").get(id) as
@@ -121,7 +124,7 @@ function offerView(db: Db, row: OfferRow, now: Date): DemandOffer {
       label: row.destination_label,
     },
     status:
-      row.status === "PENDING" &&
+      offerWithdrawn(db, row.id) ? "WITHDRAWN" : row.status === "PENDING" &&
       (!["PUBLISHED", "REQUESTED"].includes(row.ride_status) ||
         Date.parse(row.scheduled_departure_at) <= +now ||
         demand(db, row.demand_id).status !== "OPEN")
@@ -231,6 +234,7 @@ export function pendingDemandOffers(
     JOIN rider_demands d ON d.id=o.demand_id JOIN rides r ON r.id=o.ride_id
     WHERE d.owner_id=? AND d.status='OPEN' AND d.expires_at>?
     AND o.status='PENDING' AND r.status IN ('PUBLISHED','REQUESTED')
+    AND NOT EXISTS (SELECT 1 FROM rider_demand_offer_withdrawals w WHERE w.offer_id=o.id)
     AND r.scheduled_departure_at>?`,
       )
       .get(owner.id, now.toISOString(), now.toISOString()) as { n: number }
@@ -327,7 +331,7 @@ export function offerDemand(
     const previous = db
       .prepare(
         offerSql +
-          " WHERE o.demand_id=? AND r.driver_session_id=? AND o.status='PENDING' AND r.status IN ('PUBLISHED','REQUESTED')",
+          " WHERE o.demand_id=? AND r.driver_session_id=? AND o.status='PENDING' AND r.status IN ('PUBLISHED','REQUESTED') AND NOT EXISTS (SELECT 1 FROM rider_demand_offer_withdrawals w WHERE w.offer_id=o.id)",
       )
       .get(id, owner.id) as OfferRow | undefined;
     if (previous) return offerView(db, previous, now);
@@ -387,6 +391,22 @@ export function offerDemand(
     );
   })();
 }
+export function withdrawDemandOffer(db: Db, token: string | null, id: string, now = new Date()) {
+  const owner = requireUniversitySession(db, token);
+  return db.transaction(() => {
+    refresh(db, now);
+    const proposal = db.prepare(proposalSql + " WHERE p.id=?").get(id) as ProposalRow | undefined;
+    const offer = db.prepare(offerSql + " WHERE o.id=?").get(id) as OfferRow | undefined;
+    const row = proposal ?? offer;
+    if (!row) throw new Error("DEMAND_NOT_FOUND");
+    if (row.driver_session_id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+    if (offerWithdrawn(db, id)) return;
+    const status = proposal ? proposalView(db, proposal, now).status : offerView(db, offer!, now).status;
+    if (status !== "PENDING") throw new Error("DEMAND_UNAVAILABLE");
+    db.prepare("INSERT INTO rider_demand_offer_withdrawals VALUES (?,?,?)").run(id, owner.id, now.toISOString());
+  })();
+}
+
 export function respondToDemandOffer(
   db: Db,
   token: string | null,
