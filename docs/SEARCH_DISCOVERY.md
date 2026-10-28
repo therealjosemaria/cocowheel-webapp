@@ -46,8 +46,26 @@ An initial browser launch occurred before the build finished and could not start
 rerunning after build completion passed. The IndexNow dry run listed only six
 public URLs and submitted nothing. React review found no new client state,
 effects, dependencies or data-fetching waterfalls. Live deployment/submission
-results will be recorded after observation.
+results are recorded below.
 Earlier dated evidence describes the then-current five-page sitemap.
+
+### Live verification and search submission
+
+29 October 2026, 10:36 AEDT: Vercel reported production deployment
+`dpl_2uL7grHzrTYYFDR1mfkcpFDXtJrt` READY for commit 1083dd3. Passive checks on
+www.gumwheel.com confirmed the Sydney guide's HTTP 200, canonical and index/follow
+metadata, About/llms links, six sitemap entries, exact ownership proof with its
+noindex/nofollow header, and new recovery text with HTTP 404. The initial check
+before deployment readiness had still served the older five-page output; no
+submission was attempted then. See `results/search-live-2026-10-29.json`.
+
+One explicit IndexNow batch was sent at 10:36 AEDT after all seven preflight GETs
+passed. The service returned HTTP 202: received, ownership validation pending.
+`results/indexnow-2026-10-29.json` records the sanitized receipt without the public
+key. This is not a Google submission or confirmation of indexing/rankings. No
+retry, schedule, private URLs or authenticated application writes were used.
+No API restart was needed. Production runtime logs and actual search-engine
+indexing/dashboard intake were not inspected; Google/Bing ownership remains unset.
 
 ## Public information refinement — 29 October 2026
 

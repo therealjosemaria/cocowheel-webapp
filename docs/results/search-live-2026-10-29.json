@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-28T23:36:31.391397+00:00",
+  "revision": "1083dd3",
+  "checks": [
+    {
+      "path": "/carpooling/sydney",
+      "status": 200,
+      "titlePresent": true,
+      "canonical": [
+        "https://www.gumwheel.com/carpooling/sydney"
+      ],
+      "robots": "index, follow"
+    },
+    {
+      "path": "/about",
+      "status": 200,
+      "guideLinked": true
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200,
+      "guideLinked": true
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "entries": 6
+    },
+    {
+      "path": "/indexnow-key.txt",
+      "status": 200,
+      "proofMatches": true,
+      "robots": "noindex, nofollow"
+    },
+    {
+      "path": "/__gumwheel-missing-page",
+      "status": 404,
+      "recoveryText": true
+    }
+  ],
+  "indexingVerified": false
+}

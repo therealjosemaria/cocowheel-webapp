@@ -1,0 +1,17 @@
+{
+  "submittedAt": "2026-10-28T23:36:26.259Z",
+  "endpoint": "https://api.indexnow.org/indexnow",
+  "status": 202,
+  "result": "received; ownership validation pending",
+  "urls": [
+    "https://www.gumwheel.com/",
+    "https://www.gumwheel.com/help",
+    "https://www.gumwheel.com/about",
+    "https://www.gumwheel.com/carpooling/sydney",
+    "https://www.gumwheel.com/privacy",
+    "https://www.gumwheel.com/terms"
+  ],
+  "indexingVerified": false,
+  "sourceRevision": "1083dd3",
+  "command": "npm run search:submit -- --submit"
+}

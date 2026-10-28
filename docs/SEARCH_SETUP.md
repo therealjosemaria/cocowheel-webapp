@@ -46,6 +46,10 @@ setup. No private URLs, cookies, account data or user inventory are submitted.
 
 ## Completion record
 
+29 October 2026, 10:36 AEDT: the public ownership file and six-page sitemap were
+verified live. One IndexNow batch returned 202 (ownership validation pending).
+See `results/indexnow-2026-10-29.json`. No repeat submission is scheduled.
+
 Record actual property verification and sitemap dashboard results here only after
 observing them. Currently both account setup steps remain with the owner. Live
 public frontend and IndexNow observations belong in SEARCH_DISCOVERY.md and dated
