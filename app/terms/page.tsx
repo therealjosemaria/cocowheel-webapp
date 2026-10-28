@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import LegalPage from "@/components/legal-page";
 
-export const metadata: Metadata = { title: "Terms | GUMWHEEL" };
+export const metadata = publicPageMetadata("/terms", "Terms | GUMWHEEL", "Terms for participating in the GUMWHEEL carpool pilot, sharing journeys and agreeing on contributions.");
 
 export default function TermsPage() {
   return (

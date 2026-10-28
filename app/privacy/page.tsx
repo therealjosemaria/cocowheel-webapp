@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo";
 import LegalPage from "@/components/legal-page";
 
-export const metadata: Metadata = { title: "Privacy | GUMWHEEL" };
+export const metadata = publicPageMetadata("/privacy", "Privacy | GUMWHEEL", "How GUMWHEEL handles account information, journey details and location data.");
 
 export default function PrivacyPage() {
   return (

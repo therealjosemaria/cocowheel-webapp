@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+29 October Home's “Share your journey.” reuses home-hero and the existing hero
+scale, weight, letter spacing, centred alignment and button spacing. No subtitle,
+new palette or additional type role. Review wrapping at phone and desktop widths.
+
 28 October admin sign-in reuses activity-panel/page-title, university-form and
 primary/secondary buttons; cap the inline panel at the existing dialog width of
 420px. Menu removal introduces no replacement icon, spacing or colour token.

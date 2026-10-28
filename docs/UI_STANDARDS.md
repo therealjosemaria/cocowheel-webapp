@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+29 October Home copy: use one headline, “Share your journey.”, replacing “Going
+your way.” Keep the existing hero typography and two icon/button actions; no
+subtitle or new promotional block. Search metadata may describe Sydney carpooling
+without adding visible copy or making email eligibility university-only. Public
+search pages are explicitly allowlisted; private journey/account views default
+to noindex. See SEARCH_DISCOVERY.md for the indexing and crawl contract.
+
 28 October admin entry: omit Admin from all navigation menus; use `/admin` directly.
 Reuse UniversityVerification inline with Email, Send code, then a visible Email
 and Verification code field, Verify and the existing resend control. Use shared

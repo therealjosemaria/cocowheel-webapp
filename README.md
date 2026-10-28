@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Home now uses the single heading **Share your journey.** Search metadata describes
+Sydney carpooling; Home, Help and legal pages have canonical/share URLs and appear
+in the public sitemap. Account/journey pages and email matching entries are
+noindex. See [search discovery](docs/SEARCH_DISCOVERY.md) for crawl policies,
+verification and the remaining Search Console/deployment steps. Public-community
+research and unsent outreach drafts are in [promotion research](docs/PROMOTION_2026-10-29.md).
+
 Journey offered cards now open DETAILS at `/activity/offers/[offerId]`, reusing
 the requested-journey detail layout with Back, route map and fields. Pending offers
 can be withdrawn there; closed offers retain their details. Activity status text

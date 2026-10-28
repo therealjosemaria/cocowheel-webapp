@@ -7,12 +7,16 @@ import UniversityVerification from "@/components/university-verification";
 import ConnectionNotice from "@/components/connection-notice";
 import WebAnalytics from "@/components/web-analytics";
 import { JourneyUpdateProvider } from "@/components/journey-update-context";
+import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/seo";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GUMWHEEL",
-  description: "A simple planned ride, together.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  // Public information pages opt in individually; account/journey pages do not.
+  robots: { index: false, follow: false },
   referrer: "origin",
   icons: {
     icon: { url: "/brand/gumwheel-original.png", type: "image/png", sizes: "1254x1254" },

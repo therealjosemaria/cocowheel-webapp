@@ -1,4 +1,10 @@
 import RideFieldLabel from "@/components/ride-field-label";
+import { publicPageMetadata } from "@/lib/seo";
+
+export const metadata = publicPageMetadata(
+  "/help", "How Carpooling Works | GUMWHEEL",
+  "Learn how to find or share a journey with GUMWHEEL, agree on contributions, coordinate pickup and travel together.",
+);
 
 export default function HelpPage() {
   return (
