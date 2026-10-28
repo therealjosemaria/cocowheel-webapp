@@ -1,5 +1,11 @@
 # Coco Wheels product and UI standards
 
+28 October admin entry: omit Admin from all navigation menus; use `/admin` directly.
+Reuse UniversityVerification inline with Email, Send code, then a visible Email
+and Verification code field, Verify and the existing resend control. Use shared
+form/buttons and a 420px-capped panel. Non-owner sessions see a clear access-denied
+message; real reports remain owner-only. Existing verification modal stays intact.
+
 28 October offer-detail refinement supersedes the direct summary withdrawal below:
 Journey offered summaries use the same View/DETAILS cell as other Activity cards.
 The dedicated detail view reuses Back, RequestRouteMap (driver route), fields and
@@ -515,7 +521,7 @@ the panel stays within the 320px viewport; desktop remains capped at 280px.
   tap/click. Read acknowledgement requires visible content, not opening Profile.
 
 - Footer navigation contains only Privacy and Terms, centred beneath copyright; no duplicate main menu or large site-map footer. Text remains small with 44px-tall tap targets and visible focus. Public legal pages share the standard panel/H1, 18px H2 hierarchy, readable line length and revision date. Preserve Home footer visibility when adding footer rows. Legal copy must describe real behaviour, not invent guarantees or imply legal certification.
-- Main menu order on mobile and desktop: Home, How it works, Activity, Find a ride, Offer a ride; authorised admin access follows near Profile. At 1000px and above, desktop items retain equal 106px widths on a single row, including Admin. Below 1000px use the existing drawer rather than wrapping the menu.
+- Main menu order on mobile and desktop: Home, How it works, Activity, Find a journey, Post a journey; Admin is accessed directly at `/admin` and is omitted from both menus. At 1000px and above, desktop items retain equal 106px widths on a single row. Below 1000px use the existing drawer rather than wrapping the menu.
 - How it works (`/help`) is public and uses the shared enclosing panel and page heading, with four single regular-weight actions per role and no explanatory text after each action. Numbers also remain regular-weight; reserve stronger emphasis for section headings. Rider step two is “Request to join a ride.” Step three mirrors “Meet your driver.” and “Meet your rider.” Keep required pickup-code verification and PayID explanations in the FAQs and relevant ride screens; simplifying the overview does not change verification requirements.
 - Help starts with the role instructions, with no sign-in/eligibility introduction. Show “For University of Sydney students only.” directly above Verify UniKey in the signed-out Profile popover; preserve its existing controls and mobile menu. Existing authorised testing exceptions are unaffected.
 - The FAQ uses `--surface-subtle`; Help role cards use 6% rider-blue/driver-orange tints mixed with white, corresponding coloured icons and dark text. Keep identical 16px padding and 10px corners, with no shadows or animation. Suggestions remain white. Preserve the larger H1 and matching H2 hierarchy; titles/icons identify roles without relying on colour alone.

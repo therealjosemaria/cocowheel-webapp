@@ -8,7 +8,10 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
 type Pending = { resolve: () => void; reject: () => void };
-export default function UniversityVerification() {
+export default function UniversityVerification({ inline = false, onVerified }: {
+  inline?: boolean;
+  onVerified?: () => void;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const pending = useRef<Pending[]>([]);
   const [unikey, setUniKey] = useState("");
@@ -20,6 +23,7 @@ export default function UniversityVerification() {
   const cooldown = useCodeCooldown(unikey);
   const sending = useRef(false);
   useEffect(() => {
+    if (inline) return;
     const requests = pending.current;
     const open = (event: Event) => {
       const callbacks = (event as CustomEvent<Pending | undefined>).detail;
@@ -32,7 +36,7 @@ export default function UniversityVerification() {
       window.removeEventListener("cocowheels:verify-university", open);
       requests.splice(0).forEach((item) => item.reject());
     };
-  }, []);
+  }, [inline]);
   const close = () => {
     dialog.current?.close();
     pending.current.splice(0).forEach((item) => item.reject());
@@ -78,6 +82,7 @@ export default function UniversityVerification() {
         pending.current.splice(0).forEach((item) => item.resolve());
         setChallenge("");
         setCode("");
+        onVerified?.();
       }
     } catch (reason) {
       if (
@@ -116,18 +121,16 @@ export default function UniversityVerification() {
       setBusy(false);
     }
   }
-  return (
-    <dialog
-      ref={dialog}
-      className="university-dialog"
-      aria-label={challenge ? "Enter your code" : "Email verification"}
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!busy) close();
-      }}
-    >
+  const form = (
       <form onSubmit={submit} className="university-form">
-        {challenge && <h2>Enter your code</h2>}
+        {challenge && !inline && <h2>Enter your code</h2>}
+        {inline && <label>
+          Email
+          <input aria-label="Email" placeholder="Email" inputMode="email"
+            autoCapitalize="none" autoComplete="username" spellCheck={false}
+            maxLength={254} value={unikey} readOnly={Boolean(challenge)}
+            onChange={(event) => setUniKey(event.target.value.toLowerCase())} required />
+        </label>}
         {challenge ? (
           <>
             <p>Sent to {deliveryAddress}</p>
@@ -146,7 +149,7 @@ export default function UniversityVerification() {
               />
             </label>
           </>
-        ) : (
+        ) : !inline ? (
           <>
             <label>
               <input
@@ -168,7 +171,7 @@ export default function UniversityVerification() {
               We’ll email you a sign-in code. Your email stays private.
             </p>
           </>
-        )}
+        ) : null}
         {error && <p role="alert">{error}</p>}
         <button
           className="primary"
@@ -196,15 +199,28 @@ export default function UniversityVerification() {
             )}
           </button>
         )}
-        <button
+        {!inline && <button
           type="button"
           className="secondary"
           disabled={busy}
           onClick={close}
         >
           Cancel
-        </button>
+        </button>}
       </form>
+  );
+  if (inline) return form;
+  return (
+    <dialog
+      ref={dialog}
+      className="university-dialog"
+      aria-label={challenge ? "Enter your code" : "Email verification"}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!busy) close();
+      }}
+    >
+      {form}
     </dialog>
   );
 }

@@ -1,6 +1,6 @@
 import AdminPanel from "@/components/admin-panel";
+import AdminSignIn from "@/components/admin-sign-in";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
 
 export const metadata = {
@@ -10,9 +10,10 @@ export const metadata = {
 export default async function AdminPage() {
   const session = (await cookies()).get("cocowheels_guest")?.value;
   const target = process.env.COCOWHEELS_API_PROXY_TARGET;
-  if (!session || !target) redirect("/");
+  if (!session) return <AdminSignIn />;
   let allowed = false;
   try {
+    if (!target) throw new Error("Admin API is not configured");
     const result = await requestJson<{ canAdmin: boolean }>(
       `${target.replace(/\/$/, "")}/api/university/session`,
       {
@@ -24,7 +25,7 @@ export default async function AdminPage() {
     allowed = result.canAdmin === true;
   } catch (reason) {
     if (reason instanceof ApiError && [401, 403].includes(reason.status))
-      redirect("/");
+      return <AdminSignIn />;
     // No admin data or controls are rendered until authorization succeeds.
     return (
       <section className="activity-panel">
@@ -43,6 +44,6 @@ export default async function AdminPage() {
       </section>
     );
   }
-  if (!allowed) redirect("/");
+  if (!allowed) return <AdminSignIn denied />;
   return <AdminPanel />;
 }

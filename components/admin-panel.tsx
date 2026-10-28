@@ -111,7 +111,7 @@ export default function AdminPanel() {
       if (reason instanceof Error && reason.name === "AbortError") return;
       if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         clear();
-        window.location.replace("/");
+        window.location.replace("/admin");
       } else
         setError(apiErrorMessage(reason, "Unable to load. Please try again."));
     },

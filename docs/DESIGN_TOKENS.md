@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+28 October admin sign-in reuses activity-panel/page-title, university-form and
+primary/secondary buttons; cap the inline panel at the existing dialog width of
+420px. Menu removal introduces no replacement icon, spacing or colour token.
+
 28 October: --status-active aliases --departure-scheduled (#166534), the existing
 dark green (7.13:1 against white). Available, Open, Awaiting reply and ongoing ride
 statuses use this text colour only. Font size/weight and transparent background
@@ -300,7 +304,7 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 - Header artwork: single combined pink gum/tyre transparent PNG, 15×15px image in the unchanged 48×32px window; left −0.8px, top 7.35px below 700px and 7.85px otherwise. This offsets transparent padding to preserve the 6px visible wordmark gap and optical centreline. Visible artwork is approximately 13.4px high, matching the previous icons. Keep 18px trailing brand padding and wordmark typography unchanged. Empty alt text and an aria-hidden wrapper make the logo decorative; the brand remains non-clickable.
 - Map symbols: `--icon-map`, 21px, within `--marker-size`, 32px circles. Profile/menu controls and the logo are navigation/brand exceptions, not cell icons.
 - Use the existing shared primary/secondary/danger button selectors and dialog/action groups. Equal actions must have equal dimensions; minimum 44px hit targets, 10px corners for action/dialog controls. Home CTAs remain larger deliberate exceptions.
-- Responsive shell: retain the 680px mobile/tablet cap below 1000px; from 1000px use `clamp(960px, 66.667vw, 1360px)`. Desktop navigation starts at 1000px and remains one row, including Admin; narrower screens use the drawer. Home CTAs retain mobile dimensions below 700px; above that they are equal, centred, max 360px wide and min 64px high. Hero size remains unchanged.
+- Responsive shell: retain the 680px mobile/tablet cap below 1000px; from 1000px use `clamp(960px, 66.667vw, 1360px)`. Desktop navigation starts at 1000px and remains one row; Admin is omitted and accessed directly via `/admin`; narrower screens use the drawer. Home CTAs retain mobile dimensions below 700px; above that they are equal, centred, max 360px wide and min 64px high. Hero size remains unchanged.
 - Use existing spacing families: 4/8px for tightly related content, 12/16px for fields and panel padding, 24px for section separation. Preserve established map and mobile-sheet layouts rather than changing geometry during typography edits.
 - Never reduce input size to match its label. “You receive” and “Your PayID” must have identical computed family, size, weight and colour.
 - Driver pickup digits use four visible 44×48px inputs, 8px gaps/corners, centred

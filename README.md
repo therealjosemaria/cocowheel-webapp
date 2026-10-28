@@ -505,8 +505,13 @@ Inbox verification proves mailbox access, not enrolment, identity or driver fitn
 - The allowlisted Gmail account and `guest` are separate identities. Guest codes
   go to the owner's Gmail inbox, but the visible/account name remains `guest`.
   `test` is not an accepted alias. Neither identity bypasses verification.
-- Only verified `jmos0905` accesses admin, with no second password. Page visibility
-  alone is not security: admin API authorization is enforced too.
+- Admin is accessed directly at `/admin`; desktop/mobile menus omit it for all
+  accounts. Signed-out visitors see the shared email/code form directly on `/admin`.
+  OTP verification creates the normal session; only verified `jmos0905` accesses
+  real reports, with no second password. Other accounts see an access-denied
+  message and can verify another email. Expired admin sessions return to this
+  form. Page and API authorization both remain enforced. See
+  [admin access](docs/ADMIN_ACCESS.md) for the flow and verification boundaries.
 - Public discovery reveals the planned driver route, never live driver GPS.
   Live tracking begins after acceptance and is shared only with that accepted
   rider and the driver; pending/discarded requesters receive no driver GPS.

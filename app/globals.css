@@ -2994,6 +2994,8 @@ p {
   display: grid;
   gap: 16px;
 }
+.admin-sign-in { max-width: 420px; margin-inline: auto; }
+.admin-sign-in .activity-panel-content > [role="alert"] { margin: 0 0 16px; }
 .university-form > button { margin: 0; }
 .usual-route-panel { max-width: 680px; margin-inline: auto; }
 .route-search-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }

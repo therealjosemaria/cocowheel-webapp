@@ -23,7 +23,6 @@ export default function AppNavigation() {
   const [identityOpen, setIdentityOpen] = useState(false);
   const [guestName, setGuestName] = useState<string | null>(null);
   const [accountKey, setAccountKey] = useState<string | null>(null);
-  const [canAdmin, setCanAdmin] = useState(false);
   const [ratings, setRatings] = useState<{
     driver: RatingSummary;
     rider: RatingSummary;
@@ -126,7 +125,6 @@ export default function AppNavigation() {
       const result = await cocowheelsApi<{
         unikey: string;
         username?: string;
-        canAdmin: boolean;
         ratings?: { driver: RatingSummary; rider: RatingSummary };
       }>("/api/university/session");
       if (sequence !== loadSequence.current) return;
@@ -141,7 +139,6 @@ export default function AppNavigation() {
         setDemandOffers(0);
         setSeen(readSeen(result.unikey));
       }
-      setCanAdmin(result.canAdmin === true);
       setRatings(result.ratings ?? null);
       const activity = await cocowheelsApi<{
         current: ActiveRide | null;
@@ -171,7 +168,6 @@ export default function AppNavigation() {
         setDemandOffers(0);
         setActivePost(null);
         setAccountKey(null);
-        setCanAdmin(false);
         setRatings(null);
         setActiveRide(null);
         setCurrents([]);
@@ -285,16 +281,6 @@ export default function AppNavigation() {
         >
           Post a journey
         </button>
-        {canAdmin && (
-          <Link
-            href="/admin"
-            className={`desktop-navigation-link${isLinkActive("/admin") ? " active" : ""}`}
-            aria-current={isLinkActive("/admin") ? "page" : undefined}
-            onClick={() => setRideTab(null)}
-          >
-            Admin
-          </Link>
-        )}
       </nav>
       <div
         className={`guest-identity${identityOpen ? " open" : ""}`}
@@ -523,20 +509,6 @@ export default function AppNavigation() {
             >
               Post a journey
             </button>
-            {canAdmin && (
-              <Link
-                href="/admin"
-                className={`mobile-navigation-link${isLinkActive("/admin") ? " active" : ""}`}
-                aria-current={isLinkActive("/admin") ? "page" : undefined}
-                tabIndex={open ? undefined : -1}
-                onClick={() => {
-                  setOpen(false);
-                  setRideTab(null);
-                }}
-              >
-                Admin
-              </Link>
-            )}
           </nav>
         </div>
       </div>
