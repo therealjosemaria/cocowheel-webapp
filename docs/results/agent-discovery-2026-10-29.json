@@ -1,0 +1,98 @@
+{
+  "sourceRevision": "b2c2c78",
+  "scope": "Public website audit only; no authenticated or private data. Scanner report is a snapshot, not a Google ranking or safety certification.",
+  "command": "npx --yes is-agentic https://www.gumwheel.com --json",
+  "report": {
+    "target": "https://www.gumwheel.com",
+    "display_target": "www.gumwheel.com",
+    "report_url": "https://is-agentic.com/scan/www.gumwheel.com",
+    "score": 58,
+    "score_label": "Important blockers remain",
+    "scanned_at": "2026-10-28T23:01:58.834Z",
+    "eligible_checks": 15,
+    "score_breakdown": {
+      "essential": {
+        "earned": 46.7,
+        "available": 80,
+        "passing": 3,
+        "total": 6
+      },
+      "recommended": {
+        "earned": 10,
+        "available": 20,
+        "passing": 4,
+        "total": 9
+      },
+      "bonus": {
+        "points": 1.4,
+        "positive_signals": 6
+      }
+    },
+    "issues": [
+      {
+        "details": "Very little text content (147 chars) - likely JS-rendered, invisible to AI crawlers",
+        "id": "content-no-js",
+        "name": "Content without JavaScript",
+        "recommendation": "Serve at least 500 characters of meaningful homepage content in raw HTML. Add a clear H1, keep deeper heading levels sequential, and remove excessive non-content markup.",
+        "result": "failed",
+        "tier": "essential"
+      },
+      {
+        "details": "The nonexistent path https://gumwheel.com/__ora-404-probe-g2i5vhv8 correctly returns HTTP 404. Partial credit: no Markdown error body was detected.",
+        "id": "agent-friendly-404",
+        "name": "Agent-friendly 404s",
+        "recommendation": "Keep the correct HTTP 404 status. The remaining requirement is a Markdown error body when agents request Accept: text/markdown. Include at least 20 characters explaining the error and a link to your docs, sitemap, or llms.txt. Verify with `curl -sS -L -i -H 'Accept: text/markdown' https://yourdomain.com/some-path-that-does-not-exist`. Check both the final 404 status and the Markdown body with Content-Type: text/markdown. Checking the status alone does not verify the missing requirement.",
+        "result": "partial",
+        "tier": "essential"
+      },
+      {
+        "details": "Homepage https://gumwheel.com does not meet the Markdown negotiation requirements: Accept: text/markdown returned text/html; charset=utf-8; Vary header missing Accept (got \"rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, accept-encoding\")",
+        "id": "markdown-negotiation-vary",
+        "name": "Markdown content negotiation (acceptmarkdown.com)",
+        "recommendation": "Enable Markdown negotiation on the scanned homepage. Supporting it only on /docs or a separate .md URL does not satisfy this check. Requests with Accept: text/markdown must receive a nonempty Markdown body with Content-Type: text/markdown and Vary: Accept. Keep serving HTML for Accept: text/html. Adding Vary alone does not create a Markdown response. Verify both with `curl -sS -L -i -H 'Accept: text/markdown' https://yourdomain.com/` and `curl -sS -L -i -H 'Accept: text/html' https://yourdomain.com/`. Check the final response headers and body: Markdown with Vary: Accept for the first request, HTML for the second.",
+        "result": "failed",
+        "tier": "essential"
+      },
+      {
+        "details": "gumwheel.com was not in the top 10 for \"GUMWHEEL carpooling\"",
+        "id": "brand-search-accuracy",
+        "name": "Brand name discoverability",
+        "recommendation": "Make sure your own domain ranks in the top results when people search your brand together with your main product (for example \"Acme payments API\"). If it does not, your brand may be too generic, conflict with a more established term, or not yet indexed. Strengthen it by describing your main product clearly in your homepage title and headings, earning press mentions that link to your domain, and avoiding redirect chains that mask your main domain in search results.",
+        "result": "failed",
+        "tier": "recommended"
+      },
+      {
+        "details": "No JSON-LD structured data found on homepage",
+        "id": "json-ld",
+        "name": "JSON-LD structured data",
+        "recommendation": "Add JSON-LD structured data to your homepage using the identity type that matches your site - SoftwareApplication for products, Organization or LocalBusiness for companies, Person for personal sites, Article for blogs - with name, description, url, and type-appropriate fields (offers, sameAs, author) so AI can parse your identity programmatically.",
+        "result": "failed",
+        "tier": "recommended"
+      },
+      {
+        "details": "No agent instruction file with when-to-use guidance found",
+        "id": "agent-instruction",
+        "name": "Agent instruction / when-to-use",
+        "recommendation": "Tell agents when to reach for you: add a 'when to use this' section to your llms.txt (or a dedicated agent-instructions file) that names your best-fit use cases and how an agent should call you. Be specific about the jobs you are right for - generic marketing copy does not read as guidance.",
+        "result": "failed",
+        "tier": "recommended"
+      },
+      {
+        "details": "No JSON-LD found - Organization schema missing",
+        "id": "org-schema-completeness",
+        "name": "Organization schema completeness",
+        "recommendation": "Add Organization JSON-LD that includes both contactPoint (with email/phone and contactType) and address (PostalAddress). This lets AI verify your business legitimacy and answer contact queries.",
+        "result": "failed",
+        "tier": "recommended"
+      },
+      {
+        "details": "Only Privacy page verified - missing: About, Contact",
+        "id": "trust-anchors",
+        "name": "Trust anchor pages",
+        "recommendation": "Publish real /about, /contact, and /privacy pages with at least 500 characters of content each. These are the pages AI agents check to verify your business is legitimate before recommending you.",
+        "result": "partial",
+        "tier": "recommended"
+      }
+    ]
+  }
+}

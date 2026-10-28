@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Public discovery now includes a concise About page, shared Help answers covering
+rider requests and open email eligibility, WebSite/Organization identity markup,
+and read-only `/llms.txt` and `/help.md` guides. The sitemap lists five public HTML
+pages; text guides are noindex. Home’s single headline stays unchanged, with
+Help/About guidance available when JavaScript is disabled. See
+[search discovery](docs/SEARCH_DISCOVERY.md) for evidence and remaining owner steps.
+
 Home now uses the single heading **Share your journey.** Search metadata describes
 Sydney carpooling; Home, Help and legal pages have canonical/share URLs and appear
 in the public sitemap. Account/journey pages and email matching entries are

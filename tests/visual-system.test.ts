@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import HelpPage from "../app/help/page";
 
 const css = readFileSync("app/globals.css", "utf8");
 
@@ -32,7 +35,8 @@ test("help keeps rider-first visible role paths with four steps each", () => {
   assert.doesNotMatch(navigation, /For University of Sydney students only|Verify UniKey/);
   assert.match(navigation, /Sign in/);
   assert.ok(help.indexOf('id="rider-steps-heading"') < help.indexOf('id="driver-steps-heading"'));
-  const lists = [...help.matchAll(/<ol className="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
+  const renderedHelp = renderToStaticMarkup(createElement(HelpPage));
+  const lists = [...renderedHelp.matchAll(/<ol class="how-it-works-steps">([\s\S]*?)<\/ol>/g)];
   assert.equal(lists.length, 2);
   assert.match(help, /<RideFieldLabel icon="rider">Find a journey<\/RideFieldLabel>/);
   assert.match(help, /<RideFieldLabel icon="driver">Post a journey<\/RideFieldLabel>/);

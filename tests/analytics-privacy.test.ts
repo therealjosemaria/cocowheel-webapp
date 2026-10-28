@@ -3,7 +3,7 @@ import test from "node:test";
 import { sanitizeAnalyticsEvent } from "../lib/analytics-privacy";
 
 test("analytics keeps only approved page URLs without query or fragment", () => {
-  for (const path of ["/", "/help", "/privacy", "/terms", "/activity", "/usual-route"]) {
+  for (const path of ["/", "/help", "/about", "/privacy", "/terms", "/activity", "/usual-route"]) {
     assert.deepEqual(sanitizeAnalyticsEvent({ type: "pageview", url: `https://gumwheel.com${path}?email=private&rideId=secret#private` }), {
       type: "pageview", url: `https://gumwheel.com${path}`,
     });

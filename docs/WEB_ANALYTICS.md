@@ -11,7 +11,7 @@ Blocked analytics must not prevent login, searching or riding.
 
 ## Privacy boundaries
 
-`lib/analytics-privacy.ts` allows only `/`, `/help`, `/privacy`, `/terms`,
+`lib/analytics-privacy.ts` allows only `/`, `/help`, `/about`, `/privacy`, `/terms`,
 `/activity` and `/usual-route`. All query strings and fragments are removed.
 Ride-detail URLs, admin, APIs, unknown paths and custom events are dropped.
 New routes require an explicit allowlist/privacy review. In-page Find/Offer
@@ -53,3 +53,11 @@ the new Privacy section uses existing heading/body spacing and emphasis.
 Provider intake, dashboard configuration and live counts remain unverified.
 The package installation reported 8 audit findings (7 high, 1 critical) in the
 overall dependency tree; no broad dependency upgrades were attempted here.
+
+### Public About page — 29 October 2026
+
+`/about` is explicitly allowed after reviewing its static public product/contact
+content. Existing query/fragment stripping and dropping private URLs/custom events
+remain covered by the privacy tests. `/help.md` and `/llms.txt` do not mount the
+client SDK and are not added to analytics. No new custom event or provider setting.
+Production dashboard intake for About remains unverified.

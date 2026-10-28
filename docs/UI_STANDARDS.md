@@ -1,5 +1,13 @@
 # Coco Wheels product and UI standards
 
+29 October public information refinement: About reuses Activity/Help page shells,
+H1/H2/body tokens and the existing help-email link. Reach it through the first
+Help FAQ; keep the footer limited to legal links. Help has seven native initially
+closed accordions, with the unchanged four steps per role. Shared factual copy
+supplies both Help and the Markdown guide. No extra Home copy for JavaScript users;
+its noscript fallback serves readers whose browser cannot run journey actions.
+This supersedes the older four-FAQ count below, not its styling or behaviour.
+
 29 October Home copy: use one headline, “Share your journey.”, replacing “Going
 your way.” Keep the existing hero typography and two icon/button actions; no
 subtitle or new promotional block. Search metadata may describe Sydney carpooling

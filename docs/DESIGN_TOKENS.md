@@ -1,5 +1,11 @@
 # Coco Wheels visual system
 
+29 October About/Help refinement introduces no visual tokens. Reuse activity-page,
+activity-panel/page-title, help-section, help-faq and help-email. Keep explanatory
+body regular-weight and the existing 24px section spacing, 44px link/summary
+hit targets and visible focus. The Home noscript fallback reuses the shared panel
+and body padding; enabled-JavaScript Home typography/spacing remain unchanged.
+
 29 October Home's “Share your journey.” reuses home-hero and the existing hero
 scale, weight, letter spacing, centred alignment and button spacing. No subtitle,
 new palette or additional type role. Review wrapping at phone and desktop widths.

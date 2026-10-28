@@ -1,6 +1,9 @@
 import HomeClient from "@/components/home-client";
 import MatchingRideEntry from "@/components/matching-ride-entry";
 import { homePageMetadata } from "@/lib/seo";
+import PublicSiteIdentity from "@/components/public-site-identity";
+import { ABOUT_SUMMARY } from "@/lib/public-information";
+import Link from "next/link";
 
 type SearchParams = { start?: string | string[]; match?: string | string[] };
 
@@ -22,5 +25,14 @@ export default async function Home({
         ? "RIDER"
         : "HOME";
 
-  return <HomeClient initialScreen={initialScreen} />;
+  return <>
+    {!match && <PublicSiteIdentity />}
+    <HomeClient initialScreen={initialScreen} />
+    <noscript><section className="activity-panel">
+      <div className="activity-panel-content">
+        <p>{ABOUT_SUMMARY}</p>
+        <p>Enable JavaScript to search and arrange journeys. You can still read <Link className="help-email" href="/help">How it works</Link> or <Link className="help-email" href="/about">About GUMWHEEL</Link>.</p>
+      </div>
+    </section></noscript>
+  </>;
 }

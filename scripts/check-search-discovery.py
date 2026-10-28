@@ -1,6 +1,7 @@
 """Check production-built crawl output and Home with synthetic browser APIs only.
 Run with Python + Playwright after npm run build. No live mail, trips or provider calls.
 """
+import json
 import os
 import subprocess
 import time
@@ -11,11 +12,12 @@ from playwright.sync_api import sync_playwright, expect
 BASE = 'http://127.0.0.1:3205'
 PUBLIC = 'https://www.gumwheel.com'
 class Head(HTMLParser):
-    def __init__(self): super().__init__(); self.meta={}; self.canonical=[]
+    def __init__(self): super().__init__(); self.meta={}; self.canonical=[]; self.alternates=[]
     def handle_starttag(self, tag, attrs):
         values=dict(attrs)
         if tag=='meta': self.meta[values.get('name') or values.get('property')]=values.get('content')
         if tag=='link' and values.get('rel')=='canonical': self.canonical.append(values.get('href'))
+        if tag=='link' and values.get('rel')=='alternate': self.alternates.append(values)
 
 def fetch(path):
     with urllib.request.urlopen(BASE+path,timeout=10) as response:
@@ -31,7 +33,7 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
             except Exception:
                 if preview.poll() is not None: raise RuntimeError('Preview failed; see /tmp/gumwheel-discovery-preview.log')
                 time.sleep(.2)
-        for path in ['/','/help','/privacy','/terms']:
+        for path in ['/','/help','/about','/privacy','/terms']:
             status,html=fetch(path)
             head=Head();head.feed(html)
             assert status==200 and 'noindex' not in head.meta['robots'], (path,head.meta)
@@ -43,10 +45,25 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
             head=Head();head.feed(html)
             assert status==200 and 'noindex' in head.meta['robots'], (path,head.meta)
             assert not head.canonical, (path,head.canonical)
+        _,home_html=fetch('/')
+        import re
+        identity=re.search(r'<script type="application/ld\+json">(.*?)</script>',home_html).group(1)
+        assert [item['@type'] for item in json.loads(identity)['@graph']]==['WebSite','Organization']
+        assert 'Application' not in identity and 'aggregateRating' not in identity
+        for path,content_type in [('/llms.txt','text/plain'),('/help.md','text/markdown')]:
+            with urllib.request.urlopen(BASE+path) as response:
+                text=response.read().decode()
+                assert response.headers.get('Content-Type').startswith(content_type)
+                assert response.headers.get('X-Robots-Tag')=='noindex, follow'
+                assert 'GUMWHEEL' in text and 'university email' in text
+                if path=='/help.md': assert response.headers.get('Link')=='<https://www.gumwheel.com/help>; rel="canonical"'
+        _,help_html=fetch('/help')
+        help_head=Head(); help_head.feed(help_html)
+        assert any(item.get('type')=='text/markdown' and item.get('href')==PUBLIC+'/help.md' for item in help_head.alternates)
         status,sitemap=fetch('/sitemap.xml')
         assert status==200
-        assert sitemap.count('<loc>')==4
-        for path in ['/','/help','/privacy','/terms']: assert f'<loc>{PUBLIC+path}</loc>' in sitemap
+        assert sitemap.count('<loc>')==5
+        for path in ['/','/help','/about','/privacy','/terms']: assert f'<loc>{PUBLIC+path}</loc>' in sitemap
         status,robots=fetch('/robots.txt')
         assert status==200 and 'Allow: /' in robots and 'Disallow: /api/' in robots and f'Sitemap: {PUBLIC}/sitemap.xml' in robots
         print('PASS server metadata, private noindex, sitemap and robots',flush=True)
@@ -77,10 +94,42 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
                 page.goto(BASE)
                 page.locator('.role-choice').get_by_role('button',name='POST A JOURNEY',exact=True).click()
                 expect(page.get_by_role('heading',name='Post a journey',exact=True)).to_be_visible()
+                page.goto(BASE+'/help')
+                details=page.locator('.help-faq details')
+                expect(details).to_have_count(7)
+                expect(page.locator('.help-faq details[open]')).to_have_count(0)
+                expect(page.locator('.how-it-works-steps li')).to_have_count(8)
+                page.screenshot(path=f'/tmp/gumwheel-help-discovery-{width}.png',full_page=True,animations='disabled')
+                page.get_by_text('What is GUMWHEEL?',exact=True).click()
+                expect(page.get_by_text('GUMWHEEL is a browser-based carpooling pilot in Sydney.',exact=False).first).to_be_visible()
+                page.get_by_role('link',name='About GUMWHEEL',exact=True).click()
+                expect(page.get_by_role('heading',name='About GUMWHEEL',exact=True)).to_be_visible()
+                expect(page.get_by_role('link',name='jose@gumwheel.com',exact=True)).to_have_attribute('href','mailto:jose@gumwheel.com')
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                page.screenshot(path=f'/tmp/gumwheel-about-discovery-{width}.png',full_page=True,animations='disabled')
+                page.get_by_role('link',name='How it works',exact=True).last.click()
+                expect(page.get_by_role('heading',name='How it works',exact=True)).to_be_visible()
+                page.get_by_text('What if I can’t find a journey?',exact=True).click()
+                page.get_by_text('Do I need an app or a university email?',exact=True).click()
+                expect(page.get_by_text('A university email is not required.',exact=False)).to_be_visible()
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                page.screenshot(path=f'/tmp/gumwheel-help-expanded-{width}.png',full_page=True,animations='disabled')
                 assert not errors, errors
                 print(f'PASS {width}: Home heading, layout and both journey actions',flush=True)
                 context.unroute_all(behavior='wait')
                 context.close()
+            nojs=browser.new_context(java_script_enabled=False,viewport={'width':390,'height':900})
+            plain=nojs.new_page()
+            plain.route('**/*',lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
+            plain.goto(BASE)
+            expect(plain.locator('noscript p').last).to_be_visible()
+            expect(plain.locator('noscript p').last).to_contain_text('Enable JavaScript to search and arrange journeys.')
+            plain.locator('noscript a[href="/about"]').click()
+            expect(plain.get_by_role('heading',name='About GUMWHEEL',exact=True)).to_be_visible()
+            assert plain.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            plain.screenshot(path='/tmp/gumwheel-about-nojs.png',full_page=True)
+            nojs.close()
+            print('PASS JavaScript-disabled Home guidance and About navigation',flush=True)
             browser.close()
     finally:
         preview.terminate()

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
+  applicationName: "GUMWHEEL",
   // Public information pages opt in individually; account/journey pages do not.
   robots: { index: false, follow: false },
   referrer: "origin",
