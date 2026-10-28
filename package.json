@@ -14,6 +14,7 @@
     "start:api": "tsx server/index.ts",
     "db:init": "tsx server/migrate.ts",
     "test": "tsx --test tests/**/*.test.ts",
+    "search:submit": "node --import tsx scripts/submit-indexnow.mjs",
     "test:recovery": "node scripts/recovery-check.mjs --run",
     "test:restore": "node --import tsx scripts/restore-check.mjs --run",
     "test:security": "node --import tsx scripts/security-check.mjs --run",

@@ -1,5 +1,7 @@
 # Coco Wheels visual system
 
+29 October Sydney guide and 404 recovery: reuse activity-page/activity-panel/page-title/help-section/help-email; no new spacing, typography, colour or artwork tokens. Check whole pages at phone/tablet/desktop widths.
+
 29 October About/Help refinement introduces no visual tokens. Reuse activity-page,
 activity-panel/page-title, help-section, help-faq and help-email. Keep explanatory
 body regular-weight and the existing 24px section spacing, 44px link/summary

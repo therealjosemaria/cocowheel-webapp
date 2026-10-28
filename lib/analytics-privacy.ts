@@ -1,7 +1,7 @@
 import type { BeforeSendEvent } from "@vercel/analytics/next";
 
 // Fail closed: new pages need a privacy review before joining this allowlist.
-const publicPaths = new Set(["/", "/help", "/about", "/privacy", "/terms", "/activity", "/usual-route"]);
+const publicPaths = new Set(["/", "/help", "/about", "/carpooling/sydney", "/privacy", "/terms", "/activity", "/usual-route"]);
 
 export function sanitizeAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent | null {
   if (event.type !== "pageview") return null;

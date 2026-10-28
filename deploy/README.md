@@ -1,5 +1,7 @@
 # GUMWHEEL Pi deployment
 
+Public search ownership: optional frontend build variables `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` accept only provider token values, not full HTML tags. They emit public Google / msvalidate.01 metadata; blank values emit nothing. Redeploy the frontend after setting them, then verify in the provider dashboard. DNS verification needs neither variable. See [owner steps](../docs/SEARCH_SETUP.md). No API restart or email/login configuration change is involved.
+
 Legacy `cocowheels` service names, paths and environment keys intentionally remain.
 The current frontend is `https://www.gumwheel.com`, reached via `gumwheel.com`.
 Keep both origins and the previous Vercel URL in the API allowlist during migration.

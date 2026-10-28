@@ -13,6 +13,7 @@ export default function AboutPage() {
       <p>Drivers can post where they’re going or browse journey requests from riders. Riders can request to join a posted journey, or post the journey they need and review offers from drivers.</p>
       <p>Use GUMWHEEL in your phone or desktop browser. No app download or university email is required; sign in with the code sent to your email.</p>
       <Link className="help-email" href="/help">How it works</Link>
+      <p><Link className="help-email" href="/carpooling/sydney">Carpooling in Sydney</Link></p>
     </section>
     <section className="help-section" aria-labelledby="about-pilot">
       <h2 id="about-pilot">An early pilot</h2>

@@ -1,5 +1,7 @@
 # Web Analytics
 
+29 October Sydney guide: `/carpooling/sydney` joins the explicit public pathname allowlist. All query/hash stripping and private/custom event exclusions remain. Tests cover the new path; production dashboard intake remains unverified.
+
 Implemented 22 October 2026. Uses `@vercel/analytics` 2.0.1, matching the working
 Lime Wheels integration in `/home/jmos0905/corridor/app/layout.tsx`.
 

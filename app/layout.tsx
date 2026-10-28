@@ -8,6 +8,7 @@ import ConnectionNotice from "@/components/connection-notice";
 import WebAnalytics from "@/components/web-analytics";
 import { JourneyUpdateProvider } from "@/components/journey-update-context";
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/seo";
+import { siteVerification } from "@/lib/site-verification";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   applicationName: "GUMWHEEL",
+  verification: siteVerification(process.env.GOOGLE_SITE_VERIFICATION, process.env.BING_SITE_VERIFICATION),
   // Public information pages opt in individually; account/journey pages do not.
   robots: { index: false, follow: false },
   referrer: "origin",

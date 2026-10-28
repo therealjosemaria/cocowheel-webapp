@@ -1,8 +1,15 @@
 # GUMWHEEL
 
+Public discovery also includes `/carpooling/sydney`, a factual guide linked from
+About and the text guides. A manual IndexNow tool defaults to a local dry run and
+submits only the six public information URLs after deployed-page/ownership checks.
+Optional public Google/Bing verification metadata is supported; neither webmaster
+account is set up yet. See [owner setup](docs/SEARCH_SETUP.md). Broken inbound
+links now receive a shared-style recovery page with HTTP 404.
+
 Public discovery now includes a concise About page, shared Help answers covering
 rider requests and open email eligibility, WebSite/Organization identity markup,
-and read-only `/llms.txt` and `/help.md` guides. The sitemap lists five public HTML
+and read-only `/llms.txt` and `/help.md` guides. The sitemap lists six public HTML
 pages; text guides are noindex. Home’s single headline stays unchanged, with
 Help/About guidance available when JavaScript is disabled. See
 [search discovery](docs/SEARCH_DISCOVERY.md) for evidence and remaining owner steps.

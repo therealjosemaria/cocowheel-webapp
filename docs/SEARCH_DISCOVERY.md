@@ -1,5 +1,54 @@
 # Public search discovery — 29 October 2026
 
+## Further discovery work (source baseline 2c32b48)
+
+Added one substantive Sydney carpooling guide at `/carpooling/sydney`, linked from
+About, the sitemap and public text guides. It describes actual rider/driver flows,
+contributions and pilot availability without claiming supply or creating suburb
+pages. It uses existing Help styles. Unknown URLs retain HTTP 404 and show Home /
+How it works recovery links. Home's interactive headline/actions are unchanged.
+
+The six public HTML paths are the sole IndexNow submission allowlist. Run
+`npm run search:submit` for a local dry run (no network), or explicitly use
+`npm run search:submit -- --submit`. Before one POST, the tool checks the deployed
+public ownership file and each page's HTTP 200, HTML type and robots directives.
+Requests reject redirects and time out after 15 seconds each. Any failed preflight
+sends nothing; failed POSTs are not retried automatically. HTTP 200 means received;
+202 means received with ownership validation pending. Neither proves indexing.
+No scheduled submission or browser call is installed. IndexNow is for participating
+engines, not a claim of Google submission.
+
+`public/indexnow-key.txt` is intentionally public ownership proof, not a login/API
+credential; the root custom keyLocation covers all listed paths. Its response uses
+X-Robots-Tag: noindex, nofollow; no custom cache TTL is configured. Optional
+`GOOGLE_SITE_VERIFICATION` / `BING_SITE_VERIFICATION` frontend variables emit public
+ownership metadata only. Values are trimmed and constrained to token characters;
+invalid tag/URL input fails the build without echoing its value. Neither is set by
+this change. The owner confirmed neither webmaster account is configured. Connected
+plugin discovery found reporting integrations, but no demonstrated initial
+property verification capability. Follow [SEARCH_SETUP.md](SEARCH_SETUP.md).
+
+Protocol references: [IndexNow documentation](https://www.indexnow.org/documentation),
+[IndexNow FAQ](https://www.indexnow.org/faq),
+[Google sitemap guidance](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap).
+
+Validation: `npm test` passed all 217 tests; `npm run lint` and `npm run build`
+passed. Run `/tmp/gumwheel-pickup-check-env/bin/python scripts/check-search-discovery.py`
+after the production build. The extended check passed at 320/390/844/1440px:
+six-page metadata/sitemap, private noindex, proof header, HTTP 404 recovery,
+Home actions, Help/About/guide navigation and both guide-to-role entry links.
+JavaScript-disabled Home/About navigation passed. Browser APIs were synthetic,
+server API traffic targeted a closed localhost port, and external requests were
+blocked: no live trips, mail or analytics writes. Whole Guide/About/404 screenshots
+were visually reviewed at 390/1440px for typography, emphasis, spacing and overflow;
+automated layout checks covered the other widths. Physical Safari remains untested.
+An initial browser launch occurred before the build finished and could not start;
+rerunning after build completion passed. The IndexNow dry run listed only six
+public URLs and submitted nothing. React review found no new client state,
+effects, dependencies or data-fetching waterfalls. Live deployment/submission
+results will be recorded after observation.
+Earlier dated evidence describes the then-current five-page sitemap.
+
 ## Public information refinement — 29 October 2026
 
 Baseline b2c2c78. Supersedes the earlier four-page sitemap: `/about` is the fifth
@@ -95,7 +144,7 @@ The two existing journey buttons, icons and shared hero typography remain.
 - Canonical origin is https://www.gumwheel.com, matching the observed redirect
   from gumwheel.com. Public metadata describes Sydney carpooling without making
   registration university-only or promising available drivers.
-- `/`, `/help`, `/about`, `/privacy` and `/terms` opt into indexing and have distinct titles,
+- `/`, `/help`, `/about`, `/carpooling/sydney`, `/privacy` and `/terms` opt into indexing and have distinct titles,
   descriptions, canonical URLs and Open Graph/Twitter summaries using the existing
   official square artwork. Root defaults to noindex/nofollow, inherited by
   Activity, private journey/detail, Profile and admin routes.
@@ -103,7 +152,7 @@ The two existing journey buttons, icons and shared hero typography remain.
   It has no canonical or social metadata containing the private match key.
   Search/post entry queries canonicalize to Home. This changes discovery metadata,
   not sharing permissions or app navigation.
-- `/sitemap.xml` contains exactly those five public information URLs, with no
+- `/sitemap.xml` contains exactly those six public information URLs, with no
   accounts, route endpoints, user posts, dynamic journey IDs or email match links.
   No fabricated last-modified dates, inventory, reviews or ratings are advertised.
 - `/robots.txt` allows crawling public pages, disallows `/api/`, and advertises

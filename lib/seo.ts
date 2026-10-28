@@ -5,7 +5,7 @@ export const SITE_URL = "https://www.gumwheel.com";
 export const SITE_TITLE = "Sydney Carpooling | GUMWHEEL";
 export const SITE_DESCRIPTION =
   "Find a ride, post a journey or request one. Share journeys in Sydney for free or an agreed contribution, directly in your browser.";
-export const PUBLIC_SEARCH_PATHS = ["/", "/help", "/about", "/privacy", "/terms"] as const;
+export const PUBLIC_SEARCH_PATHS = ["/", "/help", "/about", "/carpooling/sydney", "/privacy", "/terms"] as const;
 
 export function publicPageMetadata(
   path: (typeof PUBLIC_SEARCH_PATHS)[number],

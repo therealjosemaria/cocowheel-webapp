@@ -9,7 +9,7 @@ import { HELP_FAQS, ABOUT_SUMMARY } from "../lib/public-information";
 import { siteIdentity } from "../components/public-site-identity";
 
 test("search discovery lists only the public information pages on the canonical domain", () => {
-  assert.deepEqual(sitemap().map(item => item.url), ["/", "/help", "/about", "/privacy", "/terms"].map(path => new URL(path, SITE_URL).href));
+  assert.deepEqual(sitemap().map(item => item.url), ["/", "/help", "/about", "/carpooling/sydney", "/privacy", "/terms"].map(path => new URL(path, SITE_URL).href));
   assert.deepEqual(robots(), { rules: { userAgent: "*", allow: "/", disallow: "/api/" }, sitemap: `${SITE_URL}/sitemap.xml` });
 });
 

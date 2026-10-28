@@ -56,6 +56,7 @@ Use the website in a phone or desktop browser. No app download or university ema
 - [Home](${SITE_URL}/): Find a journey or post a journey.
 - [How it works](${SITE_URL}/help): Rider and driver steps and frequently asked questions.
 - [About](${SITE_URL}/about): The product, pilot and contact information.
+- [Sydney carpooling](${SITE_URL}/carpooling/sydney): Finding, requesting and sharing local journeys.
 - [Readable guide](${SITE_URL}/help.md): The same public Help content as Markdown.
 - [Privacy](${SITE_URL}/privacy): Account, journey and location data handling.
 - [Terms](${SITE_URL}/terms): Participation in the carpool pilot.

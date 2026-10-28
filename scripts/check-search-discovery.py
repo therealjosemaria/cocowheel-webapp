@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import urllib.request
+import urllib.error
 from html.parser import HTMLParser
 from playwright.sync_api import sync_playwright, expect
 
@@ -33,7 +34,7 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
             except Exception:
                 if preview.poll() is not None: raise RuntimeError('Preview failed; see /tmp/gumwheel-discovery-preview.log')
                 time.sleep(.2)
-        for path in ['/','/help','/about','/privacy','/terms']:
+        for path in ['/','/help','/about','/carpooling/sydney','/privacy','/terms']:
             status,html=fetch(path)
             head=Head();head.feed(html)
             assert status==200 and 'noindex' not in head.meta['robots'], (path,head.meta)
@@ -45,6 +46,12 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
             head=Head();head.feed(html)
             assert status==200 and 'noindex' in head.meta['robots'], (path,head.meta)
             assert not head.canonical, (path,head.canonical)
+        try:
+            fetch('/__gumwheel-missing-page')
+            raise AssertionError('Missing page must return HTTP 404')
+        except urllib.error.HTTPError as response:
+            assert response.code==404
+            assert 'Page not found' in response.read().decode()
         _,home_html=fetch('/')
         import re
         identity=re.search(r'<script type="application/ld\+json">(.*?)</script>',home_html).group(1)
@@ -62,8 +69,11 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
         assert any(item.get('type')=='text/markdown' and item.get('href')==PUBLIC+'/help.md' for item in help_head.alternates)
         status,sitemap=fetch('/sitemap.xml')
         assert status==200
-        assert sitemap.count('<loc>')==5
-        for path in ['/','/help','/about','/privacy','/terms']: assert f'<loc>{PUBLIC+path}</loc>' in sitemap
+        assert sitemap.count('<loc>')==6
+        for path in ['/','/help','/about','/carpooling/sydney','/privacy','/terms']: assert f'<loc>{PUBLIC+path}</loc>' in sitemap
+        with urllib.request.urlopen(BASE+'/indexnow-key.txt') as proof:
+            assert proof.status==200 and proof.headers.get('X-Robots-Tag')=='noindex, nofollow'
+            assert len(proof.read().decode().strip())==32
         status,robots=fetch('/robots.txt')
         assert status==200 and 'Allow: /' in robots and 'Disallow: /api/' in robots and f'Sitemap: {PUBLIC}/sitemap.xml' in robots
         print('PASS server metadata, private noindex, sitemap and robots',flush=True)
@@ -107,6 +117,18 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
                 expect(page.get_by_role('link',name='jose@gumwheel.com',exact=True)).to_have_attribute('href','mailto:jose@gumwheel.com')
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path=f'/tmp/gumwheel-about-discovery-{width}.png',full_page=True,animations='disabled')
+                page.get_by_role('link',name='Carpooling in Sydney',exact=True).click()
+                expect(page.get_by_role('heading',name='Carpooling in Sydney',exact=True)).to_be_visible()
+                expect(page.get_by_role('link',name='Find a journey',exact=True)).to_have_attribute('href','/?start=rider')
+                expect(page.get_by_role('link',name='Post a journey',exact=True)).to_have_attribute('href','/?start=driver')
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                page.screenshot(path=f'/tmp/gumwheel-sydney-guide-{width}.png',full_page=True,animations='disabled')
+                page.get_by_role('link',name='Find a journey',exact=True).click()
+                expect(page.get_by_role('heading',name='Find a journey',exact=True)).to_be_visible()
+                page.goto(BASE+'/carpooling/sydney')
+                page.get_by_role('link',name='Post a journey',exact=True).click()
+                expect(page.get_by_role('heading',name='Post a journey',exact=True)).to_be_visible()
+                page.goto(BASE+'/carpooling/sydney')
                 page.get_by_role('link',name='How it works',exact=True).last.click()
                 expect(page.get_by_role('heading',name='How it works',exact=True)).to_be_visible()
                 page.get_by_text('What if I can’t find a journey?',exact=True).click()
@@ -114,6 +136,13 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
                 expect(page.get_by_text('A university email is not required.',exact=False)).to_be_visible()
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path=f'/tmp/gumwheel-help-expanded-{width}.png',full_page=True,animations='disabled')
+                response=page.goto(BASE+'/__gumwheel-missing-page')
+                assert response.status==404
+                expect(page.get_by_role('heading',name='Page not found',exact=True)).to_be_visible()
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                page.screenshot(path=f'/tmp/gumwheel-missing-page-{width}.png',full_page=True,animations='disabled')
+                page.locator('.help-section').get_by_role('link',name='Home',exact=True).click()
+                expect(page.get_by_role('heading',name='Share your journey.',exact=True)).to_be_visible()
                 assert not errors, errors
                 print(f'PASS {width}: Home heading, layout and both journey actions',flush=True)
                 context.unroute_all(behavior='wait')
