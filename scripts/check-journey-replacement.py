@@ -46,7 +46,7 @@ with sync_playwright() as p:
         page.route('**/api/**', api)
         def capture(name):
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), name
-            page.screenshot(path=f'/tmp/journey-replacement-{name}-{width}.png', full_page=True)
+            page.screenshot(path=f'/tmp/journey-replacement-{name}-{width}.png', full_page=True, animations='disabled')
         page.goto(BASE+'/?start=driver')
         page.get_by_role('button',name='See journey requests',exact=True).click()
         page.get_by_role('button',name='SEARCH',exact=True).click()
@@ -78,8 +78,9 @@ with sync_playwright() as p:
         expect(page.get_by_text('Awaiting reply')).to_be_visible()
         expect(page.locator('.activity-card').first).to_have_attribute('id','offer-proposal-test')
         assert page.locator('.activity-card').count() == 4
-        action = page.get_by_role('button',name='WITHDRAW OFFER',exact=True)
-        expect(action).to_have_class('activity-request-end')
+        expect(page.get_by_role('button',name='WITHDRAW OFFER',exact=True)).to_have_count(0)
+        expect(page.locator('#offer-proposal-test .activity-open')).to_have_text('DETAILS')
+        assert page.get_by_text('Awaiting reply',exact=True).evaluate('(el) => getComputedStyle(el).color') == 'rgb(22, 101, 52)'
         assert writes[-1]['replacePostedRideId'] == 'source-test'
         assert writes[-1]['origin'] == origin and writes[-1]['destination'] == destination
         expect(page.get_by_role('link',name='View ride',exact=True)).to_have_count(0)
@@ -89,13 +90,28 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Decline',exact=True)).to_be_visible()
         capture('rider')
         page.goto(BASE+'/activity#offer-proposal-test')
+        page.locator('#offer-proposal-test .activity-open').click()
+        page.wait_for_url('**/activity/offers/proposal-test')
+        expect(page.get_by_role('link',name='Back',exact=True)).to_be_visible()
+        expect(page.locator('.activity-card')).to_have_count(1)
+        expect(page.get_by_role('button',name='WITHDRAW OFFER',exact=True)).to_have_class('activity-request-end')
+        expect(page.locator('.leaflet-container')).to_be_visible()
+        expect(page.locator('.leaflet-overlay-pane path').first).to_be_visible()
+        capture('offer-details')
+        page.reload()
         page.get_by_role('button',name='WITHDRAW OFFER',exact=True).click()
         withdrawal = page.get_by_role('dialog',name='Withdraw this offer?',exact=True)
         capture('withdraw')
         withdrawal.get_by_role('button',name='Withdraw offer',exact=True).click()
         expect(page.get_by_text('Withdrawn',exact=True)).to_be_visible()
         expect(page.get_by_role('button',name='WITHDRAW OFFER',exact=True)).to_have_count(0)
+        assert page.get_by_text('Withdrawn',exact=True).evaluate('(el) => getComputedStyle(el).color') != 'rgb(22, 101, 52)'
+        capture('offer-withdrawn')
+        page.goto(BASE+'/activity')
+        expect(page.get_by_text('Withdrawn',exact=True)).to_be_visible()
         assert page.locator('.activity-card').first.get_attribute('id') != 'offer-proposal-test'
+        page.goto(BASE+'/activity/offers/missing')
+        expect(page.get_by_text('This offer is not available.',exact=True)).to_be_visible()
         page.goto(BASE+'/activity/requests/'+request['id'])
         expect(page.get_by_role('button',name='Accept ride',exact=True)).to_have_count(0)
         expect(page.get_by_text('withdrawn',exact=True)).to_be_visible()

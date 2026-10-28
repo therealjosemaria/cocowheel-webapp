@@ -1,5 +1,14 @@
 # Coco Wheels product and UI standards
 
+28 October offer-detail refinement supersedes the direct summary withdrawal below:
+Journey offered summaries use the same View/DETAILS cell as other Activity cards.
+The dedicated detail view reuses Back, RequestRouteMap (driver route), fields and
+the existing WITHDRAW OFFER action/confirmation for pending offers only. Closed
+offers remain viewable. Active status text reuses --status-active (#166534 via
+--departure-scheduled); no badge, background, yellow state or typography changes.
+Ongoing statuses keep their pausable shadow pulse and reduced-motion support,
+but remain green throughout. Closed status styling stays neutral.
+
 Current decisions, 12 October 2026. Read this and [the visual-system token reference](DESIGN_TOKENS.md) before changing the UI. Keep these files updated when an agreed convention changes; do not treat older conversation notes as overriding newer decisions.
 
 ## Principles
@@ -14,7 +23,7 @@ order, 10px card gaps and action classes against neighbouring cards.
 
 28 October sent-offer follow-up: Journey offered reuses activity-card-fields,
 RideFieldLabel icons and RideStatusText for Status/Where from, Departure/Where to,
-Fare/Offer. Withdraw offer now uses the existing bordered Activity action and destructive
+Fare/View (formerly Fare/Offer). Withdraw offer now uses the existing bordered Activity action and destructive
 DemandPrompt confirmation. Sending navigates to that card and reuses the neutral
 request-arrived highlight once; polling never scrolls repeatedly. Blank paid
 fields show regular inline amount/PayID instructions, not generic errors.

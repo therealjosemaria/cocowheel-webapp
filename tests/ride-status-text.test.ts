@@ -27,3 +27,9 @@ test("only ongoing status labels pulse and offer a pause control", () => {
     assert.equal(html, `<span class="ride-status-finished">${label}</span>`);
   }
 });
+
+test("available posts and pending offers share active status text without animation", () => {
+  for (const label of ["Available", "Open", "Awaiting reply"]) {
+    assert.equal(renderToStaticMarkup(createElement(RideStatusText, { label })), `<span class="ride-status-active">${label}</span>`);
+  }
+});

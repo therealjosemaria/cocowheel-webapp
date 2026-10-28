@@ -1,5 +1,33 @@
 # Rider-posted requests and driver discovery
 
+## Offer details and active status text — 28 October
+
+Baseline 7a277f0. Sent-offer summaries now use View/DETAILS instead of direct
+withdrawal, opening `/activity/offers/[offerId]`. The existing request detail shell
+provides Back, the driver road route, summary fields and withdrawal confirmation.
+Pending offers alone expose withdrawal. Closed offers remain readable; missing or
+non-owned IDs show unavailable. The existing owner-filtered sent-offers API list
+is reused (including its 50-item limit per offer storage kind); no new public data endpoint, lifecycle or
+permission change. Activity sorting remains active first then creation time.
+
+Active status text uses existing #166534 via --status-active. Available, Open,
+Awaiting reply and ongoing rides share this green without a badge or new weight.
+Closed statuses remain neutral; ongoing pulse/pause/reduced-motion support stays.
+No API restart is required.
+
+Verification: 203 isolated tests, lint and production build pass. Reproduce with
+`npm test`, `npm run lint`, `npm run build`, then run
+`scripts/check-journey-replacement.py` with Playwright against localhost:3201.
+Mocked Chromium checks pass at 320/390/844/1440px: summary/details navigation,
+reload, single-offer isolation, driver route geometry, withdrawal, missing offers,
+active-first ordering and rider invitation controls. Green computed colour and
+closed neutral colour are asserted. Whole mobile/desktop Activity, offer details
+and rider details were visually reviewed for spacing, icons, type, colour and
+button wrapping; no horizontal overflow or browser errors. Initial screenshots
+captured map loading, so final captures wait for route geometry and disable
+transitions. External tiles/photos are blocked in this isolated fixture; live
+providers, physical-device Safari and production deployment remain unverified.
+
 ## Unified Activity ordering — 28 October
 
 Baseline 075c764. Fixed group rendering had placed all requested journeys ahead

@@ -10,7 +10,8 @@ export default function RideStatusText({ label }: { label: string }) {
     "Ride offered",
     "Ride in progress",
   ].includes(label);
-  if (!ongoing) return <span className="ride-status-finished">{label}</span>;
+  const active = ongoing || ["Available", "Open", "Awaiting reply"].includes(label);
+  if (!ongoing) return <span className={active ? "ride-status-active" : "ride-status-finished"}>{label}</span>;
   return (
     <button
       type="button"

@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Journey offered cards now open DETAILS at `/activity/offers/[offerId]`, reusing
+the requested-journey detail layout with Back, route map and fields. Pending offers
+can be withdrawn there; closed offers retain their details. Activity status text
+for Available, Open, Awaiting reply and ongoing rides uses the existing dark green
+#166534 without a badge. Closed statuses retain their neutral colour. This is a
+frontend change; existing owner-only API access and lifecycle rules are unchanged.
+
 Activity uses one list across journeys, rider posts and sent offers: active first,
 then creation time newest first within active/history. Withdraw offer reuses the
 same bordered action button as Withdraw request. The API supplies persisted

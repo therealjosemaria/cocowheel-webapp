@@ -37,6 +37,7 @@
   --muted: #64748b;
   --danger: #b42318;
   --departure-scheduled: #166534;
+  --status-active: var(--departure-scheduled);
   --departure-soon: #854d0e;
   --departure-delayed: #b42318;
 }
@@ -2145,7 +2146,7 @@ p {
   color: var(--muted);
 }
 .ride-status-text {
-  color: var(--ink);
+  color: var(--status-active);
   padding: 0;
   border: 0;
   background: transparent;
@@ -2155,11 +2156,12 @@ p {
   animation: status-gentle-pulse 3s ease-in-out infinite;
 }
 .ride-status-finished { color: var(--status-finished); }
+.ride-status-active { color: var(--status-active); }
 .ride-status-text.paused { animation: none; }
 .ride-status-text:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 3px; }
 @keyframes status-gentle-pulse {
-  0%, 100% { color: var(--ink); text-shadow: 0 0 0 transparent; }
-  50% { color: var(--status-pulse); text-shadow: 0 0 3px rgb(17 24 39 / 20%); }
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 3px rgb(17 24 39 / 20%); }
 }
 @media (prefers-reduced-motion: reduce) {
   .ride-status-text { animation: none; }

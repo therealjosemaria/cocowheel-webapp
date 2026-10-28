@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+28 October: --status-active aliases --departure-scheduled (#166534), the existing
+dark green (7.13:1 against white). Available, Open, Awaiting reply and ongoing ride
+statuses use this text colour only. Font size/weight and transparent background
+are unchanged. Existing ongoing shadow animation no longer changes text colour;
+pause/reduced-motion behaviour remains. Offer summaries use activity-open DETAILS;
+withdrawal uses activity-request-end inside the shared detail layout.
+
 Activity's unified list retains demand-activity's 10px gaps. WITHDRAW OFFER uses
 activity-request-end: the same border, danger colour, background, radius,
 caption typography, padding and focus treatment as WITHDRAW REQUEST. No new tokens.
@@ -120,7 +127,8 @@ Use 400 (`--weight-regular`) for body/status, 600 (`--weight-semibold`) for rest
 | Departure ≤10 minutes / departing now | `--departure-soon` #854d0e |
 | Departure delayed (≥60 seconds overdue) | `--departure-delayed` #b42318 |
 | Rider / driver routes | `--route-rider` blue / `--route-driver` dark orange |
-| Finished status / pulse midpoint | `--status-finished` #444444 / `--status-pulse` #666666 |
+| Finished status | `--status-finished` #444444 |
+| Active status | `--status-active` → `--departure-scheduled` #166534 |
 
 Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic indicators and translucent shadows are intentional contextual colours, not new brand palettes. Historical compatibility aliases `--ocean`, `--coral`, `--sun`, `--mint`, `--paper` are not permission to introduce extra brand colours. New exceptions need a documented semantic purpose and contrast checks.
 
