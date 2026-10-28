@@ -66,6 +66,14 @@ No horizontal overflow or browser exceptions in the passing runs. External maps
 and photos were blocked/mocked; live provider rendering, real-device Safari and
 an authenticated production pairing remain unverified. No live test mutations.
 
+Activation: API revision b0702b4 restarted on 28 October at 18:40 AEDT after
+two zero-accepted/active-trip checks and a private online SQLite backup verified
+with integrity/foreign-key checks. After restart, the additive proposal table
+exists (zero rows), 133 rides / 78 joins / 9 rider posts / 0 existing offers are
+preserved, integrity is ok and foreign-key errors are zero. Service is active;
+local and www.gumwheel.com/api/health return ok. Frontend deployment and an
+authenticated production pairing remain unverified; push is not deployment proof.
+
 ## Card selection follow-up — 27 October 2026
 
 Baseline 8fc96d8: the card body previously had no selection handler; only Show
