@@ -216,6 +216,7 @@ export type PublicRidePreview = {
   plannedRoute: { origin: Pin; destination: Pin };
 };
 export type RideView = {
+  createdAt: string;
   vehicle?: import("../lib/vehicle").Vehicle;
   conversations?: ConversationSummary[];
   driverRating?: RatingSummary;
@@ -2093,6 +2094,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     .all(row.id) as RequestRow[];
   return {
     vehicle: rideVehicle(db, row.id),
+    createdAt: row.created_at,
     rideId: row.public_id,
     isSample: Boolean(row.is_sample),
     driverLocation: ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(row.status)
@@ -2191,6 +2193,7 @@ function riderView(
       : undefined;
   return {
     vehicle: request.id === row.accepted_request_id && request.status === "ACCEPTED" ? rideVehicle(db, row.id) : undefined,
+    createdAt: row.created_at,
     rideId: row.public_id,
     status: row.status,
     driverAlias: publicName(db, row.driver_session_id, row.driver_alias),

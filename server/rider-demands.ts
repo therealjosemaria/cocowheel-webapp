@@ -40,6 +40,7 @@ type Row = {
   expires_at: string;
 };
 type OfferRow = {
+  created_at: string;
   id: string;
   demand_id: string;
   ride_id: string;
@@ -71,6 +72,7 @@ function proposalView(db: Db, row: ProposalRow, now: Date): DemandOffer {
   const input = JSON.parse(row.body) as CreateRideInput;
   return {
     id: row.id, demandId: row.demand_id, rideId: "", pendingReplacement: true,
+    createdAt: row.created_at,
     driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     departureAt: input.scheduledDepartureAt, priceAud: input.priceAud,
     origin: input.origin, destination: input.destination,
@@ -110,6 +112,7 @@ function offerView(db: Db, row: OfferRow, now: Date): DemandOffer {
     id: row.id,
     demandId: row.demand_id,
     rideId: row.public_id,
+    createdAt: row.created_at,
     driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     departureAt: row.scheduled_departure_at,
     priceAud: row.price_aud,

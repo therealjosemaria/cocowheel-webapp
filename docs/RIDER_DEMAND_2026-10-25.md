@@ -1,5 +1,36 @@
 # Rider-posted requests and driver discovery
 
+## Unified Activity ordering — 28 October
+
+Baseline 075c764. Fixed group rendering had placed all requested journeys ahead
+of sent offers regardless of state or creation time. Activity now merges existing
+ride cards, requested-journey cards and sent-offer cards in one DOM list. Current
+rides, OPEN posts and PENDING offers sort ahead of all historical items; each
+group sorts by creation time descending with stable ID ties. Rider join cards use
+their request creation time. Duplicate current/history ride keys favour current.
+An accepted invitation is historical; its paired ride supplies the active card.
+Existing detail screens, polling, authorization, withdrawal and history persist.
+
+RideView and DemandOffer now expose their stored createdAt timestamps. No schema
+change or inferred departure dates. Older/missing/invalid timestamps sort last
+within their active/history group. API restart required to supply these fields.
+Withdraw offer now uses the exact activity-request-end button class and uppercase
+label used by Withdraw request. This supersedes its previous text-button styling.
+
+Verification: 202 isolated tests, lint and production build pass. Sort regressions
+cover mixed kinds, newest-first grouping, withdrawal, deterministic missing dates
+and nonmutation; backend checks verify persisted creation timestamps. Initial
+build caught OfferRow's omitted created_at type; corrected and build passed.
+Reproduce with `npm test && npm run lint && npm run build` and the existing
+`scripts/check-journey-replacement.py` against localhost:3201. Mocked checks pass
+at 320/390/844/1440px with an older active driver journey, an open rider post,
+a newer pending offer and a still-newer declined offer. The pending offer comes
+first and moves below active cards on withdrawal; exact action class is asserted.
+Whole Activity screenshots reviewed on mobile/desktop for card gaps, button
+wrapping, fonts and icons; no overflow or browser exceptions. Live map/photo
+providers are blocked in the fixture. Real-device Safari and authenticated
+production walkthrough remain unverified.
+
 ## Sent-offer visibility, withdrawal and validation — 28 October follow-up
 
 Baseline 2a443f4. Read-only investigation found two proposals (one pending, one

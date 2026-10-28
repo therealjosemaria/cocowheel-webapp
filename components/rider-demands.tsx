@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { sortActivity, type ActivityOrder } from "@/lib/activity-order";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
@@ -565,6 +566,8 @@ function RequestedJourneyFields({ request, details = false }: { request: RiderDe
 }
 
 const ignoreActivity = () => {};
+export type ActivityEntry = ActivityOrder & { node: ReactNode };
+const noActivityEntries: ActivityEntry[] = [];
 export function RiderDemandDetails({ requestId }: { requestId: string }) {
   return <section className="activity-page"><div className="activity-panel">
     <div className="activity-panel-content demand-detail-content">
@@ -577,9 +580,11 @@ export function RiderDemandDetails({ requestId }: { requestId: string }) {
 export function RiderDemandActivity({
   onHasActivity,
   requestId,
+  additionalEntries = noActivityEntries,
 }: {
   onHasActivity: (value: boolean) => void;
   requestId?: string;
+  additionalEntries?: ActivityEntry[];
 }) {
   const [data, setData] = useState<DemandActivity | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -670,23 +675,9 @@ export function RiderDemandActivity({
     }
   }
   if (requestId && loading) return <div aria-busy="true" />;
-  if (!requestId && !data?.requests.length && !data?.sent.length && !error) return null;
   const requests = requestId ? data?.requests.filter(request => request.id === requestId) : data?.requests;
-  return (
-    <section id="ride-requests" className="demand-activity">
-      {error && (
-        <p role="alert">
-          {error}{" "}
-          <button
-            className="text-button"
-            onClick={() => setRevision((v) => v + 1)}
-          >
-            Try again
-          </button>
-        </p>
-      )}
-      {requestId && !error && !requests?.length && <p role="status">This journey request is not available.</p>}
-      {requests?.map((request) => (
+  const requestEntries: ActivityEntry[] = (requests ?? []).map(request => ({
+    id: `demand:${request.id}`, active: request.status === "OPEN", createdAt: request.createdAt, node: (
         <article
           className="activity-card"
           key={request.id}
@@ -757,8 +748,9 @@ export function RiderDemandActivity({
             </p>
           )}
         </article>
-      ))}
-      {!requestId && data?.sent.map((offer) => (
+      )}));
+  const offerEntries: ActivityEntry[] = requestId ? [] : (data?.sent ?? []).map(offer => ({
+    id: `offer:${offer.id}`, active: offer.status === "PENDING", createdAt: offer.createdAt, node: (
         <article className="activity-card" id={offerTarget(offer.id)} key={offer.id}>
           <span className="activity-role"><RideFieldIcon icon="driver" />Journey offered</span>
           <dl className="activity-card-fields">
@@ -768,14 +760,21 @@ export function RiderDemandActivity({
             <div><dt><RideFieldLabel icon="to">Where to?</RideFieldLabel></dt><dd>{location(offer.destination)}</dd></div>
             <div><dt><RideFieldLabel icon="price">Fare</RideFieldLabel></dt><dd>{fareLabel(offer.priceAud)}</dd></div>
             <div className="activity-card-action"><dt><RideFieldLabel icon="action">Offer</RideFieldLabel></dt><dd>
-              {offer.status === "PENDING" ? <button className="text-button" disabled={busy} onClick={() => setWithdrawOffer(offer.id)}>Withdraw offer</button> : <span>{offer.status === "ACCEPTED" ? "Confirmed" : "Closed"}</span>}
+              {offer.status === "PENDING" ? <button type="button" className="activity-request-end" disabled={busy} onClick={() => setWithdrawOffer(offer.id)}>WITHDRAW OFFER</button> : <span>{offer.status === "ACCEPTED" ? "Confirmed" : "Closed"}</span>}
             </dd></div>
           </dl>
           {!offer.pendingReplacement && <Link className="text-button" href={`/rides/${offer.rideId}`}>
             View ride
           </Link>}
         </article>
-      ))}
+      )}));
+  const entries = sortActivity([...additionalEntries, ...requestEntries, ...offerEntries]);
+  return (
+    <section id="ride-requests" className="demand-activity">
+      {error && <p role="alert">{error}{" "}<button className="text-button" onClick={() => setRevision(v => v + 1)}>Try again</button></p>}
+      {requestId && !error && !requests?.length && <p role="status">This journey request is not available.</p>}
+      {!requestId && !loading && !error && !entries.length && <p className="intro">Completed, cancelled, and expired rides will appear here.</p>}
+      {entries.map(entry => <Fragment key={entry.id}>{entry.node}</Fragment>)}
       {withdrawOffer && <DemandPrompt label="Withdraw this offer?" action="Withdraw offer" destructive busy={busy} close={() => setWithdrawOffer(null)} confirm={() => void act(`/api/rider-demands/offers/${withdrawOffer}/withdraw`, {})}>
         <p className="save-route-profile-note">Your posted journey will stay available.</p>
       </DemandPrompt>}

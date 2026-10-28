@@ -27,6 +27,7 @@ export type RiderDemand = DemandRoute & {
   createdAt: string;
 };
 export type DemandOffer = {
+  createdAt?: string;
   id: string;
   demandId: string;
   rideId: string;

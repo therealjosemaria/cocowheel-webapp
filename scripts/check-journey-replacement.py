@@ -7,9 +7,10 @@ now = datetime.now(timezone.utc)
 origin = dict(latitude=-33.91, longitude=151.18, label='Example origin')
 destination = dict(latitude=-33.86, longitude=151.21, label='Example destination')
 request = dict(id='replacement-test', alias='rider001', origin=origin, destination=destination,
-               date='any', time='', status='OPEN', createdAt=now.isoformat(),
+               date='any', time='', status='OPEN', createdAt=(now-timedelta(hours=1)).isoformat(),
                expiresAt=(now+timedelta(hours=48)).isoformat(), offeredContributionAud=0)
 offer = dict(id='proposal-test', demandId=request['id'], rideId='', pendingReplacement=True,
+             createdAt=now.isoformat(),
              driverAlias='driver01', origin=origin, destination=destination, priceAud=0,
              departureAt=(now+timedelta(hours=1)).isoformat(), status='PENDING')
 
@@ -25,13 +26,13 @@ with sync_playwright() as p:
         def api(r):
             path = r.request.url.split('/api/')[-1].split('?')[0]
             if path == 'university/session': data = {'unikey':'driver01'}
-            elif path == 'current': data = {'current':None, 'currents':([] if writes and writes[-1].get('replacePostedRideId') else [{'role':'DRIVER','ride':{'rideId':'source-test','status':'PUBLISHED', 'driverAlias':'driver01', 'priceAud':0, 'scheduledDepartureAt':offer['departureAt'], 'plannedRoute':{'origin':origin,'destination':destination}, 'requests':[]}}]), 'pendingDemandOffers':0}
+            elif path == 'current': data = {'current':None, 'currents':[{'role':'DRIVER','ride':{'rideId':'source-test','status':'PUBLISHED', 'createdAt':(now-timedelta(hours=2)).isoformat(), 'driverAlias':'driver01', 'priceAud':0, 'scheduledDepartureAt':offer['departureAt'], 'plannedRoute':{'origin':origin,'destination':destination}, 'requests':[]}}], 'pendingDemandOffers':0}
             elif path == 'history': data = {'driver':[], 'rider':[]}
             elif path == 'rider-demands/search': data = {'requests':[request]}
             elif path == 'route-preview': data = {'points':[origin,destination], 'durationSeconds':600}
             elif path == 'rider-demands':
                 visible_offer = dict(offer, status='WITHDRAWN' if withdrawn else 'PENDING')
-                data = {'requests':[dict(request,offers=[visible_offer])], 'sent':[visible_offer]}
+                data = {'requests':[dict(request,offers=[visible_offer])], 'sent':[dict(offer,id='closed-newer',status='DECLINED',createdAt=(now+timedelta(hours=1)).isoformat()),visible_offer]}
             elif path.endswith('/withdraw'):
                 withdrawn.append(path)
                 data = {'ok':True}
@@ -75,6 +76,10 @@ with sync_playwright() as p:
         confirmation.get_by_role('button',name='Offer a ride',exact=True).click()
         page.wait_for_url('**/activity#offer-proposal-test')
         expect(page.get_by_text('Awaiting reply')).to_be_visible()
+        expect(page.locator('.activity-card').first).to_have_attribute('id','offer-proposal-test')
+        assert page.locator('.activity-card').count() == 4
+        action = page.get_by_role('button',name='WITHDRAW OFFER',exact=True)
+        expect(action).to_have_class('activity-request-end')
         assert writes[-1]['replacePostedRideId'] == 'source-test'
         assert writes[-1]['origin'] == origin and writes[-1]['destination'] == destination
         expect(page.get_by_role('link',name='View ride',exact=True)).to_have_count(0)
@@ -84,12 +89,13 @@ with sync_playwright() as p:
         expect(page.get_by_role('button',name='Decline',exact=True)).to_be_visible()
         capture('rider')
         page.goto(BASE+'/activity#offer-proposal-test')
-        page.get_by_role('button',name='Withdraw offer',exact=True).click()
+        page.get_by_role('button',name='WITHDRAW OFFER',exact=True).click()
         withdrawal = page.get_by_role('dialog',name='Withdraw this offer?',exact=True)
         capture('withdraw')
         withdrawal.get_by_role('button',name='Withdraw offer',exact=True).click()
         expect(page.get_by_text('Withdrawn',exact=True)).to_be_visible()
-        expect(page.get_by_role('button',name='Withdraw offer',exact=True)).to_have_count(0)
+        expect(page.get_by_role('button',name='WITHDRAW OFFER',exact=True)).to_have_count(0)
+        assert page.locator('.activity-card').first.get_attribute('id') != 'offer-proposal-test'
         page.goto(BASE+'/activity/requests/'+request['id'])
         expect(page.get_by_role('button',name='Accept ride',exact=True)).to_have_count(0)
         expect(page.get_by_text('withdrawn',exact=True)).to_be_visible()

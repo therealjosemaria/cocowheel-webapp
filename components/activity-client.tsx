@@ -1,6 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
-import { RiderDemandActivity } from "./rider-demands";
+import { RiderDemandActivity, type ActivityEntry } from "./rider-demands";
 import { fareLabel } from "@/lib/fare";
 import RideStatusText from "./ride-status-text";
 
@@ -21,6 +21,7 @@ import { rideJourneyKey } from "@/lib/journey-updates";
 
 type History = { driver: Ride[]; rider: Ride[] };
 type ActivityItem = { ride: Ride; role: "DRIVER" | "RIDER" };
+const ignorePostedActivity = () => {};
 
 const locationText = (location?: {
   latitude: number;
@@ -38,7 +39,6 @@ export default function ActivityClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
-  const [hasPostedActivity, setHasPostedActivity] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,24 +96,19 @@ export default function ActivityClient() {
     return [
       ...history.driver.map((ride) => ({ ride, role: "DRIVER" as const })),
       ...history.rider.map((ride) => ({ ride, role: "RIDER" as const })),
-    ].sort(
-      (a, b) =>
-        new Date(
-          b.ride.request?.decidedAt ??
-            b.ride.completedAt ??
-            b.ride.cancelledAt ??
-            b.ride.expiredAt ??
-            0,
-        ).getTime() -
-        new Date(
-          a.ride.request?.decidedAt ??
-            a.ride.completedAt ??
-            a.ride.cancelledAt ??
-            a.ride.expiredAt ??
-            0,
-        ).getTime(),
-    );
+    ];
   }, [history]);
+
+  const entries = new Map<string, ActivityEntry>();
+  for (const [items, active] of [[activity, false], [current, true]] as const) {
+    for (const item of items) {
+      const id = `${item.role}:${item.ride.rideId}:${item.ride.request?.requestId ?? "driver"}`;
+      entries.set(id, { id, active,
+        createdAt: item.role === "RIDER" ? item.ride.request?.createdAt ?? item.ride.createdAt : item.ride.createdAt,
+        node: <ActivityCard {...item} refresh={() => setRevision(value => value + 1)} />,
+      });
+    }
+  }
 
   if (loading) {
     return <section className="activity-page" aria-busy="true" />;
@@ -151,36 +146,7 @@ export default function ActivityClient() {
               previously loaded activity.
             </p>
           ) : null}
-          {current.length ? (
-            <section className="activity-current">
-              {current.map((item) => (
-                <ActivityCard
-                  key={`${item.role}-${item.ride.rideId}-${item.ride.request?.requestId ?? "driver"}`}
-                  {...item}
-                  refresh={() => setRevision((current) => current + 1)}
-                />
-              ))}
-            </section>
-          ) : null}
-          <RiderDemandActivity onHasActivity={setHasPostedActivity} />
-          {activity.length === 0 ? (
-            current.length || hasPostedActivity ? null : (
-              <p className="intro">
-                Completed, cancelled, and expired rides will appear here.
-              </p>
-            )
-          ) : (
-            <div className="activity-list">
-              {activity.map(({ ride, role }) => (
-                <ActivityCard
-                  key={`${role}-${ride.rideId}-${ride.request?.requestId ?? "driver"}`}
-                  ride={ride}
-                  role={role}
-                  refresh={() => setRevision((current) => current + 1)}
-                />
-              ))}
-            </div>
-          )}
+          <RiderDemandActivity onHasActivity={ignorePostedActivity} additionalEntries={[...entries.values()]} />
         </div>
       </div>
     </section>

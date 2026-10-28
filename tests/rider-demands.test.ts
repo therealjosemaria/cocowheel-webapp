@@ -86,6 +86,8 @@ test("posted driver can propose a distinct journey, then replace atomically at a
     const body = { ...offerBody, replacePostedRideId: source.rideId };
     const offered = offerDemand(db, driver.token, requested.id, body, now);
     assert.equal(offered.pendingReplacement, true);
+    assert.equal(offered.createdAt, now.toISOString());
+    assert.equal(source.createdAt, now.toISOString());
     assert.equal(offered.rideId, "");
     assert.deepEqual(offered.origin, origin);
     assert.equal(offerDemand(db, driver.token, requested.id, body, now).id, offered.id);

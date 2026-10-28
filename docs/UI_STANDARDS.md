@@ -4,9 +4,17 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+28 October Activity ordering supersedes separate current/post/offer/history blocks:
+merge all cards, active first, newest creation first within each group. Pending
+offers and open requests are active; accepted offers are historical invitations
+whose paired ride has its own active card. Use activity-request-end for WITHDRAW
+OFFER exactly as WITHDRAW REQUEST; never substitute a text-button for an existing
+Activity action. On every Activity change verify mixed item ordering, keyboard
+order, 10px card gaps and action classes against neighbouring cards.
+
 28 October sent-offer follow-up: Journey offered reuses activity-card-fields,
 RideFieldLabel icons and RideStatusText for Status/Where from, Departure/Where to,
-Fare/Offer. Withdraw offer uses the existing text action and destructive
+Fare/Offer. Withdraw offer now uses the existing bordered Activity action and destructive
 DemandPrompt confirmation. Sending navigates to that card and reuses the neutral
 request-arrived highlight once; polling never scrolls repeatedly. Blank paid
 fields show regular inline amount/PayID instructions, not generic errors.

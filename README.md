@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+Activity uses one list across journeys, rider posts and sent offers: active first,
+then creation time newest first within active/history. Withdraw offer reuses the
+same bordered action button as Withdraw request. The API supplies persisted
+creation timestamps; no departure-time or last-update sorting.
+
 Sent driver offers appear in Activity as Journey offered cards with status,
 endpoints, departure and fare. Sending opens the exact card; pending offers can
 be withdrawn with confirmation without closing the driver's public journey.

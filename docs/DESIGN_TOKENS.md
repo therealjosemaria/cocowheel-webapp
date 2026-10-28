@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+Activity's unified list retains demand-activity's 10px gaps. WITHDRAW OFFER uses
+activity-request-end: the same border, danger colour, background, radius,
+caption typography, padding and focus treatment as WITHDRAW REQUEST. No new tokens.
+
 Request discovery selection shares `.ride-option.selected` styling: ink border,
 subtle surface and 3px inset marker. Identity headers reuse 14px/bold, 12px inset,
 24px participant photos and the existing 6px photo/name gap, with a 44px minimum
