@@ -31,6 +31,11 @@ wrapping, fonts and icons; no overflow or browser exceptions. Live map/photo
 providers are blocked in the fixture. Real-device Safari and authenticated
 production walkthrough remain unverified.
 
+API 9eb23c2 activated 28 October at 19:17 AEDT after two zero-underway checks
+and a verified private online backup. Counts preserved: 133 rides, 78 joins,
+9 posts, 2 proposals, 0 withdrawals; integrity ok, no foreign-key errors.
+Local/public-proxy health ok. Frontend deployment remains unverified.
+
 ## Sent-offer visibility, withdrawal and validation — 28 October follow-up
 
 Baseline 2a443f4. Read-only investigation found two proposals (one pending, one
