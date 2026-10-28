@@ -253,7 +253,7 @@ function RideView({ ride }: { ride: Ride }) {
               ? "Declined"
               : ride.request?.status === "DISCARDED"
                 ? "Unavailable"
-                : participantStatusLabel(ride.status, ride.request?.status)}
+                : participantStatusLabel(ride.status, ride.request?.status, ride.cancellationReason)}
         </span>
       </div>
       <div className="ride-summary">

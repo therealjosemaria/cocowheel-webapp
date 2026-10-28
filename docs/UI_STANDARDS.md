@@ -4,6 +4,14 @@ Current decisions, 12 October 2026. Read this and [the visual-system token refer
 
 ## Principles
 
+28 October: responding to a posted rider need reviews that rider's endpoints,
+not discovery filters. A driver with an existing public post confirms through
+the shared sentence-only DemandPrompt: If accepted, this will replace your posted
+journey. Reuse Offer a ride / Go back and existing route summary. Pending direct
+proposals in Activity show their own endpoints, not a View ride link to the old
+public route. Replaced uses the shared status formatter; discarded riders still
+see Unavailable. No new colours, typography or modal layout.
+
 27 October request-selection follow-up: tapping a discovery card's identity or
 summary selects its route, using Find's existing selected border, pale surface
 and inset marker. A native identity button supports keyboard selection and

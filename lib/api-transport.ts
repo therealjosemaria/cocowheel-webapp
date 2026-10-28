@@ -29,6 +29,7 @@ export function apiErrorMessage(
       INVALID_REQUEST_TIME: "Choose a valid future date and time, or Any date and Any time.",
       INVALID_DEMAND: "Choose both addresses before continuing.",
       OPEN_ITEM_EXISTS: "You already have an open ride or request. Manage it in Activity first.",
+      POSTED_JOURNEY_REPLACEMENT_REQUIRED: "Review replacing your posted journey if this offer is accepted.",
     };
     if (messages[error.code]) return messages[error.code];
   }

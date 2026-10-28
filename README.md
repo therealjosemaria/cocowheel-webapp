@@ -1,5 +1,13 @@
 # GUMWHEEL
 
+Drivers with an unpaired public journey can also offer to fulfil a rider's
+requested journey. Explicit confirmation explains that acceptance replaces the
+existing post. Until then only a private pending proposal is stored; the public
+journey remains available. Acceptance atomically closes it as Replaced and creates
+the distinct agreed journey with the normal pairing/pickup lifecycle. Accepting a
+different rider first invalidates the proposal. See the rider-request guide for
+expiry, rollback, privacy and activation checks.
+
 Journey-request cards are selectable by tapping their name or summary, matching
 Find's selected outline/inset marker. Selection loads that request's road route;
 Show/Hide route remains available and Offer a ride stays independent. Identity

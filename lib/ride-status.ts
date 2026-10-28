@@ -17,10 +17,12 @@ export function rideStatusLabel(status: RideStatus): string {
 export function participantStatusLabel(
   status: RideStatus,
   request?: RequestStatus,
+  cancellationReason?: string | null,
 ): string {
   if (request === "DECLINED") return "Declined";
   if (request === "DISCARDED") return "Unavailable";
   if (request === "CANCELLED" && status !== "CANCELLED") return "Withdrawn";
+  if (status === "CANCELLED" && cancellationReason === "JOURNEY_REPLACED") return "Replaced";
   if (["CANCELLED", "EXPIRED", "COMPLETED"].includes(status))
     return rideStatusLabel(status);
   if (request === "PENDING") return "Request pending";

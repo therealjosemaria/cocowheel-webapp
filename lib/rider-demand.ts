@@ -30,6 +30,7 @@ export type DemandOffer = {
   id: string;
   demandId: string;
   rideId: string;
+  pendingReplacement?: boolean;
   driverAlias: string;
   departureAt: string;
   priceAud: number;

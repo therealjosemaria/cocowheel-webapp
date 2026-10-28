@@ -1,5 +1,71 @@
 # Rider-posted requests and driver discovery
 
+## Public driver journey + direct proposal — 28 October 2026
+
+Baseline e7b1ed3. A driver with a PUBLISHED/REQUESTED journey may send direct
+offers without immediately replacing it. POST /rider-demands/:id/offer requires
+replacePostedRideId matching their exact current public ID; absent/stale consent
+returns 409 POSTED_JOURNEY_REPLACEMENT_REQUIRED. The UI retrieves current state
+and asks If accepted, this will replace your posted journey, with Offer a ride /
+Go back. Confirmed IDs survive the plate prompt. Other active roles/confirmed
+journeys still reject. Ordinary posting remains limited to one open journey.
+
+Additive rider_demand_proposals stores request/source IDs, validated offer input,
+status and creation time; no second public ride or alert email is created at
+proposal time. Multiple proposals can reference one source; a repeated pending
+offer to the same rider returns the existing offer rather than duplicates.
+Public responses whitelist route, fare, alias, time and status, never PayID.
+pendingReplacement with an empty rideId tells Activity to show endpoints rather
+than link to the wrong journey. Existing nonreplacement offers retain their flow.
+
+All new direct offers use the requested rider's canonical endpoints, ignoring
+search-filter endpoints; a driver can deliberately deviate. Schedule must still
+fit the request window and be future, fare/PayID and plate validation remain.
+Discovery's proximity filters are unchanged. No off-route acceptance gate.
+
+The pending proposal becomes unavailable at its intended departure, request
+expiry/withdrawal/fulfilment, or when its source journey is accepted/cancelled/
+expired/replaced. Source closure does not later revive a proposal. Decline leaves
+the source untouched; another offer may be sent. Pending counts use these same
+conditions. There is no new polling or email type.
+
+Acceptance authorizes the rider, rechecks availability inside the existing SQLite
+transaction, closes the source as CANCELLED/JOURNEY_REPLACED (display Replaced),
+discards its pending joins, and creates a distinct ride from persisted driver
+consent. It then uses the existing rider acceptance, plate snapshot, pickup code
+and messaging path. The new ride is immediately paired, so no matching email is
+queued for it. Proposal metadata is retained as ACCEPTED; its ID moves into the
+normal offer response path for idempotent retry. Any failure rolls back source
+closure, discarded requests, new ride and pairing. Competing proposals become
+unavailable because their source is closed; public acceptance first also wins.
+History is never deleted. This supersedes the old one-open-item rejection for
+this specific proposal path, not general multi-ride participation.
+
+Requires a backed-up API restart for the additive table and code. Frontend push
+alone is not activation. Approval is conditional on no accepted/active trips.
+
+Verification on 28 October (e7b1ed3 plus this change): `npm test` passes 196
+isolated tests; `npm run lint` and `npm run build` pass. Tests cover both
+acceptance orders, competing proposals, private payment data, retries, decline,
+expiry, authorization and injected pairing failure with complete rollback.
+This is synchronous transaction regression evidence, not multi-process load testing.
+The initial suite failed an obsolete client-origin requirement; direct offers now
+use the saved rider endpoints, and that assertion was updated. The first build
+caught a missing cancellationReason field in PreviewRide; its type and adapter
+were fixed and the build passed.
+
+With `npm run start -- --hostname 127.0.0.1 --port 3201`, run
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-journey-replacement.py`
+and `scripts/check-rider-contributions.py` using the same Python environment.
+Both mocked browser suites pass at 320/390/844/1440px. The first new harness
+had an incomplete current-ride fixture; the second used an exact text locator
+for a sentence containing a departure. Both fixture/locator issues were fixed.
+Mobile/desktop whole-screen screenshots reviewed for confirmation spacing,
+left alignment, button sizing, driver sent summary and rider acceptance controls.
+No horizontal overflow or browser exceptions in the passing runs. External maps
+and photos were blocked/mocked; live provider rendering, real-device Safari and
+an authenticated production pairing remain unverified. No live test mutations.
+
 ## Card selection follow-up — 27 October 2026
 
 Baseline 8fc96d8: the card body previously had no selection handler; only Show

@@ -199,6 +199,7 @@ function ActivityCard({
   const participantStatus = participantStatusLabel(
     ride.status,
     role === "RIDER" ? ride.request?.status : undefined,
+    ride.cancellationReason,
   );
   const status = participantStatus === "Ride offered" ? "Available" : participantStatus;
   const statusClass = [

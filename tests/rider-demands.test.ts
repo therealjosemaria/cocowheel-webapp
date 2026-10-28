@@ -73,6 +73,108 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+
+test("posted driver can propose a distinct journey, then replace atomically at acceptance", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const source = publishRide(db, driver.token, { ...offerBody, origin: { latitude: -34.4, longitude: 150.9 }, destination: { latitude: -34.2, longitude: 150.8 } }, now).ride;
+    const waiting = requestRide(db, other.token, source.rideId, { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt }, now);
+    const requested = postDemand(db, rider.token, route, now);
+    assert.throws(() => offerDemand(db, driver.token, requested.id, offerBody, now), /POSTED_JOURNEY_REPLACEMENT_REQUIRED/);
+    assert.throws(() => offerDemand(db, driver.token, requested.id, { ...offerBody, replacePostedRideId: "wrong" }, now), /POSTED_JOURNEY_REPLACEMENT_REQUIRED/);
+    const body = { ...offerBody, replacePostedRideId: source.rideId };
+    const offered = offerDemand(db, driver.token, requested.id, body, now);
+    assert.equal(offered.pendingReplacement, true);
+    assert.equal(offered.rideId, "");
+    assert.deepEqual(offered.origin, origin);
+    assert.equal(offerDemand(db, driver.token, requested.id, body, now).id, offered.id);
+    assert.equal(pendingDemandOffers(db, rider.token, now), 1);
+    assert.equal((db.prepare("SELECT count(*) n FROM rides").get() as { n: number }).n, 1);
+    assert.equal(getRide(db, source.rideId, driver.session, now).status, "REQUESTED");
+    assert.throws(() => respondToDemandOffer(db, other.token, offered.id, "ACCEPT", now), /RIDE_ACCESS_DENIED/);
+    const paired = respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now)!;
+    assert.notEqual(paired.rideId, source.rideId);
+    assert.equal(paired.status, "ACCEPTED");
+    assert.equal(paired.request?.status, "ACCEPTED");
+    assert.equal(getRide(db, source.rideId, driver.session, now).cancellationReason, "JOURNEY_REPLACED");
+    assert.equal(getRide(db, source.rideId, other.session, now).request?.status, "DISCARDED");
+    assert.ok(waiting.ride.request);
+    assert.equal(respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now)!.rideId, paired.rideId);
+    assert.equal(demandActivity(db, driver.token, now).sent.filter(item => item.id === offered.id).length, 1);
+    assert.equal(pendingDemandOffers(db, rider.token, now), 0);
+    assert.equal((db.prepare("SELECT count(*) n FROM rides WHERE status='ACCEPTED'").get() as { n: number }).n, 1);
+  } finally { db.close(); }
+});
+
+test("public acceptance wins over pending proposals, even after that journey closes", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const source = publishRide(db, driver.token, offerBody, now).ride;
+    const requested = postDemand(db, rider.token, route, now);
+    const offered = offerDemand(db, driver.token, requested.id, { ...offerBody, replacePostedRideId: source.rideId }, now);
+    const joined = requestRide(db, other.token, source.rideId, { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt }, now);
+    decideRequest(db, driver.token, source.rideId, joined.ride.request!.requestId, "ACCEPT", now);
+    assert.equal(pendingDemandOffers(db, rider.token, now), 0);
+    assert.equal(demandActivity(db, rider.token, now).requests[0].offers[0].status, "UNAVAILABLE");
+    assert.throws(() => respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+    cancelRide(db, driver.token, source.rideId, now);
+    assert.throws(() => respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+  } finally { db.close(); }
+});
+
+test("declining or expiring a proposal leaves the public journey unchanged", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    const source = publishRide(db, driver.token, offerBody, now).ride;
+    const requested = postDemand(db, rider.token, route, now);
+    const body = { ...offerBody, replacePostedRideId: source.rideId };
+    const offered = offerDemand(db, driver.token, requested.id, body, now);
+    respondToDemandOffer(db, rider.token, offered.id, "DECLINE", now);
+    assert.equal(getRide(db, source.rideId, driver.session, now).status, "PUBLISHED");
+    const next = offerDemand(db, driver.token, requested.id, body, now);
+    assert.notEqual(next.id, offered.id);
+    const later = new Date("2026-10-25T01:01:00Z");
+    assert.throws(() => respondToDemandOffer(db, rider.token, next.id, "ACCEPT", later), /DEMAND_UNAVAILABLE/);
+    assert.equal(getRide(db, source.rideId, driver.session, later).status, "PUBLISHED");
+  } finally { db.close(); }
+});
+
+test("one proposal wins, paid details stay private, and the losing proposal cannot replace the winner", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const source = publishRide(db, driver.token, offerBody, now).ride;
+    const first = postDemand(db, rider.token, route, now);
+    const second = postDemand(db, other.token, route, now);
+    const body = { ...offerBody, replacePostedRideId: source.rideId, priceAud: 5, payId: "driver@example.com", payIdType: "EMAIL" };
+    const a = offerDemand(db, driver.token, first.id, body, now);
+    const b = offerDemand(db, driver.token, second.id, body, now);
+    assert.equal(JSON.stringify(demandActivity(db, rider.token, now)).includes("driver@example.com"), false);
+    assert.equal(a.priceAud, 5);
+    const paired = respondToDemandOffer(db, rider.token, a.id, "ACCEPT", now)!;
+    assert.equal(paired.priceAud, 5);
+    assert.throws(() => respondToDemandOffer(db, other.token, b.id, "ACCEPT", now), /DEMAND_UNAVAILABLE/);
+    assert.equal(demandActivity(db, other.token, now).requests[0].offers[0].status, "UNAVAILABLE");
+    assert.equal((db.prepare("SELECT count(*) n FROM rides WHERE status='ACCEPTED'").get() as { n: number }).n, 1);
+  } finally { db.close(); }
+});
+
+test("failed replacement acceptance rolls back the old journey and all pending request changes", () => {
+  const { db, rider, driver, other } = fixture();
+  try {
+    const source = publishRide(db, driver.token, offerBody, now).ride;
+    requestRide(db, other.token, source.rideId, { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt }, now);
+    const requested = postDemand(db, rider.token, route, now);
+    const offered = offerDemand(db, driver.token, requested.id, { ...offerBody, replacePostedRideId: source.rideId }, now);
+    db.exec("CREATE TRIGGER fail_pair BEFORE UPDATE OF status ON rides WHEN NEW.status='ACCEPTED' BEGIN SELECT RAISE(ABORT, 'injected failure'); END");
+    assert.throws(() => respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now), /injected failure/);
+    assert.equal(getRide(db, source.rideId, driver.session, now).status, "REQUESTED");
+    assert.equal(getRide(db, source.rideId, other.session, now).request?.status, "PENDING");
+    assert.equal((db.prepare("SELECT count(*) n FROM rides").get() as { n: number }).n, 1);
+    assert.equal(demandActivity(db, rider.token, now).requests[0].offers[0].status, "PENDING");
+    db.exec("DROP TRIGGER fail_pair");
+    assert.equal(respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now)!.status, "ACCEPTED");
+  } finally { db.close(); }
+});
 test("rider contributions validate, survive discovery/replacement/history, and do not set the driver's fare", () => {
   const { db, rider, driver } = fixture();
   try {
@@ -168,7 +270,8 @@ test("discovery accepts optional endpoints without weakening publication or acce
       assert.throws(() => searchDemands(db, driver.token, { ...any, origin: invalid }, now), /INVALID_DEMAND/);
     }
     assert.throws(() => postDemand(db, driver.token, any, now), /INVALID_DEMAND/);
-    assert.throws(() => offerDemand(db, driver.token, near.id, { ...offerBody, origin: undefined }, now), /INVALID_DEMAND/);
+    // A direct response takes its endpoints from the requested journey, not client filters.
+    assert.deepEqual(offerDemand(db, driver.token, near.id, { ...offerBody, origin: undefined }, now).origin, origin);
     cancelDemand(db, other.token, distant.id, now);
     assert.equal(searchDemands(db, driver.token, any, now).length, 1);
     assert.equal(searchDemands(db, driver.token, any, new Date(+now + 48 * 3600000)).length, 0);

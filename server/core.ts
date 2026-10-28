@@ -1011,6 +1011,17 @@ export function publishRide(
   now = new Date(),
 ) {
   expireStaleRides(db, now);
+  validateRideInput(input, now);
+  const existing = findSession(db, rawSessionToken, now);
+  const created = existing ? null : createGuestSession(db, now);
+  const session = existing ?? created!.session;
+  return {
+    sessionToken: created?.token ?? null,
+    ride: publishRideForDriver(db, session, input, now),
+  };
+}
+
+export function validateRideInput(input: CreateRideInput, now = new Date()) {
   validPin(input.origin, "ORIGIN");
   validPin(input.destination, "DESTINATION");
   const departure = validDate(input.scheduledDepartureAt);
@@ -1030,9 +1041,12 @@ export function publishRide(
     throw new Error("INVALID_PAYID_TYPE");
   if (payId && payIdType && payIdInputError(input.payId ?? payId, payIdType))
     throw new Error("INVALID_PAYID");
-  const existing = findSession(db, rawSessionToken, now);
-  const created = existing ? null : createGuestSession(db, now);
-  const session = existing ?? created!.session;
+  return { departure, payId, payIdType };
+}
+
+/** Internal service entry: caller must authorize the persisted driver consent. */
+export function publishRideForDriver(db: Db, session: Session, input: CreateRideInput, now = new Date(), notify = true) {
+  const { departure, payId, payIdType } = validateRideInput(input, now);
   if (hasOpenDriverRide(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
   if (hasOpenRiderRequest(db, session.id))
     throw new Error("ROLE_CHANGE_REQUIRES_TERMINATION");
@@ -1074,12 +1088,21 @@ export function publishRide(
       timestamp,
     );
     event(db, rideId, "RIDE_PUBLISHED", "DRIVER", now);
-    queueRouteAlerts(db, rideId, session.id, input.origin, input.destination, departure.toISOString(), now);
+    if (notify) queueRouteAlerts(db, rideId, session.id, input.origin, input.destination, departure.toISOString(), now);
   })();
-  return {
-    sessionToken: created?.token ?? null,
-    ride: getRide(db, publicIdValue, session, now),
-  };
+  return getRide(db, publicIdValue, session, now);
+}
+
+/** Only used inside the offer-acceptance transaction, before creating its replacement. */
+export function replacePostedJourney(db: Db, session: Session, rideId: string, now: Date) {
+  const ride = rideRow(db, rideId);
+  if (!ride) throw new Error("DEMAND_UNAVAILABLE");
+  requireDriver(ride, session);
+  if (!["PUBLISHED", "REQUESTED"].includes(ride.status)) throw new Error("DEMAND_UNAVAILABLE");
+  db.prepare("UPDATE rides SET status='CANCELLED', cancellation_reason='JOURNEY_REPLACED', cancelled_at=?, last_activity_at=? WHERE id=?").run(iso(now), iso(now), ride.id);
+  db.prepare("UPDATE ride_requests SET status='DISCARDED', decided_at=? WHERE ride_id=? AND status='PENDING'").run(iso(now), ride.id);
+  db.prepare("DELETE FROM live_locations WHERE ride_id=?").run(ride.id);
+  event(db, ride.id, "JOURNEY_REPLACED", "DRIVER", now);
 }
 
 export function searchRides(

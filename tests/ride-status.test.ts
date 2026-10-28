@@ -26,6 +26,8 @@ test("acceptance awaits pickup until the pickup code is verified", () => {
 });
 
 test("ride and individual request outcomes stay distinct", () => {
+  assert.equal(participantStatusLabel("CANCELLED", undefined, "JOURNEY_REPLACED"), "Replaced");
+  assert.equal(participantStatusLabel("CANCELLED", "DISCARDED", "JOURNEY_REPLACED"), "Unavailable");
   assert.equal(participantStatusLabel("COMPLETED", "ACCEPTED"), "Completed");
   assert.equal(participantStatusLabel("EXPIRED", "PENDING"), "Expired");
   assert.equal(participantStatusLabel("CANCELLED", "CANCELLED"), "Cancelled");

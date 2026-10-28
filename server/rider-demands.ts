@@ -17,7 +17,11 @@ import {
   findSession,
   getRide,
   publishRide,
+  publishRideForDriver,
+  replacePostedJourney,
+  validateRideInput,
   requestRide,
+  type CreateRideInput,
   type Db,
 } from "./core";
 import { requireUniversitySession } from "./university-auth";
@@ -56,6 +60,26 @@ type OfferRow = {
 const offerSql = `SELECT o.*, r.public_id, r.driver_session_id, r.driver_alias, r.scheduled_departure_at, r.price_aud, r.status AS ride_status,
  r.origin_latitude, r.origin_longitude, r.origin_label, r.destination_latitude, r.destination_longitude, r.destination_label
  FROM rider_demand_offers o JOIN rides r ON r.id=o.ride_id`;
+type ProposalRow = {
+  id: string; demand_id: string; source_ride_id: string; body: string;
+  status: "PENDING" | "DECLINED" | "ACCEPTED"; created_at: string;
+  public_id: string; driver_session_id: string; driver_alias: string; ride_status: string;
+};
+const proposalSql = `SELECT p.*, r.public_id, r.driver_session_id, r.driver_alias, r.status AS ride_status
+ FROM rider_demand_proposals p JOIN rides r ON r.id=p.source_ride_id`;
+function proposalView(db: Db, row: ProposalRow, now: Date): DemandOffer {
+  const input = JSON.parse(row.body) as CreateRideInput;
+  return {
+    id: row.id, demandId: row.demand_id, rideId: "", pendingReplacement: true,
+    driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
+    departureAt: input.scheduledDepartureAt, priceAud: input.priceAud,
+    origin: input.origin, destination: input.destination,
+    status: row.status === "PENDING" &&
+      (!["PUBLISHED", "REQUESTED"].includes(row.ride_status) ||
+        Date.parse(input.scheduledDepartureAt) <= +now || demand(db, row.demand_id).status !== "OPEN")
+      ? "UNAVAILABLE" : row.status,
+  };
+}
 function refresh(db: Db, now: Date) {
   expireStaleRides(db, now);
   db.prepare(
@@ -167,11 +191,12 @@ export function demandActivity(
       .all(owner.id) as Row[]
   ).map((row) => ({
     ...view(db, row),
-    offers: (
+    offers: [ ...(
       db
         .prepare(offerSql + " WHERE o.demand_id=? ORDER BY o.created_at DESC")
         .all(row.id) as OfferRow[]
     ).map((o) => offerView(db, o, now)),
+    ...(db.prepare(proposalSql + " WHERE p.demand_id=? AND p.status!='ACCEPTED' ORDER BY p.created_at DESC").all(row.id) as ProposalRow[]).map(p => proposalView(db, p, now)) ],
   }));
   const sent = (
     db
@@ -181,7 +206,8 @@ export function demandActivity(
       )
       .all(owner.id) as OfferRow[]
   ).map((row) => offerView(db, row, now));
-  return { requests, sent };
+  const proposals = (db.prepare(proposalSql + " WHERE r.driver_session_id=? AND p.status!='ACCEPTED' ORDER BY p.created_at DESC LIMIT 50").all(owner.id) as ProposalRow[]).map(p => proposalView(db, p, now));
+  return { requests, sent: [...proposals, ...sent] };
 }
 export function activeDemand(db: Db, token: string | null, now = new Date()): RiderDemand | null {
   const owner = findSession(db, token, now);
@@ -197,7 +223,8 @@ export function pendingDemandOffers(
 ) {
   const owner = findSession(db, token, now);
   if (!owner) return 0;
-  return (
+  const proposals = (db.prepare(proposalSql + " JOIN rider_demands d ON d.id=p.demand_id WHERE d.owner_id=? AND p.status='PENDING' AND d.expires_at>?").all(owner.id, now.toISOString()) as ProposalRow[]).filter(p => proposalView(db, p, now).status === "PENDING").length;
+  return proposals + (
     db
       .prepare(
         `SELECT count(*) AS n FROM rider_demand_offers o
@@ -282,8 +309,9 @@ export function offerDemand(
     if (row.owner_id === owner.id) throw new Error("OWN_RIDE_JOIN_NOT_ALLOWED");
     if (row.status !== "OPEN" || busyOwner(db, row.owner_id))
       throw new Error("DEMAND_UNAVAILABLE");
-    const route = checkedDemandRoute({ ...body, date: "any", time: "" }, now);
     const posted = view(db, row);
+    // A direct response fulfils the rider's endpoints, not the driver's search filters.
+    const route = checkedDemandRoute({ ...posted, date: "any", time: "" }, now);
     const at =
       typeof body.scheduledDepartureAt === "string"
         ? Date.parse(body.scheduledDepartureAt)
@@ -296,8 +324,6 @@ export function offerDemand(
       )
     )
       throw new Error("REQUEST_TIME_INCOMPATIBLE");
-    if (!corridorMatches(route.origin, route.destination, posted))
-      throw new Error("DEMAND_ROUTE_INCOMPATIBLE");
     const previous = db
       .prepare(
         offerSql +
@@ -305,6 +331,21 @@ export function offerDemand(
       )
       .get(id, owner.id) as OfferRow | undefined;
     if (previous) return offerView(db, previous, now);
+    const pending = (db.prepare(proposalSql + " WHERE p.demand_id=? AND r.driver_session_id=? AND p.status='PENDING'").all(id, owner.id) as ProposalRow[]).find(p => proposalView(db, p, now).status === "PENDING");
+    if (pending) return proposalView(db, pending, now);
+    const input: CreateRideInput = {
+      origin: route.origin, destination: route.destination,
+      scheduledDepartureAt: body.scheduledDepartureAt as string,
+      priceAud: body.priceAud as number,
+      payId: body.payId as string | undefined,
+      payIdType: body.payIdType as "MOBILE" | "EMAIL" | "OTHER" | undefined,
+    };
+    validateRideInput(input, now);
+    const current = currentOpenRides(db, token, now);
+    const source = current.find(item => item.role === "DRIVER");
+    if (current.some(item => item.role !== "DRIVER" || !["PUBLISHED", "REQUESTED"].includes(item.ride.status))) throw new Error("OPEN_ITEM_EXISTS");
+    if (source && body.replacePostedRideId !== source.ride.rideId) throw new Error("POSTED_JOURNEY_REPLACEMENT_REQUIRED");
+    if (!source && body.replacePostedRideId !== undefined) throw new Error("DEMAND_UNAVAILABLE");
     let vehicle = readVehicle(db, owner.id);
     if (body.plate !== undefined)
       vehicle = saveVehicle(db, owner.id, {
@@ -312,6 +353,12 @@ export function offerDemand(
         plate: body.plate,
       });
     if (!vehicle?.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
+    if (source) {
+      const internal = db.prepare("SELECT id FROM rides WHERE public_id=?").get(source.ride.rideId) as { id: string };
+      const offerId = randomUUID();
+      db.prepare("INSERT INTO rider_demand_proposals VALUES (?,?,?,?,'PENDING',?)").run(offerId, id, internal.id, JSON.stringify(input), now.toISOString());
+      return proposalView(db, db.prepare(proposalSql + " WHERE p.id=?").get(offerId) as ProposalRow, now);
+    }
     const { ride } = publishRide(
       db,
       token,
@@ -352,6 +399,25 @@ export function respondToDemandOffer(
     throw new Error("INVALID_DECISION");
   return db.transaction(() => {
     refresh(db, now);
+    const proposal = db.prepare(proposalSql + " WHERE p.id=? AND p.status!='ACCEPTED'").get(id) as ProposalRow | undefined;
+    if (proposal) {
+      const posted = demand(db, proposal.demand_id);
+      if (posted.owner_id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+      if (proposalView(db, proposal, now).status !== "PENDING") throw new Error("DEMAND_UNAVAILABLE");
+      if (decision === "DECLINE") {
+        db.prepare("UPDATE rider_demand_proposals SET status='DECLINED' WHERE id=?").run(id);
+        return null;
+      }
+      // Persisted proposal is the driver's consent. Everything below rolls back
+      // together, including the previous public journey and its pending requests.
+      const actor = { id: proposal.driver_session_id, alias: proposal.driver_alias };
+      replacePostedJourney(db, actor, proposal.public_id, now);
+      const ride = publishRideForDriver(db, actor, JSON.parse(proposal.body), now, false);
+      const internal = db.prepare("SELECT id FROM rides WHERE public_id=?").get(ride.rideId) as { id: string };
+      db.prepare("INSERT INTO rider_demand_offers VALUES (?,?,?,'PENDING',?)").run(id, proposal.demand_id, internal.id, proposal.created_at);
+      db.prepare("UPDATE rider_demand_proposals SET status='ACCEPTED' WHERE id=?").run(id);
+      // Continue through the existing checked pairing, plate and pickup-code path.
+    }
     const offer = db.prepare(offerSql + " WHERE o.id=?").get(id) as
       OfferRow | undefined;
     if (!offer) throw new Error("DEMAND_NOT_FOUND");

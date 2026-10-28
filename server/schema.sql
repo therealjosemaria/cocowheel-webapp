@@ -112,6 +112,17 @@ CREATE TABLE IF NOT EXISTS rider_demand_offers (
 );
 CREATE INDEX IF NOT EXISTS rider_demand_offers_request ON rider_demand_offers(demand_id);
 
+-- A driver's existing public journey remains available until a direct proposal wins.
+CREATE TABLE IF NOT EXISTS rider_demand_proposals (
+  id TEXT PRIMARY KEY,
+  demand_id TEXT NOT NULL REFERENCES rider_demands(id),
+  source_ride_id TEXT NOT NULL REFERENCES rides(id),
+  body TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('PENDING','DECLINED','ACCEPTED')),
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS rider_demand_proposals_request ON rider_demand_proposals(demand_id);
+
 -- External map-provider responses are reusable but temporary. These tables are
 -- intentionally independent from a guest's ride history and clean themselves
 -- after seven days.

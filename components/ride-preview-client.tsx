@@ -49,6 +49,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  cancellationReason?: Ride["cancellationReason"];
   driverRating?: Ride["driverRating"];
   isSample?: boolean;
   driverLocation?: Ride["driverLocation"];
@@ -84,6 +85,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
       : undefined;
   const visibleRoute = ride.plannedRoute ?? participantRoute;
   return {
+    cancellationReason: ride.cancellationReason,
     rideId: ride.rideId,
     isSample: ride.isSample,
     driverLocation: ["ACCEPTED", "RIDE_ACTIVE", "CO_RIDE_ACTIVE"].includes(ride.status)
@@ -895,6 +897,7 @@ export default function RidePreviewClient({
                       label={participantStatusLabel(
                         ride.status,
                         driverOwned ? undefined : activityRequest?.status,
+                        ride.cancellationReason,
                       )}
                     />
                   </dd>

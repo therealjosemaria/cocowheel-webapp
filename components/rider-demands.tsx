@@ -345,7 +345,7 @@ export function FindRiders({
           {offer && (
             <DemandOfferForm
               request={offer}
-              route={{ ...searched, origin: searched.origin ?? offer.origin, destination: searched.destination ?? offer.destination }}
+              route={offer}
               close={() => setOffer(null)}
             />
           )}
@@ -409,9 +409,11 @@ function DemandOfferForm({
   const [busy, setBusy] = useState(false);
   const [platePrompt, setPlatePrompt] = useState(false);
   const [liftSwitch, setLiftSwitch] = useState<{ id: string; plate?: string } | null>(null);
+  const [replacement, setReplacement] = useState<{ id: string; plate?: string } | null>(null);
+  const confirmedReplacement = useRef<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  useDialogFocus(ref, close, busy, !platePrompt && !liftSwitch);
-  async function send(plate?: string, withdrawLiftRequestId?: string) {
+  useDialogFocus(ref, close, busy, !platePrompt && !liftSwitch && !replacement);
+  async function send(plate?: string, withdrawLiftRequestId?: string, replacePostedRideId = confirmedReplacement.current) {
     const at = sydneyInstant(schedule.date, schedule.time);
     if (!at || Date.parse(at) <= Date.now()) {
       setPlatePrompt(false);
@@ -436,12 +438,21 @@ function DemandOfferForm({
         scheduledDepartureAt: at,
         priceAud: contribution ? Number(fare) : 0,
         withdrawLiftRequestId,
+        replacePostedRideId,
         ...(contribution ? { payId, payIdType: type } : {}),
         ...(plate ? { plate } : {}),
       });
       window.location.assign("/activity#ride-requests");
     } catch (reason) {
-      if (reason instanceof ApiError && reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED") {
+      if (reason instanceof ApiError && reason.code === "POSTED_JOURNEY_REPLACEMENT_REQUIRED") {
+        setPlatePrompt(false);
+        try {
+          const data = await cocowheelsApi<{ currents: Array<{ role: string; ride: Ride }> }>("/api/current");
+          const current = data.currents.find(item => item.role === "DRIVER" && ["PUBLISHED", "REQUESTED"].includes(item.ride.status));
+          if (!current) throw new Error("DEMAND_UNAVAILABLE");
+          setReplacement({ id: current.ride.rideId, plate });
+        } catch (error) { setError(apiErrorMessage(error)); }
+      } else if (reason instanceof ApiError && reason.code === "OWN_RIDE_JOIN_NOT_ALLOWED") {
         setPlatePrompt(false);
         setError(SELF_OFFER_MESSAGE);
       } else if (reason instanceof ApiError && reason.code === "LIFT_REQUEST_WITHDRAWAL_REQUIRED") {
@@ -451,7 +462,7 @@ function DemandOfferForm({
         reason instanceof ApiError &&
         reason.code === "VEHICLE_PLATE_REQUIRED"
       )
-        setPlatePrompt(true);
+        { setReplacement(null); setPlatePrompt(true); }
       else if (plate) throw reason;
       else setError(apiErrorMessage(reason));
     } finally {
@@ -460,7 +471,7 @@ function DemandOfferForm({
   }
   return createPortal(
     <>
-      {!platePrompt && (
+      {!platePrompt && !replacement && (
         <div className="cancel-prompt-backdrop">
           <section
             ref={ref}
@@ -521,6 +532,12 @@ function DemandOfferForm({
         />
       )}
       {liftSwitch && <LiftRequestSwitchPrompt busy={busy} close={() => setLiftSwitch(null)} confirm={() => { const pending = liftSwitch; setLiftSwitch(null); void send(pending.plate, pending.id).catch(reason => setError(apiErrorMessage(reason))); }} />}
+      {replacement && <DemandPrompt label="If accepted, this will replace your posted journey." action="Offer a ride" busy={busy} close={() => setReplacement(null)} confirm={() => {
+        const pending = replacement;
+        confirmedReplacement.current = pending.id;
+        setReplacement(null);
+        void send(pending.plate, undefined, pending.id).catch(reason => setError(apiErrorMessage(reason)));
+      }}><DemandRouteSummary route={request} showSchedule={false} /></DemandPrompt>}
     </>,
     document.body,
   );
@@ -727,9 +744,9 @@ export function RiderDemandActivity({
               ? "Awaiting reply"
               : offer.status.toLowerCase()}
           </p>
-          <Link className="text-button" href={`/rides/${offer.rideId}`}>
+          {offer.pendingReplacement ? <DemandRouteSummary route={{ origin: offer.origin, destination: offer.destination, date: "any", time: "" }} showSchedule={false} /> : <Link className="text-button" href={`/rides/${offer.rideId}`}>
             View ride
-          </Link>
+          </Link>}
         </article>
       ))}
       {cancel && (
