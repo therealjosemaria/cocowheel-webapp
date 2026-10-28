@@ -36,7 +36,8 @@ No Cloudflare/provider settings or credentials were changed.
 
 ## Remaining owner/deployment checks
 
-- Confirm the production deployment and all public metadata/robots/sitemap URLs.
+- Home, Help, sitemap and robots production responses were verified below;
+  inspect remaining pages through Search Console as part of ownership setup.
 - Verify ownership in Google Search Console, inspect Home and Help with URL
   Inspection, and submit the sitemap. No Search Console connection or ownership
   verification was available in this task; no submission is claimed.
@@ -68,3 +69,15 @@ expected a trailing slash on Home; Next normalizes that canonical to the bare
 origin, so the harness now compares equivalent root URLs. Application code did
 not need a correction. Physical-device Safari and search-provider rendering are
 unverified; source inspection/local testing is not a production deployment claim.
+
+## Production observation
+
+29 October 2026 at 09:49 AEDT: the public frontend served “Share your journey.”,
+Home's Sydney Carpooling title/canonical and Help's distinct title/canonical.
+`/sitemap.xml` returned 200 with four public URLs, and `/robots.txt` returned 200
+including the new sitemap directive. Upstream comments did not suppress the
+app-generated crawler rules. The first post-push check still served the previous
+version; one follow-up after deployment returned the new output. These are passive
+public HTTP checks of 0d5f6ad's behaviour, not Googlebot access or an indexing/ranking
+verification. Search Console/Bing submission and private production browser
+walkthroughs remain unverified. No API restart or live trip mutations.
