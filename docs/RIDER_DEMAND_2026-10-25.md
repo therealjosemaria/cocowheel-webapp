@@ -39,6 +39,12 @@ spacing, buttons and modal errors; no overflow or browser exceptions. Real-devic
 Safari and authenticated production accounts remain untested. Public assets and
 aggregate DB counts were inspected read-only; no live offers were altered.
 
+API bf1f952 activated 28 October at 19:01 AEDT after a verified private online
+backup and two zero-underway checks. All 133 rides / 78 joins / 9 posts / 0
+ordinary offers / 2 proposals retained; new withdrawal table empty. Integrity ok,
+zero foreign-key errors, service active and local/public-proxy health ok.
+Frontend deployment remains separate and unverified.
+
 ## Public driver journey + direct proposal — 28 October 2026
 
 Baseline e7b1ed3. A driver with a PUBLISHED/REQUESTED journey may send direct
