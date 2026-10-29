@@ -1,5 +1,28 @@
 # Search engine owner setup
 
+## Latest owner progress — 29 October
+
+The owner confirmed the corrected homepage live test passed and Google accepted
+the indexing request. This is not confirmation that the homepage is indexed.
+The sitemap’s successful processing has not yet been confirmed.
+
+For Bing, the owner is using manual XML verification for `https://gumwheel.com/`
+and supplied BingSiteAuth.xml. Its exact bytes are copied to
+`public/BingSiteAuth.xml`, served at `/BingSiteAuth.xml` by the frontend. This is
+intentionally public ownership proof, not a sign-in/API credential. Keep it after
+verification; do not change its contents or add it to the six-page sitemap or
+IndexNow allowlist. No API, DNS, email or login configuration changed, and no API
+restart is needed. Once the live file is verified, the owner must click Verify
+in Bing, then check Sitemaps for `https://www.gumwheel.com/sitemap.xml` and submit
+it once if missing. File deployment does not prove Bing has verified ownership.
+
+Validate the XML structure and byte equality with the supplied file, run
+`npm run build`, then check the live root and canonical-www file responses for
+final HTTP 200 and exact content. Local XML structure and byte equality checks
+passed; `npm run build` passed; the isolated production preview returned HTTP 200,
+application/xml and the exact supplied bytes. No UI changed, so there is no new
+mobile/desktop layout to review. Live deployment is pending at this point.
+
 Updated 29 October, after the initial setup below: the owner completed Google
 ownership verification through Cloudflare. A public Google verification TXT
 record is present. The sitemap was submitted but reports Couldn’t fetch; a Google
