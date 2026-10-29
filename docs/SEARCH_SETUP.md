@@ -21,7 +21,15 @@ Validate the XML structure and byte equality with the supplied file, run
 final HTTP 200 and exact content. Local XML structure and byte equality checks
 passed; `npm run build` passed; the isolated production preview returned HTTP 200,
 application/xml and the exact supplied bytes. No UI changed, so there is no new
-mobile/desktop layout to review. Live deployment is pending at this point.
+mobile/desktop layout to review.
+
+29 October, 13:09 AEDT: Vercel production deployment
+`dpl_7FUqwoLwSL9yH1jcj8Ft4QRtPqD8` for e13b0f1 was READY. Both public domain
+file checks returned final HTTP 200, application/xml and bytes identical to the
+supplied file. The apex redirects to the canonical www URL; no redirect settings
+were changed. See `results/bing-verification-file-2026-10-29.json`. Bing dashboard
+verification still requires the owner’s Verify click and confirmation; no claim
+of successful Bing ownership or indexing is made from these HTTP checks.
 
 Updated 29 October, after the initial setup below: the owner completed Google
 ownership verification through Cloudflare. A public Google verification TXT

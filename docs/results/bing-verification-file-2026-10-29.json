@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-29T02:09:06.121356+00:00",
+  "revision": "e13b0f1",
+  "deployment": "dpl_7FUqwoLwSL9yH1jcj8Ft4QRtPqD8",
+  "checks": [
+    {
+      "url": "https://gumwheel.com/BingSiteAuth.xml",
+      "finalUrl": "https://www.gumwheel.com/BingSiteAuth.xml",
+      "status": 200,
+      "contentType": "application/xml",
+      "exactBytes": true
+    },
+    {
+      "url": "https://www.gumwheel.com/BingSiteAuth.xml",
+      "finalUrl": "https://www.gumwheel.com/BingSiteAuth.xml",
+      "status": 200,
+      "contentType": "application/xml",
+      "exactBytes": true
+    }
+  ],
+  "bingDashboardVerified": false
+}
