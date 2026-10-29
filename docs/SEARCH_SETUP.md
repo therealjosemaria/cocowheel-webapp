@@ -1,5 +1,12 @@
 # Search engine owner setup
 
+Updated 29 October, after the initial setup below: the owner completed Google
+ownership verification through Cloudflare. A public Google verification TXT
+record is present. The sitemap was submitted but reports Couldn’t fetch; a Google
+live sitemap fetch succeeded. Home’s subsequent live test reports soft 404. See
+[the remediation](SEARCH_DISCOVERY.md#homepage-soft-404--29-october-2026). Bing setup
+is unconfirmed. The earlier neither-configured statement is historical.
+
 29 October 2026: the owner confirmed neither Search Console nor Bing Webmaster
 Tools is configured. Code support is implemented; account ownership and indexing
 are not verified. No credentials or provider tokens were added by this change.
@@ -51,7 +58,7 @@ verified live. One IndexNow batch returned 202 (ownership validation pending).
 See `results/indexnow-2026-10-29.json`. No repeat submission is scheduled.
 
 Record actual property verification and sitemap dashboard results here only after
-observing them. Currently both account setup steps remain with the owner. Live
+observing them. Google ownership is now owner-confirmed; Bing setup and Google processing still need dashboard checks. Live
 public frontend and IndexNow observations belong in SEARCH_DISCOVERY.md and dated
 sanitized files under `docs/results/`.
 

@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-29",
+  "sourceBaseline": "0cff610",
+  "builtBaseline": "1083dd3",
+  "isolation": "Production Next preview, synthetic browser APIs, closed localhost server API target, external browser requests blocked; no live trips/mail writes",
+  "command": "npm run build && /tmp/gumwheel-pickup-check-env/bin/python scripts/check-home-entry.py",
+  "baseline": {
+    "status": "FAIL",
+    "case": "signed-out, width 390, session 401/current 500",
+    "expectedRideErrorCount": 0,
+    "actualRideErrorCount": 1
+  },
+  "remediation": "Home checks email session before loading personal current rides; failed identity never becomes a ride-refresh error",
+  "retest": [
+    {
+      "case": "signed-out",
+      "width": 390,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 1
+      }
+    },
+    {
+      "case": "identity-failure",
+      "width": 390,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 1
+      }
+    },
+    {
+      "case": "signed-in-journey",
+      "width": 390,
+      "status": "PASS",
+      "requests": {
+        "session": 3,
+        "current": 4
+      }
+    },
+    {
+      "case": "signed-in-rider",
+      "width": 390,
+      "status": "PASS",
+      "requests": {
+        "session": 3,
+        "current": 4
+      }
+    },
+    {
+      "case": "signed-in-ride-failure",
+      "width": 390,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 3
+      }
+    },
+    {
+      "case": "signed-out",
+      "width": 1440,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 1
+      }
+    },
+    {
+      "case": "identity-failure",
+      "width": 1440,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 1
+      }
+    },
+    {
+      "case": "signed-in-journey",
+      "width": 1440,
+      "status": "PASS",
+      "requests": {
+        "session": 3,
+        "current": 4
+      }
+    },
+    {
+      "case": "signed-in-rider",
+      "width": 1440,
+      "status": "PASS",
+      "requests": {
+        "session": 3,
+        "current": 4
+      }
+    },
+    {
+      "case": "signed-in-ride-failure",
+      "width": 1440,
+      "status": "PASS",
+      "requests": {
+        "session": 2,
+        "current": 3
+      }
+    }
+  ],
+  "otherChecks": {
+    "unitTests": 217,
+    "lint": "PASS",
+    "build": "PASS",
+    "discoveryWidths": [
+      320,
+      390,
+      844,
+      1440
+    ],
+    "noJavaScriptHomeAbout": "PASS"
+  },
+  "boundaries": [
+    "Search Console soft-404 reclassification not tested",
+    "Physical Safari not tested",
+    "Production authenticated journeys not exercised"
+  ]
+}

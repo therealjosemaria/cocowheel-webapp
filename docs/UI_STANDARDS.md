@@ -1,5 +1,7 @@
 # Coco Wheels product and UI standards
 
+29 October Home session recovery: no layout or copy additions. Do not label a failed account lookup as a failed ride restore for an anonymous visitor. Established-account ride errors and the shared connectivity notice retain their existing styles.
+
 29 October discovery extension: the Sydney carpooling guide and missing-page recovery reuse Activity/Help shells, headings, regular body copy and existing help-email links. About links to the guide. No new Home controls, palette, icons or emphasis. Missing URLs keep HTTP 404 and offer Home/How it works.
 
 29 October public information refinement: About reuses Activity/Help page shells,

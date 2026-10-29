@@ -1,10 +1,18 @@
 # GUMWHEEL
 
+Home restores personal journeys only after its email-session check succeeds. A
+signed-out or failed identity lookup leaves the public landing page usable without
+a misleading ride-refresh error; authenticated ride-load errors and shared server
+reachability notices remain. Google reported a homepage soft 404 on 29 October;
+this rendering fix still requires a fresh Search Console live test after deployment.
+See [search diagnostics](docs/SEARCH_DISCOVERY.md#homepage-soft-404--29-october-2026).
+
 Public discovery also includes `/carpooling/sydney`, a factual guide linked from
 About and the text guides. A manual IndexNow tool defaults to a local dry run and
 submits only the six public information URLs after deployed-page/ownership checks.
-Optional public Google/Bing verification metadata is supported; neither webmaster
-account is set up yet. See [owner setup](docs/SEARCH_SETUP.md). Broken inbound
+Optional public Google/Bing verification metadata is supported; Google ownership
+is now verified according to the owner, while Bing setup remains unconfirmed.
+See [owner setup](docs/SEARCH_SETUP.md). Broken inbound
 links now receive a shared-style recovery page with HTTP 404.
 
 Public discovery now includes a concise About page, shared Help answers covering

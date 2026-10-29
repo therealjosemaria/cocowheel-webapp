@@ -296,6 +296,15 @@ export default function HomeClient({
   );
 
   async function refreshCurrent() {
+    // A public visitor has no ride to restore. Establish account identity before
+    // loading private activity, as navigation does; a failed identity lookup must
+    // not turn the public landing page into a misleading ride-error page.
+    try {
+      await cocowheelsApi("/api/university/session");
+    } catch {
+      setHomeCurrent([]);
+      return;
+    }
     try {
       const result = await cocowheelsApi<{
         current: { role: Role; ride: Ride } | null;

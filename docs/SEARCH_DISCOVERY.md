@@ -1,5 +1,55 @@
 # Public search discovery — 29 October 2026
 
+## Homepage soft 404 — 29 October 2026
+
+Source baseline 0cff610 (pre-fix production build 1083dd3 has identical Home code).
+The owner's 12:37 AEDT Search Console live inspection fetched Home successfully,
+with crawl/index allowed and its canonical present, but classified it soft 404.
+The supplied rendered HTML contains the ride-refresh error above the hero. This
+supersedes treating the homepage problem as waiting for indexing; the separate
+sitemap fetch report still needs its own processing verification.
+
+Home previously fetched `/api/current` on mount before establishing identity. Its
+non-authentication failure path renders a ride-refresh error even for a visitor
+with no ride. An isolated signed-out session 401 / current 500 fixture reproduced
+that exact message against the pre-fix build. Home now first checks
+`/api/university/session`, matching navigation. Any failed identity check clears
+its current-summary state and stops that Home request chain; it does not invent a
+personal ride error. Successful identity checks continue to fetch current rides;
+authenticated current-load errors remain visible. Shared transport reachability
+notices remain, so an actual server outage is still reported. Existing navigation
+refreshes/sign-out synchronization and active-ride polling are unchanged. This
+is UI/session-read ordering, not a change to server authorization, sessions, GPS,
+retention or API responses. There is one additional session GET on Home mount;
+it uses the existing bounded 15-second transport with no new retries or timers.
+No crawler user-agent special cases, hidden SEO copy or new Home text were added.
+
+Passive unauthenticated live reads during diagnosis returned 401 from both
+session (`UNIVERSITY_VERIFICATION_REQUIRED`) and current (`GUEST_SESSION_REQUIRED`).
+Those expected responses do not reproduce the original Google failure; the
+injected failure establishes the erroneous UI path, not its production cause.
+Google's exact reason is not exposed, so clearing the rendered error is a targeted
+remediation, not proof that Google has withdrawn the soft-404 classification.
+[Google's soft-404 troubleshooting](https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors)
+identifies prominent rendered errors and missing resources as possible causes.
+
+Reproduce with `npm run build`, then
+`/tmp/gumwheel-pickup-check-env/bin/python scripts/check-home-entry.py`.
+The script uses only synthetic API replies and a closed localhost server API
+target; external calls are blocked. It covers signed-out identity, failed identity,
+signed-in driver/rider restored journey/sign-out clearing, and signed-in
+current-read failure
+at 390/1440px. The pre-fix run failed because the unwanted error appeared once;
+retain that baseline in `results/home-entry-2026-10-29.json`. All ten cases passed
+after the fix; 217 unit tests, lint and production build
+passed. The existing discovery suite also passed at 320/390/844/1440px, including
+private noindex and JavaScript-disabled navigation. Whole Home screenshots at
+390/1440px were visually reviewed for signed-out, driver/rider summaries and
+signed-in failure states: existing typography, icon emphasis, CTA spacing and
+error styling retained, no overflow. No API restart is required. Production
+activation and Google's new live-test classification remain unverified until
+separately recorded.
+
 ## Further discovery work (source baseline 2c32b48)
 
 Added one substantive Sydney carpooling guide at `/carpooling/sydney`, linked from
