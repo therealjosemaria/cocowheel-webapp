@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-29T01:46:43.423404+00:00",
+  "revision": "20f9d41",
+  "source": "Deployed public HTML and JS, synthetic failing browser APIs, external/analytics traffic blocked",
+  "checks": [
+    {
+      "width": 390,
+      "pageStatus": 200,
+      "syntheticApiRequests": {
+        "session": 2,
+        "current": 1
+      },
+      "misleadingRideError": false,
+      "consoleErrors": []
+    },
+    {
+      "width": 1440,
+      "pageStatus": 200,
+      "syntheticApiRequests": {
+        "session": 2,
+        "current": 1
+      },
+      "misleadingRideError": false,
+      "consoleErrors": []
+    }
+  ],
+  "googleSoft404Cleared": null
+}

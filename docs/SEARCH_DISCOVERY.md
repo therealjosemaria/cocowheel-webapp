@@ -47,8 +47,22 @@ private noindex and JavaScript-disabled navigation. Whole Home screenshots at
 390/1440px were visually reviewed for signed-out, driver/rider summaries and
 signed-in failure states: existing typography, icon emphasis, CTA spacing and
 error styling retained, no overflow. No API restart is required. Production
-activation and Google's new live-test classification remain unverified until
-separately recorded.
+activation is recorded below; Google’s new live-test classification remains
+unverified until the owner repeats the homepage live test.
+
+### Home fix deployment verification
+
+29 October, 12:46 AEDT: Vercel reported production deployment
+`dpl_H1MTCVAkP4A1ieFhaupQfSDLGLm7` READY for 20f9d41 with the www.gumwheel.com
+alias assigned. Browser checks of that public HTML/JavaScript at 390/1440px,
+with session 401/current 500 replies injected locally, returned HTTP 200, retained
+index/follow metadata and showed no ride-refresh message or uncaught browser
+errors. Both screenshots were captured; mobile was also visually rechecked.
+External/analytics traffic was blocked and browser APIs were synthetic, so this
+does not certify live authenticated API availability. See
+`results/home-entry-live-2026-10-29.json`. No API restart or IndexNow resubmission
+was performed. Google must repeat the homepage live inspection to determine
+whether the soft-404 classification is cleared; sitemap processing is separate.
 
 ## Further discovery work (source baseline 2c32b48)
 
