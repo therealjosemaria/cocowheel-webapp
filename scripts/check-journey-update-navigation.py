@@ -7,12 +7,12 @@ end = dict(pin, latitude=-33.87, label='Example destination, Sydney')
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
     for width in [320, 390, 844, 1440]:
-        for scenario in ['offer', 'driver', 'accepted', 'multiple', 'none']:
+        for scenario in ['offer', 'driver', 'accepted', 'multiple', 'none', 'reviewed-elsewhere']:
             context = browser.new_context(viewport={'width': width, 'height': 900}, reduced_motion='reduce' if width == 320 else 'no-preference')
             page = context.new_page()
             errors, writes = [], []
             page.on('pageerror', lambda error: errors.append(str(error)))
-            state = {'signed_in': True}
+            state = {'signed_in': True, 'reviewed': ['demand-offer:offer-1'] if scenario == 'reviewed-elsewhere' else []}
             req = {'requestId': 'join-1', 'riderAlias': 'rider01', 'status': 'PENDING', 'pickup': pin,
                    'destination': end, 'createdAt': '2026-10-27T00:00:00Z', 'requestedDepartureAt': '2026-10-28T01:00:00Z', 'directionFit': 'GOOD'}
             ride = {'rideId': 'test-ride', 'driverAlias': 'driver01', 'status': 'REQUESTED', 'priceAud': 0,
@@ -32,7 +32,7 @@ with sync_playwright() as p:
             post = {'id': 'post-1', 'origin': pin, 'destination': end, 'date': 'any', 'time': '',
                     'status': 'FULFILLED' if scenario == 'accepted' else 'OPEN', 'expiresAt': '2099-10-28T01:00:00Z',
                     'offers': [{'id': 'offer-1', 'rideId': 'offered-ride', 'demandId': 'post-1', 'driverAlias': 'driver02',
-                                'departureAt': '2026-10-28T01:00:00Z', 'priceAud': 0, 'status': 'PENDING'}] if scenario in ['offer', 'multiple'] else []}
+                                'departureAt': '2026-10-28T01:00:00Z', 'priceAud': 0, 'status': 'PENDING'}] if scenario in ['offer', 'multiple', 'reviewed-elsewhere'] else []}
             page.route('**/*', lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
             def api(r):
                 path = r.request.url.split('/api/')[-1].split('?')[0]
@@ -40,6 +40,10 @@ with sync_playwright() as p:
                     r.fulfill(status=401, json={'error': 'UNAUTHORIZED'}); return
                 data = {}
                 if path == 'university/session': data = {'unikey': 'tester01', 'ratings': {'driver': None, 'rider': None}}
+                elif path == 'notifications/reviewed':
+                    if r.request.method == 'POST':
+                        state['reviewed'] = list(set(state['reviewed'] + r.request.post_data_json['keys']))
+                    data = {'keys': state['reviewed']}
                 elif path == 'current': data = {'current': item, 'currents': [item] if item else [],
                     'activeDemand': post if post['status'] == 'OPEN' else None, 'pendingDemandOffers': len(post['offers'])}
                 elif path == 'history': data = {'driver': [], 'rider': []}
@@ -54,16 +58,18 @@ with sync_playwright() as p:
             page.goto(BASE + '/help')
             page.get_by_role('button', name='Profile:', exact=False).click()
             link = page.locator('.profile-active-ride')
-            count = 2 if scenario == 'multiple' else 0 if scenario == 'none' else 1
+            count = 2 if scenario == 'multiple' else 0 if scenario in ['none', 'reviewed-elsewhere'] else 1
             if count: expect(link).to_contain_text(f'{count} update' + ('s' if count > 1 else '') + ' to review')
             expected = {
                 'offer': '/activity/requests/post-1#offer-offer-1',
                 'driver': '/activity/test-ride#request-join-1',
                 'accepted': '/activity/test-ride?request=join-1#pickup-test-ride',
-                'multiple': '/activity#updates', 'none': '/activity',
+                'multiple': '/activity#updates', 'none': '/activity', 'reviewed-elsewhere': '/activity',
             }[scenario]
             expect(link).to_have_attribute('href', expected)
             page.screenshot(path=f'/tmp/journey-updates-profile-{scenario}-{width}.png', full_page=True)
+            if scenario != 'reviewed-elsewhere': assert not state['reviewed'], 'Opening Profile must not acknowledge updates'
+            else: expect(page.locator('.profile-update-badge')).to_have_count(0)
             link.click()
             expect(page).to_have_url(BASE + expected)
             if scenario == 'multiple':
@@ -75,7 +81,7 @@ with sync_playwright() as p:
                 page.wait_for_timeout(900)
                 expect(markers).to_have_count(2)  # summaries do not mark updates read
                 page.screenshot(path=f'/tmp/journey-updates-activity-{width}.png', full_page=True)
-                page.locator('.demand-activity .activity-open').click()
+                page.get_by_role('link', name='Details for journey requested', exact=False).click()
                 expect(page).to_have_url(BASE + '/activity/requests/post-1#offer-offer-1')
                 expect(page.get_by_role('button', name='Accept ride')).to_be_visible()
                 expect(page.locator('.profile-update-badge')).to_have_text('1')
@@ -96,11 +102,12 @@ with sync_playwright() as p:
             page.screenshot(path=f'/tmp/journey-updates-detail-{scenario}-{width}.png', full_page=True)
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             assert not errors, errors
-            assert not writes, writes
+            assert all(path == 'notifications/reviewed' for path in writes), writes
+            if scenario in ['offer', 'accepted', 'multiple']: assert state['reviewed'], 'Visible detail must be acknowledged server-side'
             state['signed_in'] = False
             page.evaluate("window.dispatchEvent(new Event('cocowheels:identity-changed'))")
             expect(page.get_by_role('button', name='Profile: No guest name yet', exact=True)).to_be_visible()
             expect(page.locator('.profile-update-badge')).to_have_count(0)
-            print(f'PASS {width} {scenario}: destination, grouping, review, no writes/errors/overflow, auth reset', flush=True)
+            print(f'PASS {width} {scenario}: destination, grouping, review acknowledgements only, no errors/overflow, auth reset', flush=True)
             context.close()
     browser.close()

@@ -34,6 +34,7 @@ export default function AppNavigation() {
   const [demandActivity, setDemandActivity] = useState<DemandActivity | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
+  const reviewMemory = useRef<{ account: string | null; keys: string[] }>({ account: null, keys: [] });
   const loadSequence = useRef(0);
   const { groups, notices: updates } = useMemo(
     () => journeyUpdates(currents, demandActivity, seen),
@@ -45,6 +46,9 @@ export default function AppNavigation() {
   const markSeen = useCallback(
     (key: string) => {
       if (!accountKey) return;
+      reviewMemory.current = { account: accountKey, keys: Array.from(new Set([
+        ...(reviewMemory.current.account === accountKey ? reviewMemory.current.keys : []), key,
+      ])).slice(-500) };
       setSeen((previous) => {
         const next = Array.from(
           new Set([...readSeen(accountKey), ...previous, key]),
@@ -59,6 +63,11 @@ export default function AppNavigation() {
         }
         return next;
       });
+      // No sign-in replay: the server acknowledges only this account's keys.
+      // Local persistence allows the normal identity poll to retry failed acks.
+      void cocowheelsApi("/api/notifications/reviewed", {
+        method: "POST", body: JSON.stringify({ keys: [key] }),
+      }, true).catch(() => undefined);
     },
     [accountKey],
   );
@@ -140,6 +149,25 @@ export default function AppNavigation() {
         setSeen(readSeen(result.unikey));
       }
       setRatings(result.ratings ?? null);
+      const reviews = await cocowheelsApi<{ keys?: string[] }>("/api/notifications/reviewed", {}, true).catch(() => null);
+      if (sequence !== loadSequence.current) return;
+      if (reviews?.keys) {
+        const local = Array.from(new Set([...readSeen(result.unikey),
+          ...(reviewMemory.current.account === result.unikey ? reviewMemory.current.keys : []),
+        ])).slice(-500);
+        const known = new Set(reviews.keys);
+        const pending = local.filter(key => !known.has(key));
+        // Batches fit the existing 32KiB JSON limit even for maximum-length keys.
+        if (pending.length) void (async () => {
+          for (let i = 0; i < pending.length; i += 100) {
+            if (seenAccount.current !== result.unikey) return;
+            await cocowheelsApi("/api/notifications/reviewed", {
+              method: "POST", body: JSON.stringify({ keys: pending.slice(i, i + 100) }),
+            }, true);
+          }
+        })().catch(() => undefined);
+        setSeen(previous => Array.from(new Set([...[...reviews.keys!].reverse(), ...local, ...previous])).slice(-500));
+      }
       const activity = await cocowheelsApi<{
         current: ActiveRide | null;
         currents: ActiveRide[];

@@ -1,3 +1,4 @@
+import { queueNotification } from "./notification-outbox";
 import {
   createCipheriv,
   createDecipheriv,
@@ -1350,6 +1351,7 @@ export function requestRide(
       "UPDATE rides SET status = 'REQUESTED', last_activity_at = ? WHERE id = ? AND status = 'PUBLISHED'",
     ).run(timestamp, ride.id);
     event(db, ride.id, "RIDER_REQUESTED", "RIDER", now);
+    if (!ride.is_sample) queueNotification(db, ride.driver_session_id, "REQUEST", requestId, `${ride.public_id}:${requestId}:${timestamp}`, now);
   })();
   return {
     sessionToken: created?.token ?? null,
@@ -1667,6 +1669,7 @@ export function decideRequestForDriver(db: Db, session: Session, rideId: string,
       issuePickupCode(db, ride.id, now);
       db.prepare("UPDATE rider_demands SET status=CASE WHEN expires_at>? THEN 'FULFILLED' ELSE 'EXPIRED' END WHERE owner_id=? AND status='OPEN'").run(timestamp, request.rider_session_id);
       event(db, ride.id, "RIDER_ACCEPTED", "DRIVER", now);
+      if (!ride.is_sample) queueNotification(db, request.rider_session_id, "ACCEPTED", request.id, `${ride.public_id}:${request.id}:accepted:${timestamp}`, now);
     })();
   }
   return getRide(db, rideId, session, now);

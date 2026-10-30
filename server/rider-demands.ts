@@ -1,3 +1,4 @@
+import { queueNotification, reviewNotifications } from "./notification-outbox";
 import { randomUUID } from "node:crypto";
 import {
   checkedDemandRoute,
@@ -364,6 +365,7 @@ export function offerDemand(
       const internal = db.prepare("SELECT id FROM rides WHERE public_id=?").get(source.ride.rideId) as { id: string };
       const offerId = randomUUID();
       db.prepare("INSERT INTO rider_demand_proposals VALUES (?,?,?,?,'PENDING',?)").run(offerId, id, internal.id, JSON.stringify(input), now.toISOString());
+      queueNotification(db, row.owner_id, "OFFER", offerId, `demand-offer:${offerId}`, now);
       return proposalView(db, db.prepare(proposalSql + " WHERE p.id=?").get(offerId) as ProposalRow, now);
     }
     const { ride } = publishRide(
@@ -387,6 +389,7 @@ export function offerDemand(
     db.prepare(
       "INSERT INTO rider_demand_offers VALUES (?,?,?,'PENDING',?)",
     ).run(offerId, id, internal.id, now.toISOString());
+    queueNotification(db, row.owner_id, "OFFER", offerId, `demand-offer:${offerId}`, now);
     return offerView(
       db,
       db.prepare(offerSql + " WHERE o.id=?").get(offerId) as OfferRow,
@@ -485,6 +488,9 @@ export function respondToDemandOffer(
       "ACCEPT",
       now,
     );
+    // The rider just explicitly accepted this offer, so do not email them a
+    // second notification that their own acceptance succeeded.
+    reviewNotifications(db, owner.id, [`${offer.public_id}:${joined.ride.request!.requestId}:accepted:${now.toISOString()}`], now);
     snapshotVehicle(db, offer.public_id, vehicle);
     db.prepare(
       "UPDATE rider_demand_offers SET status='ACCEPTED' WHERE id=?",
@@ -494,4 +500,16 @@ export function respondToDemandOffer(
     );
     return getRide(db, offer.public_id, owner, now);
   })();
+}
+
+/** Resolve reminders through the same availability rules used by the rider UI. */
+export function pendingOfferNotification(db: Db, id: string, principal: string, now: Date): string | null {
+  const ordinary = db.prepare(offerSql + " WHERE o.id=?").get(id) as OfferRow | undefined;
+  const proposal = ordinary ? undefined : db.prepare(proposalSql + " WHERE p.id=?").get(id) as ProposalRow | undefined;
+  const row = ordinary ?? proposal;
+  if (!row) return null;
+  const request = demand(db, row.demand_id);
+  if (request.owner_id !== principal || request.status !== "OPEN" || Date.parse(request.expires_at) <= +now || busyOwner(db, principal)) return null;
+  const offer = ordinary ? offerView(db, ordinary, now) : proposalView(db, proposal!, now);
+  return offer.status === "PENDING" ? `/activity/requests/${encodeURIComponent(request.id)}#offer-${encodeURIComponent(id)}` : null;
 }

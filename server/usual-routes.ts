@@ -1,3 +1,4 @@
+import { sendTransactionalEmail } from "./email-transport";
 import { randomUUID } from "node:crypto";
 import type { Db } from "./core";
 import type { Pin } from "../lib/client-types";
@@ -243,19 +244,7 @@ export function queueRouteAlerts(
 }
 type Email = { from: string; to: string[]; subject: string; text: string; html?: string };
 export type AlertSender = (email: Email, id: string) => Promise<void>;
-export const sendRouteAlert: AlertSender = async (email, id) => {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    signal: AbortSignal.timeout(10000),
-    headers: {
-      Authorization: `Bearer ${process.env.COCOWHEELS_RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": `usual-route/${id}`,
-    },
-    body: JSON.stringify(email),
-  });
-  if (!response.ok) throw new Error("ALERT_SEND_FAILED");
-};
+export const sendRouteAlert: AlertSender = (email, id) => sendTransactionalEmail(email, `usual-route/${id}`);
 export function alertsConfigured() {
   return Boolean(
     process.env.COCOWHEELS_ROUTE_ALERTS_ENABLED === "1" &&

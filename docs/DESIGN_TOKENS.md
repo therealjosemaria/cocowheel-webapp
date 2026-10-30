@@ -1,5 +1,7 @@
 # Coco Wheels visual system
 
+30 October reminder emails reuse brandedEmailHtml with the same 15px original logo, 6px wordmark gap and optical alignment, 560px email container and existing CTA styling. No new palette or in-app controls. Help adds one shared FAQ; Privacy reuses legal body styles.
+
 29 October Home session gate introduces no visual tokens. Keep the hero, CTA spacing/icons and existing authenticated reconnect message styles unchanged; review both successful and failed account states.
 
 29 October Sydney guide and 404 recovery: reuse activity-page/activity-panel/page-title/help-section/help-email; no new spacing, typography, colour or artwork tokens. Check whole pages at phone/tablet/desktop widths.

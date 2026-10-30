@@ -1,5 +1,7 @@
 # Private ride messaging — 20 October 2026
 
+30 October: five-minute unread service-email reminders and server-side review acknowledgements are described in [JOURNEY_EMAIL_REMINDERS.md](JOURNEY_EMAIL_REMINDERS.md). This supersedes earlier in-app-only statements for new requests, driver offers, accepted joins and unread messages after backend activation; no historical events are backfilled.
+
 Implemented for a driver and each requesting rider, from PENDING until the
 request closes. Acceptance keeps only the selected rider's conversation open.
 Decline, withdrawal, discard, cancellation, completion and expiry deny message

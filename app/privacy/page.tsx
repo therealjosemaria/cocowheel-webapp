@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-25", label: "25 October 2026" }}
+      revision={{ date: "2026-10-30", label: "30 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL carpool pilot handles
@@ -62,6 +62,16 @@ export default function PrivacyPage() {
         shared only with the accepted rider. We retain a copy with that ride’s
         history; later profile edits do not change that copy. These details are
         provided by drivers, not independently verified by GUMWHEEL.
+      </p>
+      <p>
+        For journeys you participate in, we send an email reminder through Resend
+        if a new request, driver offer, acceptance or message remains unreviewed
+        for five minutes. Reading the message, reviewing the update or resolving
+        it before sending suppresses the reminder. We store review acknowledgements
+        across devices and delivery records. Reminder emails link to the update
+        without including message text, addresses, GPS or payment details.
+        These service reminders are separate from opt-in usual-route matching
+        emails. An email already being sent cannot be recalled.
       </p>
       <h2>Location and pickup records</h2>
       <p>

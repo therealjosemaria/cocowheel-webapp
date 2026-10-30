@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Journey updates now have a five-minute unread-email fallback for both roles:
+new rider requests, driver offers, accepted joins and messages. Reviewing or
+resolving the specific update before sending suppresses its reminder; Profile
+opening alone does not. Reviews sync server-side across devices, and consecutive
+unread messages share one reminder. Service reminders are separate from opt-in
+matching-route emails. See [reminder rules and activation](docs/JOURNEY_EMAIL_REMINDERS.md).
+
 Home restores personal journeys only after its email-session check succeeds. A
 signed-out or failed identity lookup leaves the public landing page usable without
 a misleading ride-refresh error; authenticated ride-load errors and shared server

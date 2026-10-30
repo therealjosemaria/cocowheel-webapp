@@ -18,6 +18,10 @@ export const HELP_FAQS = [
     answer: "GUMWHEEL works in your phone or desktop browser, with no app download. You can sign in with any valid email address by entering the code sent to your inbox. A university email is not required.",
   },
   {
+    question: "How will I know about journey updates?",
+    answer: "Check Profile for journey updates and unread messages. If a new request, offer, acceptance or message remains unreviewed for five minutes, we send an email reminder. Reviewing or resolving it before sending prevents the reminder. Separately, save your usual route and opt into emails about newly posted matching rides.",
+  },
+  {
     question: "How do I pay?",
     answer: "Rides are free unless the driver asks for a contribution. The fare is shown before you request. For paid rides, pay directly through your bank using the driver’s PayID: mobile number, email, ABN or organisation identifier. Payment details appear after pickup confirmation. GUMWHEEL does not process payments or support cash.",
   },

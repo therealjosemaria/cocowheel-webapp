@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-30",
+  "sourceBaseline": "f90f58a",
+  "isolation": "In-memory SQLite, fake mail senders and mocked Chromium APIs. Third-party browser requests blocked. No production test writes or test emails.",
+  "commands": [
+    "npx tsx --test tests/notification-reminders.test.ts",
+    "npm test",
+    "npm run lint",
+    "npm run build",
+    "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:1 npm run start -- --hostname 127.0.0.1 --port 3201",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-journey-update-navigation.py",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-journey-reminder-email.py",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-search-discovery.py"
+  ],
+  "results": {
+    "targetedTests": 12,
+    "fullTests": 229,
+    "lint": "passed",
+    "productionBuild": "passed",
+    "browserWidths": [
+      320,
+      390,
+      844,
+      1440
+    ],
+    "notificationNavigation": "24/24 passed; both roles, review acknowledgements, cross-device known keys, sign-out reset",
+    "emailHelpPrivacy": "passed at all four widths",
+    "discovery": "passed at all four widths",
+    "matchingEmailGoldenComparison": "byte-for-byte identical for three fares"
+  },
+  "findings": [
+    {
+      "baseline": "227/229 full tests: two legacy fixtures lacked new table",
+      "remediation": "Use canonical additive schema DDL",
+      "retest": "229/229 pass"
+    },
+    {
+      "baseline": "Old temporary Playwright installation had missing files",
+      "remediation": "Fresh isolated temporary environment",
+      "retest": "24/24 navigation cases passed on final run"
+    },
+    {
+      "baseline": "Obsolete browser selector matched two detail links",
+      "remediation": "Select semantic journey-request detail link",
+      "retest": "24/24 navigation cases passed on final run"
+    },
+    {
+      "baseline": "Navigation preview process stopped during first corrected run",
+      "remediation": "Restart isolated local preview and rerun all cases",
+      "retest": "24/24 navigation cases passed on final run"
+    },
+    {
+      "baseline": "Standalone tsc reports pre-existing test-fixture type errors",
+      "remediation": "Not part of this change; source production build passed",
+      "retest": "Standalone tsc not claimed passing"
+    }
+  ],
+  "visualReview": "Whole Help and Privacy screens, shared email shell, rider offer detail and driver request detail inspected at mobile/desktop widths; regular body weight, heading hierarchy, shared CTA spacing retained. Map tiles intentionally blocked in synthetic checks.",
+  "untested": [
+    "Real inbox delivery",
+    "Physical Safari/iOS and email clients",
+    "Provider outages and quota capacity under load",
+    "Multi-process worker concurrency certification"
+  ],
+  "activation": "pending"
+}

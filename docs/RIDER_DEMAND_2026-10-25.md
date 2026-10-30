@@ -1,5 +1,7 @@
 # Rider-posted requests and driver discovery
 
+30 October: five-minute unread service-email reminders and server-side review acknowledgements are described in [JOURNEY_EMAIL_REMINDERS.md](JOURNEY_EMAIL_REMINDERS.md). This supersedes earlier in-app-only statements for new requests, driver offers, accepted joins and unread messages after backend activation; no historical events are backfilled.
+
 ## Offer details and active status text — 28 October
 
 Baseline 7a277f0. Sent-offer summaries now use View/DETAILS instead of direct

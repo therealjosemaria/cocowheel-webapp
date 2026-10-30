@@ -1,3 +1,5 @@
+import { reviewedNotifications, reviewNotifications } from "./notification-outbox";
+import { deliverJourneyReminder } from "./notification-email";
 import {
   createServer,
   type IncomingMessage,
@@ -506,6 +508,19 @@ export function createApiServer(
       }
       const parts = pathParts(request.url);
       const token = requestToken(request);
+      if (parts.join("/") === "api/notifications/reviewed") {
+        const owner = requireUniversitySession(database, token);
+        if (request.method === "GET") {
+          writeJson(response, 200, { keys: reviewedNotifications(database, owner.id) }, cors);
+        } else if (request.method === "POST") {
+          const body = await readJson(request);
+          const current = requireUniversitySession(database, token);
+          if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+          reviewNotifications(database, current.id, body.keys);
+          writeJson(response, 200, { ok: true }, cors);
+        } else writeJson(response, 405, { error: "METHOD_NOT_ALLOWED" }, cors);
+        return;
+      }
       if (
         parts[0] === "api" &&
         parts[1] === "rides" &&
@@ -1278,9 +1293,12 @@ export function createApiServer(
   let delivering = false;
   server.on("listening", () => {
     alertTimer = setInterval(() => {
-      if (delivering || !alertsConfigured()) return;
+      if (delivering) return;
       delivering = true;
-      void deliverRouteAlerts(database).catch(() => {
+      void (async () => {
+        await deliverRouteAlerts(database);
+        await deliverJourneyReminder(database);
+      })().catch(() => {
         console.error("Route alert worker failed");
       }).finally(() => { delivering = false; });
     }, 15000);

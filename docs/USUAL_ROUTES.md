@@ -1,5 +1,7 @@
 # Private usual routes and matching alerts
 
+30 October: unread request/offer/acceptance/message reminders are now implemented separately; see JOURNEY_EMAIL_REMINDERS.md. Matching-route consent, immediate publication trigger and mute behavior are unchanged. Earlier statements that these four events are in-app-only are superseded after backend activation.
+
 Implementation baseline: `0ea5d81`. Added 21 October 2026. See
 [verification and manual checklist](USUAL_ROUTES_CHECK_2026-10-21.md) for tested
 scope and activation status; code presence is not verified deployment.

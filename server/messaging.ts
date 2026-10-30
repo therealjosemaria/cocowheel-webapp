@@ -1,3 +1,4 @@
+import { queueNotification, reviewMessageNotifications } from "./notification-outbox";
 import type { Db } from "./core";
 import { publicName } from "./personal-details";
 import type { Conversation, ConversationSummary } from "../lib/messaging-types";
@@ -114,7 +115,7 @@ export function sendMessage(
   now = new Date(),
 ) {
   return db.transaction(() => {
-    thread(db, ride, request, principal, now);
+    const participants = thread(db, ride, request, principal, now);
     if (stopped(db, request)) throw new Error("MESSAGING_STOPPED");
     if (
       typeof text !== "string" ||
@@ -159,7 +160,11 @@ export function sendMessage(
         "INSERT INTO ride_messages(request_id,sender_id,client_id,body,created_at) VALUES (?,?,?,?,?)",
       )
       .run(request, principal, clientId, body, now.toISOString());
-    return { id: Number(result.lastInsertRowid) };
+    const id = Number(result.lastInsertRowid);
+    const recipient = principal === participants.driver ? participants.rider : participants.driver;
+    const cursor = (db.prepare("SELECT last_id FROM message_reads WHERE request_id=? AND principal_id=?").get(request, recipient) as { last_id: number } | undefined)?.last_id ?? 0;
+    queueNotification(db, recipient, "MESSAGE", request, `message:${request}:${cursor}`, now, id);
+    return { id };
   })();
 }
 export function markMessagesRead(
@@ -183,6 +188,7 @@ export function markMessagesRead(
   db.prepare(
     "INSERT INTO message_reads(request_id,principal_id,last_id) VALUES (?,?,?) ON CONFLICT(request_id,principal_id) DO UPDATE SET last_id=MAX(last_id,excluded.last_id)",
   ).run(request, principal, lastId);
+  reviewMessageNotifications(db, principal, request, lastId, now);
 }
 export function stopMessages(
   db: Db,

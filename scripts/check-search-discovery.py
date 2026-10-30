@@ -106,7 +106,7 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
                 expect(page.get_by_role('heading',name='Post a journey',exact=True)).to_be_visible()
                 page.goto(BASE+'/help')
                 details=page.locator('.help-faq details')
-                expect(details).to_have_count(7)
+                expect(details).to_have_count(8)
                 expect(page.locator('.help-faq details[open]')).to_have_count(0)
                 expect(page.locator('.how-it-works-steps li')).to_have_count(8)
                 page.screenshot(path=f'/tmp/gumwheel-help-discovery-{width}.png',full_page=True,animations='disabled')

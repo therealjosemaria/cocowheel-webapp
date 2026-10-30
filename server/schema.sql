@@ -206,3 +206,15 @@ CREATE TABLE IF NOT EXISTS ride_ratings (
 );
 CREATE INDEX IF NOT EXISTS ride_ratings_recipient_index
   ON ride_ratings(recipient_id, recipient_role, release_at);
+
+-- Durable five-minute reminders; no historical events are backfilled.
+CREATE TABLE IF NOT EXISTS journey_notifications (
+    id TEXT PRIMARY KEY, principal_id TEXT NOT NULL REFERENCES guest_sessions(id),
+    event_key TEXT NOT NULL, kind TEXT NOT NULL, entity_id TEXT NOT NULL,
+    message_id INTEGER, created_at TEXT NOT NULL, due_at INTEGER NOT NULL,
+    deadline INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'PENDING',
+    reviewed_at TEXT, attempts INTEGER NOT NULL DEFAULT 0, next_at INTEGER NOT NULL,
+    payload TEXT, UNIQUE(principal_id,event_key)
+  );
+  CREATE INDEX IF NOT EXISTS journey_notifications_due ON journey_notifications(status,next_at);
+  CREATE INDEX IF NOT EXISTS journey_notifications_owner ON journey_notifications(principal_id,reviewed_at);
