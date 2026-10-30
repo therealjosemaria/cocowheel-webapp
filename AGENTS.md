@@ -56,3 +56,17 @@ and desktop for competing emphasis: headings versus body, text weights, icon
 prominence, colours and spacing. Reassess existing bold formatting when shortening
 copy; do not let former lead-ins become an all-bold body. Tests alone do not replace
 this aesthetic review. Record what was visually checked and what remains unverified.
+
+## Give people a next step
+
+When explaining an error, restriction, unavailable feature or service limitation,
+give a clear, truthful next step in the same message or its immediately available
+controls. Prefer an existing in-app action; otherwise give a safe alternative or
+the appropriate external service. Verify external safety guidance against an
+authoritative source and state its jurisdiction. Never end emergency guidance at
+“we do not provide assistance”; tell people how to reach emergency services and
+not to wait for GUMWHEEL. Never invent a fix, promise safety or delivery, bypass
+authorization, or encourage blind retries when an action may already have saved.
+Keep the guidance concise and specific to the current role/state. Ordinary status
+labels do not need instructions. Audit the next step as well as the limitation
+during copy review, reusing existing components and section responsibilities.

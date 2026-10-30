@@ -1,5 +1,25 @@
 # Coco Wheels product and UI standards
 
+## Helpful guidance and recovery — 30 October 2026
+
+Every actionable error or limitation must explain what the person can do next,
+in its copy or immediately adjacent controls. Prefer a named existing action;
+no match can lead to posting a request, an unavailable journey to searching again,
+restricted details to Activity, and an emergency to the appropriate local service.
+Keep the instruction relevant to the current account, role and lifecycle.
+For uncertain writes, check the saved state before retrying; do not claim that a
+failed response means nothing was saved. Never invent an available remedy or
+guarantee a safety outcome. Ordinary labels such as Expired or Estimate unavailable
+need no added instruction when the surrounding view already makes the next action
+clear. Keep explanations concise, regular-weight and within existing surfaces;
+no extra modal, action or promotional block solely to repeat guidance.
+
+The contributor rule in AGENTS.md applies this check to all future copy reviews.
+Initial review covered Help, Terms, Privacy, shared API errors and journey/Profile
+error branches. Shared missing-request and three unavailable-journey messages now
+name a next destination. This is a targeted review, not a certification of every
+rare error in the app. Use docs/API_FAILURES.md for failure and retry semantics.
+
 30 October safety FAQ: nine native initially closed FAQs; safety is second after
 What is GUMWHEEL. Help and Terms share explicit Australian Triple Zero guidance;
 keep it regular body copy, including location/operator instructions and not waiting

@@ -1,5 +1,14 @@
 # Frontend API failure contract
 
+30 October recovery-copy follow-up: shared DEMAND_NOT_FOUND now directs people
+to Activity. Private journey access errors direct people to their own Activity;
+public-preview and Profile unavailable-ride errors direct them to Find a journey.
+This changes explanatory text only, with no new links, controls, permission rules,
+retry or replay behaviour. Follow AGENTS.md/UI_STANDARDS.md: explain a truthful
+next step without implying a failed write was not saved. Existing retry actions
+and stale-data/access-clearing rules below retain their behaviour. Verification
+for this follow-up is recorded at the end of this guide.
+
 Implemented 16 October 2026. Applies to browser requests through the same-origin
 API rewrite; no API service restart, schema or authentication change is required.
 
@@ -108,3 +117,24 @@ message content; closing the ride removes the UI. Private chat POSTs deliberatel
 skip automatic verify-and-replay to avoid sending under another account. 429
 means the per-account minute quota; 409 distinguishes closed, stopped, full and
 conflicting retry. Stop failures never claim messaging stopped or cancel a ride.
+
+## Recovery-copy checks — 30 October 2026
+
+Baseline 81cf7ea. The shared missing-request error, private 403 detail state,
+public 404 preview and Profile unavailable-ride branch now name an existing next
+destination. Contributor/UI rules make this a required future review step.
+The source review covered public Help/legal pages and the shared/role-specific
+error branches; this targeted pass does not certify all rare failure combinations.
+
+Checks: 12/12 existing transport regressions (`npx tsx --test
+tests/api-transport.test.ts`), lint and production build pass. Start an isolated
+production preview at :3090 with COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:1;
+run `python scripts/check-recovery-copy.py` using Playwright/system Chromium.
+Eight cases pass at 390/1440px with synthetic session/403/404/Profile mutation
+responses; third-party requests are blocked and writes only hit mock handlers.
+Whole affected private/public detail and Profile/error-modal screens were visually
+reviewed on mobile/desktop for heading/body emphasis, regular copy, wrapping,
+spacing and existing control placement. No new layout, hooks, components or
+authorization changes were introduced. No live API writes or restart performed.
+Physical-device review and production error injection remain unverified.
+Deployment verification is recorded separately after push.

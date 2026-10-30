@@ -68,7 +68,7 @@ export default function ActivityRideClient({
           setRide(null);
         setError(
           reason instanceof ApiError && reason.status === 403
-            ? "This ride is not available."
+            ? "This journey is not available to this account. Open Activity to view your journeys."
             : apiErrorMessage(
                 reason,
                 "We couldn’t load this ride. Please try again.",

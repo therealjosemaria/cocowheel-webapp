@@ -298,7 +298,7 @@ export default function RidePreviewClient({
             setPublicRide(null);
           setError(
             reason instanceof ApiError && reason.status === 404
-              ? "This ride is no longer available."
+              ? "This journey is no longer available. Use Find a journey to look for another."
               : apiErrorMessage(
                   reason,
                   "We couldn’t load this ride. Please try again.",

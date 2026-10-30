@@ -28,7 +28,7 @@ export function apiErrorMessage(
       DEMAND_ALREADY_OPEN: "You already have a posted request. Manage it in Activity.",
       DEMAND_CHANGED: "Your post changed. Please review it and try again.",
       DEMAND_UNAVAILABLE: "This request or offer is no longer available. Refresh to see the latest details.",
-      DEMAND_NOT_FOUND: "This request is no longer available.",
+      DEMAND_NOT_FOUND: "This journey request is no longer available. Open Activity to check your journeys.",
       DEMAND_ROUTE_INCOMPATIBLE: "This rider is outside your route. Try another request.",
       REQUEST_TIME_INCOMPATIBLE: "Choose a departure within the rider’s requested time window.",
       INVALID_REQUEST_TIME: "Choose a valid future date and time, or Any date and Any time.",

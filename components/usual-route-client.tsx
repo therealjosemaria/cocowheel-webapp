@@ -122,7 +122,7 @@ export default function UsualRouteClient({ alertsEntry = false }: { alertsEntry?
         : code === "OPEN_ITEM_EXISTS"
           ? "You already have an active ride. Open it from Profile."
           : code === "RIDE_UNAVAILABLE"
-            ? "This ride is no longer available."
+            ? "This journey is no longer available. Use Find a journey to look for another."
             : code === "PAYID_REQUIRED"
               ? "Add your PayID before offering a ride."
               : apiErrorMessage(

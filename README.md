@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+Product guidance must pair actionable errors and limitations with a truthful next
+step: an existing app action, safe alternative or appropriate external service.
+See [copy/recovery rules](docs/UI_STANDARDS.md#helpful-guidance-and-recovery--30-october-2026)
+and AGENTS.md. Missing/unavailable journey messages now name Activity or Find a
+journey instead of stopping at the limitation; existing permissions are unchanged.
+
 Help’s second FAQ explains safety features for both roles and their limits. Help
 and Terms share Australian emergency guidance: call Triple Zero (000), give your
 location, stay on the line and follow the operator; do not wait for GUMWHEEL. Public
