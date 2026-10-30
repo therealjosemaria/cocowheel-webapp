@@ -62,5 +62,48 @@
     "Provider outages and quota capacity under load",
     "Multi-process worker concurrency certification"
   ],
-  "activation": "pending"
+  "activation": {
+    "source": "1279be7",
+    "restartedAt": "2026-10-30T05:42:55.427Z",
+    "acceptedOrActiveTrips": 0,
+    "backupVerified": true,
+    "backupPrivate": true,
+    "integrity": "ok",
+    "foreignKeyErrors": 0,
+    "counts": {
+      "rides": 135,
+      "ride_requests": 79,
+      "rider_demands": 11,
+      "rider_demand_offers": 1,
+      "university_accounts": 7
+    },
+    "providerConfigured": true,
+    "after": {
+      "integrity": "ok",
+      "foreignKeyErrors": 0,
+      "counts": {
+        "rides": 135,
+        "ride_requests": 79,
+        "rider_demands": 11,
+        "rider_demand_offers": 1,
+        "university_accounts": 7
+      },
+      "historyPreserved": true,
+      "initialNotificationCount": 0,
+      "publicHealth": 200,
+      "publicReviewEndpointUnauthenticated": 401,
+      "localHealth": 200
+    },
+    "frontend": {
+      "commit": "1279be7606f964c9cfed87d22df11ac1a0169849",
+      "deployment": "dpl_BMf2btFMFX8X6hePr14n3g3DJC7S",
+      "state": "READY",
+      "canonicalAlias": "www.gumwheel.com",
+      "publicCopyVerified": {
+        "/help": 200,
+        "/privacy": 200
+      }
+    },
+    "verificationNotes": "First immediate local fetch failed during startup; later explicit local-port health and public health returned 200. Public review endpoint returned 401. No real test email or authenticated live test write. Python urllib public-page fetch returned 403; curl returned 200 and verified new copy on both pages. No crawler-policy change made."
+  }
 }

@@ -125,3 +125,22 @@ Activation requires a private consistent SQLite backup and an API restart after
 confirming no accepted or active trips. A frontend push alone does not activate
 the queue or review API. Provider/inbox delivery and physical email clients remain
 unverified unless separately recorded.
+
+## Verified activation — 30 October 2026
+
+Implementation commit 1279be7 pushed to main. Under the standing conditional
+restart authorization, zero ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE trips were checked
+before backup and again immediately before restarting only cocowheels-api at
+16:42:55 AEDT. A private SQLite backup passed integrity/foreign-key checks.
+After restart: integrity ok, zero FK errors, all 135 rides, 79 join requests,
+11 rider posts, one ordinary offer and seven accounts retained; no notifications
+were backfilled. Existing email-provider configuration is present; no environment
+values were changed. Initial immediate local fetch failed during startup; later
+local/public health returned 200 and the public review endpoint returned 401
+without credentials. Service active. Real inbox delivery remains untested.
+
+Vercel production deployment dpl_BMf2btFMFX8X6hePr14n3g3DJC7S is READY for
+1279be7606f964c9cfed87d22df11ac1a0169849 with www.gumwheel.com aliased.
+Public curl reads returned 200 and confirmed new Help and Privacy copy. A Python
+urllib read returned 403; no crawler-policy change was made in this task.
+No production user actions, fake requests or test emails were submitted.
