@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+Help’s second FAQ explains safety features for both roles and their limits. Public
+rating averages and counts now appear after five released ratings per role
+(previously ten); eligibility and delayed mutual release remain unchanged. See
+[ratings](docs/RATINGS.md) for verification and activation.
+
 Journey updates now have a five-minute unread-email fallback for both roles:
 new rider requests, driver offers, accepted joins and messages. Reviewing or
 resolving the specific update before sending suppresses its reminder; Profile
@@ -394,7 +399,7 @@ frontend rollout remain separate checks.
 
 Mutual [ride ratings](docs/RATINGS.md) are optional after a completed,
 pickup-verified real ride, with a seven-day submission window. Only averages and
-counts are shared, after ten released ratings in each role; individual scores
+counts are shared, after five released ratings in each role; individual scores
 remain hidden from participants. Both submit or the window closes before release.
 See [rating checks](docs/RATINGS_CHECK_2026-10-19.md) for tested scope and deployment
 limitations. Ratings require the updated API/schema, not just a frontend push.

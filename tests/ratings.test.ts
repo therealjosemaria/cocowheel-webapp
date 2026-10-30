@@ -157,24 +157,27 @@ test("ratings validate participants, scores, eligibility and immutable idempoten
   }
 });
 
-test("ten released ratings are required per role, mutual release and seven-day deadline", () => {
+test("five released ratings are required per role, mutual release and seven-day deadline", () => {
   const db = setup();
   try {
     let f = completed(db);
     const first = f;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       if (i) f = completed(db, first.driverToken, first.riderToken);
-      submitRating(db, f.id, f.rider.id, i === 9 ? 1 : 5, now);
+      submitRating(db, f.id, f.rider.id, i === 4 ? 1 : 5, now);
       assert.equal(ratingSummary(db, f.driver.id, "DRIVER", now), null);
-      if (i < 9) submitRating(db, f.id, f.driver.id, 4, now);
+      if (i < 4) submitRating(db, f.id, f.driver.id, 4, now);
+      // Four released ratings still hide both average and count in either role.
+      assert.equal(ratingSummary(db, f.driver.id, "DRIVER", now), null);
+      assert.equal(ratingSummary(db, f.rider.id, "RIDER", now), null);
     }
     assert.equal(ratingSummary(db, f.rider.id, "RIDER", now), null);
     const before = new Date(now.getTime() + RATING_WINDOW_MS - 1);
     assert.equal(ratingSummary(db, f.driver.id, "DRIVER", before), null);
     const deadline = new Date(now.getTime() + RATING_WINDOW_MS);
     assert.deepEqual(ratingSummary(db, f.driver.id, "DRIVER", deadline), {
-      average: 4.6,
-      count: 10,
+      average: 4.2,
+      count: 5,
     });
     assert.equal(
       rideRatingState(db, f.id, f.driver.id, deadline)?.canRate,
@@ -187,12 +190,12 @@ test("ten released ratings are required per role, mutual release and seven-day d
     // Test mutual release using an earlier clock, before the window closes.
     submitRating(db, f.id, f.driver.id, 4, before);
     assert.deepEqual(ratingSummary(db, f.driver.id, "DRIVER", before), {
-      average: 4.6,
-      count: 10,
+      average: 4.2,
+      count: 5,
     });
     assert.deepEqual(ratingSummary(db, f.rider.id, "RIDER", before), {
       average: 4,
-      count: 10,
+      count: 5,
     });
     assert.equal(ratingSummary(db, f.driver.id, "RIDER", deadline), null);
     assert.equal(ratingSummary(db, f.rider.id, "DRIVER", deadline), null);

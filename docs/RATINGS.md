@@ -7,6 +7,22 @@ Activated on the Pi at 21:14 AEDT, 19 October 2026, with approved restart and
 backup; local/live-proxy health, schema and rating response fields verified.
 See the dated check report for scope; no live rating was submitted as a test.
 
+## Five-rating pilot threshold — 30 October 2026
+
+The public threshold is five released received ratings per role, superseding the
+original ten-rating rule. Existing stored ratings count immediately at API
+activation; no data migration or backfill is needed. Four remain hidden; five
+reveal both average and count. Keep the compact shared badge and its accessible
+count description. Driver/rider aggregates remain separate. This improves early
+visibility, not identity verification or a safety guarantee; smaller samples
+provide weaker evidence and make individual feedback easier to infer. The
+existing mutual/seven-day release and eligibility rules below remain unchanged.
+Help’s second FAQ covers email codes, consent, private messages, pickup codes,
+location sharing, vehicle details, ratings, cancellation and reporting, with
+explicit identity/background-check/emergency-service limits.
+
+See [30 October checks and activation](RATINGS_CHECK_2026-10-30.md).
+
 ## Rules
 
 - Optional integer 1–5 stars; no comments, edits or automatic sanctions.
@@ -20,7 +36,7 @@ See the dated check report for scope; no live rating was submitted as a test.
 - Scores enter aggregates when both submit, or seven days after completion.
   Mutual release is transactional; deadline release is timestamp-based on reads,
   requiring no scheduled worker.
-- **Ten released ratings received per role**, not merely ten completed rides,
+- **Five released ratings received per role**, not merely five completed rides,
   are required to reveal any average/count. Unrated rides do not count. Driver and
   rider averages are separate. All released scores have equal weight; display one
   decimal and count. No below-threshold progress/count is exposed.

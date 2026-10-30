@@ -1,5 +1,10 @@
 # Coco Wheels product and UI standards
 
+30 October safety FAQ: nine native initially closed FAQs; safety is second after
+What is GUMWHEEL. Reuse regular body styling and existing summary typography.
+Public ratings appear from five released scores per role; keep the shared compact
+average/count badge and below-threshold text. No new controls or visual tokens.
+
 30 October notification reminders: keep Profile/detail review behavior unchanged; opening the menu is not acknowledgement. Help has eight initially closed FAQs, including the five-minute email fallback. Privacy explains review/delivery data. New service emails reuse the matching-email brand shell, existing dark CTA and system font.
 
 29 October Home session recovery: no layout or copy additions. Do not label a failed account lookup as a failed ride restore for an anonymous visitor. Established-account ride errors and the shared connectivity notice retain their existing styles.

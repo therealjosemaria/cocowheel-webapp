@@ -6,7 +6,7 @@ import type {
 } from "../lib/rating-types";
 
 export const RATING_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-export const MIN_PUBLIC_RATINGS = 10;
+export const MIN_PUBLIC_RATINGS = 5;
 
 type EligibleRide = {
   id: string;

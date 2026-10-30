@@ -19,7 +19,7 @@ with sync_playwright() as p:
             def respond(route):
                 path = route.request.url.split('/api/')[-1]
                 rating = {'canRate': not state['submitted'], 'submitted': state['submitted'], 'targetRole': 'RIDER' if driver else 'DRIVER', 'closesAt': '2099-10-19T00:00:00Z'}
-                ride = {'rideId': 'test-ride', 'status': 'COMPLETED', 'driverAlias': 'driver1234', 'driverRating': {'average': 4.8, 'count': 10},
+                ride = {'rideId': 'test-ride', 'status': 'COMPLETED', 'driverAlias': 'driver1234', 'driverRating': {'average': 4.8, 'count': 5},
                         'priceAud': 5, 'scheduledDepartureAt': '2026-10-19T00:00:00Z', 'expiresAt': '2099-10-19T00:00:00Z',
                         'completedAt': '2026-10-19T01:00:00Z', 'plannedRoute': {'origin': origin, 'destination': destination},
                         'paymentMethod': 'PAYID', 'payIdType': 'EMAIL', 'payId': 'driver@example.com', 'pickupEstablished': True, 'rating': rating}
@@ -29,6 +29,9 @@ with sync_playwright() as p:
                     ride['rider'] = {'alias': 'rider1234', 'pickup': origin, 'destination': destination, 'requestedDepartureAt': request['requestedDepartureAt'], 'directionFit': 'GOOD'}
                 else:
                     ride['request'] = request
+                if path.startswith('profile-photo/'):
+                    route.fulfill(content_type='image/svg+xml', body='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#e2e8f0"/></svg>')
+                    return
                 if path == 'rides/test-ride/ratings':
                     state['sent'].append(route.request.post_data_json)
                     if state['fail']:
@@ -39,7 +42,7 @@ with sync_playwright() as p:
                     rating['canRate'] = False
                     data = {'rating': rating}
                 elif path == 'university/session':
-                    data = {'unikey': 'driver1234' if driver else 'rider1234', 'canAdmin': False, 'ratings': {'driver': {'average': 4.8, 'count': 10}, 'rider': None}}
+                    data = {'unikey': 'driver1234' if driver else 'rider1234', 'canAdmin': False, 'ratings': {'driver': {'average': 4.8, 'count': 5} if driver else None, 'rider': None if driver else {'average': 4.8, 'count': 5}}}
                 elif path == 'current': data = {'current': None, 'currents': []}
                 elif path == 'history': data = {'driver': [], 'rider': []}
                 elif path == 'route-preview': data = {'points': [origin, destination], 'durationSeconds': 600}
@@ -78,6 +81,7 @@ with sync_playwright() as p:
             expect(stars).to_have_count(0)
             page.get_by_role('button', name='Profile:', exact=False).click()
             expect(page.get_by_text('As a driver', exact=False)).to_be_visible()
+            expect(page.locator('.profile-ratings > div').nth(0 if driver else 1).get_by_label('4.8 out of 5 from 5 ratings', exact=True)).to_be_visible()
             expect(page.get_by_text('Not enough ratings yet', exact=True)).to_be_visible()
             expect(page.locator('#guest-identity-popover')).to_have_css('opacity', '1')
             profile_bounds = page.locator('#guest-identity-popover').bounding_box()

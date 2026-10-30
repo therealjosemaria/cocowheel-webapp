@@ -10,6 +10,10 @@ export const HELP_FAQS = [
     answer: `${ABOUT_SUMMARY} Drivers can post a journey or respond to a rider’s journey request.`,
   },
   {
+    question: "How does GUMWHEEL help keep riders and drivers safe?",
+    answer: "Both riders and drivers sign in using a one-time email code. You choose which requests or offers to accept, coordinate through private messages, and confirm pickup with a one-time code when you meet. Live location sharing helps you find each other, vehicle details help riders recognise their driver, and both participants can rate completed journeys. You can withdraw requests, cancel journeys and report concerns. Email verification confirms access to an inbox, not someone’s identity or driving qualifications. GUMWHEEL does not perform background checks or provide emergency assistance.",
+  },
+  {
     question: "What if I can’t find a journey?",
     answer: "Use Request this journey to post where you need to go. Drivers can offer to take you, and you choose whether to accept. You can also save your usual route and opt into matching-ride emails. Availability depends on people travelling your way.",
   },

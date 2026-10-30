@@ -123,7 +123,7 @@ export default function PrivacyPage() {
         Optional ride ratings are stored with the ride, the participants’
         accounts, their roles and submission times. Individual scores and who
         submitted them are not shown to participants. Only an average and rating
-        count for each role are shared, once at least ten ratings for that role
+        count for each role are shared, once at least five ratings for that role
         have been released. Ratings are released when both participants submit
         or seven days after completion. This reduces, but cannot eliminate, the
         possibility of inferring a score from changes in an average. Rating
