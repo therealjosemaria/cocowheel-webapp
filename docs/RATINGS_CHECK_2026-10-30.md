@@ -87,3 +87,8 @@ body weight, heading hierarchy, spacing and page width retained. All browser API
 were synthetic, third-party requests blocked; no call or real journey action was
 made. No backend change or API restart is required. Deployment recorded below.
 Physical devices and actual emergency calling are not tested.
+
+Emergency-copy deployment: b552d65dadae65e4eb5501153ccd9bb6413e67d8 is
+READY in production (dpl_5DurJSFgCdN3hDBc2bAfLnC3iJF8), aliased to
+www.gumwheel.com. Live Help and Terms returned 200 and both contained the
+Triple Zero and not-waiting instructions. No API restart performed.
