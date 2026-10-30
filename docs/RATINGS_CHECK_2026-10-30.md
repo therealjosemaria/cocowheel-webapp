@@ -49,3 +49,22 @@ External map tiles remain blocked deliberately.
 API/frontend activation is recorded below when verified.
 Physical Safari/mobile devices and authenticated production rating submission
 remain outside these checks. A push alone does not activate the API threshold.
+
+## API activation
+
+Implementation commit 351cc87 was pushed to main. Under the standing conditional
+restart authorization, zero accepted/active trips were confirmed before backup
+and immediately before restarting only cocowheels-api at 16:56:20 AEDT on
+30 October. The consistent private SQLite backup passed integrity/FK checks.
+Post-restart integrity is ok, FK errors zero, service active, local/public health
+checks return 200. All 135 rides, 79 join requests, 11 rider posts, six rating
+records and seven accounts were preserved. No schema or configuration changed.
+No real rating was submitted and no live trip was used as a test.
+
+## Frontend verification
+
+Vercel production deployment dpl_4HDQ7za44JMTaS59urNFdCv7Fvkv is READY
+for commit 351cc87518f2fb19dc97cfe6d1f7e81756fe2558, aliased to
+www.gumwheel.com. Public HTTP reads returned 200 and confirmed nine FAQs with
+safety second, the same question in /help.md, and the five-rating privacy wording.
+Physical device and authenticated live rating-submission checks remain unverified.
