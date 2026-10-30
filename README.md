@@ -1,6 +1,8 @@
 # GUMWHEEL
 
-Help’s second FAQ explains safety features for both roles and their limits. Public
+Help’s second FAQ explains safety features for both roles and their limits. Help
+and Terms share Australian emergency guidance: call Triple Zero (000), give your
+location, stay on the line and follow the operator; do not wait for GUMWHEEL. Public
 rating averages and counts now appear after five released ratings per role
 (previously ten); eligibility and delayed mutual release remain unchanged. See
 [ratings](docs/RATINGS.md) for verification and activation.

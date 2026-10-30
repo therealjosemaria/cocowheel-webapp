@@ -1,6 +1,7 @@
 import { SITE_URL } from "./seo";
 
 export const CONTACT_EMAIL = "jose@gumwheel.com";
+export const EMERGENCY_GUIDANCE = "In an emergency in Australia, call Triple Zero (000) for police, fire or ambulance. Give your location, stay on the line and follow the operator’s instructions. Do not wait for a reply from GUMWHEEL.";
 export const ABOUT_SUMMARY = "GUMWHEEL is a browser-based carpooling pilot in Sydney. It connects people who need a ride with drivers travelling their way.";
 export const RIDER_STEPS = ["Choose your destination.", "Request to join a ride.", "Meet your driver.", "Share the journey."];
 export const DRIVER_STEPS = ["Post a journey.", "Accept a rider.", "Meet your rider.", "Share the journey."];
@@ -11,7 +12,7 @@ export const HELP_FAQS = [
   },
   {
     question: "How does GUMWHEEL help keep riders and drivers safe?",
-    answer: "Both riders and drivers sign in using a one-time email code. You choose which requests or offers to accept, coordinate through private messages, and confirm pickup with a one-time code when you meet. Live location sharing helps you find each other, vehicle details help riders recognise their driver, and both participants can rate completed journeys. You can withdraw requests, cancel journeys and report concerns. Email verification confirms access to an inbox, not someone’s identity or driving qualifications. GUMWHEEL does not perform background checks or provide emergency assistance.",
+    answer: `Both riders and drivers sign in using a one-time email code. You choose which requests or offers to accept, coordinate through private messages, and confirm pickup with a one-time code when you meet. Live location sharing helps you find each other, vehicle details help riders recognise their driver, and both participants can rate completed journeys. You can withdraw requests, cancel journeys and report concerns. Email verification confirms access to an inbox, not someone’s identity or driving qualifications. GUMWHEEL does not perform background checks or provide emergency assistance. ${EMERGENCY_GUIDANCE}`,
   },
   {
     question: "What if I can’t find a journey?",

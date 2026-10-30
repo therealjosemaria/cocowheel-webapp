@@ -1,7 +1,9 @@
 # Coco Wheels product and UI standards
 
 30 October safety FAQ: nine native initially closed FAQs; safety is second after
-What is GUMWHEEL. Reuse regular body styling and existing summary typography.
+What is GUMWHEEL. Help and Terms share explicit Australian Triple Zero guidance;
+keep it regular body copy, including location/operator instructions and not waiting
+for a GUMWHEEL reply. Reuse existing summary typography.
 Public ratings appear from five released scores per role; keep the shared compact
 average/count badge and below-threshold text. No new controls or visual tokens.
 

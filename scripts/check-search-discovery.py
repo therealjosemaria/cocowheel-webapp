@@ -110,6 +110,8 @@ with open('/tmp/gumwheel-discovery-preview.log','w') as log:
                 expect(details.nth(1).locator("summary")).to_have_text("How does GUMWHEEL help keep riders and drivers safe?")
                 details.nth(1).locator("summary").click()
                 expect(details.nth(1)).to_contain_text("does not perform background checks or provide emergency assistance")
+                expect(details.nth(1)).to_contain_text("call Triple Zero (000)")
+                expect(details.nth(1)).to_contain_text("Do not wait for a reply from GUMWHEEL")
                 page.screenshot(path=f'/tmp/gumwheel-help-safety-{width}.png',full_page=True,animations='disabled')
                 details.nth(1).locator("summary").click()
                 expect(page.locator('.help-faq details[open]')).to_have_count(0)

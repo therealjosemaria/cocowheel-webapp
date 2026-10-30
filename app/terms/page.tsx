@@ -1,5 +1,6 @@
 import { publicPageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { EMERGENCY_GUIDANCE } from "@/lib/public-information";
 import LegalPage from "@/components/legal-page";
 
 export const metadata = publicPageMetadata("/terms", "Terms | GUMWHEEL", "Terms for participating in the GUMWHEEL carpool pilot, sharing journeys and agreeing on contributions.");
@@ -8,7 +9,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      revision={{ date: "2026-10-25", label: "25 October 2026" }}
+      revision={{ date: "2026-10-30", label: "30 October 2026" }}
     >
       <p>
         These terms describe participation in the GUMWHEEL carpool pilot. Please
@@ -76,8 +77,8 @@ export default function TermsPage() {
         feel unsafe.
       </p>
       <p>
-        GUMWHEEL is not an emergency or monitored safety service. Contact local
-        emergency services when urgent help is needed. Route fit, pickup codes
+        {EMERGENCY_GUIDANCE}{" "}
+        GUMWHEEL is not an emergency or monitored safety service. Route fit, pickup codes
         and location displays do not replace your own checks and judgment.
       </p>
       <h2>Fares and payment</h2>

@@ -68,3 +68,22 @@ for commit 351cc87518f2fb19dc97cfe6d1f7e81756fe2558, aliased to
 www.gumwheel.com. Public HTTP reads returned 200 and confirmed nine FAQs with
 safety second, the same question in /help.md, and the five-rating privacy wording.
 Physical device and authenticated live rating-submission checks remain unverified.
+
+## Emergency guidance follow-up
+
+Source baseline 14fa9b1. Help’s second safety answer, its shared Markdown output
+and Terms now give the same Australian emergency instructions: call Triple Zero
+(000) for police/fire/ambulance, give location, stay on the line, follow the
+operator’s instructions and do not wait for a GUMWHEEL reply. This is informational
+copy; no emergency-response service, monitored reporting or new call control is
+introduced. Terms revision is 30 October 2026.
+
+Source checked on 30 October: [Australian Government Triple Zero guidance](https://www.triplezero.gov.au/Documents/Poster%20-%20Triple%20Zero%20-%20ENGLISH.PDF).
+Lint and production build pass. Four-width discovery/FAQ browser checks pass,
+including the emergency number and not-waiting instruction. Separate Terms checks
+pass at 390/1440px, with the same guidance verified in Markdown Help. Whole Help
+and Terms screens were visually reviewed on phone and desktop: existing regular
+body weight, heading hierarchy, spacing and page width retained. All browser APIs
+were synthetic, third-party requests blocked; no call or real journey action was
+made. No backend change or API restart is required. Deployment recorded below.
+Physical devices and actual emergency calling are not tested.
