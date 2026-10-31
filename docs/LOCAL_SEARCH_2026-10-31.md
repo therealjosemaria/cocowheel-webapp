@@ -159,3 +159,37 @@ connection toast; the privacy screenshot mock was corrected before visual review
 No live mutations or emails were used; physical phones/VPN networks remain untested.
 React review checked asynchronous generation guards, stable hook dependencies,
 shared components and deduplicated hint fetching; no new visual pattern or controls.
+
+### Verified activation of first-visit hints
+
+Implementation c9b73f1b1203d1bbca7a5a89a1ce79b0b481075e was pushed to main.
+Vercel deployment dpl_9aj4Euku2miB7Toxz13FwM41XjkS is READY and aliased to
+www.gumwheel.com for that exact revision. The public /search-country response
+returns only {countryCode:"au"} for the verification connection, matching the
+country-only Cloudflare trace result AU. A caller-supplied CF-IPCountry:FR still
+returns AU through Cloudflare. Public headers confirm private/no-store,
+CDN no-store, X-Robots-Tag:noindex,nofollow and Cloudflare DYNAMIC/Vercel MISS.
+The Vercel-specific CDN control is consumed by Vercel, as expected. No Cloudflare
+configuration edit was needed. Direct Vercel alias behavior is unit tested,
+not claimed from a protected-alias production walkthrough.
+
+Under standing authorization, a consistent mode-600 SQLite backup was validated
+and zero ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE trips checked before backup and again
+immediately before restarting only cocowheels-api at 14:07:40 AEDT, 31 October.
+Post-restart service is active; local/public health are 200. Integrity is ok,
+foreign-key violations zero, and counts unchanged: 135 rides, 79 join requests,
+12 rider posts, six ratings and seven accounts. No schema/env changes.
+
+Live read-only searches verify: AU-biased 2018 returns Australia first with foreign
+alternatives; Redfern with AU returns Australia first; Paris France with AU still
+returns France; unhinted 2018 retains worldwide provider order. A generic urllib
+probe was denied 403 by the edge; browser-compatible curl and the actual guest
+Chromium flow succeeded. This was not an API health failure.
+
+A fresh production Chromium mobile viewport confirms /search-country AU supplies
+the first 2018 search, inferred country is not persisted, selecting the Australian
+result persists the chosen country and adds origin proximity for Redfern, with
+only one hint lookup. A separate synthetic stalled-request check confirms the
+actual 1.5-second client timeout continues worldwide. No login, journey, message
+or email was created. Physical-phone and international/VPN observations remain
+unverified; country estimates are approximate and may be absent.
