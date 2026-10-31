@@ -132,3 +132,35 @@ test("search returns another country's result and country metadata without a har
   });
   assert.deepEqual(places, [{ latitude: -33.86, longitude: 151.2, label: "Sydney, Australia", countryCode: "au" }]);
 });
+
+test("preferred-country results come first without dropping foreign alternatives or changing group order", async () => {
+  let calls = 0;
+  const results = [
+    { lat: 40, lon: 44, formatted: "2018, Armenia", country_code: "am" },
+    { lat: -33.92, lon: 151.21, formatted: "Eastlakes NSW 2018, Australia", country_code: "AU" },
+    { lat: 51, lon: 4, formatted: "2018, Belgium", country_code: "be" },
+    { lat: -33.91, lon: 151.2, formatted: "Rosebery, Australia", country_code: "au" },
+  ];
+  const places = await searchPlaces("2018", undefined, "au", "test", async input => {
+    calls++;
+    const url = new URL(input);
+    assert.equal(url.searchParams.has("filter"), false);
+    assert.equal(url.searchParams.get("bias"), "countrycode:au");
+    return Response.json({ query: { parsed: { postcode: "2018" } }, results });
+  });
+  assert.equal(calls, 1);
+  assert.deepEqual(places.map(p => p.countryCode), ["au", "au", "am", "be"]);
+  assert.deepEqual(places.map(p => p.label), [results[1].formatted, results[3].formatted, results[0].formatted, results[2].formatted]);
+});
+
+test("explicit countries and searches without a preferred country retain provider ranking", async () => {
+  const results = [
+    { lat: 48.86, lon: 2.35, formatted: "Paris, France", country_code: "fr" },
+    { lat: -33, lon: 151, formatted: "Other Australian match", country_code: "au" },
+  ];
+  for (const country of ["au", undefined]) {
+    const places = await searchPlaces(country ? "Paris France" : "Paris", undefined, country, "test", async () =>
+      Response.json({ query: { parsed: country ? { country: "france" } : {} }, results }));
+    assert.deepEqual(places.map(p => p.countryCode), ["fr", "au"]);
+  }
+});

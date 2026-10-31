@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
-import { searchLocation, rememberSearchLocation } from "@/lib/search-location";
+import { searchLocation, rememberSearchLocation, storedCountryPreference } from "@/lib/search-location";
 import RideFieldLabel from "./ride-field-label";
 import { SearchSheet } from "./schedule-fields";
 import { compactAddressLabel } from "@/lib/address-label";
@@ -311,7 +311,7 @@ export function PlaceSearch({
     setLocating(false);
     const previous = searchLocation();
     const preferredLocation = bias ?? previous;
-    const preferredCountry = bias?.countryCode ?? previous?.countryCode ?? countryCode;
+    const preferredCountry = bias?.countryCode ?? previous?.countryCode ?? storedCountryPreference() ?? countryCode;
     const generation = ++searchGeneration.current;
     inputRef.current?.setCustomValidity(searchInputError(text) ?? "");
     if (!inputRef.current?.reportValidity()) return;

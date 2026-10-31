@@ -1,5 +1,10 @@
 # GUMWHEEL Pi deployment
 
+31 October local-search ranking requires an API restart after backup/zero-underway
+checks. No schema, credentials, provider endpoint, query limit or environment
+change. The frontend separately persists country choices; see
+../docs/LOCAL_SEARCH_2026-10-31.md for the release boundary.
+
 30 October: five-minute unread journey reminders add journey_notifications and /api/notifications/reviewed. Existing provider key/from/public origin enable the worker independently of the route-alert flag. No new environment values are required. Back up and check zero accepted/active trips before restarting only cocowheels-api; see ../docs/JOURNEY_EMAIL_REMINDERS.md. No historical reminder backfill.
 
 Public search ownership: optional frontend build variables `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` accept only provider token values, not full HTML tags. They emit public Google / msvalidate.01 metadata; blank values emit nothing. Redeploy the frontend after setting them, then verify in the provider dashboard. DNS verification needs neither variable. See [owner steps](../docs/SEARCH_SETUP.md). No API restart or email/login configuration change is involved.

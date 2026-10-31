@@ -1,5 +1,10 @@
 # Future discovery and localized search — 22 October 2026
 
+31 October update: [local-search persistence and ranking](LOCAL_SEARCH_2026-10-31.md)
+supersedes the provider-only ordering below and makes forward selections refresh
+the existing seven-day country preference. The 30-minute tab location, soft
+provider bias, no hard country restriction and ten-result limit remain unchanged.
+
 Baseline: `c95b657`. Backend/frontend corrections; no schema/configuration changes.
 
 ## Causes and behavior

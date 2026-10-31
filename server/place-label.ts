@@ -103,6 +103,7 @@ export async function searchPlaces(
     });
     if (!response.ok) return [];
     const payload = (await response.json()) as {
+      query?: { parsed?: { country?: unknown } };
       results?: Array<{
         lat?: unknown;
         lon?: unknown;
@@ -111,7 +112,7 @@ export async function searchPlaces(
         country_code?: unknown;
       }>;
     };
-    return (payload.results ?? []).flatMap((place) =>
+    const places = (payload.results ?? []).flatMap((place) =>
       typeof place.lat === "number" && typeof place.lon === "number"
         ? [
             {
@@ -128,6 +129,13 @@ export async function searchPlaces(
           ]
         : [],
     );
+    // Keep the provider's ordering for explicitly named countries. Otherwise
+    // make the preference reliable within the returned set, without exclusions.
+    const explicitCountry = payload.query?.parsed?.country;
+    if (!countryCode || (typeof explicitCountry === "string" && explicitCountry.trim())) return places;
+    const country = countryCode.toLowerCase();
+    return [...places.filter(place => place.countryCode === country),
+      ...places.filter(place => place.countryCode !== country)];
   } catch {
     return [];
   }

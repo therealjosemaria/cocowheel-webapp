@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+31 October address search: preserve shared sheets/results and typography. Selected
+locations refresh the browser’s seven-day country hint; origin coordinates remain
+first for destination proximity. Put returned preferred-country matches before
+foreign alternatives, preserving order within each group; explicitly parsed
+countries retain provider ordering. No automatic GPS prompt, new IP lookup, new
+location control or hard country filter. See LOCAL_SEARCH_2026-10-31.md.
+
 31 October time picker: preserve Any time as the first optional choice and keep
 it selected until explicitly changed. Open the list near the next Sydney
 half-hour for Today/Any date when no clock time is selected. Existing selections

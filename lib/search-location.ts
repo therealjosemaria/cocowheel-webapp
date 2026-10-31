@@ -2,6 +2,47 @@ import type { Pin } from "./client-types";
 
 const key = "cocowheels:search-location:v1";
 const ttl = 30 * 60 * 1000;
+const countryPreferenceKey = "cocowheels:country-preference:v1";
+const countryPreferenceTtlMs = 7 * 24 * 60 * 60 * 1_000;
+
+export function storedCountryPreference() {
+  if (typeof window === "undefined") return null;
+  try {
+    const value: unknown = JSON.parse(
+      window.localStorage.getItem(countryPreferenceKey) ?? "null",
+    );
+    if (
+      !value ||
+      typeof value !== "object" ||
+      !("countryCode" in value) ||
+      !("expiresAt" in value) ||
+      typeof value.countryCode !== "string" ||
+      !/^[a-z]{2}$/i.test(value.countryCode) ||
+      typeof value.expiresAt !== "number" ||
+      value.expiresAt <= Date.now()
+    ) {
+      window.localStorage.removeItem(countryPreferenceKey);
+      return null;
+    }
+    return value.countryCode.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+export function storeCountryPreference(countryCode?: string) {
+  if (typeof window === "undefined" || typeof countryCode !== "string" || !/^[a-z]{2}$/i.test(countryCode)) return;
+  try {
+    window.localStorage.setItem(
+      countryPreferenceKey,
+      JSON.stringify({
+        countryCode: countryCode.toLowerCase(),
+        expiresAt: Date.now() + countryPreferenceTtlMs,
+      }),
+    );
+  } catch {
+    // Searching still works if local browser storage is unavailable.
+  }
+}
 
 // Tab-local convenience state, never a restriction on the user's search.
 export function searchLocation(): Pin | undefined {
@@ -20,6 +61,7 @@ export function searchLocation(): Pin | undefined {
 }
 
 export function rememberSearchLocation(pin: Pin) {
+  storeCountryPreference(pin.countryCode);
   try {
     sessionStorage.setItem(key, JSON.stringify({
       pin: { latitude: pin.latitude, longitude: pin.longitude, countryCode: pin.countryCode },

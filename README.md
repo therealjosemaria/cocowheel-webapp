@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Search selections now refresh the existing seven-day country preference across
+new tabs, including forward-search choices. Selected origins and the existing
+30-minute tab location supply proximity hints. Returned preferred-country matches
+come first while foreign alternatives remain available; queries parsed with an
+explicit country retain provider ordering. No automatic GPS/IP lookup is added.
+See [local search](docs/LOCAL_SEARCH_2026-10-31.md).
+
 The departure-time list opens near the next Sydney half-hour when Any time is
 selected for Today/Any date, while keeping Any time selected. Existing choices
 open at their selected time; an unselected future date starts at midnight. All
@@ -671,8 +678,9 @@ an empty search result; do not interpret this as proof that no place exists.
 Profile/Offer/Find share the last selected search coordinates and country for
 30 minutes in the same tab. Destination prefers its selected origin; other fields
 use the remembered location, with Australia as the initial country preference.
-Results retain provider ranking, may cross states/countries, and selecting a
-different country updates the preference. No city/state exclusion or exact
+Results preserve provider order within preferred/other-country groups, may cross
+states/countries, and selecting a different country updates the preference.
+An explicitly parsed country retains provider ordering across all results. No city/state exclusion or exact
 state-first ranking is promised. See [correction checks](docs/DISCOVERY_LOCATION_2026-10-22.md).
 
 Reverse labels and routes use the SQLite cache described above. Typed place search

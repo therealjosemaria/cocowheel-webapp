@@ -1,5 +1,6 @@
 "use client";
 import ParticipantName from "./participant-name";
+import { storedCountryPreference, storeCountryPreference } from "@/lib/search-location";
 import { JourneyResultsLayout, JourneyResultsMap, JourneyResultsList } from "./journey-results-layout";
 import RideFieldLabel from "./ride-field-label";
 import { FindRiders, PostRideRequest, LiftRequestSwitchPrompt, openLiftRequestId } from "./rider-demands";
@@ -69,8 +70,6 @@ const canonicalPin = (pin: Pin) => ({
   longitude: pin.longitude,
 });
 const placeCachePrefix = "cocowheels:place-label:v1:";
-const countryPreferenceKey = "cocowheels:country-preference:v1";
-const countryPreferenceTtlMs = 7 * 24 * 60 * 60 * 1_000;
 type CachedPlace = { label: string; countryCode?: string };
 const placeCacheKey = (pin: Pin) =>
   `${placeCachePrefix}${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
@@ -104,44 +103,6 @@ function cachePlace(pin: Pin, place: CachedPlace) {
     window.sessionStorage.setItem(placeCacheKey(pin), JSON.stringify(place));
   } catch {
     // Location labelling still works when browser storage is unavailable.
-  }
-}
-function storedCountryPreference() {
-  if (typeof window === "undefined") return null;
-  try {
-    const value: unknown = JSON.parse(
-      window.localStorage.getItem(countryPreferenceKey) ?? "null",
-    );
-    if (
-      !value ||
-      typeof value !== "object" ||
-      !("countryCode" in value) ||
-      !("expiresAt" in value) ||
-      typeof value.countryCode !== "string" ||
-      !/^[a-z]{2}$/i.test(value.countryCode) ||
-      typeof value.expiresAt !== "number" ||
-      value.expiresAt <= Date.now()
-    ) {
-      window.localStorage.removeItem(countryPreferenceKey);
-      return null;
-    }
-    return value.countryCode.toLowerCase();
-  } catch {
-    return null;
-  }
-}
-function storeCountryPreference(countryCode: string) {
-  if (typeof window === "undefined" || !/^[a-z]{2}$/i.test(countryCode)) return;
-  try {
-    window.localStorage.setItem(
-      countryPreferenceKey,
-      JSON.stringify({
-        countryCode: countryCode.toLowerCase(),
-        expiresAt: Date.now() + countryPreferenceTtlMs,
-      }),
-    );
-  } catch {
-    // Searching still works if local browser storage is unavailable.
   }
 }
 const humanError = (error: unknown) => {

@@ -208,3 +208,7 @@ Correcting the fixture to use Today and freeze the driver clock after hydration
 allowed the complete suite to pass. No hydration behaviour was changed. Physical
 phones and real DST-boundary scrolling remain unverified. Frontend deployment
 is recorded after push.
+
+Time-opening implementation b5b40569c0a4ab2549b64c80938e175099831852
+is READY in production as dpl_AcV8h7HbSgAbNNxnMab8L9z7zqnt, aliased to
+www.gumwheel.com. No API restart was needed for this time-list change.
