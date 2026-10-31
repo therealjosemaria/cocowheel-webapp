@@ -1,4 +1,5 @@
 import type { Pin } from "./client-types";
+import { normalizeCountryHint } from "./country-hint";
 
 const key = "cocowheels:search-location:v1";
 const ttl = 30 * 60 * 1000;
@@ -68,4 +69,18 @@ export function rememberSearchLocation(pin: Pin) {
       expiresAt: Date.now() + ttl,
     }));
   } catch { /* Search works without browser storage. */ }
+}
+
+// Country only, once per document. Never persist an inferred hint as a selection.
+let ipCountryRequest: Promise<string | null> | undefined;
+export function ipCountryHint(): Promise<string | null> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  return ipCountryRequest ??= fetch("/search-country", {
+    cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(1500),
+  }).then(async response => {
+    if (!response.ok) return null;
+    const value: unknown = await response.json();
+    return value && typeof value === "object" && "countryCode" in value
+      ? normalizeCountryHint(value.countryCode) : null;
+  }).catch(() => null);
 }

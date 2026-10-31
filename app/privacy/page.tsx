@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-30", label: "30 October 2026" }}
+      revision={{ date: "2026-10-31", label: "31 October 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL carpool pilot handles
@@ -72,6 +72,13 @@ export default function PrivacyPage() {
         without including message text, addresses, GPS or payment details.
         These service reminders are separate from opt-in usual-route matching
         emails. An email already being sent cannot be recalled.
+      </p>
+      <p>
+        Before you select a location, we may use a country estimate supplied by
+        our hosting provider from your IP address to prioritise place searches.
+        This feature uses only the country code and does not save your IP address.
+        Selecting a location overrides the estimate. If no country is available,
+        searches remain worldwide. You can search for another country at any time.
       </p>
       <h2>Location and pickup records</h2>
       <p>

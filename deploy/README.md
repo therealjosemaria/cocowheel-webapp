@@ -129,3 +129,18 @@ without copying tokens, payment identifiers or private locations into reports.
 ```bash
 COCOWHEELS_API_URL=http://127.0.0.1:5060 ./deploy/health-check.sh
 ```
+
+
+## First-visit country hint — 31 October 2026
+
+The frontend dynamic /search-country route must remain outside the /api/* backend
+rewrite. Vercel supplies VERCEL=1 automatically. Canonical Cloudflare-proxied
+hosts require Cloudflare Network → IP Geolocation enabled so CF-IPCountry reaches
+Vercel; missing/unknown hints return null, never Vercel’s proxy country. Direct
+vercel.app aliases use Vercel’s own IP-country header. Do not cache this route:
+private/no-store plus both CDN no-store headers prevent cross-visitor reuse.
+Responses include noindex/nofollow, country only, no IP or account data. No new
+secrets, env vars, database or schema changes. Verify production country/header
+availability after deploy; absence must remain worldwide, not a default.
+The server change explicitly sends Geoapify countrycode:none without a hint and
+requires a conditional backed-up API restart. See docs/LOCAL_SEARCH_2026-10-31.md.

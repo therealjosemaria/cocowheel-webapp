@@ -94,6 +94,7 @@ export async function searchPlaces(
   if (bias) preferences.push(`proximity:${bias.longitude},${bias.latitude}`);
   if (countryCode && /^[a-z]{2}$/i.test(countryCode))
     preferences.push(`countrycode:${countryCode.toLowerCase()}`);
+  else preferences.push("countrycode:none");
   if (preferences.length) url.searchParams.set("bias", preferences.join("|"));
   url.searchParams.set("apiKey", apiKey);
   try {

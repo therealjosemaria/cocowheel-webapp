@@ -1020,7 +1020,7 @@ function DriverForm(props: {
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.origin} destination={props.pins.destination}
-          countryCode={props.countryPreference ?? "au"}
+          countryCode={props.countryPreference ?? undefined}
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <ScheduleFields date={props.schedule.date} time={props.schedule.time}
@@ -1083,7 +1083,7 @@ function RiderForm(props: {
       <div className="form-panel-content">
         <RouteFields sheet
           origin={props.pins.pickup} destination={props.pins.destination}
-          countryCode={props.countryPreference ?? "au"}
+          countryCode={props.countryPreference ?? undefined}
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <ScheduleFields date={props.date} time={props.time} setDate={props.setDate} setTime={props.setTime} optional />

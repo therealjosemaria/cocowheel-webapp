@@ -5,6 +5,9 @@ supersedes the provider-only ordering below and makes forward selections refresh
 the existing seven-day country preference. The 30-minute tab location, soft
 provider bias, no hard country restriction and ten-result limit remain unchanged.
 
+The later IP-hint section in that guide also supersedes the initial Australia
+fallback below: first-visit country comes from hosting metadata or stays absent.
+
 Baseline: `c95b657`. Backend/frontend corrections; no schema/configuration changes.
 
 ## Causes and behavior

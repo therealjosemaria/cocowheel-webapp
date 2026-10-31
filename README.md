@@ -4,7 +4,8 @@ Search selections now refresh the existing seven-day country preference across
 new tabs, including forward-search choices. Selected origins and the existing
 30-minute tab location supply proximity hints. Returned preferred-country matches
 come first while foreign alternatives remain available; queries parsed with an
-explicit country retain provider ordering. No automatic GPS/IP lookup is added.
+explicit country retain provider ordering. First searches without a selected or saved country use a country-only hosting/IP hint;
+missing hints stay worldwide. No automatic GPS request or default country.
 See [local search](docs/LOCAL_SEARCH_2026-10-31.md).
 
 The departure-time list opens near the next Sydney half-hour when Any time is
@@ -677,7 +678,12 @@ explicitly triggered, not submitted on each keystroke. Provider failure may retu
 an empty search result; do not interpret this as proof that no place exists.
 Profile/Offer/Find share the last selected search coordinates and country for
 30 minutes in the same tab. Destination prefers its selected origin; other fields
-use the remembered location, with Australia as the initial country preference.
+use the remembered location. With no selected/saved country, a noncached frontend
+`/search-country` lookup supplies the hosting provider’s IP-country hint (1.5-second
+timeout, once per document). Public Cloudflare hosts use CF-IPCountry; direct
+Vercel aliases use x-vercel-ip-country. Unknown/failing hints remain worldwide,
+explicitly disabling Geoapify’s implicit caller-IP country bias. No default country
+or new raw-IP storage; inferred hints remain in memory only.
 Results preserve provider order within preferred/other-country groups, may cross
 states/countries, and selecting a different country updates the preference.
 An explicitly parsed country retains provider ordering across all results. No city/state exclusion or exact

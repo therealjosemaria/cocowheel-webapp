@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import type { Pin } from "@/lib/client-types";
 import { cocowheelsApi, apiErrorMessage } from "@/lib/api-client";
 import { SEARCH_MAX_LENGTH, searchInputError } from "@/lib/input-validation";
-import { searchLocation, rememberSearchLocation, storedCountryPreference } from "@/lib/search-location";
+import { searchLocation, rememberSearchLocation, storedCountryPreference, ipCountryHint } from "@/lib/search-location";
 import RideFieldLabel from "./ride-field-label";
 import { SearchSheet } from "./schedule-fields";
 import { compactAddressLabel } from "@/lib/address-label";
@@ -22,7 +22,7 @@ export function RouteFields({
   destination,
   setOrigin,
   setDestination,
-  countryCode = "au",
+  countryCode,
   onComplete,
   draftText,
   onDraftText,
@@ -117,7 +117,7 @@ export function RouteFields({
 
 function SheetRouteFields({ origin, destination, setOrigin, setDestination, countryCode, allowClear }: {
   origin?: Pin; destination?: Pin; setOrigin: (pin: Pin | undefined) => void;
-  setDestination: (pin: Pin | undefined) => void; countryCode: string;
+  setDestination: (pin: Pin | undefined) => void; countryCode?: string;
   allowClear: boolean;
 }) {
   const [field, setField] = useState<"origin" | "destination" | null>(null);
@@ -307,11 +307,11 @@ export function PlaceSearch({
     });
     return () => window.cancelAnimationFrame(frame);
   }, [autoFocus, selectOnFocus]);
-  const search = useCallback(() => {
+  const search = useCallback(async () => {
     setLocating(false);
     const previous = searchLocation();
     const preferredLocation = bias ?? previous;
-    const preferredCountry = bias?.countryCode ?? previous?.countryCode ?? storedCountryPreference() ?? countryCode;
+    const knownCountry = bias?.countryCode ?? previous?.countryCode ?? storedCountryPreference() ?? countryCode;
     const generation = ++searchGeneration.current;
     inputRef.current?.setCustomValidity(searchInputError(text) ?? "");
     if (!inputRef.current?.reportValidity()) return;
@@ -322,6 +322,9 @@ export function PlaceSearch({
     setPlaces([]);
     setSearchError(null);
     setResultsOpen(true);
+    setLoading(true);
+    const preferredCountry = knownCountry ?? await ipCountryHint();
+    if (generation !== searchGeneration.current) return;
     const body = JSON.stringify({ text: text.trim(),
       ...(preferredLocation ? { bias: canonicalPin(preferredLocation) } : {}),
       ...(preferredCountry ? { countryCode: preferredCountry } : {}) });

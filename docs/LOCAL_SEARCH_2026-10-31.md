@@ -27,7 +27,8 @@ ignored; search remains usable. This is browser-local, not account/device sync.
 
 Home reuses the shared country helpers for reverse lookups and initial preference.
 At search time, precedence is selected origin country, latest same-tab selection
-country, persistent country, then the field’s Australia fallback. Coordinates
+country, persistent country, then the field’s optional country. The later IP-hint change below removes the
+Australia fallback. Coordinates
 prefer an explicit origin over the latest tab-local selection. The search reads
 persistent country again rather than depending only on Home’s mount-time state.
 An origin selection therefore affects the destination immediately, even if storage
@@ -42,8 +43,8 @@ query.parsed.country, its complete order is retained, allowing explicit overseas
 searches such as Paris France. Unknown/absent country preferences retain provider
 order. This cannot create a local match missing from the provider’s returned set.
 
-No automatic GPS request, IP-location provider or new country-guessing service is
-added. Use my location remains an explicit user action with browser permission.
+That release added no automatic GPS request or IP lookup. The subsequent change
+below adds hosting country metadata, superseding the no-IP-lookup statement. Use my location remains an explicit user action with browser permission.
 This supersedes earlier provider-only ordering statements; query validation,
 rate limits, result labels, cache capacity/TTL, schema and credentials are unchanged.
 
@@ -104,3 +105,57 @@ Vercel production deployment dpl_9MqvDeQoyMgRNJBhSCBc4Szbt8Ri is READY for
 This source includes the already verified b5b4056 time-picker change. Browser
 persistence and UI flows were tested locally with mocks; a physical-phone
 production walkthrough remains unverified.
+
+## First-visit IP country hint — subsequent implementation
+
+Baseline c545814. Selected origin, latest 30-minute tab selection and seven-day
+saved country retain priority; without them, shared PlaceSearch fetches
+/search-country once per document (including null/failure results). The 1.5-second
+lookup timeout fails softly to worldwide search. No inferred hint is written to
+persistent storage. A later selection replaces it, including explicit overseas
+locations; existing generation guards discard outdated asynchronous results.
+No Australia or other default is supplied. Geoapify receives countrycode:none
+when country is absent, disabling its implicit caller-IP country bias. Existing
+proximity and explicit-country handling remain; these are hints, never borders.
+
+The canonical site is Cloudflare-proxied before Vercel. The dynamic frontend route
+therefore reads CF-IPCountry on gumwheel.com/www.gumwheel.com, and does NOT fall
+back to Vercel’s potentially proxy-derived country if it is missing. Direct
+*.vercel.app hosts use x-vercel-ip-country instead. Unknown/local hosts or missing,
+XX/ZZ/malformed values return null. Hosting metadata is read only when VERCEL=1.
+Cloudflare’s IP Geolocation setting must provide its header on the canonical site.
+Country estimates can be wrong with VPNs/mobile networks; user selection wins.
+This is cosmetic search ranking, never authorization, identity or eligibility.
+
+/search-country intentionally sits outside /api/* (rewritten to the Pi API).
+It returns only {countryCode}, never raw IP/coordinates/account details, with
+private/no-store and CDN no-store headers plus X-Robots-Tag:noindex,nofollow.
+No cookies or external geolocation service are added. Hosting providers still
+handle request metadata as described in Privacy; the feature does not persist IPs.
+No sitemap entry, database/schema or user-supplied environment changes.
+
+References: https://developers.cloudflare.com/network/ip-geolocation/ and
+https://vercel.com/docs/headers/request-headers . Geoapify reference above describes
+the implicit countrycode:auto default and countrycode:none override.
+
+Verification: run `npx tsx --test tests/country-hint.test.ts tests/place-label.test.ts
+ tests/search-location.test.ts`, then npm test/lint/build. Browser reproduction is
+`python scripts/check-ip-country.py` against the isolated :3201 preview, plus
+`python scripts/check-local-search.py`. Actual results and activation follow below.
+The backend worldwide-bias change needs the normal backed-up, zero-underway
+conditional API restart; frontend deployment alone does not activate that change.
+
+
+Pre-release checks: all 237 regression tests, lint and production build pass.
+The first-visit browser matrix passes ten scenarios across 390/1440px: valid FR
+hint (proving no Australia default), null/XX/503 responses, saved AU overriding FR,
+one lookup per document, inferred country not persisted, selected AU replacing
+hint and no unexpected writes/runtime errors. The shared handoff suite also
+passes at both widths (Find/Post/Profile, five-day storage, new tab, cache keys).
+Privacy and shared sheets/Profile were visually reviewed at both widths: existing
+regular body hierarchy, buttons, spacing and wrapping are preserved. A screenshot
+fixture originally aborted background API requests and displayed its expected
+connection toast; the privacy screenshot mock was corrected before visual review.
+No live mutations or emails were used; physical phones/VPN networks remain untested.
+React review checked asynchronous generation guards, stable hook dependencies,
+shared components and deduplicated hint fetching; no new visual pattern or controls.

@@ -164,3 +164,14 @@ test("explicit countries and searches without a preferred country retain provide
     assert.deepEqual(places.map(p => p.countryCode), ["fr", "au"]);
   }
 });
+
+test("unhinted searches explicitly disable the provider's implicit IP country default", async () => {
+  for (const bias of [undefined, { latitude: -33.9, longitude: 151.2 }]) {
+    await searchPlaces("2018", bias, undefined, "test", async input => {
+      const url = new URL(input);
+      assert.equal(url.searchParams.get("bias"), bias ? "proximity:151.2,-33.9|countrycode:none" : "countrycode:none");
+      assert.equal(url.searchParams.has("filter"), false);
+      return Response.json({ results: [] });
+    });
+  }
+});
