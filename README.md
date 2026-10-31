@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+The departure-time list opens near the next Sydney half-hour when Any time is
+selected for Today/Any date, while keeping Any time selected. Existing choices
+open at their selected time; an unselected future date starts at midnight. All
+clock options remain available under the existing validation rules. See
+[calendar behaviour](docs/CALENDAR_SEARCH_2026-10-25.md#time-list-opening-position--31-october-2026).
+
 Product guidance must pair actionable errors and limitations with a truthful next
 step: an existing app action, safe alternative or appropriate external service.
 See [copy/recovery rules](docs/UI_STANDARDS.md#helpful-guidance-and-recovery--30-october-2026)

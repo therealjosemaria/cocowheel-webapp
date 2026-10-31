@@ -179,3 +179,32 @@ A frontend push alone does not establish frontend activation.
 4. Test Reset, Escape/Back and Done on both pickers, the final available date,
    and a long address on your phone. Check the mobile keyboard and scrolling.
 5. Open a future matching-email link; it should select that offer on its date.
+
+## Time-list opening position — 31 October 2026
+
+Baseline 9b37986. An optional Any time selection remains the first list item and
+remains selected; the picker does not silently assign a departure. For Today or
+Any date with no specific clock selection, initial scrolling places the next
+Sydney half-hour near the top (12:58 → 13:00, exactly 13:00 → 13:30). An existing
+clock selection retains centred scrolling. An unselected future date starts at
+00:00. At 23:30 or later, Any date opens near 00:00; Today stays near 23:30 when
+there is no later half-hour, without changing the date. Scrolling to Any time or
+using the list’s existing Home key still reaches the flexible choice.
+
+Only opening scroll position changes. All 48 clock choices, current disabled
+time/DST rules, date/time independence, explicit Done/Back semantics, focus trap,
+sheets, typography and API payloads remain unchanged. No API restart is required.
+Three existing schedule regressions, lint and production build pass. Reproduce
+UI checks with an isolated production preview at :3201 (API proxy loopback :1)
+and `python scripts/check-time-opening.py` using Playwright/system Chromium.
+Twelve cases pass at 320/390/844/1440px: near-1pm opening, late-night Today versus
+Any date, future-day midnight, existing driver/rider choices, Any time restoration,
+Done/Back/focus and Sydney clock despite a US browser timezone. No API writes,
+external requests, overflow or page errors. Whole rider/driver picker screens
+were visually reviewed on mobile/desktop; existing typography/control spacing
+retained. The first fixture wrongly assumed Find defaulted to Any date; a second
+run froze the driver clock before hydration and produced mismatched SSR text.
+Correcting the fixture to use Today and freeze the driver clock after hydration
+allowed the complete suite to pass. No hydration behaviour was changed. Physical
+phones and real DST-boundary scrolling remain unverified. Frontend deployment
+is recorded after push.

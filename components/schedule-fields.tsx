@@ -77,7 +77,18 @@ function TimePicker({ date, value, optional, close, confirm }: {
   const [draft, setDraft] = useState(value);
   const list = useRef<HTMLDivElement>(null);
   const [now] = useState(Date.now);
-  useEffect(() => { list.current?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: "center" }); }, []);
+  useEffect(() => {
+    let target = value;
+    if (!target) {
+      target = "00:00";
+      const today = sydneyDateTime(now).date;
+      if (date === "any" || date === today) {
+        const next = sydneyDateTime((Math.floor(now / 1_800_000) + 1) * 1_800_000);
+        target = date !== "any" && next.date !== date ? "23:30" : next.time;
+      }
+    }
+    list.current?.querySelector(`[data-time="${target}"]`)?.scrollIntoView({ block: value ? "center" : "start" });
+  }, [date, value, now]);
   return <SearchSheet label="Departure time" close={close}>
     <div className="clock-options" ref={list} onKeyDown={event => {
       const buttons = Array.from(list.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") ?? []);
@@ -89,7 +100,7 @@ function TimePicker({ date, value, optional, close, confirm }: {
       {Array.from({ length: 48 }, (_, i) => {
         const time = `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`;
         const instant = sydneyInstant(date === "any" ? "2026-01-15" : date, time);
-        return <button key={time} type="button" aria-pressed={draft === time}
+        return <button key={time} type="button" data-time={time} aria-pressed={draft === time}
           disabled={!instant || (!optional && Date.parse(instant) <= now)} onClick={() => setDraft(time)}>{timeCaption(time)}</button>;
       })}
     </div>

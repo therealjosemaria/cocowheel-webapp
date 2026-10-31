@@ -1,5 +1,11 @@
 # Coco Wheels product and UI standards
 
+31 October time picker: preserve Any time as the first optional choice and keep
+it selected until explicitly changed. Open the list near the next Sydney
+half-hour for Today/Any date when no clock time is selected. Existing selections
+stay visible on reopening; future dates with no time start at midnight. Reuse
+the existing sheet, options, Back/Go back/Done controls and spacing.
+
 ## Helpful guidance and recovery — 30 October 2026
 
 Every actionable error or limitation must explain what the person can do next,
