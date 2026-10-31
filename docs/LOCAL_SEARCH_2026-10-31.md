@@ -82,3 +82,25 @@ result-list sheets and full Find/Post/Profile screens were visually inspected
 at phone/desktop widths for hierarchy, spacing, wrapping and overlay placement.
 No visual tokens or controls changed. Physical mobile keyboards, all browser
 storage policies and provider country-parsing variants remain unverified.
+
+## Verified activation
+
+Implementation 9ab51e3ca1bc238ec5f55ba348367f75d1323a91 was pushed to main.
+Under standing conditional authorization, zero ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE
+trips were checked before consistent private SQLite backup and again immediately
+before restarting only cocowheels-api at 13:10:46 AEDT on 31 October 2026.
+Backup and post-restart integrity/FK checks passed; all 135 rides, 79 join requests,
+12 rider posts, six rating records and seven accounts were preserved. Service
+active; local and public health returned 200. No schema/environment changes.
+
+Live read-only search probes returned the Australian 2018 postcode first with
+foreign alternatives retained; Redfern with Sydney proximity returned Australia;
+Paris France with an Australian preference still returned France first. These
+verify current provider/API responses, not all possible future provider changes.
+No live journey, account, message or email was created for verification.
+
+Vercel production deployment dpl_9MqvDeQoyMgRNJBhSCBc4Szbt8Ri is READY for
+9ab51e3ca1bc238ec5f55ba348367f75d1323a91, aliased to www.gumwheel.com.
+This source includes the already verified b5b4056 time-picker change. Browser
+persistence and UI flows were tested locally with mocks; a physical-phone
+production walkthrough remains unverified.
