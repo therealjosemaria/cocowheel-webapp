@@ -175,3 +175,14 @@ returned ok; unauthenticated GET /api/vehicle returned 401. Post-restart databas
 integrity and foreign keys passed, with all 136 trip records retained. No schema
 migration, production account save or acceptance was performed. Frontend push
 and deployment verification remain separate from this API activation.
+
+### Frontend deployment — 5 November 2026
+
+Pushed f48fc0964633fcc35089248c9bed0babdf5fe82c (implementation a640291) to main.
+Vercel deployment dpl_4ZLcck7F1tMeA6zUQdyCiUDSPsAi reached READY with the
+www.gumwheel.com and gumwheel.com production aliases. The live blue Corolla and
+black Ranger WebP responses matched the reviewed local files byte for byte.
+The public health endpoint returned ok and unauthenticated /api/vehicle returned
+401. These smoke checks do not replace the still-unverified physical Safari or
+authenticated production account walkthrough noted above. Local browser server
+stopped after verification; no test accounts or journeys were written to live data.
