@@ -118,3 +118,27 @@ The owner authorized a conditional API restart. A private SQLite online backup
 passed integrity_check with zero underway trips; another fresh check is required
 immediately before restart. A frontend push alone does not activate the new API
 or access rules. No schema migration; production activation is recorded below.
+
+
+### Verified production activation
+
+Implementation c06e115d12bcc2f5a492e850839beec180d04f04 was committed/pushed.
+After owner approval, a private online SQLite backup passed integrity_check;
+a fresh check found zero ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE trips immediately
+before restarting only cocowheels-api at 2026-11-04T04:03:03.205Z (15:03 AEDT).
+No schema migration or other service restart. Table counts remained unchanged:
+135 rides, 79 join requests and 12 rider posts. No live test journey/email.
+
+Local native HTTP and public HTTPS health checks pass. The feed returns only
+bounded role/area/count fields with no-store; there are currently zero qualifying
+posts. All four anonymous discovery/preview checks return 401 verification
+required, including a nonexistent driver reference before lookup. Fetch refuses
+local port 5060 as a bad port; native HTTP verified the listening API instead.
+
+Vercel production deployment dpl_BUDfHu6rpN4uZeUP1NSFjRtjdkqs is READY for the
+exact implementation SHA and aliased to www.gumwheel.com. Fresh guest Chromium
+checks at 390/1440px pass: real feed returns zero, no map/empty label is shown,
+Home actions remain intact, direct preview has the Sign in action and no runtime
+errors or horizontal overflow. The populated map and multiple-icon states were
+verified locally with synthetic records, not by adding posts to production.
+Authenticated production/physical Safari walkthroughs remain unverified.
