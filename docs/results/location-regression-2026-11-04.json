@@ -38,5 +38,15 @@
     "real participant journeys",
     "all browser/provider failures"
   ],
-  "deployment": "pending"
+  "deployment": {
+    "id": "dpl_6KBCo8vz6SiFGwb1RLGwd6pUqyqx",
+    "state": "READY",
+    "public_site": "https://www.gumwheel.com",
+    "live_check": "4 synthetic GPS cases pass; real reverse label API; no live trip writes",
+    "api_restart": false
+  },
+  "implementation_revision": "3a6922f8897531488ad0d4128ea32f96c1b4403b",
+  "harness_failures": [
+    "Initial live alert selector also matched Next route announcer; scoped to .place-search and reran all four cases successfully."
+  ]
 }

@@ -62,3 +62,19 @@ preservation and driver review. Production activation is recorded below.
 
 See [sanitized results](results/location-regression-2026-11-04.json). No load test,
 live participant trip, real permission prompt or hardware GPS test was performed.
+
+
+## Verified deployment
+
+Implementation 3a6922f8897531488ad0d4128ea32f96c1b4403b was pushed; Vercel
+production dpl_6KBCo8vz6SiFGwb1RLGwd6pUqyqx is READY for that exact source and
+aliased to www.gumwheel.com. Four fresh Chromium cases (390/1440, rider/driver)
+pass on production: no automatic GPS, specific denial with one call, simulated
+high-accuracy timeout followed by standard-accuracy success, real place-label
+HTTP200, selected origin and no runtime errors/overflow. Coordinates were a
+synthetic public Sydney landmark; no actual user GPS or live trip writes.
+The initial live harness selector matched both the inline alert and Next's
+route announcer. Scoping it to .place-search fixed the harness and all four
+cases passed; no product change was needed for that selector failure.
+No API restart or configuration change. Physical desktop permission/OS diagnosis
+still requires the user's device; the new message now preserves that distinction.
