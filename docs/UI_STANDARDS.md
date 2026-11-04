@@ -1,5 +1,13 @@
 # Coco Wheels product and UI standards
 
+4 November journey role artwork: driver/rider labels and shared map markers use
+the approved 3D sprite. Role labels use a 20px slot; Home actions use 28px; map
+models use 48px with a 24/40px ground anchor. Preserve natural proportions and
+regular label typography. Car/person map markers have no circular surface; finish
+flags and route/location controls retain their existing symbols. Use the white/silver
+variant on dark CTAs and the graphite/silver variant on light surfaces. This
+supersedes earlier role-outline and 32px role-marker guidance. See JOURNEY_ROLE_ART.md.
+
 31 October address search: preserve shared sheets/results and typography. Selected
 locations refresh the browser’s seven-day country hint; origin coordinates remain
 first for destination proximity. Put returned preferred-country matches before

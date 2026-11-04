@@ -1,0 +1,104 @@
+# Journey role artwork — 4 November 2026
+
+## Scope
+
+Source baseline 38ea32a. The owner approved the generated graphite person/silver
+car concept and explicitly selected **existing journey icons only**. The homepage
+map screenshots remain proposals; no public inventory endpoint or homepage map is
+introduced. No API, identity, GPS, permission, tracking, lifecycle or schema changes.
+
+Shared RideFieldIcon renders the 3D car for driver and the 3D person for rider.
+This reaches Home actions, Help steps, Activity/journey fields, review modals and
+Vehicle details wherever those existing semantic icons are used. Search-result
+cars and Activity card role headers also reuse that same component; the results
+car loses its former blue circular surface and uses a 32px artwork slot.
+Account/profile avatars remain identity photos/placeholders. Other action/location/status icons
+retain their existing SVGs. Labels remain the accessible names; artwork is hidden
+from assistive technology and never adds a keyboard stop.
+
+Shared JourneyMap uses the same sprite/classes: driver is the car, departure and
+pickup retain their existing person meaning. Role markers lose the black circular
+background. Destination flags, route colours, controls, tooltips, popups, map
+providers, public/private visibility and interactions retain their semantics.
+Role markers have a 48px slot and [24,40] ground anchor; driver/pickup overlap uses
+48px separation. Text/ETA labels sit above the taller model with appropriate side
+clearance; destination separation stays 32px. Existing overlap dimming remains.
+
+## Asset and sizing
+
+Approved source: exec-573ec164-ecea-4508-92c3-82c396d084d6.png (1774x887 RGBA),
+generated in this design conversation. It is a single-direction concept pair,
+not a rotatable 3D model, sprite animation or source for reliable travel heading.
+No new sensor data, model rotation or simulated movement is introduced.
+
+Reproduce from that approved source with:
+
+`node scripts/prepare-journey-icons.mjs /path/to/approved-concept.png light`
+
+`node scripts/prepare-journey-icons.mjs /path/to/approved-on-dark-concept.png dark`
+
+The existing sharp dependency resizes the complete composition to 532x266 and
+encodes WebP quality 90 / alpha quality 100. The dark-surface source is a
+colour-only image-generation edit requested by the owner’s contrast correction:
+pale silver clothing/white car, same framing. The edited source is
+exec-57bed0f2-7411-4a1c-8cd7-88eefe6c64fe.png (1774x887 RGBA).
+The light-surface public/brand/journey-roles-3d-v1.webp is 25,016 bytes;
+the on-dark sibling retains the same bounds and alpha. CSS displays proportional
+windows of the matching surface variant; neither subject is stretched. Version the filename when the approved art changes.
+
+CSS bounds refer to the original composition: person x225/y60/w390/h795,
+car x800/y135/w930/h700. Within a 48px slot, person is 46px high and car is 44px
+wide, with a 1px bottom inset. The same normalized geometry scales to labels
+(20px) and Home CTAs (28px). These are optical sizes, not literal physical scale.
+Home’s dark action and existing primary surfaces select the white/silver sibling
+through CSS; light surfaces retain the graphite/silver source. There is no colour
+inversion, glow or new application dark mode. The explicit journey-role-art-on-dark
+class is available for a known dark surface. This is background-dependent, not
+based on the operating system theme.
+No SVG/image-font dependency or new third-party asset host is required.
+
+## Verification
+
+Run `npm test`, `npm run lint`, `npm run build`, then the isolated preview with
+all application APIs mocked: `python scripts/check-home-order.py`,
+`python scripts/check-request-maps.py`, `python scripts/check-request-details.py`,
+and `python scripts/check-journey-role-art.py`.
+Record results and full-screen mobile/desktop visual evidence below. Inspect
+Home, Help, Profile/Vehicle, Activity, driver/rider results and detail maps for
+spacing, wrapping, hierarchy, contrast, asset decoding and marker/label overlap.
+Synthetic fixtures must not create real journeys, accounts, emails or GPS data.
+No API restart is required for this frontend-only change. A push alone is not
+verified deployment; check the exact Vercel revision and public asset after push.
+
+### Verified local checks
+
+All 237 regression tests pass; lint and the final contrast-aware production build
+pass. Browser checks pass at 320/390/844/1440px for Home/menu alignment, keyboard
+order, role navigation, driver/rider search maps, request details and mixed
+Activity spacing (nine cards, equal 10px gaps). The dedicated art check passes at
+390/1440px across Home, Help, Profile/Vehicle, Activity and driver-detail screens:
+both 532x266 assets decode, actual dark/light background selection is correct,
+artwork remains decorative, map model slots are 48px and transparent, and there
+are no runtime errors, unexpected writes or horizontal overflow.
+
+The on-dark asset is 24,798 bytes; both variants together are 49,814 bytes.
+Application APIs and road paths were mocked, with no live account/journey/message,
+email, GPS or acceptance writes. The art-specific visual check allowed read-only
+public OpenStreetMap tiles for synthetic Sydney endpoints; other external traffic
+was blocked. Other browser suites block all external providers.
+
+Whole affected screens were visually reviewed on phone and desktop: Home light
+and dark buttons; Help role headings; expanded Vehicle details; Activity role
+badges/fields; rider search cards; and map/route-detail layouts. Typography, action
+hierarchy, wrapping and controls remain consistent. The new white/silver person
+is visible on the ink Home button, without a glow/inversion or enclosing badge.
+Physical phones, unusual browser image-blocking settings and directional icon
+rotation are not verified; directional rotation is outside this change.
+
+Earlier browser fixtures had stale discovery controls (Edit search/heading versus
+current Back/region), missing pending-request/sent-offer endpoints and selectors
+for Activity's superseded separate wrappers. Those synthetic checks initially
+failed; fixtures were corrected to the current API/unified Details layout and
+rerun successfully. No production behavior was changed to satisfy those fixtures.
+React review found no new hooks, dependencies, duplicated actions or permission
+changes; the old standalone result/Activity role glyphs now reuse RideFieldIcon.

@@ -2,7 +2,7 @@
 import ParticipantName from "./participant-name";
 import { storedCountryPreference, storeCountryPreference } from "@/lib/search-location";
 import { JourneyResultsLayout, JourneyResultsMap, JourneyResultsList } from "./journey-results-layout";
-import RideFieldLabel from "./ride-field-label";
+import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import { FindRiders, PostRideRequest, LiftRequestSwitchPrompt, openLiftRequestId } from "./rider-demands";
 import { VehiclePlatePrompt } from "./vehicle-details";
 import ScheduleFields from "./schedule-fields";
@@ -1371,10 +1371,7 @@ function RideSelection({
                   onClick={() => setSelected(candidate.rideId)}
                 >
                   <span className="ride-option-car" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M5 14.5h14l-1.5-4.3a2 2 0 0 0-1.9-1.4H8.4a2 2 0 0 0-1.9 1.4L5 14.5v3h2v-1h10v1h2v-3Z" />
-                      <path d="M7.5 14.5h.01M16.5 14.5h.01" />
-                    </svg>
+                    <RideFieldIcon icon="driver" />
                   </span>
                   <span className="ride-option-main">
                     <strong>

@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+Journey role icons now use the approved monochrome 3D car/person artwork in shared
+labels and maps, with no circular role-marker backgrounds. The transparent
+WebP pair is shared across both roles, with graphite/silver on light surfaces and
+white/silver on dark buttons. Existing journey behaviour, map visibility and
+location permissions are unchanged; this does not add the homepage-map proposal
+or directional tracking. See [journey artwork](docs/JOURNEY_ROLE_ART.md).
+
 Search selections now refresh the existing seven-day country preference across
 new tabs, including forward-search choices. Selected origins and the existing
 30-minute tab location supply proximity hints. Returned preferred-country matches

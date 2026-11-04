@@ -22,6 +22,7 @@ import {
   ZoomControl,
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
+import { journeyRoleArtClass, type JourneyRoleArt } from "@/lib/journey-role-art";
 
 type Line = {
   points: Pin[];
@@ -54,33 +55,26 @@ const escapeHtml = (value: string) =>
 const locationLabelIcon = (
   markerLabel: Exclude<MarkerLabel, string>,
   index: number,
+  model: boolean,
 ) =>
   divIcon({
     className: "journey-location-label-icon",
     html: `<span class="journey-location-row" data-map-label="${index}"><span class="journey-location-eta"><strong>${markerLabel.etaMinutes}</strong><small>MIN</small></span><span class="journey-location-address">${escapeHtml(markerLabel.text)}</span></span>`,
     iconSize: [0, 0],
-    iconAnchor: [0, 20],
+    iconAnchor: [0, model ? 44 : 20],
   });
 
+const modelMarkerIcon = (role: JourneyRoleArt, label: string) => divIcon({
+  className: "journey-marker-icon",
+  html: `<span class="journey-marker journey-marker-model" role="img" aria-label="${label}"><i class="${journeyRoleArtClass(role)}" aria-hidden="true"></i></span>`,
+  iconSize: [48, 48],
+  iconAnchor: [24, 40],
+});
+
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
-  driver: divIcon({
-    className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-driver" aria-label="Driver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5h14l-1.45-4.35a2 2 0 0 0-1.9-1.36H7.35a2 2 0 0 0-1.9 1.36L4 14.5v3.25c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V17h8v.75c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25V14.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M7.2 14.5h.01M16.8 14.5h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.8"/></svg></span>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  }),
-  departure: divIcon({
-    className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-departure" aria-label="Starting point"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  }),
-  pickup: divIcon({
-    className: "journey-marker-icon",
-    html: '<span class="journey-marker journey-marker-departure" aria-label="Pickup"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.4" fill="currentColor"/><path d="M12 8.5v6m0-4-4 2.7m4-2.7 4 2.7m-4 1-3 5m3-5 3 5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  }),
+  driver: modelMarkerIcon("driver", "Driver"),
+  departure: modelMarkerIcon("rider", "Starting point"),
+  pickup: modelMarkerIcon("rider", "Pickup"),
   destination: divIcon({
     className: "journey-marker-icon",
     html: '<span class="journey-marker journey-marker-destination" aria-label="Destination"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3h14v12H5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 3h4.67v4H5zm9.33 0H19v4h-4.67zM9.67 7h4.66v4H9.67zM5 11h4.67v4H5zm9.33 0H19v4h-4.67z" fill="currentColor"/></svg></span>',
@@ -255,7 +249,7 @@ function PinMarkers({
           pickupPin.latitude,
           pickupPin.longitude,
         ]);
-        if (driverPoint.distanceTo(pickupPoint) <= 32) {
+        if (driverPoint.distanceTo(pickupPoint) <= 48) {
           next.add(driverIndex);
           next.add(pickupIndex);
         }
@@ -306,11 +300,14 @@ function PinMarkers({
             pin.latitude,
             pin.longitude,
           ]);
+          const model = markerKinds?.[index] && markerKinds[index] !== "destination";
+          const sideGap = model ? 30 : 22;
+          const topGap = model ? 46 : 22;
           const options = [
             [baseX + oldX, baseY + oldY],
-            [anchor.x - w / 2, anchor.y - h - 22],
-            [anchor.x + 22, anchor.y - h / 2],
-            [anchor.x - w - 22, anchor.y - h / 2],
+            [anchor.x - w / 2, anchor.y - h - topGap],
+            [anchor.x + sideGap, anchor.y - h / 2],
+            [anchor.x - w - sideGap, anchor.y - h / 2],
             [anchor.x - w / 2, anchor.y + 22],
           ];
           const score = ([x, y]: number[]) => {
@@ -374,7 +371,7 @@ function PinMarkers({
       map.off("movestart zoomstart", hideConnectors);
       svg.remove();
     };
-  }, [map, pins, markerLabels, labelPins]);
+  }, [map, pins, markerKinds, markerLabels, labelPins]);
 
   return (
     <>
@@ -423,7 +420,7 @@ function PinMarkers({
                 position={[labelPin.latitude, labelPin.longitude]}
                 className="journey-location-label"
                 direction="top"
-                offset={[0, -16]}
+                offset={[0, markerKind === "destination" ? -16 : -44]}
                 opacity={1}
                 permanent
               >
@@ -433,7 +430,7 @@ function PinMarkers({
             {markerLabel && typeof markerLabel !== "string" ? (
               <Marker
                 position={[labelPin.latitude, labelPin.longitude]}
-                icon={locationLabelIcon(markerLabel, index)}
+                icon={locationLabelIcon(markerLabel, index, markerKind !== "destination")}
                 interactive={false}
                 keyboard={false}
                 zIndexOffset={1000}

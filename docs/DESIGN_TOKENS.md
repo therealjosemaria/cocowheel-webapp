@@ -1,5 +1,13 @@
 # Coco Wheels visual system
 
+4 November journey role artwork: driver/rider labels and shared map markers use
+the approved 3D sprite. Role labels use a 20px slot; Home actions use 28px; map
+models use 48px with a 24/40px ground anchor. Preserve natural proportions and
+regular label typography. Car/person map markers have no circular surface; finish
+flags and route/location controls retain their existing symbols. Use the white/silver
+variant on dark CTAs and the graphite/silver variant on light surfaces. This
+supersedes earlier role-outline and 32px role-marker guidance. See JOURNEY_ROLE_ART.md.
+
 30 October reminder emails reuse brandedEmailHtml with the same 15px original logo, 6px wordmark gap and optical alignment, 560px email container and existing CTA styling. No new palette or in-app controls. Help adds one shared FAQ; Privacy reuses legal body styles.
 
 29 October Home session gate introduces no visual tokens. Keep the hero, CTA spacing/icons and existing authenticated reconnect message styles unchanged; review both successful and failed account states.

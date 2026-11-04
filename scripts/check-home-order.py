@@ -22,19 +22,19 @@ with sync_playwright() as p:
         buttons = page.locator('.role-choice > button')
         expect(buttons).to_have_text(['FIND A JOURNEY', 'POST A JOURNEY'])
         for button in buttons.all():
-            icon = button.locator('svg')
+            icon = button.locator('.journey-role-art')
             expect(icon).to_have_attribute('aria-hidden', 'true')
-            expect(icon).to_have_attribute('focusable', 'false')
-            expect(icon).to_have_attribute('stroke', 'currentColor')
+            expect(icon).to_have_count(1)
+            assert icon.evaluate('(el) => el.tabIndex') == -1
             group = button.locator('.ride-field-label').bounding_box()
             box = button.bounding_box()
             assert abs(group['x'] + group['width']/2 - box['x'] - box['width']/2) < 1
             assert abs(group['y'] + group['height']/2 - box['y'] - box['height']/2) < 1
             icon_box = icon.bounding_box()
             label_box = button.locator('.ride-field-label > span').bounding_box()
-            assert icon_box['width'] == icon_box['height'] == 18
+            assert icon_box['width'] == icon_box['height'] == 28
             assert abs(label_box['x'] - icon_box['x'] - icon_box['width'] - 8) < 1
-            assert icon.evaluate('(el) => getComputedStyle(el).stroke') == button.evaluate('(el) => getComputedStyle(el).color')
+            assert 'journey-roles-3d-v1' in icon.evaluate('(el) => getComputedStyle(el, "::before").backgroundImage')
         assert buttons.nth(0).bounding_box()['y'] < buttons.nth(1).bounding_box()['y']
         assert buttons.nth(0).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(17, 24, 39)'
         assert buttons.nth(1).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(255, 255, 255)'
@@ -59,11 +59,11 @@ with sync_playwright() as p:
         expect(page.get_by_role('heading', name='Journey requests', exact=True)).to_be_visible()
         page.screenshot(path=f'/tmp/find-riders-search-{width}.png', full_page=True, animations='disabled')
         page.get_by_role('button', name='SEARCH', exact=True).click()
-        expect(page.get_by_role('button', name='Edit search', exact=True)).to_be_visible()
-        expect(page.get_by_role('heading', name='Journey requests', exact=True)).to_be_visible()
+        expect(page.get_by_role('button', name='Back to route search', exact=True)).to_be_visible()
+        expect(page.get_by_role('region', name='Journey requests', exact=True)).to_be_visible()
         page.screenshot(path=f'/tmp/find-riders-results-{width}.png', full_page=True, animations='disabled')
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-        page.get_by_role('button', name='Edit search', exact=True).click()
+        page.get_by_role('button', name='Back to route search', exact=True).click()
         page.get_by_role('button', name='Back', exact=True).click()
         mobile = width < 1000
         if mobile:

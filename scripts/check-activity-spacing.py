@@ -8,7 +8,7 @@ ride = {'rideId': 'COCO-TEST123', 'status': 'CANCELLED', 'driverAlias': 'driver0
 post = {'id': 'post-1', 'origin': pin, 'destination': pin, 'date': 'any', 'time': '',
         'status': 'CANCELLED', 'offers': []}
 offer = {'id': 'offer-1', 'rideId': 'COCO-TEST123', 'driverAlias': 'driver01',
-         'departureAt': '2026-10-27T01:00:00Z', 'priceAud': 0, 'status': 'PENDING'}
+         'departureAt': '2026-10-27T01:00:00Z', 'priceAud': 0, 'status': 'PENDING', 'origin': pin, 'destination': pin}
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
     for width in [320, 390, 844, 1440]:
@@ -24,7 +24,7 @@ with sync_playwright() as p:
             elif path == 'current': data = {'current': None, 'currents': [
                 {'role':'DRIVER','ride':dict(ride,rideId='COCO-OPEN',status='PUBLISHED')},
                 {'role':'DRIVER','ride':dict(ride,rideId='COCO-REQUESTED',status='REQUESTED')},
-                {'role':'RIDER','ride':dict(ride,rideId='COCO-PENDING',status='REQUESTED',request={'requestId':'pending-1','status':'PENDING'})},
+                {'role':'RIDER','ride':dict(ride,rideId='COCO-PENDING',status='REQUESTED',request={'requestId':'pending-1','status':'PENDING','pickup':pin,'destination':pin})},
                 {'role':'DRIVER','ride':dict(ride,rideId='COCO-ACCEPTED',status='ACCEPTED')}]}
             elif path == 'history': data = {'driver': [ride, dict(ride, rideId='COCO-TEST456')], 'rider': []}
             elif path == 'rider-demands':
@@ -37,7 +37,8 @@ with sync_playwright() as p:
         page.goto(BASE + '/activity')
         cards = page.locator('.activity-card')
         expect(cards).to_have_count(9)
-        current = page.locator('.activity-current .activity-card')
+        posts = cards.filter(has=page.locator('a[href^="/activity/requests/"], a[href^="/activity/offers/"]'))
+        current = cards.filter(has=page.locator('a[href^="/activity/COCO-OPEN"], a[href^="/activity/COCO-REQUESTED"], a[href^="/activity/COCO-PENDING"], a[href^="/activity/COCO-ACCEPTED"]'))
         expect(current.get_by_text('Available', exact=True)).to_have_count(2)
         expect(current.get_by_text('Request pending', exact=True)).to_be_visible()
         expect(current.get_by_text('Awaiting pickup', exact=True)).to_be_visible()
@@ -54,14 +55,14 @@ with sync_playwright() as p:
         expect(page.locator('.demand-activity details')).to_have_count(0)
         expect(page.get_by_text('Withdrawn', exact=True)).to_be_visible()
         expect(page.get_by_role('button', name='Accept ride', exact=True)).to_have_count(0)
-        expect(page.locator('.demand-activity .activity-open')).to_have_count(2)
-        expect(page.locator('.demand-activity .activity-role svg')).to_have_count(3)
+        expect(posts.locator('.activity-open')).to_have_count(3)
+        expect(posts.locator('.activity-role .journey-role-art')).to_have_count(3)
         boxes = [cards.nth(i).bounding_box() for i in range(9)]
         for before, after in zip(boxes, boxes[1:]):
             assert abs(after['y'] - before['y'] - before['height'] - 10) < 1
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.screenshot(path=f'/tmp/activity-spacing-{width}.png', full_page=True, animations='disabled')
-        page.locator('.demand-activity .activity-open').first.click()
+        posts.locator('.activity-open').first.click()
         expect(page.get_by_role('button', name='Accept ride', exact=True)).to_be_visible()
         page.get_by_role('button', name='Withdraw post', exact=True).click()
         expect(page.get_by_role('dialog', name='Withdraw your post?', exact=True)).to_be_visible()

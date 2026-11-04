@@ -19,6 +19,9 @@
   --icon-label: 14px;
   --icon-field: 18px;
   --icon-map: 21px;
+  --icon-role: 20px;
+  --icon-role-home: 28px;
+  --marker-role-size: 48px;
   --marker-size: 32px;
   --radius-control: 10px;
   --surface: #ffffff;
@@ -726,6 +729,54 @@ button:disabled {
   align-items: center;
   gap: 5px;
 }
+/* Approved 3D artwork, displayed as proportional windows of 25 KB surface variants.
+   Source bounds and preparation are documented in docs/JOURNEY_ROLE_ART.md. */
+.journey-role-art {
+  --role-art-size: var(--icon-role);
+  position: relative;
+  display: inline-block;
+  width: var(--role-art-size);
+  height: var(--role-art-size);
+  flex: 0 0 var(--role-art-size);
+  vertical-align: middle;
+}
+.journey-role-art::before {
+  content: "";
+  position: absolute;
+  bottom: 2.083333%;
+  display: block;
+  background-image: url("/brand/journey-roles-3d-v1.webp");
+  background-repeat: no-repeat;
+}
+.journey-role-art-driver::before {
+  width: 91.666667%;
+  height: 68.996416%;
+  left: 4.166667%;
+  background-size: 190.752688% 126.714286%;
+  background-position: 94.78673% 72.192513%;
+}
+.journey-role-art-rider::before {
+  width: 47.012579%;
+  height: 95.833333%;
+  left: 26.493711%;
+  background-size: 454.871795% 111.572327%;
+  background-position: 16.257225% 65.217391%;
+}
+.role-card .journey-role-art { --role-art-size: var(--icon-role-home); }
+.role-card-primary .journey-role-art::before,
+.primary .journey-role-art::before,
+.journey-role-art-on-dark::before {
+  background-image: url("/brand/journey-roles-3d-v1-on-dark.webp");
+}
+.journey-marker.journey-marker-model {
+  width: var(--marker-role-size);
+  height: var(--marker-role-size);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.journey-marker-model .journey-role-art { --role-art-size: var(--marker-role-size); }
 .ride-field-label svg {
   width: var(--icon-label);
   height: var(--icon-label);
@@ -1333,17 +1384,13 @@ p {
   white-space: nowrap;
   background: rgb(255 255 255 / 94%);
 }
-.journey-marker-departure,
-.journey-marker-driver,
 .journey-marker-destination {
   border-radius: 50%;
   color: #ffffff;
   background: #111827;
   box-shadow: 0 2px 8px rgb(15 23 42 / 20%);
 }
-.journey-marker-destination svg,
-.journey-marker-driver svg,
-.journey-marker-departure svg {
+.journey-marker-destination svg {
   width: var(--icon-map);
   height: var(--icon-map);
 }
@@ -2013,19 +2060,8 @@ p {
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: 50%;
-  color: #2563eb;
-  background: #eff6ff;
 }
-.ride-option-car svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
+.ride-option-car .journey-role-art { --role-art-size: 32px; }
 .ride-option-main {
   display: contents;
 }
