@@ -954,8 +954,7 @@ p {
   min-height: calc(100svh - 250px);
   align-content: center;
   gap: 12px;
-  padding: 0 0 24px;
-  transform: translateY(-3vh);
+  padding: 48px 0 24px;
 }
 .home-page-content {
   padding-bottom: 0;
@@ -963,14 +962,14 @@ p {
 .home-presence {
   position: relative;
   width: min(100%, 680px);
-  min-height: 160px;
+  min-height: 200px;
   margin-top: 12px;
   justify-self: center;
   overflow: hidden;
   border-radius: var(--radius-control);
   background: var(--surface-subtle);
 }
-.home-presence-map { width: 100%; height: 160px; cursor: default; }
+.home-presence-map { width: 100%; height: 200px; cursor: default; }
 .home-presence-map .leaflet-marker-icon { pointer-events: none; }
 .presence-map-frame { position: relative; }
 .home-hero {
@@ -991,6 +990,7 @@ p {
 .home-hero span {
   display: block;
 }
+.home-current-journeys { display: grid; gap: 12px; padding-bottom: 24px; }
 .home-current-ride {
   display: grid;
   width: 100%;
@@ -2785,7 +2785,7 @@ p {
     min-height: 64px;
     justify-self: center;
   }
-  .role-choice > .home-current-ride {
+  .home-current-journeys > .home-current-ride {
     width: min(100%, 360px);
     justify-self: center;
   }

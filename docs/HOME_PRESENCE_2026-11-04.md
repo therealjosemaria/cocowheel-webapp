@@ -1,5 +1,9 @@
 # Home presence and discovery access — 4 November 2026
 
+5 November: [Home layout](HOME_LAYOUT_2026-11-05.md) increases map height from
+160px to 200px and places personal activity outside/below the centred primary
+group. Empty-map behavior and all privacy rules below remain unchanged.
+
 5 November: [shared map credits and colour tiles](MAP_CREDITS_2026-11-05.md)
 supersede the monochrome Home tiles below. Credits now share the journey maps'
 bottom-left component and styling; discovery/privacy behavior is unchanged.

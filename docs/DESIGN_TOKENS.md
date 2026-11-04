@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+5 November Home layout: the presence map is 200px tall. Personal activity sits
+below the centred hero/action/map group, so activity updates cannot reposition
+that group. Existing card styles and destinations remain. See
+[Home layout](HOME_LAYOUT_2026-11-05.md).
+
 5 November map consistency: Home and journey maps share bottom-left credits,
 regular caption text, 70% white background, soft 5px corners and no shadow.
 Home now uses the same colour tiles as journey maps. See

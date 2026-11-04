@@ -902,6 +902,7 @@ function Home({
   onBegin: (role: Role) => void;
 }) {
   return (
+    <>
     <div className="role-choice">
       <h1 className="home-hero">
         <span>Share your journey.</span>
@@ -916,10 +917,13 @@ function Home({
         <RideFieldLabel icon="driver">POST A JOURNEY</RideFieldLabel>
       </button>
       <HomePresence />
+    </div>
+    {current.length > 0 && <section className="home-current-journeys" aria-label="Your journeys">
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />
       ))}
-    </div>
+    </section>}
+    </>
   );
 }
 function OwnOfferPrompt({ close }: { close: () => void }) {
