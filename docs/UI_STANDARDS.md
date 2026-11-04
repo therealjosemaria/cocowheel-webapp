@@ -1,5 +1,9 @@
 # Coco Wheels product and UI standards
 
+4 November pose refinement: the rider now stands still in a waiting pose in both
+surface variants; the existing car artwork and all icon slots remain unchanged.
+See [journey artwork](JOURNEY_ROLE_ART.md#standing-rider-refinement).
+
 4 November journey role artwork: driver/rider labels and shared map markers use
 the approved 3D sprite. Role labels use a 20px slot; Home actions use 28px; map
 models use 48px with a 24/40px ground anchor. Preserve natural proportions and

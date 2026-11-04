@@ -115,3 +115,49 @@ live mobile screen was also visually inspected. These checks performed no
 journey/account/message writes, GPS access or test emails. Authenticated maps and
 Activity were verified with synthetic local APIs, not with live participant data.
 The API was not restarted; no backend configuration or data changes were needed.
+
+
+## Standing rider refinement
+
+4 November 2026: the owner's stationary/waiting correction supersedes the walking
+person above. Both feet are planted, legs relaxed and arms at the sides. The
+original car WebPs and driver sprite coordinates are unchanged byte for byte;
+only rider backgrounds use new transparent 128x256 assets:
+
+- public/brand/journey-person-standing-v1.webp (7,294 bytes)
+- public/brand/journey-person-standing-v1-on-dark.webp (8,066 bytes)
+
+Built-in image generation edited the approved style into a 1774x887 transparent
+pair, source exec-21342ee6-10ff-47f4-ab16-6b6ce878ab00.png. Final prompt: change the
+faceless person's pose to standing still waiting, both feet planted, relaxed
+straight legs and arms at sides; preserve polished monochrome 3D materials,
+clothing, high three-quarter camera and lower-right facing direction; render
+matching graphite and off-white people side by side on transparent alpha with
+no car, text, circle or pedestal. No model or tracking behavior was added.
+
+Reproduce web preparation with:
+
+`node scripts/prepare-standing-person.mjs /path/to/approved-standing-pair.png`
+
+The helper splits the two halves, trims empty margins, fits each proportionally
+inside 128x256 transparent pixels and encodes WebP quality90/alpha100. CSS fits
+these inside the existing rider window. The car still uses its original sprites;
+label/Home/map slots, ground anchor and dark-surface rules remain unchanged.
+Validation on 4 November: npm run build, npm run lint and all 237 npm tests pass.
+Reproducible browser checks (using /tmp/gumwheel-notification-check-env/bin/python):
+
+- scripts/check-journey-role-art.py: 390/1440px, correct role/surface asset,
+  four WebPs decode, decorative semantics, 48px transparent map model, no errors,
+  overflow or writes. Home, Help, Profile, Activity and driver detail captured.
+- scripts/check-home-order.py: 320/390/844/1440px, button alignment, keyboard
+  order, navigation, spacing and responsive layout pass.
+- scripts/check-request-details.py: all four widths pass for synthetic rider
+  request/detail/status/recovery flows; its map uses generic endpoint dots.
+
+Whole Home, Help, Profile and Activity screens were visually reviewed at 390/1440px;
+Home's pale rider is clear on ink and the graphite rider on light surfaces. The
+standing pose reads clearly without competing with labels; car, typography, gaps
+and action hierarchy remain unchanged. Driver map/detail was also reviewed.
+APIs were mocked, no live accounts/trips/GPS/email writes; art checks permit only
+read-only public tiles for synthetic endpoints. Physical phones and authenticated
+production trips remain unverified. Production activation is pending this push.

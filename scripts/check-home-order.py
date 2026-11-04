@@ -34,7 +34,8 @@ with sync_playwright() as p:
             label_box = button.locator('.ride-field-label > span').bounding_box()
             assert icon_box['width'] == icon_box['height'] == 28
             assert abs(label_box['x'] - icon_box['x'] - icon_box['width'] - 8) < 1
-            assert 'journey-roles-3d-v1' in icon.evaluate('(el) => getComputedStyle(el, "::before").backgroundImage')
+            expected_asset = 'journey-person-standing-v1-on-dark.webp' if 'journey-role-art-rider' in icon.get_attribute('class') else 'journey-roles-3d-v1.webp'
+            assert expected_asset in icon.evaluate('(el) => getComputedStyle(el, "::before").backgroundImage')
         assert buttons.nth(0).bounding_box()['y'] < buttons.nth(1).bounding_box()['y']
         assert buttons.nth(0).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(17, 24, 39)'
         assert buttons.nth(1).evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(255, 255, 255)'
