@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-10-31", label: "31 October 2026" }}
+      revision={{ date: "2026-11-04", label: "4 November 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL carpool pilot handles
@@ -110,12 +110,22 @@ export default function PrivacyPage() {
       <h2>Who can see your information</h2>
       <p>
         Your username is your visible participant name. Profile photos are public.
-        Published driver offers
-        expose the driver’s name, planned route endpoints and fare
-        to people browsing rides, including visitors who have not
-        signed in. Do not publish an address you are unwilling to share.
+        Published driver offers share the driver’s name, planned route endpoints
+        and fare with signed-in people browsing journeys. Rider-posted requests
+        also require sign-in to browse. Do not publish an address you are
+        unwilling to share with other signed-in members.
         The driver’s live GPS is not public; it is shared with the accepted rider
         during the active trip, and remains visible to the driver.
+      </p>
+      <p>
+        The public homepage shows car and person icons for areas with open
+        journey posts and requests. Positions are grouped into fixed geographic
+        cells, with up to three separate icons per area and a capped total across
+        the map. These icons do not identify individual posts or people. This preview does not
+        include names, addresses, destinations, journey references, departure
+        times or live GPS, and its icons do not open journey details. Closing or
+        expiring a post removes it from later feed refreshes. The preview refreshes
+        once a minute while visible, subject to network availability.
       </p>
       <p>
         Requests to join a specific driver’s ride are shared with that driver

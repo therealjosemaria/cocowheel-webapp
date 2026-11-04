@@ -960,6 +960,20 @@ p {
 .home-page-content {
   padding-bottom: 0;
 }
+.home-presence {
+  position: relative;
+  width: min(100%, 680px);
+  min-height: 160px;
+  margin-top: 12px;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+}
+.home-presence-map { width: 100%; height: 160px; cursor: default; }
+.home-presence-map .leaflet-tile-pane { filter: grayscale(1); opacity: 0.7; }
+.home-presence-map .leaflet-marker-icon { pointer-events: none; }
+.home-presence-map .leaflet-control-attribution { font-size: var(--text-caption); }
 .home-hero {
   display: flex;
   width: 100%;

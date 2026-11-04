@@ -22,7 +22,8 @@ import {
   ZoomControl,
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
-import { journeyRoleArtClass, type JourneyRoleArt } from "@/lib/journey-role-art";
+import { modelMarkerIcon } from "@/lib/map-role-icon";
+import { MAP_TILE_URL } from "@/lib/map-style";
 
 type Line = {
   points: Pin[];
@@ -63,13 +64,6 @@ const locationLabelIcon = (
     iconSize: [0, 0],
     iconAnchor: [0, model ? 44 : 20],
   });
-
-const modelMarkerIcon = (role: JourneyRoleArt, label: string) => divIcon({
-  className: "journey-marker-icon",
-  html: `<span class="journey-marker journey-marker-model" role="img" aria-label="${label}"><i class="${journeyRoleArtClass(role)}" aria-hidden="true"></i></span>`,
-  iconSize: [48, 48],
-  iconAnchor: [24, 40],
-});
 
 const mapMarkerIcons: Record<MarkerKind, ReturnType<typeof divIcon>> = {
   driver: modelMarkerIcon("driver", "Driver"),
@@ -494,7 +488,7 @@ export default function JourneyMap({
         attributionControl={false}
         className="journey-map"
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url={MAP_TILE_URL} />
         {lines.map((line, index) => (
           <Polyline
             key={index}

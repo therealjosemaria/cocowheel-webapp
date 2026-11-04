@@ -1,5 +1,10 @@
 # Rider-posted requests and driver discovery
 
+4 November: Home displays only anonymous role/area cells for open posts, with no
+request IDs, usernames or endpoint labels. Both discovery roles require verified
+email sign-in; exact accepted-pair GPS and request ownership remain unchanged.
+See [Home presence](HOME_PRESENCE_2026-11-04.md).
+
 30 October: five-minute unread service-email reminders and server-side review acknowledgements are described in [JOURNEY_EMAIL_REMINDERS.md](JOURNEY_EMAIL_REMINDERS.md). This supersedes earlier in-app-only statements for new requests, driver offers, accepted joins and unread messages after backend activation; no historical events are backfilled.
 
 ## Offer details and active status text — 28 October

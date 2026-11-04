@@ -1,5 +1,10 @@
 # Acceptance-gated GPS privacy — 22 October 2026
 
+4 November: [Home presence](HOME_PRESENCE_2026-11-04.md) adds an area-only public
+projection and requires verified sign-in for driver discovery/previews too.
+This supersedes the older public planned-endpoint visibility below; accepted-pair
+GPS authorization remains unchanged.
+
 Baseline `c95b657`, alongside the pending discovery/location corrections.
 Supersedes published-driver public tracking. No schema migration or deletion.
 

@@ -140,6 +140,7 @@ export default function RidePreviewClient({
 }) {
   const router = useRouter();
   const [publicRide, setPublicRide] = useState<PreviewRide | null>(null);
+  const [verificationRequired, setVerificationRequired] = useState(false);
   const [driverDurationSeconds, setDriverDurationSeconds] = useState<
     number | null
   >(null);
@@ -278,19 +279,29 @@ export default function RidePreviewClient({
         (!driverOwned && participantStatus === "REQUESTED"));
     if (!shouldFetchPublicPreview) return;
     let cancelled = false;
+    let authBlocked = false;
     const refresh = () => {
+      if (authBlocked) return;
       void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
         `/api/rides/${encodeURIComponent(rideId)}/preview`,
       )
         .then((result) => {
           if (!cancelled) {
             setPublicRide(result.ride);
+            setVerificationRequired(false);
             setPreviewClock(Date.parse(result.serverNow) || Date.now());
             setError(null);
           }
         })
         .catch((reason) => {
           if (cancelled) return;
+          if (reason instanceof ApiError && reason.code === "UNIVERSITY_VERIFICATION_REQUIRED") {
+            authBlocked = true;
+            setPublicRide(null);
+            setVerificationRequired(true);
+            setError("Sign in to view this journey.");
+            return;
+          }
           if (
             reason instanceof ApiError &&
             [401, 403, 404].includes(reason.status)
@@ -307,9 +318,12 @@ export default function RidePreviewClient({
         });
     };
     refresh();
+    const identityChanged = () => { authBlocked = false; refresh(); };
+    window.addEventListener("cocowheels:identity-changed", identityChanged);
     const timer = window.setInterval(refresh, 15000);
     return () => {
       cancelled = true;
+      window.removeEventListener("cocowheels:identity-changed", identityChanged);
       window.clearInterval(timer);
     };
   }, [activityRide, driverOwned, participantStatus, rideId]);
@@ -727,8 +741,10 @@ export default function RidePreviewClient({
       {error && !ride ? (
         <>
           <div className="ride-preview-content">
-            <h2>Not available</h2>
+            <h2>{verificationRequired ? "Sign in" : "Not available"}</h2>
             <p className="intro">{error}</p>
+            {verificationRequired && <div className="ride-action-buttons"><button type="button" className="primary"
+              onClick={() => window.dispatchEvent(new CustomEvent("cocowheels:verify-university"))}>Sign in</button></div>}
           </div>
         </>
       ) : !ride ? (

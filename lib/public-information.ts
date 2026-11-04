@@ -20,7 +20,7 @@ export const HELP_FAQS = [
   },
   {
     question: "Do I need an app or a university email?",
-    answer: "GUMWHEEL works in your phone or desktop browser, with no app download. You can sign in with any valid email address by entering the code sent to your inbox. A university email is not required.",
+    answer: "GUMWHEEL works in your phone or desktop browser, with no app download. You can sign in with any valid email address by entering the code sent to your inbox. A university email is not required. Sign in to view journey listings and details.",
   },
   {
     question: "How will I know about journey updates?",

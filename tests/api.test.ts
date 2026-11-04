@@ -31,10 +31,10 @@ test("default API retires existing sample offers and never creates replacements 
   try {
     for (let i = 0; i < 3; i++) {
       const response = await fetch(
-        `http://127.0.0.1:${address.port}/api/availability`,
+        `http://127.0.0.1:${address.port}/api/home-presence`,
       );
       assert.equal(response.status, 200);
-      assert.deepEqual((await response.json()).rides, []);
+      assert.deepEqual((await response.json()).cells, []);
     }
     assert.equal(
       (
@@ -107,15 +107,15 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
   assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}`;
   try {
-    const list = await json(`${base}/api/availability`, "GET");
+    const token = await universityLogin(base, "test0001");
+    const list = await json(`${base}/api/availability`, "GET", undefined, token);
     const id = (list.body.rides as Array<{ rideId: string }>)[0].rideId;
-    const preview = await json(`${base}/api/rides/${id}/preview`, "GET");
+    const preview = await json(`${base}/api/rides/${id}/preview`, "GET", undefined, token);
     const route = (
       preview.body.ride as {
         plannedRoute: { origin: unknown; destination: unknown };
       }
     ).plannedRoute;
-    const token = await universityLogin(base, "test0001");
     const joined = await json(
       `${base}/api/rides/${id}/requests`,
       "POST",
@@ -138,7 +138,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
       "ACCEPTED",
     );
     assert.equal(
-      ((await json(`${base}/api/availability`, "GET")).body.rides as unknown[])
+      ((await json(`${base}/api/availability`, "GET", undefined, token)).body.rides as unknown[])
         .length,
       2,
     );
@@ -164,7 +164,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
       assert.equal((result.body.ride as { status: string }).status, status);
       assert.equal(
         (
-          (await json(`${base}/api/availability`, "GET")).body
+          (await json(`${base}/api/availability`, "GET", undefined, token)).body
             .rides as unknown[]
         ).length,
         2,
@@ -177,7 +177,7 @@ test("sample HTTP flow accepts, reserves, simulates and releases a sample", asyn
       token,
     );
     assert.equal(completed.response.status, 200);
-    const renewed = (await json(`${base}/api/availability`, "GET")).body
+    const renewed = (await json(`${base}/api/availability`, "GET", undefined, token)).body
       .rides as Array<{ rideId: string }>;
     assert.equal(renewed.length, 3);
     assert.equal(
@@ -248,13 +248,13 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.equal(prematureLocation.body.error, "LOCATION_NOT_ALLOWED");
     const prematureClaim = await json(`${base}/api/rides/${driverRide.rideId}/location-source`, "POST", {}, driverToken);
     assert.equal(prematureClaim.body.error, "LOCATION_NOT_ALLOWED");
-    const publicPreview = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET");
+    const publicPreview = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET", undefined, riderToken);
     assert.equal("driverLocation" in (publicPreview.body.ride as Record<string, unknown>), false);
     const riderSearch = await json(`${base}/api/search`, "POST", {
       pickup: { latitude: -33.855, longitude: 151.225 },
       destination: { latitude: -33.82, longitude: 151.265 },
       requestedDepartureAt: new Date(Date.now() + 5 * 60_000).toISOString(),
-    });
+    }, riderToken);
     assert.equal(riderSearch.response.status, 200);
     const candidates = riderSearch.body.candidates as Array<
       Record<string, unknown>
@@ -265,17 +265,17 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     const scheduledDate = sydneyDateTime(new Date(Date.now() + 5 * 60000)).date;
     const calendarQuery = { pickup: { latitude: -33.855, longitude: 151.225 },
       destination: { latitude: -33.82, longitude: 151.265 }, requestedDepartureAt: new Date().toISOString(), departureDate: scheduledDate };
-    const dated = await json(`${base}/api/search`, "POST", calendarQuery);
+    const dated = await json(`${base}/api/search`, "POST", calendarQuery, riderToken);
     assert.equal(dated.response.status, 200);
     assert.equal((dated.body.candidates as unknown[]).length, 1);
-    const otherDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: calendarDay(scheduledDate, 1) });
+    const otherDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: calendarDay(scheduledDate, 1) }, riderToken);
     assert.equal((otherDate.body.candidates as unknown[]).length, 0);
-    const invalidDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "invalid" });
+    const invalidDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "invalid" }, riderToken);
     assert.equal(invalidDate.response.status, 400);
-    const anyDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any" });
+    const anyDate = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any" }, riderToken);
     assert.equal(anyDate.response.status, 200);
     assert.equal((anyDate.body.candidates as unknown[]).length, 1);
-    const anyDateTime = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any", departureTime: sydneyDateTime(new Date(Date.now() + 5 * 60000)).time });
+    const anyDateTime = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any", departureTime: sydneyDateTime(new Date(Date.now() + 5 * 60000)).time }, riderToken);
     assert.equal(anyDateTime.response.status, 200);
     assert.equal((anyDateTime.body.candidates as unknown[]).length, 1);
     const riderCreate = await json(
@@ -331,7 +331,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.equal((await json(`${base}/api/vehicle`, "POST", { plate: "NEW123", make: "Toyota", model: "Corolla", colour: "White", principal_id: "someone-else" }, driverToken)).response.status, 200);
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "OVERWRITE" }, driverToken)).response.status, 409);
     assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "NEW123");
-    const exposed = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET");
+    const exposed = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET", undefined, riderToken);
     assert.equal(exposed.body.ride, undefined); // Accepted offers are no longer public.
     const driverRenewal = await json(
       `${base}/api/rides/${driverRide.rideId}/pickup-code`,

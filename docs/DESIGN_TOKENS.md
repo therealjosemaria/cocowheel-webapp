@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+4 November Home presence: a small non-interactive map below the two Home actions
+shows anonymous areas with open driver posts and rider requests, refreshed each
+visible minute. No usernames, precise endpoints, destinations or live GPS are sent
+to Home. Both roles now require email sign-in for discovery and journey previews.
+This supersedes the earlier homepage-map proposal boundary below. See
+[Home presence](HOME_PRESENCE_2026-11-04.md).
+
 4 November pose refinement: the rider now stands still in a waiting pose in both
 surface variants; the existing car artwork and all icon slots remain unchanged.
 See [journey artwork](JOURNEY_ROLE_ART.md#standing-rider-refinement).

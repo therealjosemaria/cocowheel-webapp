@@ -1,4 +1,5 @@
 import { reviewedNotifications, reviewNotifications } from "./notification-outbox";
+import { homePresence } from "./home-presence";
 import { deliverJourneyReminder } from "./notification-email";
 import {
   createServer,
@@ -500,6 +501,12 @@ export function createApiServer(
         } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
         return;
       }
+      // Public Home reads a deliberately reduced area-only projection. Do not
+      // run lifecycle writes, hydrate labels or expose discovery records here.
+      if (request.method === "GET" && new URL(request.url ?? "/", "http://api.local").pathname === "/api/home-presence") {
+        writeJson(response, 200, { cells: homePresence(database) }, cors);
+        return;
+      }
       const now = new Date();
       expireStaleRides(database, now);
       advanceSampleSimulations(database, now);
@@ -744,6 +751,7 @@ export function createApiServer(
         return;
       }
       if (request.method === "POST" && parts.join("/") === "api/search") {
+        requireUniversitySession(database, token);
         await hydratePublishedPlaceLabels(database);
         const now = new Date();
         writeJson(
@@ -763,6 +771,7 @@ export function createApiServer(
         return;
       }
       if (request.method === "GET" && parts.join("/") === "api/availability") {
+        requireUniversitySession(database, token);
         await hydratePublishedPlaceLabels(database);
         const now = new Date();
         writeJson(
@@ -990,6 +999,7 @@ export function createApiServer(
         parts[1] === "rides" &&
         parts[3] === "preview"
       ) {
+        requireUniversitySession(database, token);
         const now = new Date();
         writeJson(
           response,

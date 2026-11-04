@@ -1,6 +1,9 @@
 # Journey role artwork — 4 November 2026
 
-## Scope
+## Original scope
+
+The later [Home presence implementation](HOME_PRESENCE_2026-11-04.md) supersedes
+the original homepage-preview-only boundary below; the existing artwork is reused.
 
 Source baseline 38ea32a. The owner approved the generated graphite person/silver
 car concept and explicitly selected **existing journey icons only**. The homepage

@@ -1,4 +1,5 @@
 "use client";
+import HomePresence from "./home-presence";
 import ParticipantName from "./participant-name";
 import { storedCountryPreference, storeCountryPreference } from "@/lib/search-location";
 import { JourneyResultsLayout, JourneyResultsMap, JourneyResultsList } from "./journey-results-layout";
@@ -914,6 +915,7 @@ function Home({
       <button className="role-card" onClick={() => onBegin("DRIVER")}>
         <RideFieldLabel icon="driver">POST A JOURNEY</RideFieldLabel>
       </button>
+      <HomePresence />
       {current.map((item) => (
         <ActiveRideLink key={`${item.role}-${item.ride.rideId}`} item={item} />
       ))}

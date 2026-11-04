@@ -1,4 +1,5 @@
 // Shared by ride selection, planning and ride details; legend colours live in CSS.
+export const MAP_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 export const DRIVER_ROUTE = {
   color: "var(--route-driver)",
   weight: 7,
