@@ -13,7 +13,7 @@ import type Database from "better-sqlite3";
 import { ratingSummary, rideRatingState } from "./ratings";
 import { conversationSummaries } from "./messaging";
 import { initializeUsualRoutes, queueRouteAlerts } from "./usual-routes";
-import { initializeVehicles, rideVehicle } from "./vehicles";
+import { initializeVehicles, rideVehicle, readVehicle } from "./vehicles";
 import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
@@ -2096,7 +2096,10 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     )
     .all(row.id) as RequestRow[];
   return {
-    vehicle: rideVehicle(db, row.id),
+    // Only the owner sees their current Profile illustration before pairing.
+    // Closed/legacy journeys never acquire today's vehicle retroactively.
+    vehicle: rideVehicle(db, row.id) ??
+      (["PUBLISHED", "REQUESTED"].includes(row.status) ? readVehicle(db, row.driver_session_id) ?? undefined : undefined),
     createdAt: row.created_at,
     rideId: row.public_id,
     isSample: Boolean(row.is_sample),

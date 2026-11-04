@@ -86,9 +86,12 @@ test("saved vehicle acceptance, immutable snapshot, other-rider privacy and lega
       make: "Toyota",
       model: "Corolla",
       colour: "White",
+      year: "2018",
+      selection: { make: "Toyota", model: "toyota-corolla", colour: "White", year: "2018" },
     });
     assert.throws(() => acceptWithVehicle(db, driver.token, id, req, "ABCDEFGHIJ"), /INVALID_VEHICLE_PLATE/);
     assert.deepEqual(readVehicle(db, driver.session.id), vehicle);
+    assert.deepEqual(getRide(db, id, driver.session).vehicle, vehicle);
     assert.equal(getRide(db, id, rider.session).request?.status, "PENDING");
     assert.equal(getRide(db, id, rider.session).vehicle, undefined);
     const accepted = acceptWithVehicle(db, driver.token, id, req);

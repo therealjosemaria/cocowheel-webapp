@@ -1508,6 +1508,8 @@ p {
 }
 .time-choice input[type="datetime-local"],
 .field input,
+.vehicle-choice-field select,
+.vehicle-choice-field > input,
 .code-entry input {
   width: 100%;
   min-height: 48px;
@@ -3059,6 +3061,13 @@ p {
 .vehicle-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .vehicle-fields .field, .vehicle-fields p, .vehicle-fields .secondary { margin: 0; }
 .vehicle-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
+.vehicle-fields select { width: 100%; min-width: 0; box-sizing: border-box; }
+.vehicle-choice-field { display: grid; gap: 8px; min-width: 0; }
+.vehicle-choice-field > input { margin: 0; }
+.vehicle-artwork-preview { display: block; width: 144px; height: 108px; object-fit: contain; justify-self: center; }
+.vehicle-artwork-generic { display: grid; place-items: center; }
+.vehicle-artwork-generic .journey-role-art { --role-art-size: 96px; }
+.vehicle-artwork-marker { width: 48px; height: 40px; object-fit: contain; align-self: end; }
 .profile-disclosure { margin: 0 16px 16px; }
 .usual-route-disclosure, .personal-details { margin-top: 16px; }
 .usual-route-disclosure > .usual-route-body { padding: 12px 0; }

@@ -1,9 +1,24 @@
-import { divIcon } from 'leaflet';
-import { journeyRoleArtClass, type JourneyRoleArt } from './journey-role-art';
+import { divIcon } from "leaflet";
+import { journeyRoleArtClass, type JourneyRoleArt } from "./journey-role-art";
+import { vehicleArtwork } from "./vehicle-catalogue";
+import type { Vehicle } from "./vehicle";
 
-export const modelMarkerIcon = (role: JourneyRoleArt, label: string, interactive = true, offset: [number, number] = [0, 0]) => divIcon({
-  className: 'journey-marker-icon',
-  html: `<span class="journey-marker journey-marker-model" ${interactive ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'}><i class="${journeyRoleArtClass(role)}" aria-hidden="true"></i></span>`,
-  iconSize: [48, 48],
-  iconAnchor: [24 - offset[0], 40 - offset[1]],
-});
+export const modelMarkerIcon = (
+  role: JourneyRoleArt,
+  label: string,
+  interactive = true,
+  offset: [number, number] = [0, 0],
+  vehicle?: Vehicle,
+) => {
+  const src = role === "driver" ? vehicleArtwork(vehicle) : undefined;
+  // src is catalogue-derived, never a user-supplied URL or HTML fragment.
+  const art = src
+    ? `<img class="vehicle-artwork-marker" src="${src}" alt="" aria-hidden="true" />`
+    : `<i class="${journeyRoleArtClass(role)}" aria-hidden="true"></i>`;
+  return divIcon({
+    className: "journey-marker-icon",
+    html: `<span class="journey-marker journey-marker-model" ${interactive ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'}>${art}</span>`,
+    iconSize: [48, 48],
+    iconAnchor: [24 - offset[0], 40 - offset[1]],
+  });
+};

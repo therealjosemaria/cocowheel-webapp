@@ -24,6 +24,7 @@ import {
 } from "react-leaflet";
 import type { Pin } from "@/lib/client-types";
 import { modelMarkerIcon } from "@/lib/map-role-icon";
+import type { Vehicle } from "@/lib/vehicle";
 import { MAP_TILE_URL } from "@/lib/map-style";
 
 type Line = {
@@ -207,11 +208,13 @@ function sameIndexes(left: Set<number>, right: Set<number>) {
 }
 function PinMarkers({
   pins,
+  vehicle,
   markerKinds,
   markerLabels,
   labelPins,
 }: {
   pins: Pin[];
+  vehicle?: Vehicle;
   markerKinds?: MarkerKind[];
   markerLabels?: Array<MarkerLabel | undefined>;
   labelPins?: Pin[];
@@ -295,7 +298,8 @@ function PinMarkers({
             pin.latitude,
             pin.longitude,
           ]);
-          const model = markerKinds?.[index] && markerKinds[index] !== "destination";
+          const model =
+            markerKinds?.[index] && markerKinds[index] !== "destination";
           const sideGap = model ? 30 : 22;
           const topGap = model ? 46 : 22;
           const options = [
@@ -394,9 +398,11 @@ function PinMarkers({
                     `aria-label="${finishTitle}"`,
                   ),
               })
-            : markerKind
-              ? mapMarkerIcons[markerKind]
-              : undefined;
+            : markerKind === "driver" && vehicle
+              ? modelMarkerIcon("driver", "Driver", true, [0, 0], vehicle)
+              : markerKind
+                ? mapMarkerIcons[markerKind]
+                : undefined;
         return markerKind ? (
           <Fragment key={markerKey}>
             <Marker
@@ -425,7 +431,11 @@ function PinMarkers({
             {markerLabel && typeof markerLabel !== "string" ? (
               <Marker
                 position={[labelPin.latitude, labelPin.longitude]}
-                icon={locationLabelIcon(markerLabel, index, markerKind !== "destination")}
+                icon={locationLabelIcon(
+                  markerLabel,
+                  index,
+                  markerKind !== "destination",
+                )}
                 interactive={false}
                 keyboard={false}
                 zIndexOffset={1000}
@@ -451,6 +461,7 @@ function PinMarkers({
 }
 export default function JourneyMap({
   pins = [],
+  vehicle,
   fitPins,
   followPins,
   recenterPin,
@@ -464,6 +475,8 @@ export default function JourneyMap({
   animateViewport = true,
 }: {
   pins?: Pin[];
+  /** Private owner / accepted-pair snapshot only. Discovery never supplies this. */
+  vehicle?: Vehicle;
   fitPins?: Pin[];
   followPins?: Pin[];
   recenterPin?: Pin;
@@ -506,6 +519,7 @@ export default function JourneyMap({
         ))}
         <PinMarkers
           pins={pins}
+          vehicle={vehicle}
           markerKinds={markerKinds}
           markerLabels={markerLabels}
           labelPins={labelPins}

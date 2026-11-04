@@ -113,6 +113,21 @@ but remain green throughout. Closed status styling stays neutral.
 
 Current decisions, 12 October 2026. Read this and [the visual-system token reference](DESIGN_TOKENS.md) before changing the UI. Keep these files updated when an agreed convention changes; do not treat older conversation notes as overriding newer decisions.
 
+## Vehicle catalogue — 5 November 2026
+
+Vehicle details retains its existing disclosure, form, plate rule and Save
+action. Make, dependent Model, body-era Year and Colour use native dropdowns with Other/manual
+entry. Do not infer an artwork selection from typed text, including legacy text
+that matches a listed model. Changing make resets model/year; changing model
+resets year. Body qualifiers distinguish hatchbacks, dual cabs and refreshes.
+Do not add an age gate or assume a year from existing text. Keep ordinary field
+typography, 48px controls, 12px field gaps and 8px between Other and its input.
+The centred 144x108px illustration previews the draft without adding an action.
+Personal illustrations appear on owner/accepted-pair driver map markers only;
+generic role icons stay in Home/discovery. No vehicle description, model or
+colour becomes public. See [catalogue](VEHICLE_CATALOGUE.md) for behaviour,
+research and verification.
+
 ## Principles
 
 28 October Activity ordering supersedes separate current/post/offer/history blocks:

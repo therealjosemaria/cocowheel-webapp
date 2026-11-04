@@ -1,9 +1,25 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
-import { emptyVehicle, PLATE_ERROR, validPlate, type Vehicle } from "@/lib/vehicle";
+import {
+  emptyVehicle,
+  PLATE_ERROR,
+  validPlate,
+  type Vehicle,
+  VEHICLE_YEAR_ERROR,
+} from "@/lib/vehicle";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import RideFieldLabel from "./ride-field-label";
+import VehicleChoiceField from "./vehicle-choice-field";
+import VehicleArtwork from "./vehicle-artwork";
+import {
+  VEHICLE_MAKES,
+  VEHICLE_MODELS,
+  VEHICLE_COLOURS,
+  vehicleYearOptions,
+  validVehicleYear,
+  vehicleModelLabel,
+} from "@/lib/vehicle-catalogue";
 
 function PlateField({
   value,
@@ -63,14 +79,38 @@ export default function VehicleDetails() {
       active = false;
     };
   }, [reload]);
-  function change(key: keyof Vehicle, value: string) {
+  function change(key: "plate", value: string) {
     setVehicle((old) => ({ ...old, [key]: value }));
+    setSaved(false);
+  }
+  function choose(
+    key: "make" | "model" | "colour" | "year",
+    value: string,
+    selected?: string,
+  ) {
+    setVehicle((old) => {
+      const selection = { ...old.selection };
+      if (selected) selection[key] = selected;
+      else delete selection[key];
+      // Changing make invalidates the previous model, including its illustration.
+      if (key === "make") delete selection.model;
+      if (key === "make" || key === "model") delete selection.year;
+      return {
+        ...old,
+        [key]: value,
+        ...(key === "make" ? { model: "" } : {}),
+        ...(key === "make" || key === "model" ? { year: "" } : {}),
+        selection,
+      };
+    });
     setSaved(false);
   }
   return (
     <details className="contribution-choice profile-disclosure vehicle-details">
       <summary>
-        <RideFieldLabel icon="driver">Vehicle details (drivers only)</RideFieldLabel>
+        <RideFieldLabel icon="driver">
+          Vehicle details (drivers only)
+        </RideFieldLabel>
       </summary>
       <form
         className="vehicle-fields"
@@ -114,30 +154,68 @@ export default function VehicleDetails() {
           )
         ) : (
           <>
+            <VehicleArtwork vehicle={vehicle} />
             <PlateField
               value={vehicle.plate}
               change={(value) => change("plate", value)}
               required
               disabled={busy}
             />
-            {(
-              [
-                ["make", "Make", "Toyota"],
-                ["model", "Model", "Corolla"],
-                ["colour", "Colour", "White"],
-              ] as const
-            ).map(([key, label, placeholder]) => (
-              <label className="field" key={key}>
-                {label}
-                <input
-                  value={vehicle[key]}
-                  placeholder={placeholder}
-                  maxLength={40}
-                  disabled={busy}
-                  onChange={(e) => change(key, e.target.value)}
-                />
-              </label>
-            ))}
+            <VehicleChoiceField
+              label="Make"
+              value={vehicle.make}
+              selected={vehicle.selection?.make}
+              options={VEHICLE_MAKES.map((make) => ({ id: make, label: make }))}
+              busy={busy}
+              change={(value, selected) => choose("make", value, selected)}
+            />
+            <VehicleChoiceField
+              key={vehicle.selection?.make ?? vehicle.make}
+              label="Model"
+              value={vehicle.model}
+              selected={vehicle.selection?.model}
+              options={VEHICLE_MODELS.filter(
+                (item) => item.make === vehicle.selection?.make,
+              ).map((item) => ({
+                id: item.id,
+                label: vehicleModelLabel(item),
+                value: item.model,
+              }))}
+              busy={busy}
+              change={(value, selected) => choose("model", value, selected)}
+            />
+            <VehicleChoiceField
+              key={`year-${vehicle.selection?.model ?? vehicle.model}`}
+              label="Year"
+              value={vehicle.year ?? ""}
+              selected={vehicle.selection?.year}
+              options={vehicleYearOptions(vehicle.selection?.model).map(
+                (year) => ({
+                  id: year,
+                  label: year,
+                }),
+              )}
+              busy={busy}
+              maxLength={4}
+              inputMode="numeric"
+              errorMessage={
+                vehicle.year?.trim() && !validVehicleYear(vehicle.year.trim())
+                  ? VEHICLE_YEAR_ERROR
+                  : ""
+              }
+              change={(value, selected) => choose("year", value, selected)}
+            />
+            <VehicleChoiceField
+              label="Colour"
+              value={vehicle.colour}
+              selected={vehicle.selection?.colour}
+              options={VEHICLE_COLOURS.map((colour) => ({
+                id: colour,
+                label: colour,
+              }))}
+              busy={busy}
+              change={(value, selected) => choose("colour", value, selected)}
+            />
             <button className="primary" disabled={busy}>
               {busy ? "Saving…" : "Save vehicle details"}
             </button>
@@ -206,7 +284,9 @@ export function VehiclePlatePrompt({
             required
             disabled={pending}
           />
-          {(error || externalError) && <p role="alert">{error || externalError}</p>}
+          {(error || externalError) && (
+            <p role="alert">{error || externalError}</p>
+          )}
           <div className="cancel-prompt-actions">
             <button className="primary" disabled={pending || !plate.trim()}>
               {pending ? "Saving…" : submitLabel}
@@ -230,12 +310,14 @@ export function RideVehicle({ vehicle }: { vehicle?: Vehicle }) {
   if (!vehicle?.plate) return null;
   return (
     <section className="ride-vehicle" aria-label="Vehicle details">
+      <VehicleArtwork vehicle={vehicle} />
       <RideFieldLabel icon="driver">Vehicle</RideFieldLabel>
       <p>{vehicle.plate}</p>
-      {[vehicle.colour, vehicle.make, vehicle.model].filter(Boolean).length >
-        0 && (
+      {[vehicle.year, vehicle.colour, vehicle.make, vehicle.model].filter(
+        Boolean,
+      ).length > 0 && (
         <p>
-          {[vehicle.colour, vehicle.make, vehicle.model]
+          {[vehicle.year, vehicle.colour, vehicle.make, vehicle.model]
             .filter(Boolean)
             .join(" ")}
         </p>

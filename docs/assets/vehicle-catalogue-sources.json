@@ -1,0 +1,358 @@
+{
+  "date": "2026-11-05",
+  "colours": [
+    "White",
+    "Black",
+    "Silver",
+    "Blue",
+    "Grey",
+    "Red"
+  ],
+  "models": [
+    {
+      "id": "ford-ranger",
+      "make": "Ford",
+      "model": "Ranger",
+      "rank": 1,
+      "sales2025": 56555,
+      "shape": "2025 dual-cab ute, C-shaped headlamps, broad grille, open rear pickup tray",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-d8c36225-be92-40af-a8bf-990c024d0623.png",
+      "year": "2025",
+      "body": "P703 dual-cab pickup",
+      "referenceUrl": "https://web-assets.cdn.dealersolutions.com.au/modular.multisite.dealer.solutions/wp-content/uploads/2022/02/fordvf0886-2025-50my-ranger-brochure_master-12-december.pdf",
+      "yearFrom": 2022,
+      "yearTo": 2025
+    },
+    {
+      "id": "toyota-rav4",
+      "make": "Toyota",
+      "model": "RAV4",
+      "rank": 2,
+      "sales2025": 51947,
+      "shape": "2025 XA50 angular compact SUV, trapezoid grille, angular wheel arches",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-eb282632-2bed-41db-9b19-c1b4dd8ad933.png",
+      "year": "2019",
+      "body": "XA50 fifth generation",
+      "referenceUrl": "https://www.toyota.com.au/-/media/toyota/main-site/vehicle-hubs/rav4/files/20250129_gto008905_rav4_spec_table.pdf?rev=459566df983b4b85be03471981175485",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Toyota RAV4, 2025 XA50 fifth-generation SUV tall angular upright SUV. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and tall angular upright SUV. Trapezoid black upper grille, squared black wheel arches, angular pointed headlamps, robust blocky bumper and upright rear; use the reference fifth-generation body, not 2026 sixth generation.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/toyota-rav4-exterior.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-397ca3e0-9492-45f3-b7b2-ee09e8a21d4e.png",
+        "orientationRefinement": {
+          "prompt": "Edit image 1 ONLY: the SIX cars all need to face LOWER RIGHT instead of lower left, and the camera must be HIGH front-three-quarter like the car on the RIGHT of image 2. Image 2 gives ONLY the desired camera angle and softly rounded premium miniature 3D finish. Preserve image 1's researched Toyota RAV4 XA50 2025 SUV with trapezoid grille, angular lamps and squared black wheel arches geometry and recognisable details exactly. Mirror each individual car WITHIN ITS OWN CELL so its nose is on the RIGHT; do not swap columns. Keep EXACT colour sequence top WHITE BLACK SILVER, bottom BLUE GREY RED, 3 columns x2 rows, identical geometry and scale in all states. Transparent alpha background with generous empty gutters. No manufacturer logos, no text, no badges, no circles or environment. This is a production sprite-sheet correction, all SIX vehicles pointing down-right.",
+          "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-eb282632-2bed-41db-9b19-c1b4dd8ad933.png"
+        }
+      },
+      "yearFrom": 2019,
+      "yearTo": 2025
+    },
+    {
+      "id": "toyota-hilux",
+      "make": "Toyota",
+      "model": "HiLux",
+      "rank": 3,
+      "sales2025": 51297,
+      "shape": "2025 eighth-generation dual-cab ute, angular narrow headlamps, trapezoid grille, open pickup tray",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-865cd905-d466-4a41-8f87-87714cd0559e.png",
+      "year": "2024",
+      "body": "eighth-generation SR5 pickup",
+      "referenceUrl": "https://data.autoconsole.com.au/downloads/brochures/Hilux%20Brochure.pdf",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Toyota HiLux SR5 double-cab pickup, 2024 facelift four-door ute with open rear pickup tray. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and four-door ute with open rear pickup tray. Follow the SR5 reference, not GR Sport wide-body: tall large octagonal black grille, sharp substantial horizontal headlamps, strong contrasting lower bumper, characteristic utilitarian upright cab.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/toyota-hilux-sr5.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-865cd905-d466-4a41-8f87-87714cd0559e.png"
+      },
+      "yearFrom": 2024,
+      "yearTo": 2025
+    },
+    {
+      "id": "isuzu-dmax",
+      "make": "Isuzu",
+      "model": "D-Max",
+      "rank": 4,
+      "sales2025": 26839,
+      "shape": "2025 dual-cab ute, double horizontal grille bars, slanted headlamps, open pickup tray",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-59a4ff4a-40d8-4ff7-8846-276efb77ce74.png",
+      "year": "2024",
+      "body": "third-generation facelift dual-cab pickup",
+      "referenceUrl": "https://www.isuzuute.com.au/discover/news/2024-isuzu-d-max-ute",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Isuzu D-Max dual-cab pickup, 2024 facelift four-door ute with open rear tray. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and four-door ute with open rear tray. Large tall dark grille with pointed Isuzu double-chevron upper bar, angular narrow hooked headlamps and vertical foglamp housings; preserve its tough upright cab, do not reuse Ford C-clamp headlights.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/isuzu-dmax.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-59a4ff4a-40d8-4ff7-8846-276efb77ce74.png"
+      },
+      "yearFrom": 2024,
+      "yearTo": 2025
+    },
+    {
+      "id": "ford-everest",
+      "make": "Ford",
+      "model": "Everest",
+      "rank": 5,
+      "sales2025": 26161,
+      "shape": "2025 tall seven-seat SUV, C-shaped headlamps, broad grille, long enclosed wagon body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-c4dd6427-c48f-4f90-b9b4-3d7fd3dc9a5a.png",
+      "year": "2025",
+      "body": "second-generation SUV",
+      "referenceUrl": "https://resource.digitaldealer.com.au/pdf/21417662416764bb14dbe80837488885.pdf",
+      "yearFrom": 2022,
+      "yearTo": 2025
+    },
+    {
+      "id": "toyota-prado",
+      "make": "Toyota",
+      "model": "LandCruiser Prado",
+      "rank": 6,
+      "sales2025": 26106,
+      "shape": "2025 250-series boxy upright SUV, square fenders and rectangular headlamps, flat roof",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-6288ee9c-1996-4b9e-927c-bf19bc3a86b0.png",
+      "year": "2025",
+      "body": "250-series SUV",
+      "referenceUrl": "https://www.toyota.com.au/discover/news/all-new-landcruiser-prado-arrives-in-australia-to-continue-legacy-of-legendary-nameplate",
+      "yearFrom": 2025,
+      "yearTo": 2025
+    },
+    {
+      "id": "hyundai-kona",
+      "make": "Hyundai",
+      "model": "Kona",
+      "rank": 7,
+      "sales2025": 22769,
+      "shape": "2025 second-generation small SUV, narrow full-width light bar above split lamps, compact futuristic body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-8f0cafaf-8ed7-4573-b514-6a8beb98edcc.png",
+      "year": "2025",
+      "body": "SX2 second generation",
+      "referenceUrl": "https://www.hyundai.com/content/dam/hyundai/au/en/models/kona/2025/Hyundai_KONA_2025_Brochure.pdf",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Hyundai Kona petrol/hybrid, 2025 SX2 second-generation small angular SUV. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and small angular SUV. Very thin full-width horizontal LED bar high across the nose, separate THREE-LEVEL main lamp stacks low in black wheel-arch cladding, chunky large black lower air intake, hard diagonal side creases. Not a Tesla-like smooth bubble hatch.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/hyundai-kona.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-8f0cafaf-8ed7-4573-b514-6a8beb98edcc.png"
+      },
+      "yearFrom": 2023,
+      "yearTo": 2025
+    },
+    {
+      "id": "mazda-cx5",
+      "make": "Mazda",
+      "model": "CX-5",
+      "rank": 8,
+      "sales2025": 22742,
+      "shape": "2025 KF mid-size SUV, curving sculpted body, slim lamps, signature wide shield grille",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-11f98683-1e43-4a5c-8270-4189be577acc.png",
+      "year": "2025",
+      "body": "KF second generation",
+      "referenceUrl": "https://www.mazda.com.au/cars/2025-cx-5/",
+      "yearFrom": 2022,
+      "yearTo": 2025
+    },
+    {
+      "id": "mitsubishi-outlander",
+      "make": "Mitsubishi",
+      "model": "Outlander",
+      "rank": 9,
+      "sales2025": 22459,
+      "shape": "2025 fourth-generation SUV, Dynamic Shield chrome sides, split headlamps, strong squared shoulders",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-8db78de3-28a0-46c3-a278-7891a2119662.png",
+      "year": "2025",
+      "body": "fourth-generation facelift SUV",
+      "referenceUrl": "https://www.mitsubishi-motors.com.au/content/dam/mmal/pdfs/vehicle-brochures/25MY%20Outlander%20Brochure.pdf",
+      "yearFrom": 2025,
+      "yearTo": 2025
+    },
+    {
+      "id": "tesla-modely",
+      "make": "Tesla",
+      "model": "Model Y",
+      "rank": 10,
+      "sales2025": 22239,
+      "shape": "2025 Juniper electric crossover, slim full-width front light bar, grilleless nose, sloping glass roof",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-f634aecf-0032-4b70-a253-e67db6f9bb2a.png",
+      "year": "2025",
+      "body": "Juniper refresh",
+      "referenceUrl": "https://www.tesla.com/learn/introducing-new-model-y",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Tesla Model Y, 2025 Juniper refresh low aerodynamic five-door electric crossover. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and low aerodynamic five-door electric crossover. Use the RIGHT FRONT view of the NEW Model Y on manufacturer page16. Low long roof and sleek straight FULL-WIDTH CONTINUOUS WHITE LIGHT BAR on nose, slim dark separate lower headlights, grilleless painted fascia, triangular side window line; not the earlier curved-eyed Model Y and not a small Kona.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/tesla-modely-exterior.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-f634aecf-0032-4b70-a253-e67db6f9bb2a.png"
+      },
+      "yearFrom": 2025,
+      "yearTo": 2025
+    },
+    {
+      "id": "chery-tiggo4",
+      "make": "Chery",
+      "model": "Tiggo 4 Pro",
+      "rank": 11,
+      "sales2025": 20149,
+      "shape": "2025 small SUV, large diamond-pattern grille, conventional swept headlamps, compact upright body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-bec1f720-7921-4d1d-8beb-85482647e0a4.png",
+      "year": "2024",
+      "body": "Australian launch Tiggo 4 Pro",
+      "referenceUrl": "https://cherymotor.com.au/news/chery-tiggo-4-pro-expands-model-lineup-australia",
+      "yearFrom": 2024,
+      "yearTo": 2025
+    },
+    {
+      "id": "hyundai-tucson",
+      "make": "Hyundai",
+      "model": "Tucson",
+      "rank": 12,
+      "sales2025": 20145,
+      "shape": "2025 NX4 SUV, angular parametric body creases and integrated geometric grille running lights",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-54f3a488-b091-4a41-ac67-a708bb3175c9.png",
+      "year": "2025",
+      "body": "NX4 facelift SUV",
+      "referenceUrl": "https://www.hyundai.com/content/dam/hyundai/au/en/models/tucson-2024/petrol/docs/MY25-TUCSON-Brochure.pdf",
+      "yearFrom": 2025,
+      "yearTo": 2025
+    },
+    {
+      "id": "mg-zs",
+      "make": "MG",
+      "model": "ZS",
+      "rank": 13,
+      "sales2025": 20000,
+      "shape": "2025 second-generation small SUV, swept triangular headlamps, broad lower grille and gently rounded body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-2bbb41f8-7a9c-4b20-8245-67d3a3163eac.png",
+      "refinement": "Regenerated as upright 2025 MG ZS petrol/hybrid small SUV, with prominent large black honeycomb grille, angular swept lamps, cladded arches and roof rails. Same six-colour order/camera/transparency; replaces the earlier grilleless draft.",
+      "year": "2026",
+      "body": "second-generation petrol/hybrid ZS",
+      "referenceUrl": "https://mgmotor.com.au/brochures/MG_ZS_2026.pdf",
+      "referenceNote": "MY26 from Australian manufacturer brochure; direct AU/UK PDF downloads blocked. Authorised Australian dealer model-year exterior photo retrieved and visually compared.",
+      "yearFrom": 2025,
+      "yearTo": 2026,
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of MG ZS Hybrid+, 2026 second-generation compact five-door SUV. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and compact five-door SUV. Closely match this reference's distinctive MG front: a broad shallow rounded-trapezoid BLACK grille with angular HORIZONTAL grille blocks, slim tapered swept headlamps and a thin painted strip above grille, curved bonnet, long three-window cabin and low side creases. No giant vertical hexagon, do not borrow Hyundai Tucson shape. Use reference geometry, original miniature materials.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people. All six cars nose on RIGHT, high front three-quarter camera.",
+        "reference": "/tmp/gumwheel-vehicle-references/mg-zs-dealer-reference.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-2bbb41f8-7a9c-4b20-8245-67d3a3163eac.png"
+      },
+      "visualReferenceUrl": "https://melvillemg.com.au/a2605120824-1851341-mg-zs-2026/"
+    },
+    {
+      "id": "gwm-jolion",
+      "make": "GWM",
+      "model": "Haval Jolion",
+      "rank": 14,
+      "sales2025": 19413,
+      "shape": "2025 small SUV, bold mesh grille, tall hooked vertical running lights, clean curved body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-d32d4cf3-3cbf-430a-baca-0d0ed8ec36dd.png",
+      "year": "2024",
+      "body": "Original petrol body, not the new HEV body",
+      "referenceUrl": "https://www.carsales.com.au/editorial/details/haval-jolion-lux-2024-review-147552/",
+      "referenceNote": "Petrol body compared with a dated Australian 2024 authorised-dealer exterior photograph; do not match the differently shaped post-2024 HEV body.",
+      "yearFrom": 2021,
+      "yearTo": 2025,
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of GWM Haval Jolion petrol, 2024 original petrol-body upright small five-door SUV. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and upright small five-door SUV. Distinctive wide tall BLACK grille with thin VERTICAL grille slats; long vertical tapering LED DRL housings extend DOWN from outboard corners of sharp upper headlamps; horizontal bonnet and chunky lower black intake. Follow the original petrol body in the supplied photo, not the differently shaped HEV/Jolion Pro.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people. All six cars nose on RIGHT, high front three-quarter camera.",
+        "reference": "/tmp/gumwheel-vehicle-references/gwm-jolion-dealer-reference.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-d32d4cf3-3cbf-430a-baca-0d0ed8ec36dd.png"
+      },
+      "visualReferenceUrl": "https://www.salterscars.com.au/cars/used-white-2024-gwm-haval-jolion-1115068"
+    },
+    {
+      "id": "kia-sportage",
+      "make": "Kia",
+      "model": "Sportage",
+      "rank": 15,
+      "sales2025": 19137,
+      "shape": "2025 NQ5 SUV, boomerang running lights, sharp headlamp clusters, broad black grille",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-00a6fa14-a91a-4372-adaa-7d5a07ec244c.png",
+      "year": "2024",
+      "body": "NQ5 pre-facelift boomerang lights",
+      "referenceUrl": "https://resource.digitaldealer.com.au/pdf/97561506165702b3ac3c1b845355691.pdf",
+      "yearFrom": 2022,
+      "yearTo": 2024
+    },
+    {
+      "id": "toyota-corolla",
+      "make": "Toyota",
+      "model": "Corolla",
+      "rank": 16,
+      "sales2025": 18968,
+      "shape": "2025 E210 five-door hatchback, low broad grille, narrow J-shaped headlights and compact rounded roof",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-29cbe391-c87b-4070-930f-8d1a2ee51dc1.png",
+      "year": "2018",
+      "body": "Original E210 hatchback, not sedan",
+      "referenceUrl": "https://pressroom.toyota.com.au/PressRelease?pr-code=3de57b24-9200-48e0-8d32-34b0e00f3b93",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Toyota Corolla Hatch, 2025 E210 hatchback low compact five-door hatchback. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and low compact five-door hatchback. Very large black trapezoidal honeycomb LOWER grille, thin horizontal upper grille, sharp J-shaped headlamps and low pointed bonnet. The reference establishes E210 geometry; apply the 2025 facelift grille treatment. This is not a grilleless EV.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/toyota-corolla-exterior.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-3ee15729-f528-4798-a57a-cc2af3d11574.png",
+        "orientationRefinement": {
+          "prompt": "Edit image 1 ONLY: the SIX cars all need to face LOWER RIGHT instead of lower left, and the camera must be HIGH front-three-quarter like the car on the RIGHT of image 2. Image 2 gives ONLY the desired camera angle and softly rounded premium miniature 3D finish. Preserve image 1's researched Toyota Corolla E210 2025 five-door hatch with J lamps and huge black lower grille geometry and recognisable details exactly. Mirror each individual car WITHIN ITS OWN CELL so its nose is on the RIGHT; do not swap columns. Keep EXACT colour sequence top WHITE BLACK SILVER, bottom BLUE GREY RED, 3 columns x2 rows, identical geometry and scale in all states. Transparent alpha background with generous empty gutters. No manufacturer logos, no text, no badges, no circles or environment. This is a production sprite-sheet correction, all SIX vehicles pointing down-right.",
+          "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-29cbe391-c87b-4070-930f-8d1a2ee51dc1.png"
+        }
+      },
+      "yearFrom": 2018,
+      "yearTo": 2022
+    },
+    {
+      "id": "mitsubishi-triton",
+      "make": "Mitsubishi",
+      "model": "Triton",
+      "rank": 17,
+      "sales2025": 18900,
+      "shape": "2025 sixth-generation dual-cab ute, high square hood, three-level headlamps, blocky grille, open tray",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-86d84746-2828-4021-b33b-841416f4cd29.png",
+      "year": "2025",
+      "body": "sixth-generation dual-cab pickup",
+      "referenceUrl": "https://www.mitsubishi-motors.com.au/vehicles/triton.html",
+      "yearFrom": 2024,
+      "yearTo": 2025
+    },
+    {
+      "id": "byd-shark6",
+      "make": "BYD",
+      "model": "Shark 6",
+      "rank": 18,
+      "sales2025": 18073,
+      "shape": "2025 large dual-cab ute, squared off-road proportions, full-width front LED bar, open pickup tray",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-238c77be-a871-4e50-b7bb-9307d7454382.png",
+      "year": "2025",
+      "body": "first-generation dual-cab pickup",
+      "referenceUrl": "https://bydautomotive.com.au/brochures/BYD-SHARK-6-2025.pdf",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of BYD Shark 6, 2025 Premium large boxy dual-cab pickup with open rear tray. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and large boxy dual-cab pickup with open rear tray. Match the pictured SHARK6 with massive broad rectangular DARK BLACK FRONT GRILLE, vertical DOUBLE-SQUARE headlamp stacks linked by a thin white light bar, very upright chunky squared hood and boxy wheel arches. Preserve actual front layout from reference's front dimension drawing. Remove BYD lettering; don't replace black grille with painted white plastic.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/byd-shark6-detail.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-238c77be-a871-4e50-b7bb-9307d7454382.png"
+      },
+      "yearFrom": 2025,
+      "yearTo": 2025
+    },
+    {
+      "id": "nissan-xtrail",
+      "make": "Nissan",
+      "model": "X-Trail",
+      "rank": 19,
+      "sales2025": 15708,
+      "shape": "2025 T33 SUV, V-motion grille, split headlamps, floating-roof dark rear pillar, squared shoulders",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-f5274360-4214-4f70-ba58-1e7f8c7a0f5f.png",
+      "year": "2025",
+      "body": "T33 fourth generation",
+      "referenceUrl": "https://www.nissan.com.au/about-nissan/news-and-events/news/2024/Sept/2025-nissan-x-trail.html",
+      "yearFrom": 2023,
+      "yearTo": 2025
+    },
+    {
+      "id": "isuzu-mux",
+      "make": "Isuzu",
+      "model": "MU-X",
+      "rank": 20,
+      "sales2025": 15458,
+      "shape": "2025 seven-seat SUV, swept thin headlamps, bold double-bar grille, long enclosed wagon body",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-e6ac9d53-6299-48db-b5de-4929a7248fd0.png",
+      "year": "2025",
+      "body": "second-generation facelift SUV",
+      "referenceUrl": "https://www.isuzuute.com.au/discover/news/2025-isuzu-mu-x",
+      "referenceRefinement": {
+        "prompt": "Use case: stylized-concept. Create ONE production sprite sheet of SIX colour states of Isuzu MU-X, 2025 facelift LS-T SUV tall rugged seven-seat SUV with long enclosed rear wagon. Image 1 is MATERIAL/ICON STYLE reference only: polished softly rounded miniature 3D, high front-three-quarter camera, facing down-right, premium charcoal windows/wheels, soft studio light. Do NOT borrow Image 1's generic hatchback geometry. Image 2 is the manufacturer's GEOMETRY reference: closely match its distinctive headlamps, grille, bumper, wheel arches, windowline, body proportions and tall rugged seven-seat SUV with long enclosed rear wagon. Reference has tall wide almost hexagonal black grille with double horizontal bars, small aggressively angled slim headlamps, low triangular black foglamp housings, stepped roof and pronounced muscular haunches. Match the updated 2025 facelift, not a small smooth CX-5 or old pre-facelift MU-X.. Preserve these recognisable identifying features at icon size; don't turn it into a generic bubble car or another make. Exactly 3 equal columns x2 equal rows, SIX matching cars, entirely contained in own cell with wide transparent gutters and identical camera, pose, scale and geometry. Paint order: top WHITE BLACK SILVER, bottom BLUE GREY RED. Change paint only. Remove logos, branding, text and licence lettering. Actual alpha transparency, no backdrop, no environment or floor/reflections, only very tight subtle contact shadow. Landscape sprite sheet. Original 3D illustration, not a pasted/cropped photograph. All six states share exactly the same model geometry. No people.",
+        "reference": "/tmp/gumwheel-vehicle-references/isuzu-mux.jpg",
+        "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-e6ac9d53-6299-48db-b5de-4929a7248fd0.png"
+      },
+      "yearFrom": 2025,
+      "yearTo": 2025
+    }
+  ],
+  "prompt": "Use case: stylized-concept. ONE production sprite sheet containing SIX colour states of MODEL. Vehicle shape: SHAPE. Match only the right-hand car in the reference: premium softly rounded realistic miniature 3D, high front three-quarter camera facing down-right, charcoal windows and wheels, soft studio illumination, subtle tight contact shadow. No people. Exactly THREE equal columns by TWO equal rows, aligned identical camera/scale/geometry within all six cells, generous TRANSPARENT empty gutters around each car, entirely contained inside cell. Top row left-right WHITE, BLACK, SILVER; bottom row BLUE, GREY, RED paint. Paint changes only. Landscape canvas with TRUE ALPHA transparency, no opaque or translucent backdrop, no smoky haze, no floor, no environment. No text, badges, brand marks, watermarks, plate lettering, borders or circles. Detailed recognisable silhouette while keeping a polished simple icon finish. One sprite-sheet asset, six colour states.",
+  "modelYearPolicy": "No rolling age limit. Explicit make/model/body + supported body-era year + colour selections enable art. Typed/custom entries remain generic. Era bounds are enabled coverage, not claims that a generation ended there."
+}

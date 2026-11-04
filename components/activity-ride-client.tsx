@@ -288,6 +288,7 @@ function RideView({ ride }: { ride: Ride }) {
       {mapPins.length ? (
         <div className="activity-record-map">
           <JourneyMap
+            vehicle={ride.vehicle}
             pins={mapPins}
             lines={
               mapPins.length === 2

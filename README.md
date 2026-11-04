@@ -1,5 +1,18 @@
 # GUMWHEEL
 
+5 November vehicle catalogue: Profile offers make-dependent model and colour
+dropdowns with Other/manual entries and a body-era Year selector. Twenty Australian
+2025 best-selling model families have six-colour transparent illustrations.
+Explicit make/model/body, supported year and colour selections enable personalised
+art; custom/legacy text keeps the generic car. No five/ten-year age limit applies.
+Owner previews use saved details and accepted-pair maps use immutable vehicle
+snapshots. Home, general discovery and semantic role icons stay generic.
+The optional validated selection lives in existing vehicle JSON; the API needs
+a separate restart, not a schema migration. See the
+[catalogue research, artwork and verification](docs/VEHICLE_CATALOGUE.md).
+Individual exterior references and supported years are in the
+[model-year audit](docs/VEHICLE_MODEL_YEARS.md).
+
 5 November Home layout: the presence map is 200px tall. Personal activity sits
 below the centred hero/action/map group, so activity updates cannot reposition
 that group. Existing card styles and destinations remain. See

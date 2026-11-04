@@ -317,6 +317,22 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     }
     assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, null);
     assert.equal(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, riderToken)).body.ride as RideView).request?.status, "PENDING");
+    const describedVehicle = { plate: "ABC123", make: "Toyota", model: "Corolla", colour: "Blue", year: "2018",
+      selection: { make: "Toyota", model: "toyota-corolla", colour: "Blue", year: "2018" } };
+    const invalidSelection = await json(`${base}/api/vehicle`, "POST", { ...describedVehicle, selection: { ...describedVehicle.selection, model: "ford-ranger" } }, driverToken);
+    assert.equal(invalidSelection.response.status, 400);
+    assert.equal(invalidSelection.body.error, "INVALID_VEHICLE");
+    assert.equal((await json(`${base}/api/vehicle`, "POST", describedVehicle, driverToken)).response.status, 200);
+    const badYear = await json(`${base}/api/vehicle`, "POST", { ...describedVehicle, year: "20255" }, driverToken);
+    assert.equal(badYear.response.status, 400);
+    assert.equal(badYear.body.error, "INVALID_VEHICLE_YEAR");
+    assert.deepEqual((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, describedVehicle);
+    assert.deepEqual(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, driverToken)).body.ride as RideView).vehicle, describedVehicle);
+    assert.equal(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, riderToken)).body.ride as RideView).vehicle, undefined);
+    const discovery = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any" }, riderToken);
+    assert.equal(JSON.stringify(discovery.body).includes("toyota-corolla"), false);
+    const publicFeed = await json(`${base}/api/home-presence`, "GET");
+    assert.equal(JSON.stringify(publicFeed.body).includes("toyota-corolla"), false);
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "STEAL" }, riderToken)).response.status, 403);
     const accepted = await json(
       `${base}/api/rides/${driverRide.rideId}/requests/${riderRide.request.requestId}`,
@@ -326,6 +342,7 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     );
     assert.equal(accepted.response.status, 200);
     assert.equal((accepted.body.ride as RideView).vehicle?.plate, "ABC123");
+    assert.deepEqual((accepted.body.ride as RideView).vehicle?.selection, describedVehicle.selection);
     assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, riderToken)).body.vehicle, null);
     assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "ABC123");
     assert.equal((await json(`${base}/api/vehicle`, "POST", { plate: "NEW123", make: "Toyota", model: "Corolla", colour: "White", principal_id: "someone-else" }, driverToken)).response.status, 200);

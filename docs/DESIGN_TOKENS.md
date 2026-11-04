@@ -188,6 +188,13 @@ Prefer these tokens. Existing map/provider imagery, focus rings, admin semantic 
 
 ## Icons, controls and spacing
 
+- Vehicle catalogue selects and Other inputs reuse field border/radius, ink,
+  white surface, body/regular input text and 48px minimum height. Field labels
+  remain small/bold. Keep 12px field gaps, 8px Other-input gap. A centred
+  144x108px contained preview uses transparent WebP; generic fallback uses the
+  existing car. Personal map art fits the unchanged 48px role slot/ground anchor.
+  Paint colours are vehicle illustration content, not new application tokens.
+
 - Journey update markers reuse active-ride-update text below DETAILS with a 4px
   gap and regular weight. Activity highlighting reuses request-arrived and its
   neutral two-second animation/reduced-motion rule; no new colour or badge style.

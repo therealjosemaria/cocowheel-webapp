@@ -754,6 +754,7 @@ export default function RidePreviewClient({
           <div className="ride-preview-content">
             <div className="ride-selection-map" id="ride-comparison-map">
               <JourneyMap
+                vehicle={privateRide?.vehicle}
                 followZoom={ride.isSample ? 14 : 16}
                 recenterPin={
                   privateRide?.pickupEstablished &&

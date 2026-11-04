@@ -1,5 +1,11 @@
 # Journey role artwork — 4 November 2026
 
+5 November: [personal vehicle illustrations](VEHICLE_CATALOGUE.md) extend only
+owner and accepted-pair driver map markers. The generic car/person artwork in
+this guide remains unchanged for semantic labels, Home and discovery. Twenty
+model silhouettes each have six paint states, with the same 48px map slot and
+anchor. These static images introduce no heading/orientation/GPS animation.
+
 ## Original scope
 
 The later [Home presence implementation](HOME_PRESENCE_2026-11-04.md) supersedes

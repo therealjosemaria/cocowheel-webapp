@@ -75,7 +75,10 @@ with sync_playwright() as p:
             plate.fill(good)
             assert plate.evaluate('(el) => el.checkValidity()')
         for label, value in [('Number plate (required)', 'ABC123'), ('Make', 'Toyota'), ('Model', 'Corolla'), ('Colour', 'White')]:
-            details.get_by_label(label, exact=True).fill(value)
+            if label == 'Number plate (required)': details.get_by_label(label, exact=True).fill(value)
+            else:
+                details.get_by_label(label, exact=True).select_option('other')
+                details.get_by_label('Other '+label.lower(), exact=True).fill(value)
         state['plate_error'] = True
         details.get_by_role('button', name='Save vehicle details', exact=True).click()
         expect(details.get_by_role('alert')).to_have_text('Use up to 9 letters, numbers, spaces or hyphens, starting with a letter or number.')

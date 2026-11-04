@@ -1,5 +1,17 @@
 # Vehicle details — 23 October 2026
 
+## Catalogue extension — 5 November 2026
+
+The [vehicle catalogue guide](VEHICLE_CATALOGUE.md) supersedes the four-field-only
+contract below: vehicle JSON can also carry optional year and validated make/model/colour/year
+selection provenance. No text-to-art inference or legacy backfill. Profile uses
+native dropdowns plus Other/manual entry; Year choices follow researched body-era
+coverage, without a vehicle-age cap. Plate and optional-detail rules remain.
+An unpaired owner's private view may include their current saved vehicle; this
+does not expose it to pending riders/discovery. Accepted/history views retain
+their immutable snapshots and legacy closed journeys remain unmodified. Existing
+account/ride JSON tables are sufficient; activation still requires an API restart.
+
 ## Implemented behaviour
 
 One private vehicle per university account. GET /api/vehicle returns `{vehicle}`
