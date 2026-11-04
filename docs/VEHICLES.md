@@ -1,5 +1,55 @@
 # Vehicle details — 23 October 2026
 
+## Immediate Profile-to-map refresh — 5 November 2026
+
+Vehicle save previously updated Profile only: an already-open private journey
+waited for its eight-second poll, with no save invalidation. Reproduced against
+7754d84 using a synthetic published journey, a second Profile tab and suspended
+eight-second polling: saving a selected black Ranger left the generic marker
+visible beyond the two-second immediate-refresh assertion. No live writes.
+
+A successful save now emits a same-window event and a same-origin BroadcastChannel
+message containing only the literal `saved`. Open Activity detail views fetch
+their existing authenticated journey endpoint immediately. No account id, vehicle
+fields, image URL or GPS is broadcast; nothing is persisted in browser storage.
+Failed saves emit nothing. Channels/listeners close on unmount. Unsupported or
+blocked BroadcastChannel does not fail saving: same-tab events still work, and
+focus, visible-page return and pageshow refresh the journey. Existing eight-second
+polling (two seconds for samples) remains the fallback. Latest-started loads win,
+so a delayed pre-save response cannot overwrite newer vehicle data or errors.
+
+This changes frontend freshness only. Publishing still requires no vehicle;
+acceptance requires a saved plate (or Save & accept), not mandatory make/model/
+year/colour. The unpaired owner sees current saved details. Accepted and historical
+journeys continue using their immutable acceptance snapshot, including after a
+Profile edit; Home/discovery retain generic cars. No API/schema/privacy-permission
+change or API restart. Layout, controls, marker size and map credits are unchanged.
+
+Verification on baseline 7754d84 plus this fix: all 249 isolated tests, lint and
+production build pass. Existing gate regressions verify publication without a
+vehicle, missing-plate acceptance rollback and immutable snapshots. With built
+Next on loopback :3201 and all APIs/providers mocked or blocked:
+
+- `/tmp/gumwheel-notification-check-env/bin/python scripts/check-vehicle-refresh.py`
+  passes at 320/390/1440px with cross-tab messaging and 390px without it: saved
+  changes update in under the two-second assertion with periodic polling disabled;
+  failed saves emit nothing, late old responses do not revert the marker, accepted
+  snapshots remain unchanged, manual entries return to generic, and same-window/
+  focus/pageshow recovery works. No horizontal overflow or page errors.
+- `VEHICLE_CHECK_ORIGIN=http://127.0.0.1:3201 /tmp/gumwheel-notification-check-env/bin/python scripts/check-vehicles.py`
+  passes at 320/390/1440px for Profile saves, plate errors, acceptance cancellation,
+  backend-error retry and accepted-rider vehicle display.
+- Whole mobile/desktop published-journey, Profile and rider-detail screenshots
+  reviewed for unchanged typography, action hierarchy, section responsibilities,
+  spacing, icon size and bottom-left credits. Tiles were intentionally blocked;
+  existing tile-provider rendering was not revalidated by this run. React review
+  checked unconditional hooks, listener/channel cleanup, latest-response guards
+  and no vehicle payload/storage or added dependency.
+
+No production writes, emails, GPS calls or API restart. Real-device Safari and an
+authenticated production account walkthrough remain unverified. Frontend push
+and production deployment are separate checks recorded after this source review.
+
 ## Catalogue extension — 5 November 2026
 
 The [vehicle catalogue guide](VEHICLE_CATALOGUE.md) supersedes the four-field-only

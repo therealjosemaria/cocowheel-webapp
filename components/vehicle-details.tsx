@@ -12,6 +12,7 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import RideFieldLabel from "./ride-field-label";
 import VehicleChoiceField from "./vehicle-choice-field";
 import VehicleArtwork from "./vehicle-artwork";
+import { notifyVehicleSaved } from "@/lib/vehicle-updates";
 import {
   VEHICLE_MAKES,
   VEHICLE_MODELS,
@@ -127,6 +128,7 @@ export default function VehicleDetails() {
             );
             setVehicle(result.vehicle);
             setSaved(true);
+            notifyVehicleSaved();
           } catch (reason) {
             setError(
               apiErrorMessage(

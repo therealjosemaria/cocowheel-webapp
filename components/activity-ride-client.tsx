@@ -14,6 +14,7 @@ import {
 import type { Pin, Ride } from "@/lib/client-types";
 import CancelPrompt from "./cancel-prompt";
 import RidePreviewClient from "./ride-preview-client";
+import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
 
 const JourneyMap = dynamic(() => import("./journey-map"), {
   ssr: false,
@@ -47,20 +48,23 @@ export default function ActivityRideClient({
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     let refreshMs = 8_000;
+    let generation = 0;
     const load = async () => {
+      const current = ++generation;
+      clearTimeout(timer);
       try {
         const result = await cocowheelsApi<{ ride: Ride }>(
           `/api/rides/${encodeURIComponent(rideId)}${
             requestId ? `?request=${encodeURIComponent(requestId)}` : ""
           }`,
         );
-        if (!cancelled) {
+        if (!cancelled && current === generation) {
           refreshMs = result.ride.isSample ? 2_000 : 8_000;
           setRide(result.ride);
           setError(null);
         }
       } catch (reason) {
-        if (cancelled) return;
+        if (cancelled || current !== generation) return;
         if (
           reason instanceof ApiError &&
           [401, 403, 404].includes(reason.status)
@@ -75,7 +79,7 @@ export default function ActivityRideClient({
               ),
         );
       } finally {
-        if (!cancelled) {
+        if (!cancelled && current === generation) {
           clearTimeout(timer);
           timer = setTimeout(() => void load(), refreshMs);
         }
@@ -83,8 +87,10 @@ export default function ActivityRideClient({
     };
     void load();
     window.addEventListener("cocowheels:ride-updated", load);
+    const unsubscribe = subscribeVehicleSaved(load);
     return () => {
       cancelled = true;
+      unsubscribe();
       window.removeEventListener("cocowheels:ride-updated", load);
       clearTimeout(timer);
     };

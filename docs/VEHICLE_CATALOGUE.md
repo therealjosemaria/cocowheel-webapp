@@ -84,6 +84,11 @@ Profile never changes an accepted or historical snapshot. Legacy closed journeys
 without snapshots do not acquire today's vehicle. Both acceptance paths retain
 the existing transactional snapshot gate.
 
+The [immediate refresh follow-up](VEHICLES.md#immediate-profile-to-map-refresh--5-november-2026)
+notifies open private journey views after a successful Profile save, across
+same-origin tabs with no vehicle payload. Focus/visible return refreshes too;
+unavailable BroadcastChannel retains same-tab events and existing polling.
+
 Home, discovery lists/maps, semantic role icons and other users' pending previews
 keep the existing generic car. No vehicle make/model/colour/selection is added to
 the anonymous Home feed or search/discovery responses. This privacy boundary was

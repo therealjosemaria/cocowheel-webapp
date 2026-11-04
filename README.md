@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+5 November vehicle refresh: saving Profile vehicle details immediately invalidates
+open private journey views in the same browser tab and other same-origin tabs.
+Each view fetches its authorised details again; returning/focusing the page also
+refreshes it. No vehicle data is broadcast or stored by this signal. Unpaired
+posts show the latest saved vehicle; accepted/history snapshots stay unchanged.
+See [vehicle refresh behaviour and checks](docs/VEHICLES.md#immediate-profile-to-map-refresh--5-november-2026).
+
 5 November vehicle catalogue: Profile offers make-dependent model and colour
 dropdowns with Other/manual entries and a body-era Year selector. Twenty Australian
 2025 best-selling model families have six-colour transparent illustrations.
