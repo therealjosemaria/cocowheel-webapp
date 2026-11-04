@@ -85,3 +85,11 @@ With built Next on loopback :3201 and application APIs mocked:
 
 Backend projection and Profile guard changes require a separate API restart;
 frontend push alone does not activate them. No schema migration or history rewrite.
+
+API activation, 5 November at 04:14 AEDT: revision 1f7ba0d. No accepted or
+active trips immediately before backup and restart. A private SQLite online
+backup (0700 directory, 0600 file) passed integrity, foreign-key and 137-trip
+count checks. Only cocowheels-api was restarted; afterward health was ok, Home
+returned 200 with bounded artwork/area fields, anonymous vehicle access returned
+401, and database integrity, foreign keys and 137-trip count remained intact.
+No production account/vehicle/journey write or synthetic notification was made.
