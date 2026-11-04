@@ -102,3 +102,16 @@ failed; fixtures were corrected to the current API/unified Details layout and
 rerun successfully. No production behavior was changed to satisfy those fixtures.
 React review found no new hooks, dependencies, duplicated actions or permission
 changes; the old standalone result/Activity role glyphs now reuse RideFieldIcon.
+
+### Verified production activation
+
+Implementation 05205b4f6311f8005d17c34ed7d0d90db00ed429 was committed and pushed.
+Vercel production deployment dpl_DYGjrLdsgBvjjbRJ9zSWpUGTrwkd is READY for that exact
+revision and aliased to www.gumwheel.com. Fresh guest Chromium checks against the
+public homepage pass at 390/1440px: both WebPs decode at 532x266, the dark CTA
+selects the white/silver source and the light CTA the graphite/silver source,
+Home has no added map, no horizontal overflow and no runtime errors. The rendered
+live mobile screen was also visually inspected. These checks performed no
+journey/account/message writes, GPS access or test emails. Authenticated maps and
+Activity were verified with synthetic local APIs, not with live participant data.
+The API was not restarted; no backend configuration or data changes were needed.
