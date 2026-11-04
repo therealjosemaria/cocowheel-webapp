@@ -50,6 +50,14 @@ No production writes, emails, GPS calls or API restart. Real-device Safari and a
 authenticated production account walkthrough remain unverified. Frontend push
 and production deployment are separate checks recorded after this source review.
 
+Deployment check, 5 November: pushed implementation ca54c3de23f9a56b3562b8079995875330c600a5;
+Vercel dpl_9KLAemh76JYjfY6PokaSxV1AwMSW reached READY with www.gumwheel.com and
+gumwheel.com aliases. The same browser regression against the deployed frontend
+at 390px passed immediate cross-tab save, failed save, stale-response protection,
+accepted snapshot and generic fallback checks. All /api calls were intercepted
+with synthetic fixtures; this verifies deployed client behaviour, not live-account
+mutation. Local browser server stopped. No API restart or production writes.
+
 ## Catalogue extension — 5 November 2026
 
 The [vehicle catalogue guide](VEHICLE_CATALOGUE.md) supersedes the four-field-only
