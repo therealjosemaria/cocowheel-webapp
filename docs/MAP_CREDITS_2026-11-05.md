@@ -30,3 +30,12 @@ hooks, effects, data fetches, handlers or duplicated attribution controls.
 APIs are synthetic; only read-only public map tiles are allowed externally.
 Physical Safari and authenticated production journeys remain unverified.
 Production activation is recorded after deployment.
+
+
+Production implementation 50b9c8b1a56199a5af8e3b7c01c63cca9b448780 is pushed;
+Vercel dpl_vqGMJ2ZYMYajb8uthCV1bXGWb9Q1 is READY and aliased to www.gumwheel.com.
+Fresh guest Chromium at390/1440px verifies the deployed colour tiles and single
+bottom-left translucent/rounded/shadow-free credits. The Home feed was replaced
+in the test browser with a synthetic cell to exercise populated rendering; no
+live posts, account/GPS changes or backend restart. Journey credits were verified
+with local synthetic records; authenticated production journeys remain untested.
