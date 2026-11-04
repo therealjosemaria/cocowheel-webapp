@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-04",
+  "baseline_revision": "e0f94e7",
+  "source_state": "location recovery implementation; commit recorded in guide after activation",
+  "isolation": "synthetic GPS/APIs; no live journey writes or emails",
+  "baseline_findings": [
+    "browser GPS error codes were discarded",
+    "only fresh high-accuracy positioning attempted; physical desktop failure cause not recoverable",
+    "recent commits did not modify the GPS request"
+  ],
+  "checks": {
+    "unit_tests": {
+      "passed": 246,
+      "failed": 0
+    },
+    "lint": "pass",
+    "build": "pass",
+    "location_browser": "6 role/width cases pass",
+    "country_browser": "2 widths pass",
+    "home_browser": "4 widths pass",
+    "gps_privacy_browser": "4 role/width cases pass",
+    "calendar_browser": "4 widths pass, exit 0"
+  },
+  "commands": [
+    "npm test",
+    "npm run lint",
+    "npm run build",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-location-recovery.py",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-local-search.py",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-home-presence.py",
+    "/tmp/gumwheel-notification-check-env/bin/python -c \"exec(open('scripts/check-gps-privacy.py').read().replace('127.0.0.1:3090','127.0.0.1:3201'))\"",
+    "/tmp/gumwheel-notification-check-env/bin/python scripts/check-calendar-search.py"
+  ],
+  "harness_sha256": "112f846e8fa2c4a4561fd037ea99bc459991a6e0be6482836bca804180bb98bb",
+  "untested": [
+    "physical desktop permission/OS setting",
+    "hardware GPS",
+    "real participant journeys",
+    "all browser/provider failures"
+  ],
+  "deployment": "pending"
+}

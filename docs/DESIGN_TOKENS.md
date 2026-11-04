@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+4 November: explicit route-origin GPS recovery reuses existing address sheets,
+Use my location control and regular-weight inline alert. Specific failures give
+browser/device settings or address-search recovery. No new styling or tracking
+permissions. See [location audit](LOCATION_LOOKUP_2026-11-04.md).
+
 4 November Home presence: a small non-interactive map below the two Home actions
 shows anonymous areas with open driver posts and rider requests, refreshed each
 visible minute. No usernames, precise endpoints, destinations or live GPS are sent

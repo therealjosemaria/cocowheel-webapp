@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+4 November route GPS recovery: explicit Use my location now distinguishes blocked,
+unavailable, unsupported and timed-out positioning. Unavailable/timeouts try one
+standard-accuracy fallback; permission denials do not retry. Accepted-trip tracking
+is unchanged. See [location audit](docs/LOCATION_LOOKUP_2026-11-04.md).
+
 4 November Home presence: a small non-interactive map below the two Home actions
 shows anonymous areas with open driver posts and rider requests, refreshed each
 visible minute. Up to three separate icons appear per area; an empty or failed

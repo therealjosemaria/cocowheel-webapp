@@ -9,6 +9,7 @@ import { searchLocation, rememberSearchLocation, storedCountryPreference, ipCoun
 import RideFieldLabel from "./ride-field-label";
 import { SearchSheet } from "./schedule-fields";
 import { compactAddressLabel } from "@/lib/address-label";
+import { locateRouteOrigin, RouteLocationError, routeLocationMessage } from "@/lib/route-location";
 const recentSearches = new Map<string, { at: number; places: Pin[] }>();
 const canonicalPin = (pin: Pin) => ({
   latitude: pin.latitude,
@@ -247,17 +248,15 @@ export function PlaceSearch({
   }, [resultsOpen, places, automatic]);
   const locateOrigin = async () => {
     const generation = ++searchGeneration.current;
+    clearTimeout(debounce.current);
     setLocating(true);
+    setLoading(false);
     setResultsOpen(false);
     setSearchError(null);
     setPlaces([]);
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) return reject(new Error("GPS"));
-        navigator.geolocation.getCurrentPosition(resolve, () => reject(new Error("GPS")), {
-          enableHighAccuracy: true, maximumAge: 0, timeout: 12000,
-        });
-      });
+      const position = await locateRouteOrigin(navigator.geolocation,
+        () => generation === searchGeneration.current);
       if (generation !== searchGeneration.current) return;
       const pin = { latitude: position.coords.latitude, longitude: position.coords.longitude };
       const result = await cocowheelsApi<{ label: string | null; countryCode: string | null }>("/api/place-label", {
@@ -272,8 +271,8 @@ export function PlaceSearch({
       choose(place);
     } catch (reason) {
       if (generation !== searchGeneration.current) return;
-      setSearchError(reason instanceof Error && reason.message === "GPS"
-        ? "We couldn’t get your location. Allow location access or search for your address."
+      setSearchError(reason instanceof RouteLocationError
+        ? routeLocationMessage(reason)
         : apiErrorMessage(reason, "We couldn’t find your address. Please try again or search."));
     } finally {
       if (generation === searchGeneration.current) setLocating(false);

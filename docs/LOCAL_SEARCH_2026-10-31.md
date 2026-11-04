@@ -1,5 +1,10 @@
 # Local search preference and ranking — 31 October 2026
 
+4 November: explicit route-origin GPS recovery reuses existing address sheets,
+Use my location control and regular-weight inline alert. Specific failures give
+browser/device settings or address-search recovery. No new styling or tracking
+permissions. See [location audit](LOCATION_LOOKUP_2026-11-04.md).
+
 Implementation baseline b5b4056 (time picker) / search baseline 9b37986.
 
 ## Observed problem
