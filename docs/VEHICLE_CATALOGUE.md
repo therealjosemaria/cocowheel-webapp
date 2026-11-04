@@ -163,3 +163,15 @@ Physical-device Safari/native-picker behaviour and an authenticated production
 account walkthrough remain unverified. The drawings are stylised body-era
 illustrations; they do not certify exact trim, wheel or manufacturer paint codes.
 API activation and exact frontend deployment are recorded separately below.
+
+### API activation — 5 November 2026
+
+Implementation revision a640291 activated at 03:29 AEDT. Immediately before the
+restart, the live database had zero ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE journeys.
+SQLite online backup completed into an ignored private directory (0700; file
+0600); backup integrity, foreign keys and all 136 trip records verified. A second
+underway check remained zero. Only cocowheels-api was restarted. Local health
+returned ok; unauthenticated GET /api/vehicle returned 401. Post-restart database
+integrity and foreign keys passed, with all 136 trip records retained. No schema
+migration, production account save or acceptance was performed. Frontend push
+and deployment verification remain separate from this API activation.
