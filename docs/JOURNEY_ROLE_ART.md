@@ -160,4 +160,11 @@ standing pose reads clearly without competing with labels; car, typography, gaps
 and action hierarchy remain unchanged. Driver map/detail was also reviewed.
 APIs were mocked, no live accounts/trips/GPS/email writes; art checks permit only
 read-only public tiles for synthetic endpoints. Physical phones and authenticated
-production trips remain unverified. Production activation is pending this push.
+production trips remain unverified.
+
+Production activation: implementation b3c905ddeb0071c1e75e9920154b35fa6537a668
+is pushed and deployment dpl_3gKu1C7DuVGcrgFfhxcKpYiZuCGN is READY and aliased to
+www.gumwheel.com. Fresh guest Chromium checks at 390/1440px pass: standing-person
+and original car assets decode, Home chooses the correct surface variants, no
+added map, overflow or runtime errors. The live phone viewport was visually
+reviewed. Read-only public Home/assets only; no API restart or backend changes.
