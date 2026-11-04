@@ -59,7 +59,7 @@ import { reversePlaceDetails, searchPlaces } from "./place-label";
 import { pruneProviderCache } from "./provider-cache";
 import { roadRoutePreview } from "./route-preview";
 import { readUsualRoute, saveUsualRoute, saveSearchRoute, removeUsualRoute, deliverRouteAlerts, alertsConfigured } from "./usual-routes";
-import { readVehicle, saveVehicle } from "./vehicles";
+import { readVehicle, saveProfileVehicle } from "./vehicles";
 import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 
@@ -143,7 +143,7 @@ function errorStatus(error: unknown) {
   if (["DEMAND_ALREADY_OPEN", "DEMAND_UNAVAILABLE", "DEMAND_CHANGED"].includes(code)) return 409;
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
-  if (code === "VEHICLE_PLATE_REQUIRED") return 409;
+  if (["VEHICLE_PLATE_REQUIRED", "VEHICLE_IN_USE"].includes(code)) return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
     return 409;
@@ -845,7 +845,7 @@ export function createApiServer(
         if (request.method === "POST") {
           const body = await readJson(request);
           const current = requireUniversitySession(database, token);
-          writeJson(response, 200, { vehicle: saveVehicle(database, current.id, body) }, cors);
+          writeJson(response, 200, { vehicle: saveProfileVehicle(database, current.id, body) }, cors);
           return;
         }
       }

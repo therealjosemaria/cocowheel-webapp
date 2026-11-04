@@ -2,6 +2,7 @@
 import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt, RideVehicle } from "./vehicle-details";
 import { fareLabel } from "@/lib/fare";
+import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
@@ -49,6 +50,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  vehicleArtwork?: string;
   cancellationReason?: Ride["cancellationReason"];
   driverRating?: Ride["driverRating"];
   isSample?: boolean;
@@ -280,13 +282,15 @@ export default function RidePreviewClient({
     if (!shouldFetchPublicPreview) return;
     let cancelled = false;
     let authBlocked = false;
+    let generation = 0;
     const refresh = () => {
       if (authBlocked) return;
+      const current = ++generation;
       void cocowheelsApi<{ ride: PreviewRide; serverNow: string }>(
         `/api/rides/${encodeURIComponent(rideId)}/preview`,
       )
         .then((result) => {
-          if (!cancelled) {
+          if (!cancelled && current === generation) {
             setPublicRide(result.ride);
             setVerificationRequired(false);
             setPreviewClock(Date.parse(result.serverNow) || Date.now());
@@ -294,7 +298,7 @@ export default function RidePreviewClient({
           }
         })
         .catch((reason) => {
-          if (cancelled) return;
+          if (cancelled || current !== generation) return;
           if (reason instanceof ApiError && reason.code === "UNIVERSITY_VERIFICATION_REQUIRED") {
             authBlocked = true;
             setPublicRide(null);
@@ -321,8 +325,10 @@ export default function RidePreviewClient({
     const identityChanged = () => { authBlocked = false; refresh(); };
     window.addEventListener("cocowheels:identity-changed", identityChanged);
     const timer = window.setInterval(refresh, 15000);
+    const unsubscribeVehicle = subscribeVehicleSaved(refresh);
     return () => {
       cancelled = true;
+      unsubscribeVehicle();
       window.removeEventListener("cocowheels:identity-changed", identityChanged);
       window.clearInterval(timer);
     };
@@ -755,6 +761,7 @@ export default function RidePreviewClient({
             <div className="ride-selection-map" id="ride-comparison-map">
               <JourneyMap
                 vehicle={privateRide?.vehicle}
+                vehicleArtwork={!privateRide || ["PUBLISHED", "REQUESTED"].includes(privateRide.status) ? publicRide?.vehicleArtwork : undefined}
                 followZoom={ride.isSample ? 14 : 16}
                 recenterPin={
                   privateRide?.pickupEstablished &&

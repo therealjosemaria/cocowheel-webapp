@@ -27,6 +27,16 @@ export function saveVehicle(
   ).run(principal, JSON.stringify(vehicle));
   return vehicle;
 }
+/** Profile edits cannot change the car committed to a driver's ongoing journey. */
+export function saveProfileVehicle(db: Db, principal: string, input: unknown): Vehicle {
+  return db.transaction(() => {
+    const paired = db.prepare(
+      "SELECT 1 FROM rides WHERE driver_session_id=? AND status IN ('ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE') LIMIT 1",
+    ).get(principal);
+    if (paired) throw new Error("VEHICLE_IN_USE");
+    return saveVehicle(db, principal, input);
+  }).immediate();
+}
 export function snapshotVehicle(db: Db, rideId: string, vehicle: Vehicle) {
   db.prepare(
     "INSERT INTO ride_vehicles(ride_id, body) SELECT id, ? FROM rides WHERE public_id = ?",

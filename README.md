@@ -1,5 +1,19 @@
 # GUMWHEEL
 
+5 November custom cars across maps: supported saved vehicle selections now supply
+the same artwork in signed-in Find/preview maps, the driver's request-discovery
+and offer maps, private journey maps and anonymous Home area markers. Home shares
+only bounded catalogue artwork paths, never vehicle records/plates or exact GPS.
+Missing/manual selections keep generic art. Home and journey views reuse one
+MapSurface for tiles/credits and one marker renderer. This supersedes the earlier
+Home/discovery-generic rule. See [map artwork contract](docs/VEHICLE_MAPS_2026-11-05.md).
+
+5 November vehicle edit guard: Profile fields remain editable and Save remains
+available, but the backend rejects saving while that driver has an ACCEPTED,
+RIDE_ACTIVE or CO_RIDE_ACTIVE journey. The shared sentence-only modal says,
+“You can update your vehicle after your current journey ends.” Drafts are retained;
+published/unpaired posts remain editable. See [vehicle edit guard](docs/VEHICLES.md#vehicle-edit-guard--5-november-2026).
+
 5 November vehicle refresh: saving Profile vehicle details immediately invalidates
 open private journey views in the same browser tab and other same-origin tabs.
 Each view fetches its authorised details again; returning/focusing the page also
@@ -13,7 +27,8 @@ dropdowns with Other/manual entries and a body-era Year selector. Twenty Austral
 Explicit make/model/body, supported year and colour selections enable personalised
 art; custom/legacy text keeps the generic car. No five/ten-year age limit applies.
 Owner previews use saved details and accepted-pair maps use immutable vehicle
-snapshots. Home, general discovery and semantic role icons stay generic.
+snapshots. Semantic role labels stay generic; the later map extension above
+supersedes the initial generic Home/discovery maps.
 The optional validated selection lives in existing vehicle JSON; the API needs
 a separate restart, not a schema migration. See the
 [catalogue research, artwork and verification](docs/VEHICLE_CATALOGUE.md).

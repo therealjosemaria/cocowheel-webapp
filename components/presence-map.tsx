@@ -1,11 +1,10 @@
 "use client";
-import MapCredits from "./map-credits";
+import MapSurface from "./map-surface";
 
 import { useEffect } from 'react';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { Marker, useMap } from 'react-leaflet';
 import type { PresenceCell } from '@/lib/home-presence';
 import { modelMarkerIcon } from '@/lib/map-role-icon';
-import { MAP_TILE_URL } from '@/lib/map-style';
 
 const offsets: [number, number][][] = [[[0, 0]], [[-22, 0], [22, 0]], [[-22, -12], [22, -12], [0, 22]]];
 const icons = {
@@ -39,17 +38,18 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
     const key = `${cell.latitude}:${cell.longitude}`;
     const slot = slots.get(key) ?? 0;
     slots.set(key, slot + 1);
-    return { ...cell, key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
+    return { ...cell, artwork: cell.artworks?.[index], key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
   }));
-  return <div className="presence-map-frame"><MapContainer center={[-33.89, 151.2]} zoom={11}
+  return <MapSurface frameClassName="presence-map-frame" center={[-33.89, 151.2]} zoom={11}
     className="home-presence-map" attributionControl={false} zoomControl={false} dragging={false}
     scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false}
     boxZoom={false} keyboard={false} zoomAnimation={false} fadeAnimation={false}
     markerZoomAnimation={false}>
-    <TileLayer url={MAP_TILE_URL} />
     <AreaView cells={cells} />
     {markers.map(cell => <Marker key={cell.key}
-      position={[cell.latitude, cell.longitude]} icon={icons[cell.role][cell.total - 1][cell.slot]}
+      position={[cell.latitude, cell.longitude]} icon={cell.artwork
+        ? modelMarkerIcon(cell.role, '', false, offsets[cell.total - 1][cell.slot], undefined, cell.artwork)
+        : icons[cell.role][cell.total - 1][cell.slot]}
       interactive={false} keyboard={false} />)}
-  </MapContainer><MapCredits /></div>;
+  </MapSurface>;
 }

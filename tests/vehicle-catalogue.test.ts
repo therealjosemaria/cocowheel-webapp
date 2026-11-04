@@ -8,7 +8,16 @@ import {
   vehicleArtwork,
   validVehicleYear,
   vehicleYearOptions,
+  isVehicleArtworkPath,
 } from "../lib/vehicle-catalogue";
+
+test("map artwork accepts shipped local paths only", () => {
+  assert.equal(isVehicleArtworkPath('/brand/vehicles/v1/ford-ranger-blue.webp'), true);
+  for (const value of [null, {}, '/private/plate.png', 'https://example.com/car.webp',
+    '/brand/vehicles/v1/ford-ranger-blue.webp?user=1', '/brand/vehicles/v1/../secret.webp',
+    '/brand/vehicles/v1/ford-ranger-purple.webp', '\" onerror=alert(1)'])
+    assert.equal(isVehicleArtworkPath(value), false);
+});
 
 test("catalogue artwork requires four explicit, consistent selections", () => {
   const typed = {

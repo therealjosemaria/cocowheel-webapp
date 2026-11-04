@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { PRESENCE_REFRESH_MS, readPresenceCells, type PresenceCell } from '@/lib/home-presence';
+import { subscribeVehicleSaved } from '@/lib/vehicle-updates';
 
 const PresenceMap = dynamic(() => import('./presence-map'), { ssr: false });
 
@@ -40,9 +41,16 @@ export default function HomePresence() {
     };
     void refresh();
     const timer = window.setInterval(() => void refresh(), PRESENCE_REFRESH_MS);
+    const unsubscribeVehicle = subscribeVehicleSaved(() => {
+      const pending = controller;
+      controller = undefined;
+      pending?.abort();
+      void refresh();
+    });
     document.addEventListener('visibilitychange', visibility);
     return () => {
       live = false;
+      unsubscribeVehicle();
       controller?.abort();
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', visibility);

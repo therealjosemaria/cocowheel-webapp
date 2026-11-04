@@ -1,5 +1,5 @@
 "use client";
-import MapCredits from "./map-credits";
+import MapSurface from "./map-surface";
 
 import {
   Fragment,
@@ -12,11 +12,9 @@ import {
 import { divIcon } from "leaflet";
 import {
   CircleMarker,
-  MapContainer,
   Marker,
   Popup,
   Polyline,
-  TileLayer,
   Tooltip,
   useMap,
   useMapEvents,
@@ -25,7 +23,6 @@ import {
 import type { Pin } from "@/lib/client-types";
 import { modelMarkerIcon } from "@/lib/map-role-icon";
 import type { Vehicle } from "@/lib/vehicle";
-import { MAP_TILE_URL } from "@/lib/map-style";
 
 type Line = {
   points: Pin[];
@@ -209,13 +206,15 @@ function sameIndexes(left: Set<number>, right: Set<number>) {
 function PinMarkers({
   pins,
   vehicle,
+  vehicleArtwork,
   markerKinds,
   markerLabels,
   labelPins,
 }: {
   pins: Pin[];
   vehicle?: Vehicle;
-  markerKinds?: MarkerKind[];
+  vehicleArtwork?: string;
+  markerKinds?: Array<MarkerKind | undefined>;
   markerLabels?: Array<MarkerLabel | undefined>;
   labelPins?: Pin[];
 }) {
@@ -398,8 +397,8 @@ function PinMarkers({
                     `aria-label="${finishTitle}"`,
                   ),
               })
-            : markerKind === "driver" && vehicle
-              ? modelMarkerIcon("driver", "Driver", true, [0, 0], vehicle)
+            : markerKind === "driver" && (vehicle || vehicleArtwork)
+              ? modelMarkerIcon("driver", "Driver", true, [0, 0], vehicle, vehicleArtwork)
               : markerKind
                 ? mapMarkerIcons[markerKind]
                 : undefined;
@@ -462,6 +461,7 @@ function PinMarkers({
 export default function JourneyMap({
   pins = [],
   vehicle,
+  vehicleArtwork,
   fitPins,
   followPins,
   recenterPin,
@@ -475,23 +475,24 @@ export default function JourneyMap({
   animateViewport = true,
 }: {
   pins?: Pin[];
-  /** Private owner / accepted-pair snapshot only. Discovery never supplies this. */
+  /** Full vehicle is private; discovery carries only a validated artwork path. */
   vehicle?: Vehicle;
+  vehicleArtwork?: string;
   fitPins?: Pin[];
   followPins?: Pin[];
   recenterPin?: Pin;
   followZoom?: number;
   lines?: Line[];
   onPick?: (pin: Pin) => void;
-  markerKinds?: MarkerKind[];
+  markerKinds?: Array<MarkerKind | undefined>;
   markerLabels?: Array<MarkerLabel | undefined>;
   labelPins?: Pin[];
   roadPathAttribution?: boolean;
   animateViewport?: boolean;
 }) {
   return (
-    <div className="map-shell">
-      <MapContainer
+      <MapSurface
+        roadPathAttribution={roadPathAttribution}
         center={[-33.8688, 151.2093]}
         zoom={15}
         scrollWheelZoom={false}
@@ -502,7 +503,6 @@ export default function JourneyMap({
         attributionControl={false}
         className="journey-map"
       >
-        <TileLayer url={MAP_TILE_URL} />
         {lines.map((line, index) => (
           <Polyline
             key={index}
@@ -520,6 +520,7 @@ export default function JourneyMap({
         <PinMarkers
           pins={pins}
           vehicle={vehicle}
+          vehicleArtwork={vehicleArtwork}
           markerKinds={markerKinds}
           markerLabels={markerLabels}
           labelPins={labelPins}
@@ -534,8 +535,6 @@ export default function JourneyMap({
           followZoom={followZoom}
         />
         <ZoomControl position="bottomright" />
-      </MapContainer>
-      <MapCredits roadPathAttribution={roadPathAttribution} />
-    </div>
+      </MapSurface>
   );
 }

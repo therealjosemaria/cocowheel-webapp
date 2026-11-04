@@ -58,8 +58,11 @@ export default function PrivacyPage() {
         We store the vehicle details you provide to help your rider recognise
         your car. A number plate is required before accepting a rider or sending
         an offer in response to a posted rider request; make,
-        model and colour are optional. Vehicle details are not public and are
-        shared only with the accepted rider. We retain a copy with that ride’s
+        model, year and colour are optional. A supported saved selection supplies
+        the car illustration shown on maps, including the public homepage’s area
+        markers. Its shape and colour may reveal the selected vehicle model and
+        colour. Number plates and the full saved vehicle record are shared only
+        with the driver and accepted rider. We retain a copy with that ride’s
         history; later profile edits do not change that copy. These details are
         provided by drivers, not independently verified by GUMWHEEL.
       </p>
@@ -121,7 +124,7 @@ export default function PrivacyPage() {
         The public homepage shows car and person icons for areas with open
         journey posts and requests. Positions are grouped into fixed geographic
         cells, with up to three separate icons per area and a capped total across
-        the map. These icons do not identify individual posts or people. This preview does not
+        the map. No account or post identifier is attached to an icon. This preview does not
         include names, addresses, destinations, journey references, departure
         times or live GPS, and its icons do not open journey details. Closing or
         expiring a post removes it from later feed refreshes. The preview refreshes

@@ -17,6 +17,7 @@ export function subscribeVehicleSaved(refresh: () => void) {
     if (document.visibilityState === "visible") refresh();
   };
   window.addEventListener(channelName, refresh);
+  window.addEventListener("cocowheels:identity-changed", refresh);
   window.addEventListener("focus", visible);
   window.addEventListener("pageshow", visible);
   document.addEventListener("visibilitychange", visible);
@@ -31,6 +32,7 @@ export function subscribeVehicleSaved(refresh: () => void) {
   }
   return () => {
     window.removeEventListener(channelName, refresh);
+    window.removeEventListener("cocowheels:identity-changed", refresh);
     window.removeEventListener("focus", visible);
     window.removeEventListener("pageshow", visible);
     document.removeEventListener("visibilitychange", visible);

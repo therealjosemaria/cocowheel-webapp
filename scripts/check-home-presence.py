@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright, expect
 
 BASE = 'http://127.0.0.1:3201'
-cells = [{'role':'driver','latitude':-33.925,'longitude':151.175,'count':2},
+cells = [{'role':'driver','latitude':-33.925,'longitude':151.175,'count':2,'artworks':['/brand/vehicles/v1/ford-ranger-blue.webp',None]},
          {'role':'rider','latitude':-33.925,'longitude':151.175,'count':1}]
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
@@ -26,7 +26,7 @@ with sync_playwright() as p:
                 assert route.request.method=='GET'
                 assert not route.request.headers.get('cookie') and not route.request.headers.get('authorization')
                 if mode['value']=='failed': route.fulfill(status=503,json={'error':'UNAVAILABLE'});return
-                route.fulfill(json={'cells':cells if mode['value']=='posts' else [{**cells[0], 'count':1}] if mode['value']=='single' else []});return
+                route.fulfill(json={'cells':cells if mode['value']=='posts' else [{**cells[0], 'count':1,'artworks':cells[0]['artworks'][:1]}] if mode['value']=='single' else []});return
             if path=='university/session':
                 route.fulfill(status=200 if mode['verified'] else 401,json={'unikey':'fixture'} if mode['verified'] else {'error':'UNIVERSITY_VERIFICATION_REQUIRED'});return
             if path=='rides/example/preview':
@@ -39,6 +39,8 @@ with sync_playwright() as p:
         page.goto(BASE)
         preview=page.get_by_role('region',name='Posted journeys and journey requests by area')
         expect(preview.locator('.leaflet-marker-icon')).to_have_count(3)
+        expect(preview.locator('.vehicle-artwork-marker')).to_have_attribute('src','/brand/vehicles/v1/ford-ranger-blue.webp')
+        expect(preview.locator('.journey-role-art-driver')).to_have_count(1)
         expect(preview.get_by_text('approx',exact=False)).to_have_count(0)
         credits=preview.locator('.map-attribution')
         expect(credits).to_have_count(1)

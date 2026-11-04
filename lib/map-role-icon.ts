@@ -1,6 +1,6 @@
 import { divIcon } from "leaflet";
 import { journeyRoleArtClass, type JourneyRoleArt } from "./journey-role-art";
-import { vehicleArtwork } from "./vehicle-catalogue";
+import { vehicleArtwork, isVehicleArtworkPath } from "./vehicle-catalogue";
 import type { Vehicle } from "./vehicle";
 
 export const modelMarkerIcon = (
@@ -9,8 +9,11 @@ export const modelMarkerIcon = (
   interactive = true,
   offset: [number, number] = [0, 0],
   vehicle?: Vehicle,
+  artworkPath?: string | null,
 ) => {
-  const src = role === "driver" ? vehicleArtwork(vehicle) : undefined;
+  const src = role === "driver"
+    ? vehicleArtwork(vehicle) ?? (isVehicleArtworkPath(artworkPath) ? artworkPath : undefined)
+    : undefined;
   // src is catalogue-derived, never a user-supplied URL or HTML fragment.
   const art = src
     ? `<img class="vehicle-artwork-marker" src="${src}" alt="" aria-hidden="true" />`

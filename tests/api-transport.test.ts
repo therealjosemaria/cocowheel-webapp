@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { cocowheelsApi } from "../lib/api-client";
-import { PLATE_ERROR, VEHICLE_YEAR_ERROR } from "../lib/vehicle";
+import { PLATE_ERROR, VEHICLE_YEAR_ERROR, VEHICLE_IN_USE_MESSAGE } from "../lib/vehicle";
 import {
   ApiError,
   apiErrorMessage,
@@ -20,6 +20,7 @@ test("payment errors give actionable instructions", () => {
   ]) assert.equal(apiErrorMessage(new ApiError(code, 400)), expected);
 });
 test("backend plate rejection uses the same instruction as frontend validation", async () => {
+  assert.equal(apiErrorMessage(new ApiError("VEHICLE_IN_USE", 409)), VEHICLE_IN_USE_MESSAGE);
   assert.equal(apiErrorMessage(new ApiError("INVALID_VEHICLE_YEAR", 400)), VEHICLE_YEAR_ERROR);
   globalThis.fetch = async () => Response.json({ error: "INVALID_VEHICLE_PLATE" }, { status: 400 });
   for (const method of ["POST", "PATCH"]) {

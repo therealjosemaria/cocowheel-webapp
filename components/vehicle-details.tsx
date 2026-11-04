@@ -1,18 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
+import { ApiError, apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import {
   emptyVehicle,
   PLATE_ERROR,
   validPlate,
   type Vehicle,
   VEHICLE_YEAR_ERROR,
+  VEHICLE_IN_USE_MESSAGE,
 } from "@/lib/vehicle";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import RideFieldLabel from "./ride-field-label";
 import VehicleChoiceField from "./vehicle-choice-field";
 import VehicleArtwork from "./vehicle-artwork";
 import { notifyVehicleSaved } from "@/lib/vehicle-updates";
+import { Message } from "./ride-journey-controls";
 import {
   VEHICLE_MAKES,
   VEHICLE_MODELS,
@@ -63,6 +65,7 @@ export default function VehicleDetails() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [vehicleInUse, setVehicleInUse] = useState(false);
   useEffect(() => {
     let active = true;
     cocowheelsApi<{ vehicle: Vehicle | null }>("/api/vehicle")
@@ -130,12 +133,16 @@ export default function VehicleDetails() {
             setSaved(true);
             notifyVehicleSaved();
           } catch (reason) {
-            setError(
-              apiErrorMessage(
-                reason,
-                "Check your vehicle details and try again.",
-              ),
-            );
+            if (reason instanceof ApiError && reason.code === "VEHICLE_IN_USE") {
+              setVehicleInUse(true);
+            } else {
+              setError(
+                apiErrorMessage(
+                  reason,
+                  "Check your vehicle details and try again.",
+                ),
+              );
+            }
           } finally {
             setBusy(false);
           }
@@ -225,6 +232,13 @@ export default function VehicleDetails() {
           </>
         )}
       </form>
+      {vehicleInUse && (
+        <Message
+          label="Vehicle update"
+          text={VEHICLE_IN_USE_MESSAGE}
+          close={() => setVehicleInUse(false)}
+        />
+      )}
     </details>
   );
 }

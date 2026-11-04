@@ -1,5 +1,11 @@
 # Coco Wheels product and UI standards
 
+5 November vehicle save restriction: keep Profile fields editable and Save
+available regardless of journey status. Backend VEHICLE_IN_USE opens the existing
+Message modal, without a heading: “You can update your vehicle after your current
+journey ends.” Reuse its ordinary body copy, OKAY button, focus and spacing; retain
+the draft and keep other validation errors in their existing locations.
+
 5 November Home layout: the presence map is 200px tall. Personal activity sits
 below the centred hero/action/map group, so activity updates cannot reposition
 that group. Existing card styles and destinations remain. See
@@ -123,9 +129,10 @@ resets year. Body qualifiers distinguish hatchbacks, dual cabs and refreshes.
 Do not add an age gate or assume a year from existing text. Keep ordinary field
 typography, 48px controls, 12px field gaps and 8px between Other and its input.
 The centred 144x108px illustration previews the draft without adding an action.
-Personal illustrations appear on owner/accepted-pair driver map markers only;
-generic role icons stay in Home/discovery. No vehicle description, model or
-colour becomes public. See [catalogue](VEHICLE_CATALOGUE.md) for behaviour,
+The later [all-map extension](VEHICLE_MAPS_2026-11-05.md) uses personal artwork
+on Home and discovery too; full vehicle records/plates remain private. Home
+keeps its noninteractive coarse-area settings. Generic semantic labels remain.
+See [catalogue](VEHICLE_CATALOGUE.md) for behaviour,
 research and verification.
 
 ## Principles

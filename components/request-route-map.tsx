@@ -7,6 +7,7 @@ import { cocowheelsApi } from "@/lib/api-client";
 import { cachedRoadPath, cacheRoadPath } from "@/lib/ride-preview-cache";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import { JourneyResultsMap } from "./journey-results-layout";
+import { useVehicleArtwork } from "@/lib/use-vehicle-artwork";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
 type Route = { origin?: Pin; destination?: Pin };
@@ -71,12 +72,15 @@ export default function RequestRouteMap({
   rider,
   riderLabel = "Rider route",
   back,
+  ownDriver = false,
 }: {
   driver?: Route;
   rider?: Route;
   riderLabel?: string;
   back?: () => void;
+  ownDriver?: boolean;
 }) {
+  const vehicleArtwork = useVehicleArtwork(ownDriver && Boolean(driver?.origin));
   const [revision, setRevision] = useState(0);
   const driverPath = useRoadPath(driver, revision);
   const riderPath = useRoadPath(rider, revision);
@@ -93,7 +97,14 @@ export default function RequestRouteMap({
     ...(riderPath.points ? [{ points: riderPath.points, ...RIDER_ROUTE }] : []),
   ];
   const map = <JourneyMap
+          vehicleArtwork={vehicleArtwork}
           pins={pins}
+          markerKinds={[
+            ...(driver?.origin ? ["driver" as const] : []),
+            ...(driver?.destination ? [driver.origin ? "destination" as const : undefined] : []),
+            ...(rider?.origin ? ["pickup" as const] : []),
+            ...(rider?.destination ? [rider.origin ? "destination" as const : undefined] : []),
+          ]}
           lines={lines}
           roadPathAttribution={lines.length > 0}
           animateViewport={false}

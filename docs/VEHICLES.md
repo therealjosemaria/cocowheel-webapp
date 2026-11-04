@@ -1,5 +1,46 @@
 # Vehicle details — 23 October 2026
 
+Latest map scope: [custom artwork across all maps](VEHICLE_MAPS_2026-11-05.md)
+supersedes the Home/discovery-generic rule in the earlier verification entries.
+Only catalogue artwork paths are projected; full records and plates stay private.
+
+## Vehicle edit guard — 5 November 2026
+
+This supersedes the earlier permission to save Profile edits during an accepted
+journey. Inputs/selectors remain editable and Save is not disabled because of
+journey status. POST /api/vehicle rechecks authenticated identity after reading
+the body, then `saveProfileVehicle` checks the driver's persisted rides and saves
+within one immediate SQLite transaction. ACCEPTED, RIDE_ACTIVE and CO_RIDE_ACTIVE
+return HTTP 409 VEHICLE_IN_USE without changing the account vehicle or any
+journey snapshot. PUBLISHED/REQUESTED and terminal states do not block saving;
+another account's journey and riding as a passenger do not lock this driver's
+vehicle. Checks use persisted status, not a client flag or age/departure guess.
+
+The existing Message component displays one regular-weight, left-aligned sentence,
+“You can update your vehicle after your current journey ends.” It reuses the same
+modal positioning, spacing, focus containment and OKAY button as other notices.
+Closing returns to the unchanged draft; no successful-save message or map update
+signal is emitted. Existing busy-only protection during the request is retained.
+Other field errors stay inline/native. Retry Save after the journey has ended.
+
+The internal save helper remains available only to trusted server flows: Save &
+accept still validates/saves the plate and captures the vehicle inside acceptance's
+existing transaction. The guarded Profile endpoint exposes no bypass parameter.
+Rider-demand offers keep their existing role/state checks. Publication still needs
+no vehicle, acceptance still needs a plate, and snapshots remain immutable. No
+schema or data migration. This backend change requires a separate API restart.
+
+Verification on baseline c7dd586 plus this change: 252 isolated tests pass,
+including HTTP 409, all three locked states, other-account isolation, post/end
+unlock, missing-plate acceptance rollback and the existing Save & accept path.
+Lint and production build pass. `scripts/check-vehicle-refresh.py` passes at
+320/390/1440px with synthetic APIs: Save remains enabled, the shared modal shows
+the exact sentence without a heading, closing retains the draft, a blocked save
+leaves persisted details and accepted snapshot unchanged, and no save signal is
+sent. Mobile/desktop whole-Profile modal screenshots were visually reviewed for
+placement, text/button spacing, weights and focus. No live writes; physical-device
+Safari and authenticated live-account walkthrough remain unverified.
+
 ## Immediate Profile-to-map refresh — 5 November 2026
 
 Vehicle save previously updated Profile only: an already-open private journey

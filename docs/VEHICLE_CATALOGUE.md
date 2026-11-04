@@ -84,15 +84,20 @@ Profile never changes an accepted or historical snapshot. Legacy closed journeys
 without snapshots do not acquire today's vehicle. Both acceptance paths retain
 the existing transactional snapshot gate.
 
+The later [Profile edit guard](VEHICLES.md#vehicle-edit-guard--5-november-2026)
+rejects Profile saves while the driver has an accepted/underway journey, with the
+shared sentence-only modal and retained drafts. Published-only journeys stay editable.
+
 The [immediate refresh follow-up](VEHICLES.md#immediate-profile-to-map-refresh--5-november-2026)
 notifies open private journey views after a successful Profile save, across
 same-origin tabs with no vehicle payload. Focus/visible return refreshes too;
 unavailable BroadcastChannel retains same-tab events and existing polling.
 
-Home, discovery lists/maps, semantic role icons and other users' pending previews
-keep the existing generic car. No vehicle make/model/colour/selection is added to
-the anonymous Home feed or search/discovery responses. This privacy boundary was
-explicitly confirmed by the owner. No new GPS, orientation, movement or tracking.
+The initial Home/discovery-generic boundary was explicitly superseded by the
+owner's later [all-map artwork decision](VEHICLE_MAPS_2026-11-05.md). Saved supported
+selections now supply an allowlisted local artwork path to discovery and Home;
+full vehicle records and number plates remain private. Semantic labels and
+missing/manual selections keep generic art. No new GPS, orientation or tracking.
 
 ## Artwork and preparation
 

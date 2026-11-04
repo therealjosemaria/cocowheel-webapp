@@ -303,7 +303,7 @@ export function FindRiders({
       </div>}
       {results && searched ? (
         <JourneyResultsLayout>
-          <RequestRouteMap driver={searched} rider={selected ?? undefined} back={() => {
+          <RequestRouteMap ownDriver driver={searched} rider={selected ?? undefined} back={() => {
             setResults(null);
             setOffer(null);
             setSelected(null);
@@ -756,7 +756,7 @@ export function RiderDemandActivity({
     id: `offer:${offer.id}`, active: offer.status === "PENDING", createdAt: offer.createdAt, node: (
         <article className="activity-card" id={offerTarget(offer.id)} key={offer.id}>
           <span className="activity-role"><RideFieldIcon icon="driver" />Journey offered</span>
-          {offerId && <RequestRouteMap driver={offer} />}
+          {offerId && <RequestRouteMap ownDriver={offer.status === "PENDING"} driver={offer} />}
           <dl className="activity-card-fields">
             <div><dt><RideFieldLabel icon="status">Status</RideFieldLabel></dt><dd className="activity-status"><RideStatusText label={offer.status === "PENDING" ? "Awaiting reply" : offer.status.charAt(0) + offer.status.slice(1).toLowerCase()} /></dd></div>
             <div><dt><RideFieldLabel icon="from">Where from?</RideFieldLabel></dt><dd>{location(offer.origin)}</dd></div>

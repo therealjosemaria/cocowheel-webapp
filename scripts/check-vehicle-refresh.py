@@ -24,6 +24,8 @@ with sync_playwright() as p:
                     'vehicle': state['snapshot'] or state['vehicle'], 'requests': []}
             if path == 'vehicle':
                 if route.request.method == 'POST':
+                    if state['status'] in ['ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE']:
+                        route.fulfill(status=409, json={'error': 'VEHICLE_IN_USE'}); return
                     if state['fail']:
                         route.fulfill(status=400, json={'error': 'INVALID_VEHICLE'}); return
                     state['vehicle'] = route.request.post_data_json
@@ -85,7 +87,19 @@ with sync_playwright() as p:
         state['snapshot'] = state['vehicle']; state['status'] = 'ACCEPTED'
         journey.evaluate("window.dispatchEvent(new Event('cocowheels:ride-updated'))")
         details.get_by_label('Colour', exact=True).select_option('Red')
-        save.click(); expect(details.get_by_role('status')).to_be_visible()
+        prior_saves = profile.evaluate('window.vehicleSaves')
+        expect(save).to_be_enabled()
+        save.click()
+        dialog = profile.get_by_role('dialog', name='Vehicle update', exact=True)
+        expect(dialog).to_be_visible()
+        expect(dialog.locator('p')).to_have_text('You can update your vehicle after your current journey ends.')
+        expect(dialog.locator('h1,h2,h3')).to_have_count(0)
+        assert profile.evaluate('window.vehicleSaves') == prior_saves
+        assert state['vehicle']['colour'] == 'Blue'
+        profile.screenshot(path=f'/tmp/vehicle-save-locked-{width}.png', full_page=True)
+        dialog.get_by_role('button', name='OKAY', exact=True).click()
+        expect(details.get_by_label('Colour', exact=True)).to_have_value('Red')
+        expect(save).to_be_enabled()
         journey.evaluate("window.dispatchEvent(new Event('focus'))")
         expect(marker).to_have_attribute('src', '/brand/vehicles/v1/ford-ranger-blue.webp')
         state['snapshot'] = None; state['status'] = 'PUBLISHED'

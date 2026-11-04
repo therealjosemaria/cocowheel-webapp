@@ -21,6 +21,7 @@ import { Message } from "./ride-journey-controls";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
+import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -611,7 +612,9 @@ export default function HomeClient({
       return;
     }
     let cancelled = false;
+    let searchGeneration = 0;
     const search = () => {
+      const generation = ++searchGeneration;
       void cocowheelsApi<{ candidates: Candidate[]; serverNow: string }>(
         "/api/search",
         {
@@ -626,7 +629,7 @@ export default function HomeClient({
         },
       )
         .then((result) => {
-          if (cancelled) return;
+          if (cancelled || generation !== searchGeneration) return;
           setCandidates(result.candidates);
           setDiscoveryError(null);
           if (pendingEmailMatch.current) {
@@ -641,13 +644,15 @@ export default function HomeClient({
               : (result.candidates[0]?.rideId ?? null),
           );
         })
-        .catch((reason) => !cancelled && setDiscoveryError(humanError(reason)))
-        .finally(() => !cancelled && setSearching(false));
+        .catch((reason) => !cancelled && generation === searchGeneration && setDiscoveryError(humanError(reason)))
+        .finally(() => !cancelled && generation === searchGeneration && setSearching(false));
     };
     const timer = window.setTimeout(search, 250);
     const refresh = window.setInterval(search, 15000);
+    const unsubscribeVehicle = subscribeVehicleSaved(search);
     return () => {
       cancelled = true;
+      unsubscribeVehicle();
       window.clearTimeout(timer);
       window.clearInterval(refresh);
     };
@@ -1319,6 +1324,7 @@ function RideSelection({
     <JourneyResultsLayout>
       <JourneyResultsMap back={back}>
         <JourneyMap
+          vehicleArtwork={selectedCandidate?.vehicleArtwork}
           pins={mapPins}
           fitPins={[
             ...(visibleDriverRoute
@@ -1544,6 +1550,8 @@ function RideStatus({
                   : "Current location received"}
               </p>
               <JourneyMap
+                vehicle={driver ? undefined : ride.vehicle}
+                markerKinds={[driver ? "pickup" : "driver"]}
                 pins={[
                   {
                     latitude: location.latitude,

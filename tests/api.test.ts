@@ -330,9 +330,13 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.deepEqual(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, driverToken)).body.ride as RideView).vehicle, describedVehicle);
     assert.equal(((await json(`${base}/api/rides/${driverRide.rideId}`, "GET", undefined, riderToken)).body.ride as RideView).vehicle, undefined);
     const discovery = await json(`${base}/api/search`, "POST", { ...calendarQuery, departureDate: "any" }, riderToken);
-    assert.equal(JSON.stringify(discovery.body).includes("toyota-corolla"), false);
+    assert.equal((discovery.body.candidates as Array<{vehicleArtwork?: string}>)[0]?.vehicleArtwork, "/brand/vehicles/v1/toyota-corolla-blue.webp");
+    assert.equal(JSON.stringify(discovery.body).includes("ABC123"), false);
+    const illustratedPreview = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET", undefined, riderToken);
+    assert.equal((illustratedPreview.body.ride as {vehicleArtwork?: string}).vehicleArtwork, "/brand/vehicles/v1/toyota-corolla-blue.webp");
+    assert.equal(JSON.stringify(illustratedPreview.body).includes("ABC123"), false);
     const publicFeed = await json(`${base}/api/home-presence`, "GET");
-    assert.equal(JSON.stringify(publicFeed.body).includes("toyota-corolla"), false);
+    assert.equal(JSON.stringify(publicFeed.body).includes("ABC123"), false);
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "STEAL" }, riderToken)).response.status, 403);
     const accepted = await json(
       `${base}/api/rides/${driverRide.rideId}/requests/${riderRide.request.requestId}`,
@@ -345,9 +349,11 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     assert.deepEqual((accepted.body.ride as RideView).vehicle?.selection, describedVehicle.selection);
     assert.equal((await json(`${base}/api/vehicle`, "GET", undefined, riderToken)).body.vehicle, null);
     assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "ABC123");
-    assert.equal((await json(`${base}/api/vehicle`, "POST", { plate: "NEW123", make: "Toyota", model: "Corolla", colour: "White", principal_id: "someone-else" }, driverToken)).response.status, 200);
+    const lockedVehicle = await json(`${base}/api/vehicle`, "POST", { plate: "NEW123", make: "Toyota", model: "Corolla", colour: "White", principal_id: "someone-else" }, driverToken);
+    assert.equal(lockedVehicle.response.status, 409);
+    assert.equal(lockedVehicle.body.error, "VEHICLE_IN_USE");
     assert.equal((await json(acceptUrl, "PATCH", { decision: "ACCEPT", plate: "OVERWRITE" }, driverToken)).response.status, 409);
-    assert.equal(((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle as Vehicle).plate, "NEW123");
+    assert.deepEqual((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, describedVehicle);
     const exposed = await json(`${base}/api/rides/${driverRide.rideId}/preview`, "GET", undefined, riderToken);
     assert.equal(exposed.body.ride, undefined); // Accepted offers are no longer public.
     const driverRenewal = await json(

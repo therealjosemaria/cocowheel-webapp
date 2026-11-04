@@ -1,5 +1,15 @@
 # Home presence and discovery access — 4 November 2026
 
+5 November [all-map vehicle artwork](VEHICLE_MAPS_2026-11-05.md) supersedes the
+original role-only artwork projection below. Driver cells may also carry an
+`artworks` array matching count, containing only allowlisted shipped car paths or
+null (generic). No vehicle record, plate, user/post id or precise GPS is added.
+The model/body and colour are visible through the illustration. The shared
+MapSurface now owns tiles/credits for Home and journey maps; Home keeps its own
+noninteractive area/offset settings. Successful local vehicle saves also refresh
+Home immediately via the payload-free same-origin signal; other visits retain
+the visible-minute refresh. Empty/failure hiding, caps and lifecycle are unchanged.
+
 5 November: [Home layout](HOME_LAYOUT_2026-11-05.md) increases map height from
 160px to 200px and places personal activity outside/below the centred primary
 group. Empty-map behavior and all privacy rules below remain unchanged.

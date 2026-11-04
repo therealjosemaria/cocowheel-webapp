@@ -1,4 +1,4 @@
-import { PLATE_ERROR, VEHICLE_YEAR_ERROR } from "./vehicle";
+import { PLATE_ERROR, VEHICLE_YEAR_ERROR, VEHICLE_IN_USE_MESSAGE } from "./vehicle";
 import { CONTRIBUTION_ERROR } from "./fare";
 
 export const CONNECTION_MESSAGE =
@@ -21,6 +21,7 @@ export function apiErrorMessage(
 ) {
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
+      VEHICLE_IN_USE: VEHICLE_IN_USE_MESSAGE,
       INVALID_VEHICLE_YEAR: VEHICLE_YEAR_ERROR,
       INVALID_FIXED_PRICE: CONTRIBUTION_ERROR,
       PAYID_REQUIRED: "Enter your PayID to receive a contribution.",

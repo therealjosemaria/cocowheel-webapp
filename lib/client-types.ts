@@ -27,6 +27,7 @@ export type Location = {
   stale: boolean;
 };
 export type Candidate = {
+  vehicleArtwork?: string;
   driverRating?: RatingSummary;
   isSample?: boolean;
   driverLocation?: Location;

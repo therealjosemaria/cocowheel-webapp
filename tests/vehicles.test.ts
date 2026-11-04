@@ -12,7 +12,7 @@ import {
   decideRequest,
 } from "../server/core";
 import { acceptWithVehicle } from "../server/vehicle-acceptance";
-import { readVehicle, saveVehicle } from "../server/vehicles";
+import { readVehicle, saveVehicle, saveProfileVehicle } from "../server/vehicles";
 import { checkedVehicle, validPlate } from "../lib/vehicle";
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
@@ -98,14 +98,14 @@ test("saved vehicle acceptance, immutable snapshot, other-rider privacy and lega
     assert.deepEqual(accepted.vehicle, vehicle);
     assert.deepEqual(getRide(db, id, rider.session).vehicle, vehicle);
     assert.equal(getRide(db, id, other.session).vehicle, undefined);
-    saveVehicle(db, driver.session.id, { plate: "NEW123" });
+    assert.throws(() => saveProfileVehicle(db, driver.session.id, { plate: "NEW123" }), /VEHICLE_IN_USE/);
     assert.deepEqual(getRide(db, id, rider.session).vehicle, vehicle);
     assert.throws(() =>
       acceptWithVehicle(db, driver.token, id, otherReq, "BAD999"),
     );
-    assert.equal(readVehicle(db, driver.session.id)?.plate, "NEW123");
+    assert.equal(readVehicle(db, driver.session.id)?.plate, "ABC123");
     assert.throws(() => saveVehicle(db, driver.session.id, { plate: " " }), /VEHICLE_PLATE_REQUIRED/);
-    assert.equal(readVehicle(db, driver.session.id)?.plate, "NEW123");
+    assert.equal(readVehicle(db, driver.session.id)?.plate, "ABC123");
     assert.equal((db.prepare("SELECT count(*) n FROM ride_vehicles").get() as { n: number }).n, 1);
     // Pre-feature accepted rides have no snapshot and remain readable.
     db.prepare("DELETE FROM ride_vehicles").run();
@@ -116,4 +116,35 @@ test("saved vehicle acceptance, immutable snapshot, other-rider privacy and lega
   } finally {
     db.close();
   }
+});
+
+test("Profile vehicle saves lock only for the driver's paired journey and unlock after it ends", () => {
+  const db = new Database(":memory:");
+  db.pragma("foreign_keys = ON");
+  initializeCoreSchema(db);
+  try {
+    const driver = createGuestSession(db), other = createGuestSession(db);
+    const published = publishRide(db, driver.token, {
+      origin: { latitude: -33.88, longitude: 151.18 },
+      destination: { latitude: -33.88, longitude: 151.28 },
+      scheduledDepartureAt: new Date().toISOString(), priceAud: 0,
+    });
+    const update = db.prepare("UPDATE rides SET status=? WHERE public_id=?");
+    for (const status of ['PUBLISHED', 'REQUESTED']) {
+      update.run(status, published.ride.rideId);
+      assert.equal(saveProfileVehicle(db, driver.session.id, { plate: 'ABC123' }).plate, 'ABC123');
+    }
+    for (const status of ['ACCEPTED', 'RIDE_ACTIVE', 'CO_RIDE_ACTIVE']) {
+      update.run(status, published.ride.rideId);
+      assert.throws(() => saveProfileVehicle(db, driver.session.id, { plate: 'NEW123' }), /VEHICLE_IN_USE/);
+      assert.equal(readVehicle(db, driver.session.id)?.plate, 'ABC123');
+      // Another account's vehicle remains independently editable.
+      assert.equal(saveProfileVehicle(db, other.session.id, { plate: 'OTHER1' }).plate, 'OTHER1');
+    }
+    for (const status of ['COMPLETED', 'CANCELLED', 'EXPIRED']) {
+      update.run(status, published.ride.rideId);
+      assert.equal(saveProfileVehicle(db, driver.session.id, { plate: 'NEW123' }).plate, 'NEW123');
+    }
+    assert.deepEqual(db.pragma('foreign_key_check'), []);
+  } finally { db.close(); }
 });

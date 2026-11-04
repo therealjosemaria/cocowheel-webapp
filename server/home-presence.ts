@@ -1,4 +1,5 @@
 import type { Db } from './core';
+import { vehicleArtwork } from '../lib/vehicle-catalogue';
 import { presenceCell, PRESENCE_LIMIT_PER_ROLE, PRESENCE_MAX_ICONS, PRESENCE_MAX_PER_AREA, type PresenceCell } from '../lib/home-presence';
 
 // Separate public projection: never serialize IDs, names, labels, destinations,
@@ -7,8 +8,8 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
   const result: PresenceCell[] = [];
   const timestamp = now.toISOString();
   const sources = [
-    ['driver', db.prepare(`SELECT origin_latitude AS latitude, origin_longitude AS longitude
-      FROM rides WHERE status IN ('PUBLISHED','REQUESTED') AND is_sample=0
+    ['driver', db.prepare(`SELECT origin_latitude AS latitude, origin_longitude AS longitude, v.body AS vehicle_body
+      FROM rides LEFT JOIN account_vehicles v ON v.principal_id=rides.driver_session_id WHERE status IN ('PUBLISHED','REQUESTED') AND is_sample=0
       AND accepted_request_id IS NULL
       AND COALESCE(offer_expires_at, strftime('%Y-%m-%dT%H:%M:%fZ', scheduled_departure_at, '+6 hours')) > ?
       ORDER BY origin_latitude, origin_longitude`).iterate(timestamp)],
@@ -25,15 +26,26 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
   for (const [role, rows] of sources) {
     const seen = new Map<string, PresenceCell>();
     for (const value of rows) {
-      const row = value as { latitude: number; longitude: number };
+      const row = value as { latitude: number; longitude: number; vehicle_body?: string };
       if (typeof row.latitude !== 'number' || typeof row.longitude !== 'number') continue;
       const cell = presenceCell(role, row.latitude, row.longitude);
       if (!cell) continue;
       const key = `${cell.latitude}:${cell.longitude}`;
       const existing = seen.get(key);
-      if (existing) { existing.count = Math.min(PRESENCE_MAX_PER_AREA, existing.count + 1); continue; }
+      let art: string | null = null;
+      if (role === 'driver' && row.vehicle_body) {
+        try { art = vehicleArtwork(JSON.parse(row.vehicle_body)) ?? null; } catch { /* Invalid legacy detail keeps generic art. */ }
+      }
+      if (existing) {
+        if (existing.count < PRESENCE_MAX_PER_AREA) {
+          existing.count++;
+          existing.artworks?.push(art);
+        }
+        continue;
+      }
       if (seen.size === PRESENCE_LIMIT_PER_ROLE) continue;
       seen.set(key, cell);
+      if (role === 'driver') cell.artworks = [art];
       result.push(cell);
     }
   }
@@ -53,7 +65,10 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
     }
     for (const cell of area) {
       const count = Math.min(cell.count, remaining);
-      if (count) bounded.push({ ...cell, count });
+      const { artworks, ...area } = cell;
+      const visibleArt = artworks?.slice(0, count);
+      if (count) bounded.push({ ...area, count, ...(visibleArt?.some(Boolean)
+        ? { artworks: visibleArt } : {}) });
       remaining -= count;
     }
     if (!remaining) break;

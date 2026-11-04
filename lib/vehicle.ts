@@ -22,6 +22,8 @@ export const PLATE_ERROR =
   "Use up to 9 letters, numbers, spaces or hyphens, starting with a letter or number.";
 export const VEHICLE_YEAR_ERROR =
   "Choose your vehicle’s year, or enter a valid four-digit year.";
+export const VEHICLE_IN_USE_MESSAGE =
+  "You can update your vehicle after your current journey ends.";
 /** Spaces and hyphens are retained; this is input validation, not a registry check. */
 export function validPlate(value: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9 -]{0,8}$/.test(value.trim());

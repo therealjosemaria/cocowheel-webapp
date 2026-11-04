@@ -283,3 +283,10 @@ export function vehicleArtwork(
     return;
   return `/brand/vehicles/v1/${choice.model}-${choice.colour.toLowerCase()}.webp`;
 }
+
+const artworkPaths = new Set(VEHICLE_MODELS.flatMap(model =>
+  VEHICLE_COLOURS.map(colour => `/brand/vehicles/v1/${model.id}-${colour.toLowerCase()}.webp`)));
+/** Public projections can carry only one of our shipped artwork paths. */
+export function isVehicleArtworkPath(value: unknown): value is string {
+  return typeof value === "string" && artworkPaths.has(value);
+}

@@ -14,6 +14,7 @@ import { ratingSummary, rideRatingState } from "./ratings";
 import { conversationSummaries } from "./messaging";
 import { initializeUsualRoutes, queueRouteAlerts } from "./usual-routes";
 import { initializeVehicles, rideVehicle, readVehicle } from "./vehicles";
+import { vehicleArtwork } from "../lib/vehicle-catalogue";
 import type { ConversationSummary } from "../lib/messaging-types";
 import type { RatingSummary, RideRatingState } from "../lib/rating-types";
 import { payIdInputError } from "../lib/input-validation";
@@ -173,6 +174,7 @@ type LocationRow = {
 };
 
 export type Candidate = {
+  vehicleArtwork?: string;
   driverRating?: RatingSummary;
   isSample?: boolean;
   driverLocation?: PublicLocation;
@@ -190,6 +192,7 @@ export type Candidate = {
   destinationLabel: string | null;
 };
 export type AvailabilityOffer = {
+  vehicleArtwork?: string;
   driverRating?: RatingSummary;
   rideId: string;
   driverAlias: string;
@@ -202,6 +205,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  vehicleArtwork?: string;
   driverRating?: RatingSummary;
   paymentMethod?: "PAYID" | "CASH";
   isSample?: boolean;
@@ -1170,6 +1174,7 @@ export function searchRides(
       );
       return {
         rideId: row.public_id,
+        vehicleArtwork: vehicleArtwork(readVehicle(db, row.driver_session_id) ?? undefined),
         isSample: Boolean(row.is_sample),
         driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
         driverRating: row.is_sample
@@ -1236,6 +1241,7 @@ export function availableRides(
     }>
   ).map((ride) => ({
     rideId: ride.public_id,
+    vehicleArtwork: vehicleArtwork(readVehicle(db, ride.driver_session_id) ?? undefined),
     driverAlias: publicName(db, ride.driver_session_id, ride.driver_alias),
     driverRating: ratingSummary(db, ride.driver_session_id, "DRIVER", now),
     priceAud: ride.price_aud,
@@ -1278,6 +1284,7 @@ export function publicRidePreview(
     longitude: ride.destination_longitude,
   };
   return {
+    vehicleArtwork: vehicleArtwork(readVehicle(db, ride.driver_session_id) ?? undefined),
     rideId: ride.public_id,
     driverAlias: publicName(db, ride.driver_session_id, ride.driver_alias),
     driverRating: ride.is_sample

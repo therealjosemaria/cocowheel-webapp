@@ -7,6 +7,7 @@ import { initializeCoreSchema, createGuestSession, publishRide } from '../server
 import { createApiServer } from '../server/index';
 import { homePresence } from '../server/home-presence';
 import { presenceCell, readPresenceCells } from '../lib/home-presence';
+import { saveProfileVehicle } from '../server/vehicles';
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString('base64');
 const now = new Date();
@@ -29,6 +30,33 @@ function fixture() {
   }
   return { db, driver, request };
 }
+
+test('Home exposes selected artwork without vehicle records and updates from current Profile selections', () => {
+  const { db, driver, request } = fixture();
+  try {
+    const owner = driver(); driver(); request('waiting');
+    const vehicle = { plate:'PRIVATE1',make:'Ford',model:'Ranger',year:'2025',colour:'Blue',
+      selection:{make:'Ford',model:'ford-ranger',year:'2025',colour:'Blue'} };
+    saveProfileVehicle(db, owner.session.id, vehicle);
+    const before = db.serialize();
+    const cells = homePresence(db, now);
+    const cars = cells.find(c => c.role === 'driver')!;
+    assert.equal(cars.count, 2);
+    assert.ok(cars.artworks?.includes('/brand/vehicles/v1/ford-ranger-blue.webp'));
+    assert.ok(cars.artworks?.includes(null));
+    assert.deepEqual(readPresenceCells({cells}), cells);
+    for (const value of ['PRIVATE1',owner.session.id,owner.ride.rideId,'Private pickup','Private destination','selection','plate','make'])
+      assert.equal(JSON.stringify(cells).includes(value), false, value);
+    assert.deepEqual(db.serialize(), before);
+    saveProfileVehicle(db, owner.session.id, {...vehicle, colour:'Red',selection:{...vehicle.selection,colour:'Red'}});
+    assert.ok(homePresence(db, now).find(c => c.role === 'driver')!.artworks?.includes('/brand/vehicles/v1/ford-ranger-red.webp'));
+    saveProfileVehicle(db, owner.session.id, {plate:'PRIVATE1'});
+    assert.equal(homePresence(db, now).find(c => c.role === 'driver')!.artworks, undefined);
+    for (const artworks of [['https://evil.invalid/car.webp',null], ['<img>',null], [null], [null,null,null,null]])
+      assert.throws(() => readPresenceCells({cells:[{...cars,artworks}]}), /INVALID_PRESENCE/);
+    assert.throws(() => readPresenceCells({cells:[{...presenceCell('rider', origin.latitude,origin.longitude), artworks:['/brand/vehicles/v1/ford-ranger-blue.webp']}]}));
+  } finally { db.close(); }
+});
 
 test('Home projects only stable role/area cells with bounded multiple icons and leaves database unchanged', () => {
   const { db, driver, request } = fixture();
