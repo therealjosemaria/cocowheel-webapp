@@ -45,6 +45,13 @@ with sync_playwright() as p:
     expect(model).to_have_css('width','48px');expect(model).to_have_css('height','48px')
     expect(model).to_have_css('background-color','rgba(0, 0, 0, 0)')
     expect(model).to_have_css('border-radius','0px')
+    credits=page.locator('.map-attribution')
+    expect(credits).to_have_count(1)
+    expect(credits).to_have_css('left','7px');expect(credits).to_have_css('bottom','10px')
+    expect(credits).to_have_css('background-color','rgba(255, 255, 255, 0.7)')
+    expect(credits).to_have_css('box-shadow','none')
+    expect(credits).to_have_css('border-radius','5px')
+    expect(credits.get_by_role('link',name='Geoapify')).to_be_visible()
     page.wait_for_timeout(700)
    else:expect(page.locator('.journey-role-art').first).to_be_visible()
    if name=='home':

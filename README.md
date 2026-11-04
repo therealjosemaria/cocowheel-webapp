@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+5 November map consistency: Home and journey maps share bottom-left credits,
+regular caption text, 70% white background, soft 5px corners and no shadow.
+Home now uses the same colour tiles as journey maps. See
+[map credits](docs/MAP_CREDITS_2026-11-05.md).
+
 4 November route GPS recovery: explicit Use my location now distinguishes blocked,
 unavailable, unsupported and timed-out positioning. Unavailable/timeouts try one
 standard-accuracy fallback; permission denials do not retry. Accepted-trip tracking

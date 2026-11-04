@@ -1,4 +1,5 @@
 "use client";
+import MapCredits from "./map-credits";
 
 import { useEffect } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
@@ -40,15 +41,15 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
     slots.set(key, slot + 1);
     return { ...cell, key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
   }));
-  return <MapContainer center={[-33.89, 151.2]} zoom={11}
-    className="home-presence-map" zoomControl={false} dragging={false}
+  return <div className="presence-map-frame"><MapContainer center={[-33.89, 151.2]} zoom={11}
+    className="home-presence-map" attributionControl={false} zoomControl={false} dragging={false}
     scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false}
     boxZoom={false} keyboard={false} zoomAnimation={false} fadeAnimation={false}
     markerZoomAnimation={false}>
-    <TileLayer url={MAP_TILE_URL} attribution={'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'} />
+    <TileLayer url={MAP_TILE_URL} />
     <AreaView cells={cells} />
     {markers.map(cell => <Marker key={cell.key}
       position={[cell.latitude, cell.longitude]} icon={icons[cell.role][cell.total - 1][cell.slot]}
       interactive={false} keyboard={false} />)}
-  </MapContainer>;
+  </MapContainer><MapCredits /></div>;
 }

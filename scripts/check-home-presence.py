@@ -40,6 +40,15 @@ with sync_playwright() as p:
         preview=page.get_by_role('region',name='Posted journeys and journey requests by area')
         expect(preview.locator('.leaflet-marker-icon')).to_have_count(3)
         expect(preview.get_by_text('approx',exact=False)).to_have_count(0)
+        credits=preview.locator('.map-attribution')
+        expect(credits).to_have_count(1)
+        expect(preview.locator('.leaflet-control-attribution')).to_have_count(0)
+        expect(credits).to_have_css('left','7px');expect(credits).to_have_css('bottom','10px')
+        expect(credits).to_have_css('background-color','rgba(255, 255, 255, 0.7)')
+        expect(credits).to_have_css('box-shadow','none')
+        expect(credits).to_have_css('border-radius','5px')
+        expect(preview.locator('.leaflet-tile-pane')).to_have_css('filter','none')
+        expect(credits.get_by_role('link',name='OpenStreetMap contributors')).to_have_attribute('href','https://www.openstreetmap.org/copyright')
         expect(preview.locator('button, input, .leaflet-control-zoom, .leaflet-popup, .leaflet-tooltip')).to_have_count(0)
         for icon in preview.locator('.leaflet-marker-icon').all():
             assert icon.get_attribute('tabindex') is None

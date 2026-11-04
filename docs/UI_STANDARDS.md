@@ -1,5 +1,10 @@
 # Coco Wheels product and UI standards
 
+5 November map consistency: Home and journey maps share bottom-left credits,
+regular caption text, 70% white background, soft 5px corners and no shadow.
+Home now uses the same colour tiles as journey maps. See
+[map credits](MAP_CREDITS_2026-11-05.md).
+
 4 November: explicit route-origin GPS recovery reuses existing address sheets,
 Use my location control and regular-weight inline alert. Specific failures give
 browser/device settings or address-search recovery. No new styling or tracking
