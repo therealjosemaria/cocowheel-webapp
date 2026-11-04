@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+5 November artwork cleanup: the standing-person variants and BYD Shark 6, Isuzu
+D-Max and Toyota RAV4 colour illustrations have cleaned transparent backgrounds.
+Their display URLs refresh cached artwork; API artwork paths stay unchanged.
+See [artwork cleanup](docs/JOURNEY_ROLE_ART.md#transparent-artwork-cleanup--5-november-2026).
+
 5 November custom cars across maps: supported saved vehicle selections now supply
 the same artwork in signed-in Find/preview maps, the driver's request-discovery
 and offer maps, private journey maps and anonymous Home area markers. Home shares

@@ -58,11 +58,11 @@ with sync_playwright() as p:
     expect(page.locator('.role-card-primary .journey-role-art')).to_have_count(1)
     dark=page.locator('.role-card-primary .journey-role-art').evaluate('(el)=>getComputedStyle(el, "::before").backgroundImage')
     light=page.locator('.role-card:not(.role-card-primary) .journey-role-art').evaluate('(el)=>getComputedStyle(el, "::before").backgroundImage')
-    assert 'journey-person-standing-v1-on-dark.webp' in dark and 'journey-roles-3d-v1.webp' in light,(dark,light)
-   decoded=page.evaluate('''async () => Promise.all(['journey-roles-3d-v1','journey-roles-3d-v1-on-dark','journey-person-standing-v1','journey-person-standing-v1-on-dark'].map(async variant => {const i=new Image();i.src='/brand/'+variant+'.webp';await i.decode();return [i.naturalWidth,i.naturalHeight];}))''')
+    assert 'journey-person-standing-v2-on-dark.webp' in dark and 'journey-roles-3d-v1.webp' in light,(dark,light)
+   decoded=page.evaluate('''async () => Promise.all(['journey-roles-3d-v1','journey-roles-3d-v1-on-dark','journey-person-standing-v2','journey-person-standing-v2-on-dark'].map(async variant => {const i=new Image();i.src='/brand/'+variant+'.webp';await i.decode();return [i.naturalWidth,i.naturalHeight];}))''')
    assert decoded==[[532,266],[532,266],[128,256],[128,256]],decoded
    for icon in page.locator('.journey-role-art').all():
-    expected=icon.evaluate('''el => {const rider=el.classList.contains('journey-role-art-rider');const dark=!!el.closest('.role-card-primary, .primary, .journey-role-art-on-dark');return (rider?'journey-person-standing-v1':'journey-roles-3d-v1')+(dark?'-on-dark':'')+'.webp'}''')
+    expected=icon.evaluate('''el => {const rider=el.classList.contains('journey-role-art-rider');const dark=!!el.closest('.role-card-primary, .primary, .journey-role-art-on-dark');return (rider?'journey-person-standing-v2':'journey-roles-3d-v1')+(dark?'-on-dark':'')+'.webp'}''')
     assert expected in icon.evaluate('(el)=>getComputedStyle(el, "::before").backgroundImage')
     expect(icon).to_have_attribute('aria-hidden','true')
     assert icon.evaluate('(el)=>el.tabIndex')==-1

@@ -290,3 +290,10 @@ const artworkPaths = new Set(VEHICLE_MODELS.flatMap(model =>
 export function isVehicleArtworkPath(value: unknown): value is string {
   return typeof value === "string" && artworkPaths.has(value);
 }
+
+/** Refresh corrected artwork without changing the allowlisted API paths. */
+export function vehicleArtworkDisplayPath(path: string): string {
+  return /^\/brand\/vehicles\/v1\/(byd-shark6|isuzu-dmax|toyota-rav4)-/.test(path)
+    ? `${path}?background=2`
+    : path;
+}

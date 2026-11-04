@@ -3,7 +3,9 @@ Run: /tmp/gumwheel-notification-check-env/bin/python scripts/check-vehicle-map-c
 No production writes/providers. Scheduled polls paused to expose missing save signals.
 """
 import json
+import os
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright, expect
 BASE='http://127.0.0.1:3201'
 origin={'latitude':-33.918,'longitude':151.204,'label':'Example origin, Sydney'}
@@ -12,12 +14,14 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
     for width in [390,1440]:
         context=browser.new_context(viewport={'width':width,'height':900})
-        state={'vehicle':{'plate':'PRIVATE1','make':'Ford','model':'Ranger','year':'2025','colour':'Blue',
-               'selection':{'make':'Ford','model':'ford-ranger','year':'2025','colour':'Blue'}}}
+        state={'vehicle':{'plate':'PRIVATE1','make':'BYD','model':'Shark 6','year':'2025','colour':'White',
+               'selection':{'make':'BYD','model':'byd-shark6','year':'2025','colour':'White'}}}
         errors=[]
         def artwork():
             v=state['vehicle']
-            return '/brand/vehicles/v1/ford-ranger-'+v['colour'].lower()+'.webp' if v.get('selection',{}).get('colour') else None
+            return '/brand/vehicles/v1/byd-shark6-'+v['colour'].lower()+'.webp' if v.get('selection',{}).get('colour') else None
+        def displayed_artwork():
+            return artwork()+'?background=2' if artwork() else None
         def api(r):
             path=r.request.url.split('/api/')[-1].split('?')[0]
             now=datetime.now(timezone.utc).isoformat()
@@ -50,14 +54,18 @@ with sync_playwright() as p:
                 r.fulfill(content_type='image/svg+xml',body='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#64748b"/></svg>');return
             else:data={}
             r.fulfill(json=data)
-        context.route('**/*',lambda r:r.continue_() if r.request.url.startswith(BASE) else r.abort())
+        def network(r):
+            host=urlparse(r.request.url).hostname or ''
+            if r.request.url.startswith(BASE) or (os.environ.get('GUMWHEEL_TEST_TILES')=='1' and host.endswith('.tile.openstreetmap.org') and r.request.method=='GET'):r.continue_()
+            else:r.abort()
+        context.route('**/*',network)
         context.route('**/api/**',api)
         context.add_init_script('const oldTimeout=setTimeout,oldInterval=setInterval;window.setTimeout=(fn,ms,...args)=>ms===8000?0:oldTimeout(fn,ms,...args);window.setInterval=(fn,ms,...args)=>[15000,60000].includes(ms)?0:oldInterval(fn,ms,...args)')
         def page():
             result=context.new_page();result.on('pageerror',lambda e:errors.append(str(e)));return result
         home=page();home.goto(BASE)
         feed=home.locator('.home-presence')
-        expect(feed.locator('.vehicle-artwork-marker')).to_have_attribute('src',artwork())
+        expect(feed.locator('.vehicle-artwork-marker')).to_have_attribute('src',displayed_artwork())
         expect(feed.locator('.journey-role-art-driver')).to_have_count(1)
         expect(feed.locator('.leaflet-marker-icon')).to_have_count(3)
         expect(feed.locator('button,.leaflet-popup,.leaflet-tooltip')).to_have_count(0)
@@ -67,12 +75,12 @@ with sync_playwright() as p:
         find.add_init_script('sessionStorage.setItem("cocowheels:find-ride-draft:v1",JSON.stringify({...'+json.dumps({'pickup':origin,'destination':end,'departureAt':None})+',savedAt:Date.now()}));')
         find.goto(BASE+'/?start=rider')
         expect(find.locator('.ride-option')).to_have_count(1)
-        expect(find.locator('.ride-selection-map .vehicle-artwork-marker')).to_have_attribute('src',artwork())
+        expect(find.locator('.ride-selection-map .vehicle-artwork-marker')).to_have_attribute('src',displayed_artwork())
         find.screenshot(path=f'/tmp/vehicle-everywhere-find-{width}.png',full_page=True)
         find.goto(BASE+'/rides/COCO-TEST')
-        expect(find.locator('.vehicle-artwork-marker')).to_have_attribute('src',artwork())
+        expect(find.locator('.vehicle-artwork-marker')).to_have_attribute('src',displayed_artwork())
         own=page();own.goto(BASE+'/activity/offers/sent1')
-        expect(own.locator('.vehicle-artwork-marker')).to_have_attribute('src',artwork())
+        expect(own.locator('.vehicle-artwork-marker')).to_have_attribute('src',displayed_artwork())
         own.screenshot(path=f'/tmp/vehicle-everywhere-offer-{width}.png',full_page=True)
         profile=page();profile.goto(BASE+'/usual-route')
         details=profile.locator('.vehicle-details');details.locator('summary').click()
@@ -80,7 +88,7 @@ with sync_playwright() as p:
         details.get_by_role('button',name='Save vehicle details',exact=True).click()
         expect(details.get_by_role('status')).to_be_visible()
         for target in [home,find,own]:
-            expect(target.locator('.vehicle-artwork-marker')).to_have_attribute('src',artwork(),timeout=2000)
+            expect(target.locator('.vehicle-artwork-marker')).to_have_attribute('src',displayed_artwork(),timeout=2000)
             expect(target.locator('.map-attribution')).to_have_count(1)
             expect(target.locator('.map-attribution')).to_have_css('left','7px')
             assert target.evaluate('document.documentElement.scrollWidth<=innerWidth')

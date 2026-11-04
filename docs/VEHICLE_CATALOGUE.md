@@ -1,5 +1,15 @@
 # Vehicle catalogue — 5 November 2026
 
+## Background cleanup — 5 November 2026
+
+The six colour assets for BYD Shark 6, Isuzu D-Max and Toyota RAV4 were recreated
+from cleaned transparent sheets to remove visible studio backgrounds. The
+manifest records each original and cleaned source. These model illustrations use
+a versioned display query in Profile and maps so browsers fetch the corrected
+files; API allowlisted URLs and catalogue selections are unchanged. Other model
+artwork was not regenerated and may retain subtle generated shadows. See
+[journey artwork](JOURNEY_ROLE_ART.md#transparent-artwork-cleanup--5-november-2026).
+
 ## Agreed scope and research
 
 20 make/model combinations total, six colours, typed alternatives always supported.

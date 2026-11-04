@@ -759,7 +759,7 @@ button:disabled {
   width: 47.012579%;
   height: 95.833333%;
   left: 26.493711%;
-  background-image: url("/brand/journey-person-standing-v1.webp");
+  background-image: url("/brand/journey-person-standing-v2.webp");
   background-size: contain;
   background-position: center bottom;
 }
@@ -772,7 +772,7 @@ button:disabled {
 .role-card-primary .journey-role-art-rider::before,
 .primary .journey-role-art-rider::before,
 .journey-role-art-rider.journey-role-art-on-dark::before {
-  background-image: url("/brand/journey-person-standing-v1-on-dark.webp");
+  background-image: url("/brand/journey-person-standing-v2-on-dark.webp");
 }
 .journey-marker.journey-marker-model {
   width: var(--marker-role-size);

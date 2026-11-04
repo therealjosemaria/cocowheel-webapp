@@ -1,5 +1,33 @@
 # Journey role artwork — 4 November 2026
 
+## Transparent artwork cleanup — 5 November 2026
+
+The standing-person light and dark surface WebPs now use v2 assets, cleaned using
+image generation to remove the studio/checkerboard residue while retaining the
+standing pose. The existing generic car is unchanged. The BYD Shark 6, Isuzu
+D-Max and Toyota RAV4 six-colour sheets were also cleaned and prepared again;
+their source images and original source references are recorded in the vehicle
+catalogue manifest. Some other models retain subtle original shadows; this is
+not a blanket rework of the entire catalogue.
+
+Profile and shared map markers add `?background=2` to those three models' image
+display URLs to avoid reusing cached older images. Server-supplied artwork paths
+remain the existing strict allowlisted paths. All other display paths are unchanged.
+This modifies presentation only, with no API or privacy change.
+
+The cleaned standing-person source images are retained in the local generated
+image archive as `exec-b6001ce1-b93a-445a-a23c-755a299fb3b1.png` (light) and
+`exec-fde97822-0e1c-4fab-9dd7-f3cb9e77d21e.png` (dark). They were resized to
+the existing 128×256 WebP slots. Image generation can change small details; the
+before/after illustrations were reviewed against light and dark backgrounds.
+
+On 5 November, `npm test` (253 tests), `npm run lint`, `npm run build`,
+`scripts/check-journey-role-art.py` and `scripts/check-vehicle-map-consistency.py`
+passed. The local synthetic-data checks covered 390px and 1440px screens; Home
+and Find screenshots were visually reviewed with public OSM tiles. They cover the
+white BYD and the generic car/person, not every model or real device. Production
+appearance and deployment remain to be verified separately.
+
 5 November: [personal vehicle illustrations](VEHICLE_CATALOGUE.md) initially extended
 owner and accepted-pair driver map markers; the later [all-map extension](VEHICLE_MAPS_2026-11-05.md)
 supersedes the Home/discovery-generic restriction. Generic car/person artwork

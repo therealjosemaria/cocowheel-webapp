@@ -9,7 +9,19 @@ import {
   validVehicleYear,
   vehicleYearOptions,
   isVehicleArtworkPath,
+  vehicleArtworkDisplayPath,
 } from "../lib/vehicle-catalogue";
+
+test("corrected catalogue artwork receives a fresh display URL", () => {
+  for (const model of ["byd-shark6", "isuzu-dmax", "toyota-rav4"]) {
+    const path = `/brand/vehicles/v1/${model}-white.webp`;
+    assert.equal(isVehicleArtworkPath(path), true);
+    assert.equal(vehicleArtworkDisplayPath(path), `${path}?background=2`);
+    assert.equal(isVehicleArtworkPath(vehicleArtworkDisplayPath(path)), false);
+  }
+  const unchanged = "/brand/vehicles/v1/ford-ranger-blue.webp";
+  assert.equal(vehicleArtworkDisplayPath(unchanged), unchanged);
+});
 
 test("map artwork accepts shipped local paths only", () => {
   assert.equal(isVehicleArtworkPath('/brand/vehicles/v1/ford-ranger-blue.webp'), true);

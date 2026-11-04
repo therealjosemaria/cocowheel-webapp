@@ -30,7 +30,7 @@
       "rank": 2,
       "sales2025": 51947,
       "shape": "2025 XA50 angular compact SUV, trapezoid grille, angular wheel arches",
-      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-eb282632-2bed-41db-9b19-c1b4dd8ad933.png",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-3f68f55f-d39a-4460-bd99-bcaa210a7e72.png",
       "year": "2019",
       "body": "XA50 fifth generation",
       "referenceUrl": "https://www.toyota.com.au/-/media/toyota/main-site/vehicle-hubs/rav4/files/20250129_gto008905_rav4_spec_table.pdf?rev=459566df983b4b85be03471981175485",
@@ -44,7 +44,11 @@
         }
       },
       "yearFrom": 2019,
-      "yearTo": 2025
+      "yearTo": 2025,
+      "backgroundCleanup": {
+        "originalSource": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-eb282632-2bed-41db-9b19-c1b4dd8ad933.png",
+        "prompt": "Remove all background, floor, haze and shadows from this exact six-car sprite sheet. Preserve each vehicle's exact appearance, shape, camera angle, colours, size, placement and 3-by-2 arrangement. Keep complete cars with true transparent alpha everywhere around and between them. Do not redesign, crop or add anything."
+      }
     },
     {
       "id": "toyota-hilux",
@@ -72,7 +76,7 @@
       "rank": 4,
       "sales2025": 26839,
       "shape": "2025 dual-cab ute, double horizontal grille bars, slanted headlamps, open pickup tray",
-      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-59a4ff4a-40d8-4ff7-8846-276efb77ce74.png",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-0adb52e4-8f60-45ab-8abe-f8d1f1d1313a.png",
       "year": "2024",
       "body": "third-generation facelift dual-cab pickup",
       "referenceUrl": "https://www.isuzuute.com.au/discover/news/2024-isuzu-d-max-ute",
@@ -82,7 +86,11 @@
         "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-59a4ff4a-40d8-4ff7-8846-276efb77ce74.png"
       },
       "yearFrom": 2024,
-      "yearTo": 2025
+      "yearTo": 2025,
+      "backgroundCleanup": {
+        "originalSource": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-59a4ff4a-40d8-4ff7-8846-276efb77ce74.png",
+        "prompt": "Remove all background, floor, haze and shadows from this exact six-car sprite sheet. Preserve each vehicle's exact appearance, shape, camera angle, colours, size, placement and 3-by-2 arrangement. Keep complete cars with true transparent alpha everywhere around and between them. Do not redesign, crop or add anything."
+      }
     },
     {
       "id": "ford-everest",
@@ -307,7 +315,7 @@
       "rank": 18,
       "sales2025": 18073,
       "shape": "2025 large dual-cab ute, squared off-road proportions, full-width front LED bar, open pickup tray",
-      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-238c77be-a871-4e50-b7bb-9307d7454382.png",
+      "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-dedcfaa0-7ef6-43c2-a954-d17fe2651ae1.png",
       "year": "2025",
       "body": "first-generation dual-cab pickup",
       "referenceUrl": "https://bydautomotive.com.au/brochures/BYD-SHARK-6-2025.pdf",
@@ -317,7 +325,11 @@
         "source": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-238c77be-a871-4e50-b7bb-9307d7454382.png"
       },
       "yearFrom": 2025,
-      "yearTo": 2025
+      "yearTo": 2025,
+      "backgroundCleanup": {
+        "originalSource": "/home/jmos0905/.codex/generated_images/01a0f2ef-97f2-74c3-ba63-55d94f45f61a/exec-238c77be-a871-4e50-b7bb-9307d7454382.png",
+        "prompt": "Edit this exact six-vehicle sprite sheet. Remove the entire white and grey studio background and floor shadows, making everything outside the six vehicles fully transparent with true alpha. Keep all six existing vehicles, their exact paint colours and details, their positions, relative sizes, spacing and the 3-by-2 layout unchanged. Do not add anything or change camera angles; do not crop cars or alter their details."
+      }
     },
     {
       "id": "nissan-xtrail",

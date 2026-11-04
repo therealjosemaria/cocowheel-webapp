@@ -1,4 +1,4 @@
-import { vehicleArtwork } from "@/lib/vehicle-catalogue";
+import { vehicleArtwork, vehicleArtworkDisplayPath } from "@/lib/vehicle-catalogue";
 import type { Vehicle } from "@/lib/vehicle";
 
 /** Vehicle images are illustrations; the accompanying plate/text remains authoritative. */
@@ -9,7 +9,7 @@ export default function VehicleArtwork({ vehicle }: { vehicle?: Vehicle }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       className="vehicle-artwork-preview"
-      src={src}
+      src={vehicleArtworkDisplayPath(src)}
       width={192}
       height={144}
       alt="Vehicle illustration"
