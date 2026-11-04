@@ -42,3 +42,17 @@ Mocks include long address text and multiple cards. No real accounts/trips,
 provider routes, GPS captures or email writes. Read-only public OSM tiles only.
 Physical Safari and authenticated production activity remain unverified.
 Production deployment is recorded below after verification.
+
+
+Production implementation 88b25e20004923aa67651c244a965708f7dfca3a was pushed.
+Vercel dpl_2SYRi9To1vUHTYoT8AKwQFwQ5tTy is READY for that exact source and
+aliased to www.gumwheel.com. The same four-size activity-layout suite passes on
+the deployed frontend with synthetic APIs, including stable upper positions and
+header clearance. Fresh live phone rendering was visually inspected. During
+rollout an initial live check still saw the previous160px map/negative transform
+and only12px header gap; the READY build now has200px and48px top padding.
+The owner's final clarification is the maintained hierarchy: heading above,
+Find/Post in the middle, map below in one centred primary group; optional
+activity is a fourth section outside that group, continuing down the scrolling
+page. No extra hero copy or visible activity heading was introduced.
+No real user data or journey writes were used; physical devices remain untested.
