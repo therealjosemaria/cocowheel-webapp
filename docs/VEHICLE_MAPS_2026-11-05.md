@@ -93,3 +93,11 @@ count checks. Only cocowheels-api was restarted; afterward health was ok, Home
 returned 200 with bounded artwork/area fields, anonymous vehicle access returned
 401, and database integrity, foreign keys and 137-trip count remained intact.
 No production account/vehicle/journey write or synthetic notification was made.
+
+Frontend deployment, 5 November: b197ff1f444ba44741158dccbff473339b4f6645
+reached READY as Vercel deployment dpl_HvKmgtmV6W4DVXMFrPWaCMS1vVix, aliased
+to www.gumwheel.com and gumwheel.com. The mobile all-map browser regression also
+passed against the deployed frontend with every application API intercepted by
+synthetic fixtures. This checks the shipped client, not a production account or
+trip. Physical-device Safari and authenticated live-account actions remain
+unverified.
