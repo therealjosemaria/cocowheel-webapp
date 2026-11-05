@@ -110,3 +110,9 @@ passed against the deployed frontend with every application API intercepted by
 synthetic fixtures. This checks the shipped client, not a production account or
 trip. Physical-device Safari and authenticated live-account actions remain
 unverified.
+
+## Ultra-luxury catalogue extension
+
+The 40 further illustrations use the existing vehicle artwork and map paths,
+including the existing public Home projection and explicit-selection fallback.
+See [the research and activation record](ULTRA_LUXURY_VEHICLE_RESEARCH_2026-11-05.md).

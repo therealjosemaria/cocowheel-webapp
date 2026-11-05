@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+5 November ultra-luxury extension: 40 further distinct vehicle models and
+body choices expand the shared catalogue to 120. Each uses the existing six
+colours and generic fallback for manual entries and unsupported years. The
+illustrated bodies, model-year coverage and references are documented in
+[ultra-luxury vehicle research](docs/ULTRA_LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
+API and frontend activation must be checked separately.
+
 5 November affordable-vehicle extension: 40 additional mainstream make/model
 and body choices, each with six illustrated colours and conservative supported
 model years, expand the shared catalogue to 80. Existing choices are unchanged.

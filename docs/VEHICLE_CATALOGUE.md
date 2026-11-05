@@ -236,3 +236,10 @@ The public health endpoint returned ok and unauthenticated /api/vehicle returned
 401. These smoke checks do not replace the still-unverified physical Safari or
 authenticated production account walkthrough noted above. Local browser server
 stopped after verification; no test accounts or journeys were written to live data.
+
+## Ultra-luxury extension — 5 November 2026
+
+Forty distinct models have been added to the existing 80; the original
+catalogue entries remain unchanged. The latest researched body, supported
+years, illustration references and activation checks are in
+[ultra-luxury research](ULTRA_LUXURY_VEHICLE_RESEARCH_2026-11-05.md).

@@ -82,3 +82,10 @@ The [affordable selection](AFFORDABLE_VEHICLE_RESEARCH_2026-11-05.md) records
 the enabled years and references for 40 more recent Australian body choices.
 Ranges are conservative coverage subsets and do not imply that production
 started or ended on those dates. Existing entries above remain unchanged.
+
+## Ultra-luxury coverage — 5 November 2026
+
+Forty additional models use the same explicit model-year mechanism. Coverage
+for each researched body is listed in [ultra-luxury research](ULTRA_LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
+Years outside those documented bounds remain manual choices and show the generic
+car; the bounds do not claim to cover every production or registration year.
