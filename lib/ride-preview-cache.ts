@@ -8,6 +8,7 @@ type RiderRouteContext = {
   directionFit?: DirectionFit;
 };
 export type RiderSearchDraft = RiderRouteContext & {
+  vehicleType?: "any" | "car" | "bicycle";
   departureAt: string | null;
   departureDate?: string;
   savedAt: number;
@@ -43,8 +44,9 @@ function remove(key: string) {
     // Expired drafts simply cannot be restored if storage is unavailable.
   }
 }
-const routeKey = (pickup: Pin, destination: Pin) =>
-  `${roadPathPrefix}${pickup.latitude.toFixed(5)}:${pickup.longitude.toFixed(5)}|${destination.latitude.toFixed(5)}:${destination.longitude.toFixed(5)}`;
+type RouteMode = "drive" | "bicycle";
+const routeKey = (pickup: Pin, destination: Pin, mode: RouteMode = "drive") =>
+  `${roadPathPrefix}${mode === "bicycle" ? "bicycle:" : ""}${pickup.latitude.toFixed(5)}:${pickup.longitude.toFixed(5)}|${destination.latitude.toFixed(5)}:${destination.longitude.toFixed(5)}`;
 
 export function saveRiderPreviewRoute(
   rideId: string,
@@ -62,10 +64,11 @@ export function saveRiderSearchDraft(
   destination: Pin,
   departureAt: string | null,
   departureDate?: string,
+  vehicleType: "any" | "car" | "bicycle" = "any",
 ) {
   write(
     searchDraftKey,
-    { pickup, destination, departureAt, ...(departureDate ? { departureDate } : {}), savedAt: Date.now() } satisfies RiderSearchDraft,
+    { pickup, destination, departureAt, ...(departureDate ? { departureDate } : {}), vehicleType, savedAt: Date.now() } satisfies RiderSearchDraft,
   );
 }
 export function riderSearchDraft(): RiderSearchDraft | null {
@@ -74,6 +77,7 @@ export function riderSearchDraft(): RiderSearchDraft | null {
     !draft ||
     !draft.pickup ||
     !draft.destination ||
+    (draft.vehicleType !== undefined && !["any", "car", "bicycle"].includes(draft.vehicleType)) ||
     typeof draft.pickup.latitude !== "number" ||
     typeof draft.pickup.longitude !== "number" ||
     typeof draft.destination.latitude !== "number" ||
@@ -116,15 +120,15 @@ export function riderPreviewRoute(rideId: string) {
         : undefined,
   };
 }
-export function cachedRoadPath(origin: Pin, destination: Pin) {
-  return read<Pin[]>(routeKey(origin, destination));
+export function cachedRoadPath(origin: Pin, destination: Pin, mode: RouteMode = "drive") {
+  return read<Pin[]>(routeKey(origin, destination, mode));
 }
-export function cacheRoadPath(origin: Pin, destination: Pin, points: Pin[]) {
-  write(routeKey(origin, destination), points);
+export function cacheRoadPath(origin: Pin, destination: Pin, points: Pin[], mode: RouteMode = "drive") {
+  write(routeKey(origin, destination, mode), points);
 }
-export function cachedRiderRoadPath(pickup: Pin, destination: Pin) {
-  return cachedRoadPath(pickup, destination);
+export function cachedRiderRoadPath(pickup: Pin, destination: Pin, mode: RouteMode = "drive") {
+  return cachedRoadPath(pickup, destination, mode);
 }
-export function cacheRiderRoadPath(pickup: Pin, destination: Pin, points: Pin[]) {
-  cacheRoadPath(pickup, destination, points);
+export function cacheRiderRoadPath(pickup: Pin, destination: Pin, points: Pin[], mode: RouteMode = "drive") {
+  cacheRoadPath(pickup, destination, points, mode);
 }

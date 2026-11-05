@@ -1,7 +1,7 @@
 import { decideRequest, type Db } from "./core";
 import { requireUniversitySession } from "./university-auth";
 import { readVehicle, saveVehicle, snapshotVehicle } from "./vehicles";
-import { emptyVehicle } from "../lib/vehicle";
+import { emptyVehicle, requirePassengerVehicle } from "../lib/vehicle";
 
 /** Acceptance, optional account update and immutable trip snapshot commit together. */
 export function acceptWithVehicle(
@@ -21,7 +21,9 @@ export function acceptWithVehicle(
         ...(vehicle ?? emptyVehicle),
         plate,
       });
-    if (!vehicle?.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
+    requirePassengerVehicle(vehicle);
+    if (vehicle?.type === "bicycle" && ride.priceAud > 0) throw new Error("BICYCLE_FREE_ONLY");
+    if (!vehicle) throw new Error("VEHICLE_PLATE_REQUIRED");
     snapshotVehicle(db, rideId, vehicle);
     return { ...ride, vehicle };
   })();

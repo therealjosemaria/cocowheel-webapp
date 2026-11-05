@@ -1,5 +1,8 @@
 # Coco Wheels visual system
 
+5 November bicycles reuse existing field, typography, map-marker and artwork
+tokens; the six transparent bicycle images introduce no new UI colour tokens.
+
 5 November Home layout: the presence map is 200px tall. Personal activity sits
 below the centred hero/action/map group, so activity updates cannot reposition
 that group. Existing card styles and destinations remain. See

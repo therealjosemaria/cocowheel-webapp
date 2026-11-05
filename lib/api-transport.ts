@@ -22,6 +22,10 @@ export function apiErrorMessage(
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
       VEHICLE_IN_USE: VEHICLE_IN_USE_MESSAGE,
+      BICYCLE_SEAT_REQUIRED: "Confirm your bicycle is designed for a passenger and has a passenger seat.",
+      BICYCLE_FREE_ONLY: "Bicycle journeys must be free. Remove the contribution and try again.",
+      BICYCLE_PAID_POST: "Withdraw your paid journey in Activity before saving a bicycle.",
+      BICYCLE_PAID_OFFER: "Withdraw your paid offer in Activity before saving a bicycle.",
       INVALID_VEHICLE_YEAR: VEHICLE_YEAR_ERROR,
       INVALID_FIXED_PRICE: CONTRIBUTION_ERROR,
       PAYID_REQUIRED: "Enter your PayID to receive a contribution.",

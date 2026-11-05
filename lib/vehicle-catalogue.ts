@@ -331,6 +331,8 @@ export type VehicleSelection = {
   year?: string;
 };
 type VehicleDescription = {
+  type?: "car" | "bicycle";
+  passengerReady?: boolean;
   make: string;
   model: string;
   colour: string;
@@ -403,6 +405,10 @@ export function validVehicleSelection(vehicle: VehicleDescription): boolean {
 export function vehicleArtwork(
   vehicle?: VehicleDescription,
 ): string | undefined {
+  if (vehicle?.type === "bicycle") {
+    if (vehicle.passengerReady !== true || (vehicle.colour && !VEHICLE_COLOURS.some(c => c === vehicle.colour))) return;
+    return `/brand/vehicles/v1/passenger-bicycle-${(vehicle.colour || "Grey").toLowerCase()}.webp`;
+  }
   if (!vehicle || !validVehicleSelection(vehicle)) return;
   const choice = vehicle.selection!;
   if (
@@ -418,6 +424,8 @@ export function vehicleArtwork(
 
 const artworkPaths = new Set(VEHICLE_MODELS.flatMap(model =>
   VEHICLE_COLOURS.map(colour => `/brand/vehicles/v1/${model.id}-${colour.toLowerCase()}.webp`)));
+for (const colour of VEHICLE_COLOURS)
+  artworkPaths.add(`/brand/vehicles/v1/passenger-bicycle-${colour.toLowerCase()}.webp`);
 /** Public projections can carry only one of our shipped artwork paths. */
 export function isVehicleArtworkPath(value: unknown): value is string {
   return typeof value === "string" && artworkPaths.has(value);

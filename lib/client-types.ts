@@ -27,6 +27,7 @@ export type Location = {
   stale: boolean;
 };
 export type Candidate = {
+  vehicleType?: "car" | "bicycle";
   vehicleArtwork?: string;
   driverRating?: RatingSummary;
   isSample?: boolean;
@@ -46,6 +47,7 @@ export type Candidate = {
 };
 export type Ride = {
   createdAt?: string;
+  vehicleType?: "car" | "bicycle";
   vehicle?: import("./vehicle").Vehicle;
   conversations?: import("./messaging-types").ConversationSummary[];
   driverRating?: RatingSummary;

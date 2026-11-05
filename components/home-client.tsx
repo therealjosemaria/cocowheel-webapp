@@ -22,6 +22,7 @@ import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
 import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
+import { isVehicleArtworkPath } from "@/lib/vehicle-catalogue";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -190,6 +191,7 @@ export default function HomeClient({
   const [searching, setSearching] = useState(false);
   const [riderSelectionOpen, setRiderSelectionOpen] = useState(Boolean(initialMatch));
   const [riderTime, setRiderTime] = useState<string | null>(null);
+  const [riderVehicleType, setRiderVehicleType] = useState<"any" | "car" | "bicycle">("any");
   const [riderDate, setRiderDate] = useState(() => {
     const today = sydneyDateTime().date;
     const date = sydneyDateTime(initialMatch?.scheduledDepartureAt ?? Date.now()).date;
@@ -241,6 +243,7 @@ export default function HomeClient({
               : { pickup: draft.pickup, destination: draft.destination },
           );
           setRiderTime(draft.departureAt);
+          setRiderVehicleType(draft.vehicleType ?? "any");
           setRiderDate(draft.departureDate ?? sydneyDateTime().date);
         } else {
           setRiderSelectionOpen(false);
@@ -303,6 +306,7 @@ export default function HomeClient({
       setRiderSelectionOpen(true);
       setRiderPins({ pickup: draft.pickup, destination: draft.destination });
       setRiderTime(draft.departureAt);
+      setRiderVehicleType(draft.vehicleType ?? "any");
       setRiderDate(draft.departureDate ?? sydneyDateTime().date);
       setScreen("RIDER");
       window.dispatchEvent(
@@ -332,6 +336,7 @@ export default function HomeClient({
             destination: draft.destination,
           });
           setRiderTime(draft.departureAt);
+          setRiderVehicleType(draft.vehicleType ?? "any");
           setRiderDate(draft.departureDate ?? sydneyDateTime().date);
         } else {
           setRiderSelectionOpen(false);
@@ -498,17 +503,19 @@ export default function HomeClient({
     riderDestinationLatitude,
     riderDestinationLongitude,
   ]);
+  const riderRouteMode = selectedCandidate?.vehicleType === "bicycle" ? "bicycle" : "drive";
   const riderRouteCoordinates = riderRouteInput
-    ? `${riderRouteInput.origin.latitude}:${riderRouteInput.origin.longitude}|${riderRouteInput.destination.latitude}:${riderRouteInput.destination.longitude}`
+    ? `${riderRouteMode}:${riderRouteInput.origin.latitude}:${riderRouteInput.origin.longitude}|${riderRouteInput.destination.latitude}:${riderRouteInput.destination.longitude}`
     : "";
   useEffect(() => {
     if (!riderRouteInput) return;
+    let cancelled = false;
     void cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
       method: "POST",
-      body: JSON.stringify(riderRouteInput),
+      body: JSON.stringify({ ...riderRouteInput, mode: riderRouteMode }),
     })
       .then(({ points, durationSeconds }) => {
-        if (points.length >= 2)
+        if (!cancelled && points.length >= 2)
           setRiderRoute({
             coordinates: riderRouteCoordinates,
             points,
@@ -516,7 +523,8 @@ export default function HomeClient({
           });
       })
       .catch(() => undefined);
-  }, [riderRouteCoordinates, riderRouteInput]);
+    return () => { cancelled = true; };
+  }, [riderRouteCoordinates, riderRouteInput, riderRouteMode]);
   const activeRiderRoute =
     riderRoute?.coordinates === riderRouteCoordinates
       ? riderRoute.points
@@ -583,10 +591,10 @@ export default function HomeClient({
       draft.pickup.longitude === riderPins.pickup.longitude &&
       draft.destination.latitude === riderPins.destination.latitude &&
       draft.destination.longitude === riderPins.destination.longitude &&
-      draft.departureDate === riderDate && draft.departureAt === riderTime;
+      draft.departureDate === riderDate && draft.departureAt === riderTime && (draft.vehicleType ?? "any") === riderVehicleType;
     const savedAt = matchesDraft ? draft.savedAt : Date.now();
     if (!matchesDraft)
-      saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime, riderDate);
+      saveRiderSearchDraft(riderPins.pickup, riderPins.destination, riderTime, riderDate, riderVehicleType);
     const timer = window.setTimeout(
       () => {
         clearRiderSearchDraft();
@@ -600,7 +608,7 @@ export default function HomeClient({
       Math.max(0, savedAt + riderSearchDraftTtlMs - Date.now()),
     );
     return () => window.clearTimeout(timer);
-  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime, riderDate]);
+  }, [riderPins.destination, riderPins.pickup, riderSearchKey, riderTime, riderDate, riderVehicleType]);
   useEffect(() => {
     if (
       screen !== "RIDER" ||
@@ -624,6 +632,7 @@ export default function HomeClient({
             destination: canonicalPin(riderPins.destination!),
             requestedDepartureAt: new Date().toISOString(),
             departureDate: riderDate,
+            vehicleType: riderVehicleType,
             ...(riderTime ? { departureTime: sydneyDateTime(riderTime).time } : {}),
           }),
         },
@@ -662,6 +671,7 @@ export default function HomeClient({
     riderSearchKey,
     riderTime,
     riderDate,
+    riderVehicleType,
     riderSelectionOpen,
     screen,
   ]);
@@ -856,6 +866,8 @@ export default function HomeClient({
         />
       ) : screen === "RIDER" ? (
         <RiderForm
+          vehicleType={riderVehicleType}
+          setVehicleType={setRiderVehicleType}
           date={riderDate}
           time={riderTime ? sydneyDateTime(riderTime).time : ""}
           setDate={setRiderDate}
@@ -1053,6 +1065,8 @@ function DriverForm(props: {
   );
 }
 function RiderForm(props: {
+  vehicleType: "any" | "car" | "bicycle";
+  setVehicleType: (value: "any" | "car" | "bicycle") => void;
   date: string; time: string; setDate: (value: string) => void; setTime: (value: string) => void;
   setOrigin: (pin: Pin | undefined) => void;
   pins: { pickup?: Pin; destination?: Pin };
@@ -1098,6 +1112,11 @@ function RiderForm(props: {
           setOrigin={props.setOrigin} setDestination={props.setDestination}
         />
         <ScheduleFields date={props.date} time={props.time} setDate={props.setDate} setTime={props.setTime} optional />
+        <label className="field vehicle-choice-field">Vehicle type
+          <select value={props.vehicleType} onChange={event => props.setVehicleType(event.target.value as "any" | "car" | "bicycle")}>
+            <option value="any">Any vehicle</option><option value="car">Car</option><option value="bicycle">Bicycle</option>
+          </select>
+        </label>
         <button type="button" className="primary" onClick={props.openSelection}>FIND A JOURNEY</button>
       </div>
     </div>
@@ -1105,6 +1124,7 @@ function RiderForm(props: {
 }
 
 type PublicRideRoute = {
+  vehicleType?: "car" | "bicycle";
   plannedRoute: { origin: Pin; destination: Pin };
 };
 type RoutePreviewResponse = {
@@ -1113,10 +1133,11 @@ type RoutePreviewResponse = {
   durationSeconds: number | null;
 };
 
-function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds }: {
+function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds, bicycle = false }: {
   scheduledAt: string;
   pickupSeconds?: number;
   riderSeconds?: number | null;
+  bicycle?: boolean;
 }) {
   const [clock, setClock] = useState(() => Date.now());
   useEffect(() => {
@@ -1133,6 +1154,7 @@ function RideOptionTiming({ scheduledAt, pickupSeconds, riderSeconds }: {
     : null;
   return <>
     <small>
+      {bicycle ? "Bicycle · " : ""}
       {pickupSeconds !== undefined ? `${Math.max(1, Math.round(pickupSeconds / 60))} min away` : "Estimating pickup"}
       {arrival ? ` · ${new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit" }).format(arrival)}` : ""}
     </small>
@@ -1187,16 +1209,18 @@ function RideSelection({
       `/api/rides/${encodeURIComponent(selectedCandidate.rideId)}/preview`,
     )
       .then(async ({ ride }) => {
+        const mode = ride.vehicleType === "bicycle" ? "bicycle" : "drive";
         const cached = cachedRoadPath(
           ride.plannedRoute.origin,
           ride.plannedRoute.destination,
+          mode,
         );
         const points =
           cached ??
           (
             await cocowheelsApi<RoutePreviewResponse>("/api/route-preview", {
               method: "POST",
-              body: JSON.stringify(ride.plannedRoute),
+              body: JSON.stringify({ ...ride.plannedRoute, mode }),
             })
           ).points;
         if (cancelled) return;
@@ -1205,6 +1229,7 @@ function RideSelection({
             ride.plannedRoute.origin,
             ride.plannedRoute.destination,
             points,
+            mode,
           );
         setDriverRoute({
           rideId: selectedCandidate.rideId,
@@ -1223,7 +1248,7 @@ function RideSelection({
   const estimateKey = visibleCandidates
     .map(
       (candidate) =>
-        `${candidate.rideId}:origin`,
+        `${candidate.rideId}:${candidate.vehicleType ?? "car"}:origin`,
     )
     .join("|");
   useEffect(() => {
@@ -1242,6 +1267,7 @@ function RideSelection({
             body: JSON.stringify({
               origin: ride.plannedRoute.origin,
               destination: pickup,
+              mode: ride.vehicleType === "bicycle" ? "bicycle" : "drive",
             }),
           },
         );
@@ -1324,6 +1350,7 @@ function RideSelection({
     <JourneyResultsLayout>
       <JourneyResultsMap back={back}>
         <JourneyMap
+          animateViewport={false}
           vehicleArtwork={selectedCandidate?.vehicleArtwork}
           pins={mapPins}
           fitPins={[
@@ -1383,15 +1410,18 @@ function RideSelection({
                   onClick={() => setSelected(candidate.rideId)}
                 >
                   <span className="ride-option-car" aria-hidden="true">
-                    <RideFieldIcon icon="driver" />
+                    {candidate.vehicleType === "bicycle" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="vehicle-artwork-marker" alt="" src={isVehicleArtworkPath(candidate.vehicleArtwork) ? candidate.vehicleArtwork : "/brand/vehicles/v1/passenger-bicycle-grey.webp"} />
+                    ) : <RideFieldIcon icon="driver" />}
                   </span>
                   <span className="ride-option-main">
                     <strong>
                       <ParticipantName name={candidate.driverAlias} />{" "}
                       <RatingBadge summary={candidate.driverRating} />
                     </strong>
-                    <RideOptionTiming scheduledAt={candidate.scheduledDepartureAt}
-                      pickupSeconds={estimate?.pickupSeconds} riderSeconds={riderDurationSeconds} />
+                    <RideOptionTiming bicycle={candidate.vehicleType === "bicycle"} scheduledAt={candidate.scheduledDepartureAt}
+                      pickupSeconds={estimate?.pickupSeconds} riderSeconds={(candidate.vehicleType ?? "car") === (visibleCandidates.find(item => item.rideId === selected)?.vehicleType ?? "car") ? riderDurationSeconds : null} />
                   </span>
                   <span className="ride-option-payment">
                     <b>{fareLabel(candidate.priceAud)}</b>

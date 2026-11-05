@@ -11,6 +11,7 @@ import {
   cancelRide,
   publishRide,
   requestRide,
+  searchRides,
   decideRequest,
 } from "../server/core";
 import {
@@ -31,7 +32,7 @@ import {
 } from "../lib/rider-demand";
 import { initialDeparture, sydneyInstant } from "../lib/ride-schedule";
 import { createApiServer } from "../server/index";
-import { saveVehicle } from "../server/vehicles";
+import { saveVehicle, saveProfileVehicle } from "../server/vehicles";
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString(
   "base64",
 );
@@ -74,6 +75,64 @@ const offerBody = {
   priceAud: 0,
   plate: "ABC123",
 };
+
+test("passenger-ready bicycles offer free journeys without a plate and retain a paired snapshot", () => {
+  const { db, rider, driver } = fixture();
+  try {
+    assert.throws(() => saveVehicle(db, driver.session.id, { type: "bicycle" }), /BICYCLE_SEAT_REQUIRED/);
+    saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true, colour: "Blue" });
+    const requested = postDemand(db, rider.token, route, now);
+    const freeOffer = { origin, destination, scheduledDepartureAt: offerBody.scheduledDepartureAt, priceAud: 0 };
+    const offered = offerDemand(db, driver.token, requested.id, freeOffer, now);
+    assert.equal(offered.vehicleType, "bicycle");
+    const paired = respondToDemandOffer(db, rider.token, offered.id, "ACCEPT", now)!;
+    assert.equal(paired.status, "ACCEPTED");
+    assert.equal(paired.vehicle?.type, "bicycle");
+    assert.equal(paired.vehicle?.plate, "");
+    assert.throws(() => saveProfileVehicle(db, driver.session.id, { plate: "ABC123" }), /VEHICLE_IN_USE/);
+  } finally { db.close(); }
+});
+
+test("a bicycle cannot publish a paid journey or replace a paid car post", () => {
+  const { db, driver } = fixture();
+  try {
+    const paid = { ...offerBody, priceAud: 5, payId: "driver@example.com", payIdType: "EMAIL" as const };
+    saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true });
+    assert.throws(() => publishRide(db, driver.token, paid, now), /BICYCLE_FREE_ONLY/);
+    saveProfileVehicle(db, driver.session.id, { plate: "ABC123" });
+    publishRide(db, driver.token, paid, now);
+    assert.throws(() => saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true }), /BICYCLE_PAID_POST/);
+  } finally { db.close(); }
+});
+
+test("vehicle search filters bicycle and legacy car posts without changing the default", () => {
+  const { db, driver, other } = fixture();
+  try {
+    saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true });
+    const bicycle = publishRide(db, driver.token, offerBody, now).ride;
+    const car = publishRide(db, other.token, offerBody, now).ride;
+    const query = { pickup: origin, destination, requestedDepartureAt: offerBody.scheduledDepartureAt };
+    assert.deepEqual(new Set(searchRides(db, query, now).map(item => item.rideId)), new Set([bicycle.rideId, car.rideId]));
+    assert.deepEqual(searchRides(db, { ...query, vehicleType: "bicycle" }, now).map(item => item.rideId), [bicycle.rideId]);
+    assert.deepEqual(searchRides(db, { ...query, vehicleType: "car" }, now).map(item => item.rideId), [car.rideId]);
+  } finally { db.close(); }
+});
+
+test("an outstanding paid replacement offer prevents switching the driver's profile to a bicycle", () => {
+  const { db, driver, rider } = fixture();
+  try {
+    const source = publishRide(db, driver.token, offerBody, now).ride;
+    const requested = postDemand(db, rider.token, route, now);
+    const proposal = offerDemand(db, driver.token, requested.id, {
+      ...offerBody, priceAud: 5, payId: "driver@example.com", payIdType: "EMAIL", replacePostedRideId: source.rideId,
+    }, now);
+    db.prepare("UPDATE rider_demands SET expires_at='2099-01-01T00:00:00.000Z' WHERE id=?").run(requested.id);
+    db.prepare("UPDATE rider_demand_proposals SET body=json_set(body,'$.scheduledDepartureAt','2099-01-01T00:00:00.000Z') WHERE id=?").run(proposal.id);
+    assert.throws(() => saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true }), /BICYCLE_PAID_OFFER/);
+    withdrawDemandOffer(db, driver.token, proposal.id, now);
+    assert.equal(saveProfileVehicle(db, driver.session.id, { type: "bicycle", passengerReady: true }).type, "bicycle");
+  } finally { db.close(); }
+});
 
 test("posted driver can propose a distinct journey, then replace atomically at acceptance", () => {
   const { db, rider, driver, other } = fixture();

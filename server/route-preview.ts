@@ -48,8 +48,9 @@ export async function roadRoutePreview(
   apiKey = process.env.COCOWHEELS_GEOAPIFY_KEY,
   fetcher: typeof fetch = fetch,
   database?: Db,
+  mode: "drive" | "bicycle" = "drive",
 ) {
-  const cached = cachedRoutePreview(database, origin, destination);
+  const cached = cachedRoutePreview(database, origin, destination, true, mode);
   if (cached) return cached;
   if (!apiKey) throw new Error("ROUTE_PREVIEW_UNAVAILABLE");
   const url = new URL("https://api.geoapify.com/v1/routing");
@@ -57,8 +58,8 @@ export async function roadRoutePreview(
     "waypoints",
     `${origin.latitude},${origin.longitude}|${destination.latitude},${destination.longitude}`,
   );
-  url.searchParams.set("mode", "drive");
-  url.searchParams.set("traffic", "approximated");
+  url.searchParams.set("mode", mode);
+  if (mode === "drive") url.searchParams.set("traffic", "approximated");
   url.searchParams.set("apiKey", apiKey);
   let response: Response;
   try {
@@ -79,6 +80,6 @@ export async function roadRoutePreview(
     distanceMeters: validMetric(feature?.properties?.distance),
     durationSeconds: validMetric(feature?.properties?.time),
   };
-  cacheRoutePreview(database, origin, destination, route);
+  cacheRoutePreview(database, origin, destination, route, mode);
   return route;
 }

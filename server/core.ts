@@ -174,6 +174,7 @@ type LocationRow = {
 };
 
 export type Candidate = {
+  vehicleType?: "car" | "bicycle";
   vehicleArtwork?: string;
   driverRating?: RatingSummary;
   isSample?: boolean;
@@ -205,6 +206,7 @@ export type AvailabilityOffer = {
   isOwnOffer: boolean;
 };
 export type PublicRidePreview = {
+  vehicleType?: "car" | "bicycle";
   vehicleArtwork?: string;
   driverRating?: RatingSummary;
   paymentMethod?: "PAYID" | "CASH";
@@ -222,6 +224,7 @@ export type PublicRidePreview = {
 };
 export type RideView = {
   createdAt: string;
+  vehicleType?: "car" | "bicycle";
   vehicle?: import("../lib/vehicle").Vehicle;
   conversations?: ConversationSummary[];
   driverRating?: RatingSummary;
@@ -304,6 +307,7 @@ export type CreateRideInput = {
   payIdType?: PayIdType;
 };
 export type SearchInput = {
+  vehicleType?: "car" | "bicycle" | "any";
   pickup: Pin;
   destination: Pin;
   requestedDepartureAt: string;
@@ -1053,6 +1057,8 @@ export function validateRideInput(input: CreateRideInput, now = new Date()) {
 /** Internal service entry: caller must authorize the persisted driver consent. */
 export function publishRideForDriver(db: Db, session: Session, input: CreateRideInput, now = new Date(), notify = true) {
   const { departure, payId, payIdType } = validateRideInput(input, now);
+  if (readVehicle(db, session.id)?.type === "bicycle" && input.priceAud > 0)
+    throw new Error("BICYCLE_FREE_ONLY");
   if (hasOpenDriverRide(db, session.id)) throw new Error("OPEN_ITEM_EXISTS");
   if (hasOpenRiderRequest(db, session.id))
     throw new Error("ROLE_CHANGE_REQUIRES_TERMINATION");
@@ -1121,6 +1127,8 @@ export function searchRides(
   validPin(input.pickup, "PICKUP");
   validPin(input.destination, "DESTINATION");
   const requested = validDate(input.requestedDepartureAt);
+  if (input.vehicleType !== undefined && !["any", "car", "bicycle"].includes(input.vehicleType))
+    throw new Error("INVALID_VEHICLE_TYPE");
   if (
     requested.getTime() < now.getTime() - 5 * 60 * 1000 ||
     sydneyDateTime(requested).date > lastDepartureDate(now)
@@ -1156,14 +1164,16 @@ export function searchRides(
     .prepare(
       "SELECT * FROM rides WHERE status IN ('PUBLISHED', 'REQUESTED') AND NOT (is_sample = 1 AND status = 'REQUESTED')" +
       (windows.length ? ` AND (${windows.map(() => "(scheduled_departure_at >= ? AND scheduled_departure_at < ?)").join(" OR ")})` : "") +
+      (input.vehicleType && input.vehicleType !== "any" ? " AND COALESCE((SELECT json_extract(body,'$.type') FROM account_vehicles WHERE principal_id=rides.driver_session_id),'car') = ?" : "") +
       " ORDER BY scheduled_departure_at ASC LIMIT 50",
     )
-    .all(...windows.flat()) as RideRow[];
+    .all(...windows.flat(), ...(input.vehicleType && input.vehicleType !== "any" ? [input.vehicleType] : [])) as RideRow[];
   const session = rawSessionToken
     ? findSession(db, rawSessionToken, now)
     : null;
   return rows
     .map((row) => {
+      const vehicle = readVehicle(db, row.driver_session_id);
       const fit = directionFit(row, input);
       const corridor = redactedCorridor(
         { latitude: row.origin_latitude, longitude: row.origin_longitude },
@@ -1174,7 +1184,8 @@ export function searchRides(
       );
       return {
         rideId: row.public_id,
-        vehicleArtwork: vehicleArtwork(readVehicle(db, row.driver_session_id) ?? undefined),
+        vehicleArtwork: vehicleArtwork(vehicle ?? undefined),
+        vehicleType: vehicle?.type === "bicycle" ? "bicycle" as const : "car" as const,
         isSample: Boolean(row.is_sample),
         driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
         driverRating: row.is_sample
@@ -1285,6 +1296,7 @@ export function publicRidePreview(
   };
   return {
     vehicleArtwork: vehicleArtwork(readVehicle(db, ride.driver_session_id) ?? undefined),
+    vehicleType: readVehicle(db, ride.driver_session_id)?.type === "bicycle" ? "bicycle" : "car",
     rideId: ride.public_id,
     driverAlias: publicName(db, ride.driver_session_id, ride.driver_alias),
     driverRating: ride.is_sample
@@ -2103,6 +2115,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     )
     .all(row.id) as RequestRow[];
   return {
+    vehicleType: (rideVehicle(db, row.id) ?? (["PUBLISHED", "REQUESTED"].includes(row.status) ? readVehicle(db, row.driver_session_id) : undefined))?.type === "bicycle" ? "bicycle" : "car",
     // Only the owner sees their current Profile illustration before pairing.
     // Closed/legacy journeys never acquire today's vehicle retroactively.
     vehicle: rideVehicle(db, row.id) ??
@@ -2205,6 +2218,7 @@ function riderView(
       ? decryptCode(row.co_ride_code_ciphertext)
       : undefined;
   return {
+    vehicleType: (rideVehicle(db, row.id) ?? (["PUBLISHED", "REQUESTED"].includes(row.status) ? readVehicle(db, row.driver_session_id) : undefined))?.type === "bicycle" ? "bicycle" : "car",
     vehicle: request.id === row.accepted_request_id && request.status === "ACCEPTED" ? rideVehicle(db, row.id) : undefined,
     createdAt: row.created_at,
     rideId: row.public_id,

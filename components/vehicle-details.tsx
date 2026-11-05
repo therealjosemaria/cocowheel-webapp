@@ -60,6 +60,7 @@ function PlateField({
 
 export default function VehicleDetails() {
   const [vehicle, setVehicle] = useState<Vehicle>(emptyVehicle);
+  const drafts = useRef<{ car?: Vehicle; bicycle?: Vehicle }>({});
   const [loaded, setLoaded] = useState(false);
   const [reload, setReload] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -163,7 +164,48 @@ export default function VehicleDetails() {
           )
         ) : (
           <>
-            <VehicleArtwork vehicle={vehicle} />
+            <label className="field vehicle-choice-field">
+              Vehicle type
+              <select
+                value={vehicle.type ?? "car"}
+                onChange={(event) => {
+                  const type = event.target.value === "bicycle" ? "bicycle" : "car";
+                  const current = vehicle.type ?? "car";
+                  drafts.current[current] = vehicle;
+                  setVehicle(drafts.current[type] ?? (type === "bicycle"
+                    ? { ...emptyVehicle, type, passengerReady: false }
+                    : { ...emptyVehicle }));
+                  setSaved(false);
+                  setError(null);
+                }}
+              >
+                <option value="car">Car</option>
+                <option value="bicycle">Bicycle</option>
+              </select>
+            </label>
+            <VehicleArtwork vehicle={vehicle.type === "bicycle" ? { ...vehicle, passengerReady: true } : vehicle} />
+            {vehicle.type === "bicycle" ? (
+              <>
+                <label className="field vehicle-choice-field">
+                  Colour
+                  <select value={vehicle.colour} onChange={(event) => {
+                    setVehicle(old => ({ ...old, colour: event.target.value }));
+                    setSaved(false);
+                  }}>
+                    <option value="">Choose colour</option>
+                    {VEHICLE_COLOURS.map(colour => <option key={colour} value={colour}>{colour}</option>)}
+                  </select>
+                </label>
+                <label className="usual-alert-choice">
+                  <input type="checkbox" checked={vehicle.passengerReady === true} onChange={(event) => {
+                    setVehicle(old => ({ ...old, passengerReady: event.target.checked }));
+                    setSaved(false);
+                  }} />{" "}
+                  My bicycle is designed for a passenger and has a passenger seat.
+                </label>
+                <p>Both people need an approved bicycle helmet.</p>
+              </>
+            ) : (<>
             <PlateField
               value={vehicle.plate}
               change={(value) => change("plate", value)}
@@ -225,6 +267,7 @@ export default function VehicleDetails() {
               busy={busy}
               change={(value, selected) => choose("colour", value, selected)}
             />
+            </>)}
             <button className="primary" disabled={busy}>
               {busy ? "Saving…" : "Save vehicle details"}
             </button>
@@ -323,12 +366,12 @@ export function VehiclePlatePrompt({
 }
 
 export function RideVehicle({ vehicle }: { vehicle?: Vehicle }) {
-  if (!vehicle?.plate) return null;
+  if (!vehicle || (!vehicle.plate && vehicle.type !== "bicycle")) return null;
   return (
     <section className="ride-vehicle" aria-label="Vehicle details">
       <VehicleArtwork vehicle={vehicle} />
       <RideFieldLabel icon="driver">Vehicle</RideFieldLabel>
-      <p>{vehicle.plate}</p>
+      {vehicle.type === "bicycle" ? <p>Bicycle</p> : <p>{vehicle.plate}</p>}
       {[vehicle.year, vehicle.colour, vehicle.make, vehicle.model].filter(
         Boolean,
       ).length > 0 && (

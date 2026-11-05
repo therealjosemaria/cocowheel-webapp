@@ -1,5 +1,10 @@
 # Coco Wheels product and UI standards
 
+5 November bicycle extension: reuse Profile's existing field and save styles for
+the Car/Bicycle choice, passenger-seat declaration and colour; reuse the Find a
+journey form's field and result styles for the vehicle filter and bicycle label.
+Do not imply the passenger-seat declaration was independently checked.
+
 5 November vehicle save restriction: keep Profile fields editable and Save
 available regardless of journey status. Backend VEHICLE_IN_USE opens the existing
 Message modal, without a heading: “You can update your vehicle after your current

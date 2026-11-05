@@ -56,11 +56,12 @@ export default function PrivacyPage() {
       </p>
       <p>
         We store the vehicle details you provide to help your rider recognise
-        your car. A number plate is required before accepting a rider or sending
-        an offer in response to a posted rider request; make,
-        model, year and colour are optional. A supported saved selection supplies
-        the car illustration shown on maps, including the public homepage’s area
-        markers. Its shape and colour may reveal the selected vehicle model and
+        your vehicle. For cars, a number plate is required before accepting a rider
+        or sending an offer in response to a posted rider request; make, model,
+        year and colour are optional. For bicycles, we store your declaration that
+        the bicycle is designed for a passenger and has a passenger seat; no plate
+        is required. A supported saved selection supplies the illustration shown on
+        maps, including the public homepage’s area markers. Its shape and colour may reveal the selected vehicle model and
         colour. Number plates and the full saved vehicle record are shared only
         with the driver and accepted rider. We retain a copy with that ride’s
         history; later profile edits do not change that copy. These details are

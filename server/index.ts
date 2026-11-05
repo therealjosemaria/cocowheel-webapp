@@ -409,10 +409,13 @@ function allowRoutePreview(request: IncomingMessage) {
   return true;
 }
 function inputSearch(body: Json) {
+  if (body.vehicleType !== undefined && body.vehicleType !== "any" && body.vehicleType !== "car" && body.vehicleType !== "bicycle")
+    throw new Error("INVALID_VEHICLE_TYPE");
   return {
     pickup: pin(body.pickup),
     destination: pin(body.destination),
     requestedDepartureAt: asString(body.requestedDepartureAt),
+    ...(body.vehicleType !== undefined ? { vehicleType: body.vehicleType as "any" | "car" | "bicycle" } : {}),
     ...(body.departureDate !== undefined ? { departureDate: asString(body.departureDate) } : {}),
     ...(body.departureTime !== undefined ? { departureTime: asString(body.departureTime) } : {}),
   };
@@ -740,12 +743,15 @@ export function createApiServer(
         if (!allowRoutePreview(request))
           throw new Error("ROUTE_PREVIEW_RATE_LIMITED");
         const body = await readJson(request);
+        if (body.mode !== undefined && body.mode !== "drive" && body.mode !== "bicycle")
+          throw new Error("INVALID_ROUTE_MODE");
         const route = await roadRoutePreview(
           validPlacePin(body.origin),
           validPlacePin(body.destination),
           undefined,
           fetch,
           database,
+          body.mode === "bicycle" ? "bicycle" : "drive",
         );
         writeJson(response, 200, route, cors);
         return;

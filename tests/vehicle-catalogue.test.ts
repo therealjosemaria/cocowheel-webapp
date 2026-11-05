@@ -12,6 +12,17 @@ import {
   vehicleArtworkDisplayPath,
 } from "../lib/vehicle-catalogue";
 
+test("bicycle artwork requires passenger confirmation and ships all six colours", () => {
+  assert.throws(() => checkedVehicle({ type: "bicycle" }), /BICYCLE_SEAT_REQUIRED/);
+  assert.throws(() => checkedVehicle({ type: "bicycle", passengerReady: true, plate: "ABC123" }), /INVALID_VEHICLE/);
+  for (const colour of VEHICLE_COLOURS) {
+    const bike = checkedVehicle({ type: "bicycle", passengerReady: true, colour });
+    const artwork = vehicleArtwork(bike)!;
+    assert.ok(existsSync(`public${artwork}`));
+    assert.equal(isVehicleArtworkPath(artwork), true);
+  }
+});
+
 test("corrected catalogue artwork receives a fresh display URL", () => {
   for (const model of ["byd-shark6", "isuzu-dmax", "toyota-rav4"]) {
     const path = `/brand/vehicles/v1/${model}-white.webp`;

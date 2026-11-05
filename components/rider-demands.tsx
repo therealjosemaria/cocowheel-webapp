@@ -705,7 +705,7 @@ export function RiderDemandActivity({
             <div className="demand-offer" id={offerTarget(offer.id)} key={offer.id}>
               <ParticipantName name={offer.driverAlias} />
               <p>
-                {departure(offer.departureAt)} · {fareLabel(offer.priceAud)}
+                {departure(offer.departureAt)} · {fareLabel(offer.priceAud)}{offer.vehicleType === "bicycle" ? " · Bicycle" : ""}
               </p>
               {offer.status === "PENDING" && request.status === "OPEN" ? (
                 <div className="demand-actions driver-request-buttons">

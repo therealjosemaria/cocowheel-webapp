@@ -2083,6 +2083,7 @@ p {
   place-items: center;
 }
 .ride-option-car .journey-role-art { --role-art-size: 32px; }
+.ride-option-car .vehicle-artwork-marker { width: 36px; height: 36px; }
 .ride-option-main {
   display: contents;
 }

@@ -28,8 +28,8 @@ import {
 import { requireUniversitySession } from "./university-auth";
 import { publicName } from "./personal-details";
 import { corridorMatches } from "./usual-routes";
-import { readVehicle, saveVehicle, snapshotVehicle } from "./vehicles";
-import { emptyVehicle } from "../lib/vehicle";
+import { readVehicle, rideVehicle, saveVehicle, snapshotVehicle } from "./vehicles";
+import { emptyVehicle, requirePassengerVehicle } from "../lib/vehicle";
 import { distanceMeters } from "../lib/location-tracking";
 
 type Row = {
@@ -73,6 +73,7 @@ function proposalView(db: Db, row: ProposalRow, now: Date): DemandOffer {
   const input = JSON.parse(row.body) as CreateRideInput;
   return {
     id: row.id, demandId: row.demand_id, rideId: "", pendingReplacement: true,
+    vehicleType: readVehicle(db, row.driver_session_id)?.type === "bicycle" ? "bicycle" : "car",
     createdAt: row.created_at,
     driverAlias: publicName(db, row.driver_session_id, row.driver_alias),
     departureAt: input.scheduledDepartureAt, priceAud: input.priceAud,
@@ -110,6 +111,7 @@ function view(db: Db, row: Row): RiderDemand {
 }
 function offerView(db: Db, row: OfferRow, now: Date): DemandOffer {
   return {
+    vehicleType: (rideVehicle(db, row.ride_id) ?? readVehicle(db, row.driver_session_id))?.type === "bicycle" ? "bicycle" : "car",
     id: row.id,
     demandId: row.demand_id,
     rideId: row.public_id,
@@ -360,7 +362,8 @@ export function offerDemand(
         ...(vehicle ?? emptyVehicle),
         plate: body.plate,
       });
-    if (!vehicle?.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
+    requirePassengerVehicle(vehicle);
+    if (vehicle?.type === "bicycle" && input.priceAud > 0) throw new Error("BICYCLE_FREE_ONLY");
     if (source) {
       const internal = db.prepare("SELECT id FROM rides WHERE public_id=?").get(source.ride.rideId) as { id: string };
       const offerId = randomUUID();
@@ -464,7 +467,8 @@ export function respondToDemandOffer(
       throw new Error("OPEN_ITEM_EXISTS");
     const posted = view(db, row);
     const vehicle = readVehicle(db, offer.driver_session_id);
-    if (!vehicle?.plate) throw new Error("VEHICLE_PLATE_REQUIRED");
+    requirePassengerVehicle(vehicle);
+    if (vehicle?.type === "bicycle" && offer.price_aud > 0) throw new Error("BICYCLE_FREE_ONLY");
     // Explicitly accepting this offer replaces pending joins atomically. A failure
     // below rolls these withdrawals back along with the new pairing.
     for (const item of current) cancelPendingRequest(db, token, item.ride.rideId, now);

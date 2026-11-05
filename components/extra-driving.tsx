@@ -19,6 +19,12 @@ const duration = cachedDurationLookup(async (origin, destination) => {
   );
   return result.durationSeconds;
 });
+const bicycleDuration = cachedDurationLookup(async (origin, destination) => {
+  const result = await cocowheelsApi<{ durationSeconds: number | null }>("/api/route-preview", {
+    method: "POST", body: JSON.stringify({ origin, destination, mode: "bicycle" }),
+  });
+  return result.durationSeconds;
+});
 
 export default function ExtraDriving({
   origin,
@@ -26,18 +32,20 @@ export default function ExtraDriving({
   pickup,
   dropoff,
   expanded,
+  mode = "drive",
 }: {
   origin: Pin;
   destination: Pin;
   pickup: Pin;
   dropoff: Pin;
   expanded: boolean;
+  mode?: "drive" | "bicycle";
 }) {
   const coordinates = JSON.stringify(
     [origin, destination, pickup, dropoff].map((pin) => [
       pin.latitude,
       pin.longitude,
-    ]),
+    ]).concat([[mode === "bicycle" ? 1 : 0]]),
   );
   const [result, setResult] = useState<{ key: string; label: string } | null>(
     null,
@@ -48,7 +56,7 @@ export default function ExtraDriving({
     const pins = (JSON.parse(coordinates) as number[][]).map(
       ([latitude, longitude]) => ({ latitude, longitude }),
     );
-    void extraDrivingSeconds(pins[0], pins[1], pins[2], pins[3], duration)
+    void extraDrivingSeconds(pins[0], pins[1], pins[2], pins[3], mode === "bicycle" ? bicycleDuration : duration)
       .then((seconds) => {
         if (!cancelled)
           setResult({ key: coordinates, label: extraDrivingLabel(seconds) });
@@ -63,13 +71,13 @@ export default function ExtraDriving({
     return () => {
       cancelled = true;
     };
-  }, [coordinates, expanded]);
+  }, [coordinates, expanded, mode]);
   if (!expanded && result?.key !== coordinates) return null;
   return (
     <span
       className="extra-driving-estimate"
       role="status"
-      title="Estimated extra driving from your offered origin, including pickup and drop-off. Excludes waiting and live traffic."
+      title={`Estimated extra ${mode === "bicycle" ? "cycling" : "driving"} from your offered origin, including pickup and drop-off. Excludes waiting and live traffic.`}
     >
       {result?.key === coordinates ? result.label : "Estimating…"}
     </span>

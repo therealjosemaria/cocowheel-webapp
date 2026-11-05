@@ -21,10 +21,11 @@ function expiresAt() {
 function coordinateKey(pin: Pin) {
   return `${pin.latitude.toFixed(5)}:${pin.longitude.toFixed(5)}`;
 }
-function routeKey(origin: Pin, destination: Pin) {
+type RouteMode = "drive" | "bicycle";
+function routeKey(origin: Pin, destination: Pin, mode: RouteMode = "drive") {
   return createHash("sha256")
     .update(
-      `cocowheels-route-v1:${coordinateKey(origin)}|${coordinateKey(destination)}`,
+      `cocowheels-route-v1:${mode === "drive" ? "" : `${mode}:`}${coordinateKey(origin)}|${coordinateKey(destination)}`,
     )
     .digest("hex");
 }
@@ -126,10 +127,11 @@ export function cachedRoutePreview(
   origin: Pin,
   destination: Pin,
   touch = true,
+  mode: RouteMode = "drive",
 ) {
   if (!database) return null;
   const timestamp = now();
-  const cacheKey = routeKey(origin, destination);
+  const cacheKey = routeKey(origin, destination, mode);
   const row = database
     .prepare(
       "SELECT points_json, distance_meters, duration_seconds FROM route_preview_cache WHERE cache_key = ? AND expires_at > ?",
@@ -171,6 +173,7 @@ export function cacheRoutePreview(
   origin: Pin,
   destination: Pin,
   route: CachedRoutePreview,
+  mode: RouteMode = "drive",
 ) {
   if (!database) return;
   const timestamp = now();
@@ -186,7 +189,7 @@ export function cacheRoutePreview(
          last_used_at = excluded.last_used_at`,
     )
     .run(
-      routeKey(origin, destination),
+      routeKey(origin, destination, mode),
       JSON.stringify(route.points),
       route.distanceMeters,
       route.durationSeconds,

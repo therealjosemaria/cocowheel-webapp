@@ -50,6 +50,7 @@ const JourneyMap = dynamic(() => import("./journey-map"), {
 });
 
 type PreviewRide = {
+  vehicleType?: "car" | "bicycle";
   vehicleArtwork?: string;
   cancellationReason?: Ride["cancellationReason"];
   driverRating?: Ride["driverRating"];
@@ -87,6 +88,7 @@ const previewFromActivity = (ride: Ride): PreviewRide => {
       : undefined;
   const visibleRoute = ride.plannedRoute ?? participantRoute;
   return {
+    vehicleType: ride.vehicleType,
     cancellationReason: ride.cancellationReason,
     rideId: ride.rideId,
     isSample: ride.isSample,
@@ -272,6 +274,7 @@ export default function RidePreviewClient({
       destinationLabel: publicRide.destinationLabel,
     };
   }, [privateRide, publicRide]);
+  const routeMode = ride?.vehicleType === "bicycle" ? "bicycle" : "drive";
 
   const participantStatus = participantRide?.status;
   useEffect(() => {
@@ -335,13 +338,13 @@ export default function RidePreviewClient({
   }, [activityRide, driverOwned, participantStatus, rideId]);
 
   const routeKey = riderRoute
-    ? `${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
+    ? `${routeMode}|${riderRoute.pickup.latitude}:${riderRoute.pickup.longitude}|${riderRoute.destination.latitude}:${riderRoute.destination.longitude}`
     : null;
   const roadPath =
     riderRoadResult?.key === routeKey
       ? riderRoadResult?.points
       : riderRoute
-        ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination)
+        ? cachedRiderRoadPath(riderRoute.pickup, riderRoute.destination, routeMode)
         : null;
   const riderDurationSeconds =
     riderRoadResult?.key === routeKey
@@ -353,12 +356,13 @@ export default function RidePreviewClient({
         ? {
             origin: ride.plannedRoute.origin,
             destination: ride.plannedRoute.destination,
+            mode: routeMode,
           }
         : null,
-    [ride],
+    [ride, routeMode],
   );
   const driverRouteCoordinates = driverRouteInput
-    ? `${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
+    ? `${routeMode}|${driverRouteInput.origin.latitude}:${driverRouteInput.origin.longitude}|${driverRouteInput.destination.latitude}:${driverRouteInput.destination.longitude}`
     : "";
   useEffect(() => {
     if (!riderRoute || !routeKey || riderRoadResult?.key === routeKey) return;
@@ -368,18 +372,19 @@ export default function RidePreviewClient({
       body: JSON.stringify({
         origin: riderRoute.pickup,
         destination: riderRoute.destination,
+        mode: routeMode,
       }),
     })
       .then(({ points, durationSeconds }) => {
         if (cancelled || points.length < 2) return;
-        cacheRiderRoadPath(riderRoute.pickup, riderRoute.destination, points);
+        cacheRiderRoadPath(riderRoute.pickup, riderRoute.destination, points, routeMode);
         setRiderRoadResult({ key: routeKey, points, durationSeconds });
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [riderRoute, riderRoadResult?.key, routeKey]);
+  }, [riderRoute, riderRoadResult?.key, routeKey, routeMode]);
 
   useEffect(() => {
     if (
@@ -401,6 +406,7 @@ export default function RidePreviewClient({
       body: JSON.stringify({
         origin: ride.driverLocation ?? ride.plannedRoute.origin,
         destination: riderRoute.pickup,
+        mode: routeMode,
       }),
     })
       .then(({ durationSeconds }) => {
@@ -418,6 +424,7 @@ export default function RidePreviewClient({
     ride?.driverLocation,
     ride?.status,
     riderRoute,
+    routeMode,
   ]);
 
   useEffect(() => {
@@ -438,6 +445,7 @@ export default function RidePreviewClient({
           driverRouteInput.origin,
           driverRouteInput.destination,
           points,
+          routeMode,
         );
         setDriverRoadPath({ coordinates: driverRouteCoordinates, points });
       })
@@ -445,7 +453,7 @@ export default function RidePreviewClient({
     return () => {
       cancelled = true;
     };
-  }, [driverRouteCoordinates, driverRouteInput, driverRoadPath?.coordinates]);
+  }, [driverRouteCoordinates, driverRouteInput, driverRoadPath?.coordinates, routeMode]);
 
   const activeDriverRoadPath =
     driverRoadPath?.coordinates === driverRouteCoordinates
@@ -943,7 +951,7 @@ export default function RidePreviewClient({
                     {driverOwned && riderDetail && rideIsActive ? (
                       <a
                         className="ride-directions"
-                        href={directionsUrl(riderDetail.pickup)}
+                        href={directionsUrl(riderDetail.pickup, routeMode)}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
@@ -994,7 +1002,7 @@ export default function RidePreviewClient({
                     {driverOwned && riderDetail && rideIsActive ? (
                       <a
                         className="ride-directions"
-                        href={directionsUrl(riderDetail.destination)}
+                        href={directionsUrl(riderDetail.destination, routeMode)}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
@@ -1205,7 +1213,7 @@ export default function RidePreviewClient({
                           {locationLabel(request.pickup)}
                           <a
                             className="ride-directions"
-                            href={directionsUrl(request.pickup)}
+                            href={directionsUrl(request.pickup, routeMode)}
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Directions to rider pickup in Google Maps (opens a new tab)"
@@ -1261,7 +1269,7 @@ export default function RidePreviewClient({
                           {locationLabel(request.destination)}
                           <a
                             className="ride-directions"
-                            href={directionsUrl(request.destination)}
+                            href={directionsUrl(request.destination, routeMode)}
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Directions to rider drop-off in Google Maps (opens a new tab)"
@@ -1280,7 +1288,7 @@ export default function RidePreviewClient({
                       <div className="request-extra-driving">
                         <dt>
                           <RideFieldLabel icon="requested">
-                            Extra driving
+                            {routeMode === "bicycle" ? "Extra cycling" : "Extra driving"}
                           </RideFieldLabel>
                         </dt>
                         <dd>
@@ -1290,6 +1298,7 @@ export default function RidePreviewClient({
                               destination={ride.plannedRoute.destination}
                               pickup={request.pickup}
                               dropoff={request.destination}
+                              mode={routeMode}
                               expanded={Boolean(
                                 openRequests[request.requestId],
                               )}

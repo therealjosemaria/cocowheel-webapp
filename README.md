@@ -1,5 +1,13 @@
 # GUMWHEEL
 
+5 November passenger-ready bicycles: Profile supports an explicitly declared
+passenger-seat bicycle as well as a car. Bicycle offers are free, do not require a
+plate, and use bicycle routing; Find a journey can filter vehicle type. Home may
+display the chosen bicycle illustration in an anonymous area marker. Account
+declarations are not independently verified. See [vehicle details](docs/VEHICLES.md)
+for validation, privacy, routing and NSW restrictions. This checkout alone does
+not establish production deployment.
+
 5 November ultra-luxury extension: 40 further distinct vehicle models and
 body choices expand the shared catalogue to 120. Each uses the existing six
 colours and generic fallback for manual entries and unsupported years. The
@@ -1044,6 +1052,9 @@ Obtain the owner's approval before introducing a previously unused visual or
 interaction pattern; reuse established patterns by default. See UI_STANDARDS.md.
 
 ### Vehicle details (23 October 2026)
+
+The 5 November passenger-ready bicycle section in the vehicle guide supersedes
+the car-only plate requirements in this historical section.
 
 Profile has a collapsed Vehicle details (drivers only) accordion.
 Usual route is a separate, initially collapsed accordion for either role; its

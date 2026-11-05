@@ -120,3 +120,28 @@ test("road routes are reused from SQLite for seven days", async () => {
   );
   database.close();
 });
+
+test("bicycle routing uses its own mode and cannot reuse a driving cache entry", async () => {
+  const database = new Database(":memory:");
+  initializeCoreSchema(database);
+  const origin = { latitude: -33.87, longitude: 151.21 };
+  const destination = { latitude: -33.88, longitude: 151.22 };
+  const requests: URL[] = [];
+  const fetcher: typeof fetch = async (input) => {
+    const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+    requests.push(url);
+    return new Response(JSON.stringify({ features: [{
+      properties: { distance: 1800, time: url.searchParams.get("mode") === "bicycle" ? 700 : 300 },
+      geometry: { type: "LineString", coordinates: [[151.21, -33.87], [151.22, -33.88]] },
+    }] }), { status: 200 });
+  };
+  const driving = await roadRoutePreview(origin, destination, "key", fetcher, database);
+  const cycling = await roadRoutePreview(origin, destination, "key", fetcher, database, "bicycle");
+  assert.equal(driving.durationSeconds, 300);
+  assert.equal(cycling.durationSeconds, 700);
+  assert.equal(requests[1].searchParams.get("mode"), "bicycle");
+  assert.equal(requests[1].searchParams.has("traffic"), false);
+  assert.deepEqual(await roadRoutePreview(origin, destination, "key", fetcher, database, "bicycle"), cycling);
+  assert.equal(requests.length, 2);
+  database.close();
+});

@@ -1,5 +1,64 @@
 # Vehicle details — 23 October 2026
 
+## Passenger-ready bicycles — 5 November 2026
+
+Profile's Vehicle type selects Car or Bicycle. A bicycle requires the owner to
+declare that it is designed for a passenger and has a passenger seat; this is a
+self-declaration, not a GUMWHEEL verification. Six optional colours use the
+shared transparent street-bicycle artwork, with grey if unspecified. It has a
+passenger saddle and pegs; pegs alone are not a passenger seat. No Lime rental
+bicycle or stand-on scooter is offered. In NSW both riders need approved helmets,
+and bicycle passengers need a purpose-designed seat on a bicycle designed for
+the number of riders: [NSW rules](https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/bicycle-safety-and-rules/road-rules-for-bicycle-riders/special-road-rules-for-bicycle-riders)
+and [Road Rules rule 246](https://legislation.nsw.gov.au/view/pdf/inforce/current/sl-2014-0758%23pt.15.pdf).
+Lime's Australian terms prohibit passengers: [Lime User Agreement](https://www.li.me/en-au/user-agreement).
+
+Legacy or missing type means Car. An eligible bicycle has no number plate and
+may publish or offer only free journeys. The backend validates this at posting,
+offer and pairing; switching a paid open car post to a bicycle is rejected until
+the post is withdrawn. An unwithdrawn paid replacement offer also prevents the
+change while its request and departure remain open. Active paired trips still prevent profile vehicle edits;
+the accepted vehicle is snapshotted as before. A saved vehicle is not required
+to publish a car journey, but is checked before acceptance or a direct offer.
+Find a journey can filter Any vehicle, Car or Bicycle; existing search clients
+without the filter see all types. Signed-in previews and offers identify a
+bicycle. The Home area feed uses only the existing coarse locations and
+allowlisted artwork, though the bicycle shape/colour are publicly visible.
+
+Route previews accept `mode` of `drive` or `bicycle`; omission means drive.
+Geoapify bicycle mode does not use driving traffic. Server and browser route
+caches separate bicycle from the pre-existing drive keys; the server's existing
+seven-day route TTL and browser session-storage scope are unchanged. Routing
+failures remain estimates unavailable, not a claim that no route exists.
+Google Maps links select bicycling for bicycle journeys. See
+[Geoapify bicycle routing](https://apidocs.geoapify.com/how-to/routing/plan-bicycle-route/).
+
+The street-style bicycle sheet was generated specifically for this project and
+processed into six transparent 384×288 WebPs by the existing vehicle asset
+preparation script. It is illustrative, not a representation or certification
+of any particular bicycle. These notes do not verify deployment.
+
+Local verification on 5 November: the full Node suite passed 259 tests, including
+bicycle acceptance without a plate, paid-journey restrictions, a pending paid
+offer, vehicle filtering and separate route caches. Production build and ESLint
+passed. `scripts/check-bicycle-ui.py` against a local build with mocked API and
+blocked external providers passed in Chromium at 320, 390 and 1440 pixels:
+Profile, search results, filter, privacy, save/validation and rapid zoom/back.
+All six WebP corners were fully transparent. Live Geoapify bicycle routing,
+real sign-in, physical-device browsers and a live bicycle journey were not tested.
+
+At approximately 15:35 AEDT on 5 November, the owner-authorised API restart was
+performed from the reviewed working tree based on `e9491a8`, after two checks
+found zero accepted or active trips. A private SQLite online backup passed
+integrity and foreign-key checks; the restarted `cocowheels-api` was active,
+its local health endpoint returned `ok`, and the live database checks passed.
+Frontend build, push and deployment are separate from this API activation.
+
+During browser review the Find results map intermittently raised Leaflet 1.9.4's
+known zoom-transition-after-removal exception when returning immediately to the
+form. The results map now uses the same non-animated viewport setting already
+used by request maps; zoom controls remain available. See [Leaflet #9575](https://github.com/Leaflet/Leaflet/issues/9575).
+
 Latest map scope: [custom artwork across all maps](VEHICLE_MAPS_2026-11-05.md)
 supersedes the Home/discovery-generic rule in the earlier verification entries.
 Only catalogue artwork paths are projected; full records and plates stay private.

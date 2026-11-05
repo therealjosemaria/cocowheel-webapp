@@ -128,8 +128,9 @@ function RideView({ ride }: { ride: Ride }) {
   const [roadPath, setRoadPath] = useState<Pin[] | null>(null);
   const loadedRouteCoordinates = useRef<string | null>(null);
   const location = riderView ? ride.driverLocation : ride.riderLocation;
+  const routeMode = ride.vehicleType === "bicycle" ? "bicycle" : "drive";
   const routeCoordinates = ride.plannedRoute
-    ? `${ride.plannedRoute.origin.latitude}:${ride.plannedRoute.origin.longitude}|${ride.plannedRoute.destination.latitude}:${ride.plannedRoute.destination.longitude}`
+    ? `${routeMode}|${ride.plannedRoute.origin.latitude}:${ride.plannedRoute.origin.longitude}|${ride.plannedRoute.destination.latitude}:${ride.plannedRoute.destination.longitude}`
     : null;
   useEffect(() => {
     if (!ride.plannedRoute || !routeCoordinates) {
@@ -144,6 +145,7 @@ function RideView({ ride }: { ride: Ride }) {
       body: JSON.stringify({
         origin: ride.plannedRoute.origin,
         destination: ride.plannedRoute.destination,
+        mode: routeMode,
       }),
     })
       .then(({ points }) => {
@@ -155,7 +157,7 @@ function RideView({ ride }: { ride: Ride }) {
     return () => {
       cancelled = true;
     };
-  }, [ride.plannedRoute, routeCoordinates]);
+  }, [ride.plannedRoute, routeCoordinates, routeMode]);
   const canCancel = riderView
     ? ride.request?.status === "PENDING" || ride.request?.status === "ACCEPTED"
     : !["CO_RIDE_ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED"].includes(

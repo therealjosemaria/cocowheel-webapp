@@ -10,9 +10,9 @@ import { JourneyResultsMap } from "./journey-results-layout";
 import { useVehicleArtwork } from "@/lib/use-vehicle-artwork";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
-type Route = { origin?: Pin; destination?: Pin };
+type Route = { origin?: Pin; destination?: Pin; vehicleType?: "car" | "bicycle" };
 
-function useRoadPath(route: Route | undefined, revision: number) {
+function useRoadPath(route: Route | undefined, revision: number, mode: "drive" | "bicycle" = "drive") {
   const key =
     route?.origin && route.destination
       ? JSON.stringify([
@@ -20,6 +20,7 @@ function useRoadPath(route: Route | undefined, revision: number) {
           route.origin.longitude,
           route.destination.latitude,
           route.destination.longitude,
+          mode,
         ])
       : "";
   const [result, setResult] = useState<{
@@ -29,26 +30,26 @@ function useRoadPath(route: Route | undefined, revision: number) {
   }>();
   useEffect(() => {
     if (!key) return;
-    const [a, b, c, d] = JSON.parse(key) as number[];
+    const [a, b, c, d] = JSON.parse(key) as [number, number, number, number, string];
     const origin = { latitude: a, longitude: b };
     const destination = { latitude: c, longitude: d };
     const controller = new AbortController();
     const load = async () => {
       try {
-        const cached = cachedRoadPath(origin, destination);
+        const cached = cachedRoadPath(origin, destination, mode);
         const points =
           cached?.length && cached.length >= 2
             ? cached
             : (
                 await cocowheelsApi<{ points: Pin[] }>("/api/route-preview", {
                   method: "POST",
-                  body: JSON.stringify({ origin, destination }),
+                  body: JSON.stringify({ origin, destination, mode }),
                   signal: controller.signal,
                 })
               ).points;
         if (controller.signal.aborted) return;
         if (!points || points.length < 2) throw new Error("NO_ROAD_ROUTE");
-        cacheRoadPath(origin, destination, points);
+        cacheRoadPath(origin, destination, points, mode);
         setResult({ key, revision, points });
       } catch {
         if (!controller.signal.aborted)
@@ -57,7 +58,7 @@ function useRoadPath(route: Route | undefined, revision: number) {
     };
     void load();
     return () => controller.abort();
-  }, [key, revision]);
+  }, [key, revision, mode]);
   const current =
     result?.key === key && result.revision === revision ? result : undefined;
   return {
@@ -82,8 +83,8 @@ export default function RequestRouteMap({
 }) {
   const vehicleArtwork = useVehicleArtwork(ownDriver && Boolean(driver?.origin));
   const [revision, setRevision] = useState(0);
-  const driverPath = useRoadPath(driver, revision);
-  const riderPath = useRoadPath(rider, revision);
+  const driverPath = useRoadPath(driver, revision, driver?.vehicleType === "bicycle" ? "bicycle" : "drive");
+  const riderPath = useRoadPath(rider, revision, driver?.vehicleType === "bicycle" ? "bicycle" : "drive");
   const pins = [
     driver?.origin,
     driver?.destination,
