@@ -84,4 +84,10 @@ Two checks found no accepted or active trips. A private online backup passed
 SQLite integrity and foreign-key checks and contained all 137 ride records.
 Only the GUMWHEEL API was restarted. After its startup, health returned `ok`;
 the live database passed the same checks and still held 137 ride records.
-Frontend deployment remains separate.
+
+## Frontend deployment — 5 November 2026
+
+Production deployment of commit `ffdc737` reached READY and was assigned to
+`www.gumwheel.com`. The live blue Ferrari 12Cilindri artwork matched the
+reviewed repository asset by SHA-256. Signed-in production flows and physical
+devices were not tested.
