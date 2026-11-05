@@ -1,4 +1,4 @@
-/** First catalogue: 20 best-selling Australian models in calendar 2025.
+/** Original 20 Australian models, followed by the 2026 luxury selection.
  * Selection is explicit; matching free text never opts a vehicle into artwork.
  * Research, generations and asset preparation: docs/VEHICLE_CATALOGUE.md.
  */
@@ -163,6 +163,26 @@ export const VEHICLE_MODELS = [
     yearTo: 2025,
     model: "MU-X",
   },
+  { id: "lexus-nx", make: "Lexus", model: "NX", year: "2022", yearFrom: 2022, yearTo: 2026 },
+  { id: "bmw-x3", make: "BMW", model: "X3", year: "2025", yearFrom: 2025, yearTo: 2026 },
+  { id: "bmw-x1", make: "BMW", model: "X1", year: "2023", yearFrom: 2023, yearTo: 2026 },
+  { id: "mercedes-glc", make: "Mercedes-Benz", model: "GLC", year: "2023", yearFrom: 2023, yearTo: 2026 },
+  { id: "landrover-defender", make: "Land Rover", model: "Defender", year: "2026", yearFrom: 2026, yearTo: 2026 },
+  { id: "mercedes-gla", make: "Mercedes-Benz", model: "GLA", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "bmw-x5", make: "BMW", model: "X5", year: "2023", yearFrom: 2023, yearTo: 2026 },
+  { id: "audi-q5", make: "Audi", model: "Q5", year: "2025", yearFrom: 2025, yearTo: 2026 },
+  { id: "volvo-xc40", make: "Volvo", model: "XC40", year: "2023", yearFrom: 2023, yearTo: 2026 },
+  { id: "mini-cooper", make: "MINI", model: "Cooper", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "audi-q3", make: "Audi", model: "Q3", year: "2026", yearFrom: 2026, yearTo: 2026 },
+  { id: "lexus-rx", make: "Lexus", model: "RX", year: "2023", yearFrom: 2023, yearTo: 2026 },
+  { id: "mini-countryman", make: "MINI", model: "Countryman", year: "2025", yearFrom: 2025, yearTo: 2026 },
+  { id: "mercedes-aclass", make: "Mercedes-Benz", model: "A-Class", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "audi-a3", make: "Audi", model: "A3", year: "2025", yearFrom: 2025, yearTo: 2026 },
+  { id: "bmw-x2", make: "BMW", model: "X2", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "volvo-ex30", make: "Volvo", model: "EX30", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "mercedes-glccoupe", make: "Mercedes-Benz", model: "GLC Coupe", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "ferrari-purosangue", make: "Ferrari", model: "Purosangue", year: "2024", yearFrom: 2024, yearTo: 2026 },
+  { id: "lamborghini-urus", make: "Lamborghini", model: "Urus SE", year: "2025", yearFrom: 2025, yearTo: 2026 },
 ] as const;
 
 export const VEHICLE_MAKES = [
@@ -186,6 +206,12 @@ const MODEL_LABELS: Record<string, string> = {
   "toyota-corolla": "Corolla (hatchback)",
   "mitsubishi-triton": "Triton (dual cab)",
   "byd-shark6": "Shark 6 (dual cab)",
+  "mercedes-glc": "GLC (SUV)",
+  "landrover-defender": "Defender (110)",
+  "mini-cooper": "Cooper (3-door petrol)",
+  "mercedes-aclass": "A-Class (hatchback)",
+  "audi-a3": "A3 (Sportback)",
+  "volvo-ex30": "EX30 (standard)",
 };
 export function vehicleModelLabel(
   model: (typeof VEHICLE_MODELS)[number],

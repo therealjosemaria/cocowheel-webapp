@@ -1,5 +1,10 @@
 # Custom vehicle artwork across maps — 5 November 2026
 
+The [luxury catalogue extension](LUXURY_VEHICLE_RESEARCH_2026-11-05.md) adds
+20 validated model/body paths to this same projection and renderer. Home can
+therefore show those model/colour illustrations in its existing anonymous area
+markers; its data fields and location precision do not change.
+
 ## Current decision and data boundaries
 
 The owner explicitly changed the initial private-only illustration decision:

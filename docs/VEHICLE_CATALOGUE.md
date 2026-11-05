@@ -1,5 +1,23 @@
 # Vehicle catalogue — 5 November 2026
 
+## Luxury extension — 5 November 2026
+
+Twenty further make/model/body selections extend the catalogue to 40 entries and
+240 colour assets, without changing existing IDs. The 2026 Australian research
+combines 18 popular premium-model rows with two requested exotic examples; this
+is a curated selection, not a strict luxury top 20. See
+[selection, model-year coverage and sources](LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
+The drawings are stylised illustrations of researched body eras; they are not
+precise guarantees of trim, fittings or real-world paint availability. The same
+six colours, explicit selection requirements, Other fields and generic fallback
+remain. The pre-existing accepted-trip vehicle save guard is unchanged.
+
+The allowlisted vehicle artwork projection on Home and signed-in discovery uses
+the enlarged catalogue, so a supported model/body and colour can be visible in
+the same anonymous area marker as before. No new plate, name or exact-location
+field is exposed. Backend validation needs a separate API activation; a frontend
+deployment alone is insufficient.
+
 ## Background cleanup — 5 November 2026
 
 The six colour assets for BYD Shark 6, Isuzu D-Max and Toyota RAV4 were recreated

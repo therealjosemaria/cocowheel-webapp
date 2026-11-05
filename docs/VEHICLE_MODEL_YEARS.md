@@ -68,3 +68,10 @@ Additional dated generation evidence:
 
 Owner review of exact trim likeness remains useful: these are stylised model/body
 illustrations. The plate and saved vehicle text remain authoritative identification.
+
+## 5 November 2026 luxury catalogue follow-up
+
+The additional body-era coverage, references and limits are documented in
+[luxury vehicle research](LUXURY_VEHICLE_RESEARCH_2026-11-05.md). Existing
+model IDs and year ranges above are unchanged. A supported year is an explicitly
+covered approximation of the shown body, not confirmation of an exact trim.

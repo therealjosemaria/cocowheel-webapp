@@ -1,5 +1,14 @@
 # GUMWHEEL
 
+5 November luxury vehicle extension: Profile supports 20 additional researched
+make/model/body entries, each with six illustrated colours and explicitly
+supported model years. They use the same validated vehicle record, map renderer,
+manual-entry fallback and public Home artwork projection as existing vehicles.
+The original 20 entries keep their IDs. The selection combines popular
+Australian luxury models with the requested Ferrari and Lamborghini; it is not a
+strict sales top 20. See [selection and year research](docs/LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
+API activation and frontend deployment must be verified separately.
+
 5 November artwork cleanup: the standing-person variants and BYD Shark 6, Isuzu
 D-Max and Toyota RAV4 colour illustrations have cleaned transparent backgrounds.
 Their display URLs refresh cached artwork; API artwork paths stay unchanged.

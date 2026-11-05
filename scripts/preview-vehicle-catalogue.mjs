@@ -21,8 +21,10 @@ for (const [row, model] of manifest.models.entries()) {
 await mkdir("docs/assets", { recursive: true });
 await sharp({ create: { width, height, channels: 4, background: "white" } }).composite(layers)
   .webp({ quality: 90 }).toFile("docs/assets/vehicle-catalogue-v1.webp");
-for (let group = 0; group < 4; group++) {
-  await sharp("docs/assets/vehicle-catalogue-v1.webp").extract({ left: 0, top: header + group * rowHeight * 5, width, height: rowHeight * 5 })
+const groups = Math.ceil(manifest.models.length / 5);
+for (let group = 0; group < groups; group++) {
+  const rows = Math.min(5, manifest.models.length - group * 5);
+  await sharp("docs/assets/vehicle-catalogue-v1.webp").extract({ left: 0, top: header + group * rowHeight * 5, width, height: rowHeight * rows })
     .png().toFile(`/tmp/vehicle-catalogue-review-${group + 1}.png`);
 }
-console.log("Contact sheet: docs/assets/vehicle-catalogue-v1.webp; four full-size review groups in /tmp");
+console.log(`Contact sheet: docs/assets/vehicle-catalogue-v1.webp; ${groups} full-size review groups in /tmp`);
