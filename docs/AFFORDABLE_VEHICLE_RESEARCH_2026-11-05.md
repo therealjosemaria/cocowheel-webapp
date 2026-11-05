@@ -70,8 +70,8 @@ Original generated colour sheets and source-page URLs are recorded in
 [the source manifest](assets/vehicle-catalogue-sources.json); downloaded
 reference photographs are not bundled with GUMWHEEL. All map contexts and
 vehicle validation use the existing shared catalogue, with no new database
-schema or personally identifying Home data. The API and frontend require
-separate activation and production verification.
+schema or personally identifying Home data. API and frontend activation are
+separate steps.
 
 ## Local verification — 5 November 2026
 
@@ -85,3 +85,13 @@ roles were reviewed on mobile and desktop with an MG3 and OSM map tiles; public
 tile availability varied. Generated colour sheets were inspected, and their
 cell boundaries and transparent corners checked. No production journey was
 changed for testing. Physical-device and signed-in production checks are pending.
+
+## API activation — 5 November 2026, 13:20 AEDT
+
+The live database had no accepted or active journeys before the restart. A
+private backup passed SQLite integrity and foreign-key checks, with all 137
+ride records accounted for; a second check still found no accepted or active
+journeys. Only the GUMWHEEL API was restarted, and its health endpoint returned
+`ok`. The live database subsequently passed integrity and foreign-key checks
+with 137 ride records. Frontend deployment and signed-in production checks
+remain separate.
