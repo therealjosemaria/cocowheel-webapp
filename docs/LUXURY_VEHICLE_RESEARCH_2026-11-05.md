@@ -94,4 +94,12 @@ and desktop with public OSM tiles, including a 2026 Q3 and manual-year fallback.
 One first sandboxed API test could not bind loopback; the isolated API test passed
 when rerun with loopback access. No test account or journey was written to the
 production database. Physical devices and authenticated production flows were
-not tested. API activation and production deployment are separate checks.
+not tested. API activation and production frontend deployment are separate checks.
+
+At 12:14 AEDT on 5 November, the GUMWHEEL API was restarted after two checks
+found no accepted or underway trips. An online backup passed SQLite integrity
+and foreign-key checks and contained all 137 ride records present at the check.
+After restart the API health endpoint returned `ok`; the live database passed
+the same integrity checks and still contained 137 ride records. No live ride was
+modified for this verification. Frontend production deployment remains a
+separate check.

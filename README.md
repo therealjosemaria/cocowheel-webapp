@@ -7,7 +7,8 @@ manual-entry fallback and public Home artwork projection as existing vehicles.
 The original 20 entries keep their IDs. The selection combines popular
 Australian luxury models with the requested Ferrari and Lamborghini; it is not a
 strict sales top 20. See [selection and year research](docs/LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
-API activation and frontend deployment must be verified separately.
+The API was restarted and its health verified on 5 November; frontend deployment
+must be verified separately.
 
 5 November artwork cleanup: the standing-person variants and BYD Shark 6, Isuzu
 D-Max and Toyota RAV4 colour illustrations have cleaned transparent backgrounds.
