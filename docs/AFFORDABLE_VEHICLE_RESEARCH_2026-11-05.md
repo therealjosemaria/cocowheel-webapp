@@ -93,5 +93,10 @@ private backup passed SQLite integrity and foreign-key checks, with all 137
 ride records accounted for; a second check still found no accepted or active
 journeys. Only the GUMWHEEL API was restarted, and its health endpoint returned
 `ok`. The live database subsequently passed integrity and foreign-key checks
-with 137 ride records. Frontend deployment and signed-in production checks
-remain separate.
+with 137 ride records.
+
+## Frontend deployment — 5 November 2026
+
+Production deployment of commit `e3a119a` reached READY and was assigned to
+`www.gumwheel.com`. The live blue MG3 artwork matched the repository asset by
+SHA-256. Signed-in production flows and physical devices were not tested.
