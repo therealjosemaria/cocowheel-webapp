@@ -1,5 +1,9 @@
 # Custom vehicle artwork across maps — 5 November 2026
 
+The [affordable catalogue extension](AFFORDABLE_VEHICLE_RESEARCH_2026-11-05.md)
+adds 40 supported bodies to the existing map renderer and allowlisted Home
+projection, retaining its existing area precision and data boundaries.
+
 The [luxury catalogue extension](LUXURY_VEHICLE_RESEARCH_2026-11-05.md) adds
 20 validated model/body paths to this same projection and renderer. Home can
 therefore show those model/colour illustrations in its existing anonymous area

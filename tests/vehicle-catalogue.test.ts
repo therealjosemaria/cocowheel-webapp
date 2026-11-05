@@ -91,10 +91,10 @@ test("catalogue artwork requires four explicit, consistent selections", () => {
   }
 });
 
-test("all 40 models and six colours resolve to shipped artwork with no text guessing", () => {
-  assert.equal(VEHICLE_MODELS.length, 40);
-  assert.equal(new Set(VEHICLE_MODELS.map((item) => item.id)).size, 40);
-  assert.equal(new Set(VEHICLE_MODELS.map((item) => `${item.make.toLowerCase()}|${item.model.toLowerCase()}`)).size, 40);
+test("all 80 models and six colours resolve to shipped artwork with no text guessing", () => {
+  assert.equal(VEHICLE_MODELS.length, 80);
+  assert.equal(new Set(VEHICLE_MODELS.map((item) => item.id)).size, 80);
+  assert.equal(new Set(VEHICLE_MODELS.map((item) => `${item.make.toLowerCase()}|${item.model.toLowerCase()}`)).size, 80);
   assert.equal(VEHICLE_COLOURS.length, 6);
   for (const item of VEHICLE_MODELS)
     for (const colour of VEHICLE_COLOURS)

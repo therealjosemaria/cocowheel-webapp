@@ -113,6 +113,23 @@ with sync_playwright() as p:
         details.get_by_label('Year',exact=True).select_option('other')
         details.get_by_label('Other year',exact=True).fill('2025')
         expect(details.locator('.vehicle-artwork-generic')).to_be_visible()
+        # A new affordable car uses the same profile and map renderer.
+        details.get_by_label('Make',exact=True).select_option('MG')
+        details.get_by_label('Model',exact=True).select_option('mg-mg3')
+        details.get_by_label('Year',exact=True).select_option('2026')
+        details.get_by_label('Colour',exact=True).select_option('Blue')
+        expect(details.locator('img.vehicle-artwork-preview')).to_have_attribute('src','/brand/vehicles/v1/mg-mg3-blue.webp')
+        page.screenshot(path=f'/tmp/affordable-profile-{width}.png',full_page=True)
+        details.get_by_role('button',name='Save vehicle details',exact=True).click()
+        expect(details.get_by_role('status')).to_be_visible()
+        for role in ['DRIVER','RIDER']:
+            state['role']=role
+            page.goto(BASE+'/activity/catalogue-test')
+            expect(page.locator('.vehicle-artwork-marker').first).to_have_attribute('src','/brand/vehicles/v1/mg-mg3-blue.webp')
+            page.screenshot(path=f'/tmp/affordable-{role.lower()}-{width}.png',full_page=True)
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        page.goto(BASE+'/usual-route')
+        details=page.locator('.vehicle-details');details.locator('summary').click()
         details.get_by_label('Make',exact=True).select_option('Ford')
         # Save a black Ranger to inspect dark-paint legibility on the light basemap.
         details.get_by_label('Model',exact=True).select_option('ford-ranger')

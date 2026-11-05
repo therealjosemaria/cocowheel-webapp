@@ -1,5 +1,14 @@
 # GUMWHEEL
 
+5 November affordable-vehicle extension: 40 additional mainstream make/model
+and body choices, each with six illustrated colours and conservative supported
+model years, expand the shared catalogue to 80. Existing choices are unchanged.
+Selection, references and year coverage are maintained in the repository's
+[affordable vehicle research](docs/AFFORDABLE_VEHICLE_RESEARCH_2026-11-05.md)
+and [source manifest](docs/assets/vehicle-catalogue-sources.json). Manual entries
+and unsupported years keep the generic icon. API and frontend activation are
+separate from this source change.
+
 5 November luxury vehicle extension: Profile supports 20 additional researched
 make/model/body entries, each with six illustrated colours and explicitly
 supported model years. They use the same validated vehicle record, map renderer,

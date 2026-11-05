@@ -75,3 +75,10 @@ The additional body-era coverage, references and limits are documented in
 [luxury vehicle research](LUXURY_VEHICLE_RESEARCH_2026-11-05.md). Existing
 model IDs and year ranges above are unchanged. A supported year is an explicitly
 covered approximation of the shown body, not confirmation of an exact trim.
+
+## 5 November 2026 affordable catalogue follow-up
+
+The [affordable selection](AFFORDABLE_VEHICLE_RESEARCH_2026-11-05.md) records
+the enabled years and references for 40 more recent Australian body choices.
+Ranges are conservative coverage subsets and do not imply that production
+started or ended on those dates. Existing entries above remain unchanged.

@@ -1,5 +1,17 @@
 # Vehicle catalogue — 5 November 2026
 
+## Affordable extension — 5 November 2026
+
+Forty researched mainstream body choices extend the shared catalogue to 80
+entries and 480 colour assets. Existing IDs, artwork and year ranges remain
+unchanged. The new list prioritises lower-cost and popular models; it is not a
+strict cheapest-model ranking. Each new entry covers one recent Australian body
+with conservative enabled model years. See [the selection, research and coverage](AFFORDABLE_VEHICLE_RESEARCH_2026-11-05.md).
+Unmatched and manually entered choices retain the generic vehicle. The same
+Profile, API validation and map projection are used; no separate privacy or
+vehicle lifecycle rules are introduced. Backend and frontend activation must be
+verified separately.
+
 ## Luxury extension — 5 November 2026
 
 Twenty further make/model/body selections extend the catalogue to 40 entries and

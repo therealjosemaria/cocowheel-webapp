@@ -326,6 +326,13 @@ test("HTTP API issues an HttpOnly guest cookie, enforces access boundaries, and 
     const wrongEra = await json(`${base}/api/vehicle`, "POST", { ...luxuryVehicle, year: "2025", selection: { ...luxuryVehicle.selection, year: "2025" } }, driverToken);
     assert.equal(wrongEra.response.status, 400);
     assert.deepEqual((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, luxuryVehicle);
+    const affordableVehicle = { plate: "ABC123", make: "MG", model: "MG3", colour: "Blue", year: "2026",
+      selection: { make: "MG", model: "mg-mg3", colour: "Blue", year: "2026" } };
+    assert.equal((await json(`${base}/api/vehicle`, "POST", affordableVehicle, driverToken)).response.status, 200);
+    assert.deepEqual((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, affordableVehicle);
+    const earlierBody = await json(`${base}/api/vehicle`, "POST", { ...affordableVehicle, year: "2023", selection: { ...affordableVehicle.selection, year: "2023" } }, driverToken);
+    assert.equal(earlierBody.response.status, 400);
+    assert.deepEqual((await json(`${base}/api/vehicle`, "GET", undefined, driverToken)).body.vehicle, affordableVehicle);
     const invalidSelection = await json(`${base}/api/vehicle`, "POST", { ...describedVehicle, selection: { ...describedVehicle.selection, model: "ford-ranger" } }, driverToken);
     assert.equal(invalidSelection.response.status, 400);
     assert.equal(invalidSelection.body.error, "INVALID_VEHICLE");
