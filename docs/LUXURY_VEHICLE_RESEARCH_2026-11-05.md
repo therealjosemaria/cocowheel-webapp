@@ -101,5 +101,6 @@ found no accepted or underway trips. An online backup passed SQLite integrity
 and foreign-key checks and contained all 137 ride records present at the check.
 After restart the API health endpoint returned `ok`; the live database passed
 the same integrity checks and still contained 137 ride records. No live ride was
-modified for this verification. Frontend production deployment remains a
-separate check.
+modified for this verification. Production frontend deployment of commit
+`bc6afaf` reached READY and the public blue Audi Q3 artwork matched the local
+file by SHA-256. Authenticated production interactions remain untested.
