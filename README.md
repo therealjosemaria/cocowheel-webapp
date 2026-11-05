@@ -5,7 +5,8 @@ body choices expand the shared catalogue to 120. Each uses the existing six
 colours and generic fallback for manual entries and unsupported years. The
 illustrated bodies, model-year coverage and references are documented in
 [ultra-luxury vehicle research](docs/ULTRA_LUXURY_VEHICLE_RESEARCH_2026-11-05.md).
-API and frontend activation must be checked separately.
+The API restart and health check succeeded on 5 November; frontend deployment
+is a separate step.
 
 5 November affordable-vehicle extension: 40 additional mainstream make/model
 and body choices, each with six illustrated colours and conservative supported

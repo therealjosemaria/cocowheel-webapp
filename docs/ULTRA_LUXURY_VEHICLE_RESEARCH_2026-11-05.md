@@ -77,3 +77,11 @@ passed with synthetic accounts and mocked APIs at 320, 390, 844 and 1440px.
 The Ferrari profile and driver/rider journey views were visually reviewed on
 mobile and desktop. Public map tiles loaded inconsistently during review.
 Physical-device and authenticated production flows have not been tested.
+
+## API activation — 5 November 2026, 14:19 AEDT
+
+Two checks found no accepted or active trips. A private online backup passed
+SQLite integrity and foreign-key checks and contained all 137 ride records.
+Only the GUMWHEEL API was restarted. After its startup, health returned `ok`;
+the live database passed the same checks and still held 137 ride records.
+Frontend deployment remains separate.
