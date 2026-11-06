@@ -110,3 +110,18 @@ Final lint/build and eight role/viewport browser scenarios passed. API activated
 checked. Local/public proxy health and unauthorized denial verified; initial
 transient connection failure retained in the report. Frontend rollout/live
 authenticated exchange not claimed verified.
+
+## 7 November 2026 — private Tripo comparison regression
+
+Source: working changes based on `c23e694` (commit containing this entry records
+final source). Isolated in-memory admin database; synthetic PNG/GLB fixtures,
+mocked Tripo fetch only; no production trips, paid requests or real selfies.
+Reproduce: `node --import tsx --test tests/tripo-comparison.test.ts tests/admin.test.ts tests/visual-system.test.ts`.
+Sanitized result: 15 tests passed, 0 failed. Covers owner gate, other-account and
+guest rejection for assets/manifest, asset traversal rejection, five pinned models,
+serial generation journal, repeat-run no duplicate submissions, zero-balance
+no submission and uncertain-submission no retry. Initial sandbox build failed on
+Turbopack local port binding; production build rerun with local process permission
+passed. Changed-file lint passed. Empty page reviewed at 390px and 1440px with
+mock authorization/API; no document overflow. No actual 3D likeness, provider
+billing/latency, 100-user capacity or production deployment has been verified.

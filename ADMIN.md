@@ -33,3 +33,12 @@ setup command stores a salted scrypt hash and revokes all existing admin
 sessions. No default credentials are checked into the repository.
 
 Existing offer expiry and rider-facing screens are unchanged by this panel.
+
+## Private avatar research (7 November 2026)
+
+`/admin/avatars` uses the same verified-owner sign-in as `/admin`, without a
+public menu entry. New read-only `/api/admin/tripo` and allowlisted asset paths
+remain inside that API authorization boundary, with private/no-store responses.
+See [Tripo comparison](docs/TRIPO_AVATAR_COMPARISON.md) for the explicit paid CLI,
+private filesystem configuration, recovery rules and deployment requirements.
+The API key is used only by the operator CLI; opening the page cannot spend credits.

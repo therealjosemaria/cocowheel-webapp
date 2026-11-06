@@ -147,6 +147,15 @@ test("admin HTTP endpoints require only the verified owner, reject other account
         403,
       );
     }
+    for (const route of ["tripo", "tripo/reference.png", "tripo/P2-20260801.glb"]) {
+      for (const identity of ["", student.cookie, gmail.cookie]) {
+        assert.equal((await fetch(base + route, { headers: { Cookie: identity } })).status, 403);
+      }
+    }
+    const comparison = await fetch(base + "tripo", { headers: { Cookie: cookie } });
+    assert.equal(comparison.status, 200);
+    assert.match(comparison.headers.get("cache-control")!, /no-store/);
+    assert.equal((await fetch(base + "tripo/not-allowed.glb", { headers: { Cookie: cookie } })).status, 404);
     const reports = await fetch(base + "dashboard", {
       headers: { Cookie: cookie },
     });

@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+7 November private avatar comparison: reuse Activity panels, page/help headings,
+regular body copy, 16/24px gaps and caption-sized scrollable results table.
+Model viewers use the existing subtle surface/control radius, one column on phones
+and responsive columns on desktop. No public navigation or Home changes.
+
 5 November bicycles reuse existing field, typography, map-marker and artwork
 tokens; the six transparent bicycle images introduce no new UI colour tokens.
 

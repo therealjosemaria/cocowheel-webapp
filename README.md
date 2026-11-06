@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+7 November avatar research: an owner-only `/admin/avatars` comparison page and
+explicit serial Tripo V3 test script support five pinned models. Private photos
+and artifacts stay outside Git/public assets; no paid generation runs on page
+load. Reference photo, funded API balance and live results are pending. See
+[comparison operation, privacy, pricing and limits](docs/TRIPO_AVATAR_COMPARISON.md).
+
 5 November passenger-ready bicycles: Profile supports an explicitly declared
 passenger-seat bicycle as well as a car. Bicycle offers are free, do not require a
 plate, and use bicycle routing; Find a journey can filter vehicle type. Home may

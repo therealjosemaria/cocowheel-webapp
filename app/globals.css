@@ -3344,3 +3344,14 @@ input, select, textarea { font-family: var(--font-ui); font-size: var(--text-bod
   .search-sheet { width: 100%; height: var(--sheet-height, 100dvh); max-height: var(--sheet-height, 100dvh); border-radius: 0; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); box-sizing: border-box; }
   .calendar-months { flex: 1; }
 }
+
+/* Private avatar research uses the existing panel, type and spacing tokens. */
+.tripo-comparison { display: grid; gap: 16px; }
+.tripo-comparison figure { margin: 0; }
+.tripo-reference { max-width: 100%; width: 200px; max-height: 260px; object-fit: contain; }
+.tripo-table { overflow-x: auto; }
+.tripo-table table { width: 100%; border-collapse: collapse; font-size: var(--text-small); }
+.tripo-table th, .tripo-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--line); }
+.tripo-table caption { text-align: left; padding-bottom: 12px; }
+.tripo-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.tripo-model { display: block; width: 100%; height: 360px; background: var(--surface-subtle); border-radius: var(--radius-control); }

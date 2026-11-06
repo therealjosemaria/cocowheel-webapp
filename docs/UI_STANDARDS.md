@@ -1,5 +1,10 @@
 # Coco Wheels product and UI standards
 
+7 November private avatar comparison: reuse Activity panels, page/help headings,
+regular body copy, 16/24px gaps and caption-sized scrollable results table.
+Model viewers use the existing subtle surface/control radius, one column on phones
+and responsive columns on desktop. No public navigation or Home changes.
+
 5 November bicycle extension: reuse Profile's existing field and save styles for
 the Car/Bicycle choice, passenger-seat declaration and colour; reuse the Find a
 journey form's field and result styles for the vehicle filter and bicycle label.

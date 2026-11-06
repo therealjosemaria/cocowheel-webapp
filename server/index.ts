@@ -1,3 +1,5 @@
+import { readFile as readComparisonFile } from "node:fs/promises";
+import { readComparison, comparisonAsset } from "./tripo-comparison";
 import { reviewedNotifications, reviewNotifications } from "./notification-outbox";
 import { homePresence } from "./home-presence";
 import { deliverJourneyReminder } from "./notification-email";
@@ -481,7 +483,20 @@ export function createApiServer(
           writeJson(response, 403, { error: "ORIGIN_NOT_ALLOWED" }, cors);
           return;
         }
-        if (
+        if (request.method === "GET" && adminUrl.pathname === "/api/admin/tripo") {
+          writeJson(response, 200, { comparison: await readComparison() }, cors);
+        } else if (request.method === "GET" && adminUrl.pathname.startsWith("/api/admin/tripo/")) {
+          const asset = comparisonAsset(adminUrl.pathname.slice("/api/admin/tripo/".length));
+          if (!asset) { writeJson(response, 404, { error: "NOT_FOUND" }, cors); return; }
+          try {
+            const bytes = await readComparisonFile(asset.path);
+            response.writeHead(200, { ...cors, "Content-Type": asset.type, "X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store" });
+            response.end(bytes);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+            writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+          }
+        } else if (
           adminUrl.pathname === "/api/admin/dashboard" &&
           request.method === "GET"
         ) {
