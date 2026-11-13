@@ -149,3 +149,13 @@ regressions passed. Models are 2.27–41.77 MiB, so these research assets are no
 claim of mobile-map readiness; a future map integration needs optimized meshes or
 rendered sprites. No physical-phone or authenticated live-browser performance test.
 Frontend deployment verification follows the source push and is a separate check.
+
+## Verified production rollout — 14 November 2026
+
+Vercel deployment `dpl_CqGKxC7NmgaXe3qZq2dTYkWP4jNn` reached READY for source
+`832533f9054d461234fbaad2467e6603334a6475`, with www.gumwheel.com assigned.
+The private page returned HTTP 200 with noindex and the expected unsigned sign-in
+form. Live anonymous reads of all five GLB files, the reference and manifest were
+403/no-store. API health was 200. This confirms rollout and public denial, not an
+actual owner sign-in walkthrough; the interactive gallery was tested locally as
+noted above. The follow-up commit only records this deployment evidence.

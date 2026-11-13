@@ -59,7 +59,35 @@
   "privacy": {
     "realPhotoAndOutputs": "Private ignored data directory only; absent from this report and Git.",
     "anonymousLiveManifestStatus": 403,
-    "anonymousLiveReferenceStatus": 403
+    "anonymousLiveReferenceStatus": 403,
+    "anonymousLiveModels": [
+      {
+        "model": "H3.1",
+        "status": 403,
+        "noStore": true
+      },
+      {
+        "model": "H3.0",
+        "status": 403,
+        "noStore": true
+      },
+      {
+        "model": "H2.5",
+        "status": 403,
+        "noStore": true
+      },
+      {
+        "model": "P2",
+        "status": 403,
+        "noStore": true
+      },
+      {
+        "model": "P1",
+        "status": 403,
+        "noStore": true
+      }
+    ],
+    "unsignedComparisonPage": "HTTP 200; noindex and sign-in form"
   },
   "activation": {
     "apiRestarted": true,
@@ -78,5 +106,12 @@
     "browser": "All five interactive GLBs loaded; whole gallery reviewed at 390px and 1440px with isolated mock authorization",
     "physicalPhone": "not tested",
     "liveAuthenticatedBrowser": "not tested"
+  },
+  "frontendDeployment": {
+    "id": "dpl_CqGKxC7NmgaXe3qZq2dTYkWP4jNn",
+    "sourceCommit": "832533f9054d461234fbaad2467e6603334a6475",
+    "state": "READY",
+    "verifiedAlias": "www.gumwheel.com",
+    "ownerWalkthrough": "not performed; interactive real models verified through isolated localhost gallery"
   }
 }

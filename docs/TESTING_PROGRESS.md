@@ -152,3 +152,7 @@ health fetch failed during startup; subsequent local/public health returned 200,
 and anonymous manifest/reference access returned 403 with no-store.
 Production build passed after the final gallery changes. Live frontend rollout is
 checked separately from this local build and the API restart.
+Vercel production `dpl_CqGKxC7NmgaXe3qZq2dTYkWP4jNn` reached READY for
+`832533f` and www.gumwheel.com. Unsigned page: HTTP 200/noindex/sign-in form;
+all five anonymous model requests denied 403/no-store. Live owner walkthrough
+remains unverified; this follow-up only records deployment evidence.
