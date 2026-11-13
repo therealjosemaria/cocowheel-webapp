@@ -126,6 +126,13 @@ export default function TripoComparison() {
                     src: `/api/admin/tripo/${row.id}.glb`,
                     alt: `${row.name} generated avatar`,
                     "camera-controls": true,
+                    "camera-orbit": "90deg 75deg 105%",
+                    "interaction-prompt": "none",
+                    loading: "lazy",
+                    poster:
+                      "previewReady" in row && row.previewReady
+                        ? `/api/admin/tripo/${row.id}.png`
+                        : undefined,
                     "touch-action": "pan-y",
                     class: "tripo-model",
                   })

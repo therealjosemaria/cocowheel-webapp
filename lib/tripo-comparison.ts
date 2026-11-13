@@ -1,9 +1,9 @@
 export const TRIPO_MODELS = [
   { name: "H3.1", id: "v3.1-20260211", estimatedCredits: 30 },
-  { name: "H3.0", id: "v3.0-20250812", estimatedCredits: null },
-  { name: "H2.5", id: "v2.5-20250123", estimatedCredits: null },
+  { name: "H3.0", id: "v3.0-20250812", estimatedCredits: 30 },
+  { name: "H2.5", id: "v2.5-20250123", estimatedCredits: 30 },
   { name: "P2", id: "P2-20260801", estimatedCredits: 110 },
-  { name: "P1", id: "P1-20260311", estimatedCredits: null },
+  { name: "P1", id: "P1-20260311", estimatedCredits: 50 },
 ] as const;
 export type ComparisonRow = {
   name: string;

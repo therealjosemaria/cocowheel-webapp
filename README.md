@@ -1,9 +1,17 @@
 # GUMWHEEL
 
+14 November avatar trial: all five pinned Tripo models completed using one private
+reference, with task-level charges totalling US$2.50. The owner-only comparison
+uses preview posters, lazy 3D loading and a consistent front-facing camera.
+Private API routes are activated; model files/photos remain outside Git/public
+assets. This does not replace map avatars. See the
+[trial results and deployment boundaries](docs/TRIPO_AVATAR_COMPARISON.md).
+
 7 November avatar research: an owner-only `/admin/avatars` comparison page and
 explicit serial Tripo V3 test script support five pinned models. Private photos
 and artifacts stay outside Git/public assets; no paid generation runs on page
-load. Reference photo, funded API balance and live results are pending. See
+load. The initial pending reference/balance status is superseded by the
+14 November trial above. See
 [comparison operation, privacy, pricing and limits](docs/TRIPO_AVATAR_COMPARISON.md).
 
 5 November passenger-ready bicycles: Profile supports an explicitly declared

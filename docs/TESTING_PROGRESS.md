@@ -125,3 +125,30 @@ Turbopack local port binding; production build rerun with local process permissi
 passed. Changed-file lint passed. Empty page reviewed at 390px and 1440px with
 mock authorization/API; no document overflow. No actual 3D likeness, provider
 billing/latency, 100-user capacity or production deployment has been verified.
+
+## 14 November 2026 — actual five-model Tripo trial
+
+Baseline `3a8acde` plus the storage-host/gallery fixes recorded in this commit
+series. One owner-authorized full-body image, five serial generations, no rerolls.
+All completed; task-level charges totalled 250 credits, leaving 50 available/0
+frozen. H3.1's initial artifact-host rejection is retained in the sanitized
+[result](results/tripo-avatar-2026-11-14.json); resumption reused the saved task.
+No real photo, task ID, signed URL, key or model file is in source control.
+
+Reproduce the regression guard without spending:
+`node --import tsx --test tests/tripo-comparison.test.ts tests/admin.test.ts tests/visual-system.test.ts`.
+15 tests pass, including the actual provider hostname, no API auth on downloads,
+resume/no duplicate submission, empty-balance and owner-access safeguards.
+Changed-file lint passes. A localhost-only mocked authorization/API served the
+real private artifacts for browser review: all five interactive GLBs loaded;
+390px mobile and 1440px desktop whole-gallery screenshots were reviewed, with
+front-facing cameras, posters, consistent typography and no page overflow.
+This does not establish performance on a physical phone or live authenticated
+production-browser access. No 100-user/concurrency campaign or map integration.
+
+API activation used a verified private SQLite backup and zero-underway checks;
+141 rides retained, integrity ok, no foreign-key violations. Initial immediate
+health fetch failed during startup; subsequent local/public health returned 200,
+and anonymous manifest/reference access returned 403 with no-store.
+Production build passed after the final gallery changes. Live frontend rollout is
+checked separately from this local build and the API restart.

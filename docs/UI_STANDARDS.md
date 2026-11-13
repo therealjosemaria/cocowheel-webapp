@@ -1,5 +1,9 @@
 # Coco Wheels product and UI standards
 
+14 November private comparison: retain the existing gallery/panel/table tokens.
+Generated previews serve as posters while 3D models load lazily; start with the
+same front-facing camera, without the animated interaction hand. No public UI change.
+
 7 November private avatar comparison: reuse Activity panels, page/help headings,
 regular body copy, 16/24px gaps and caption-sized scrollable results table.
 Model viewers use the existing subtle surface/control radius, one column on phones

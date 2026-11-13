@@ -1,4 +1,40 @@
-# Private Tripo comparison — 7 November 2026
+# Private Tripo comparison
+
+## Completed trial — 14 November 2026
+
+Five generations completed successfully from the same normalized full-body
+reference. One task per model; private GLB and PNG outputs are available through
+`/admin/avatars` after owner sign-in. Tripo task-level usage verified these charges:
+
+| Model | Observed completion | Charge (USD equivalent) | GLB size |
+| --- | ---: | ---: | ---: |
+| H3.1 | 94s | $0.30 | 41.77 MiB |
+| H3.0 | 106s | $0.30 | 16.79 MiB |
+| H2.5 | 55s | $0.30 | 6.95 MiB |
+| P2 | 82s | $1.10 | 2.27 MiB |
+| P1 | 59s | $0.50 | 2.37 MiB |
+
+Total: 250 credits / $2.50 equivalent. Final available balance: 50 credits, frozen
+0. This is a single serial trial, not a concurrency benchmark or a likeness
+guarantee. Private reference, hashes, task IDs, credentials and signed artifact URLs
+are not in the [sanitized result](results/tripo-avatar-2026-11-14.json).
+
+The first H3.1 download stopped because the provider returned
+`openapi-dl.data.tripo3d.com`, absent from the initial allowlist. That specific
+host is now accepted; the same completed task was resumed, not generated twice.
+Downloads carry no API Authorization header, verified by the synthetic fixture.
+Preview posters appear while models load lazily. The shared camera starts at
+90deg / 75deg / 105% to show the face rather than the side; all models remain
+rotatable. No map marker, profile avatar or public feed integration was added.
+
+The API was backed up and restarted after zero accepted/active journeys; all 141
+ride records remained, integrity was ok and foreign-key checks were clear. Initial
+immediate connection checks during startup failed; later local/public health checks
+returned 200, with anonymous manifest/photo reads denied 403. Frontend deployment
+verification is recorded separately below. The earlier 7 November pending status
+is historical.
+
+## Scope
 
 Implemented research tooling, not a user-facing avatar integration. `/admin/avatars`
 is unlisted, noindex and gated using the existing verified-owner admin session.
@@ -9,16 +45,18 @@ no selfie, task output, key or signed provider URL belongs in Git/public assets.
 ## Operation
 
 Store TRIPO_API_KEY only in the shell running the test (never NEXT_PUBLIC_*).
+The operator may use ignored `data/tripo-credentials.env` with mode 0600. Never
+commit this file or print its contents; no API service environment change is needed.
 The web/API processes do not need that key. No paid calls on page load.
 
 Offline plan: `node --import tsx scripts/tripo-compare.mts`
 
 After funding the **API** balance and obtaining the reference image:
-`node --import tsx scripts/tripo-compare.mts --run /private/reference.jpg`
+`node --env-file=data/tripo-credentials.env --import tsx scripts/tripo-compare.mts --run /private/reference.jpg`
 
 This explicitly submits up to five paid tasks, serially, one per requested model.
-API balance must be positive; full batch affordability is not guaranteed because
-legacy/P1 estimates remain unverified. It stops on provider errors without retries.
+API balance must be positive before new tasks; check full-batch affordability
+against current model prices before spending. It stops on provider errors without retries.
 EXIF/GPS is stripped to one normalized PNG, reused byte-for-byte. Max input 20MB,
 32M decoded pixels; still PNG/JPEG/WebP only. Fixed geometry/texture seeds 42;
 texture and PBR on, autofix off, adaptive face counts, model-default standard
@@ -58,9 +96,10 @@ Use V3 (`https://openapi.tripo3d.ai/v3`), not retired V2 examples.
 - [Official CLI](https://developers.tripo3d.ai/en/docs/cli); inspected published
   tripo-cli 0.11.2 source/knowledge for model-specific estimates.
 
-Standard textured image generation: H3.1 30 credits ($0.30 equivalent), P2 110
-($1.10); current H3.0/H2.5/P1 list estimates left unverified rather than copying
-retired V2 prices. One credit = US$0.01 equivalent. No first-ten-free API allowance
+Standard textured image generation: H3.1/H3.0/H2.5 each 30 credits ($0.30),
+P2 110 ($1.10), P1 50 ($0.50). The interactive H/P tables on the
+[pricing page](https://developers.tripo3d.ai/en/pricing) and this trial’s task-level
+usage supersede the initial unverified legacy/P1 estimates. One credit = US$0.01 equivalent. No first-ten-free API allowance
 or peak-concurrency surcharge verified. API and Studio have separate balances.
 Failed/cancelled tasks release frozen credits per current billing documentation;
 actual settlement still needs checking. Volume discounts require provider agreement.
@@ -73,7 +112,7 @@ app queue, bounded workers, backoff, duplicate protection and a per-user spend c
 illustration, not a measured completion SLA). Higher limits require support.
 Five single tests cannot establish throughput/p95 performance or 100-user capacity.
 
-## Validation and deployment boundaries
+## Initial validation and deployment boundaries — 7 November 2026
 
 No paid requests or likeness assessment yet: reference photo and funded balance
 are pending. Tests use isolated in-memory databases and synthetic local artifacts.
@@ -99,3 +138,14 @@ The sandbox build failure above is retained as the initial failed check. Product
 activation remains separate. React review: viewer loaded only on this private
 client screen, effect cleanup guards updates after unmount, no render-time provider
 calls or browser secrets; tabular headers and viewer alternative text included.
+
+## Gallery validation — 14 November 2026
+
+All five actual GLBs loaded interactively in the isolated browser review, including
+models below the fold; final whole-page screenshots were reviewed at 390px and
+1440px. Preview/3D states, regular body copy, camera consistency and table layout
+were checked. The production build, changed-file ESLint and 15 targeted/visual
+regressions passed. Models are 2.27–41.77 MiB, so these research assets are not a
+claim of mobile-map readiness; a future map integration needs optimized meshes or
+rendered sprites. No physical-phone or authenticated live-browser performance test.
+Frontend deployment verification follows the source push and is a separate check.

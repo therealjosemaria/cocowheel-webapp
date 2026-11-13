@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-14",
+  "sourceBaseline": "3a8acde",
+  "scope": "One owner-authorized full-body reference, one paid generation per pinned model; serial comparison, not a capacity test.",
+  "generationResults": [
+    {
+      "model": "H3.1",
+      "version": "v3.1-20260211",
+      "observedSeconds": 94,
+      "chargedCredits": 30,
+      "usdEquivalent": 0.3,
+      "glbBytes": 43799164,
+      "previewAvailable": true
+    },
+    {
+      "model": "H3.0",
+      "version": "v3.0-20250812",
+      "observedSeconds": 106,
+      "chargedCredits": 30,
+      "usdEquivalent": 0.3,
+      "glbBytes": 17604784,
+      "previewAvailable": true
+    },
+    {
+      "model": "H2.5",
+      "version": "v2.5-20250123",
+      "observedSeconds": 55,
+      "chargedCredits": 30,
+      "usdEquivalent": 0.3,
+      "glbBytes": 7290352,
+      "previewAvailable": true
+    },
+    {
+      "model": "P2",
+      "version": "P2-20260801",
+      "observedSeconds": 82,
+      "chargedCredits": 110,
+      "usdEquivalent": 1.1,
+      "glbBytes": 2382156,
+      "previewAvailable": true
+    },
+    {
+      "model": "P1",
+      "version": "P1-20260311",
+      "observedSeconds": 59,
+      "chargedCredits": 50,
+      "usdEquivalent": 0.5,
+      "glbBytes": 2482120,
+      "previewAvailable": true
+    }
+  ],
+  "totalChargedCredits": 250,
+  "remainingBalanceCredits": 50,
+  "frozenCredits": 0,
+  "failuresRetained": [
+    "First completed H3.1 download rejected openapi-dl.data.tripo3d.com; allowlist corrected and same task resumed without another generation.",
+    "Initial immediate post-restart HTTP check failed during startup; later local/public health checks passed."
+  ],
+  "privacy": {
+    "realPhotoAndOutputs": "Private ignored data directory only; absent from this report and Git.",
+    "anonymousLiveManifestStatus": 403,
+    "anonymousLiveReferenceStatus": 403
+  },
+  "activation": {
+    "apiRestarted": true,
+    "underwayAtRestart": 0,
+    "verifiedPrivateBackup": true,
+    "ridesBefore": 141,
+    "ridesAfter": 141,
+    "integrity": "ok",
+    "foreignKeyViolations": 0
+  },
+  "limits": "No concurrent load campaign; no subjective likeness score or production avatar integration claimed.",
+  "localValidation": {
+    "targetedTestsPassed": 15,
+    "lint": "passed for changed files",
+    "productionBuild": "passed",
+    "browser": "All five interactive GLBs loaded; whole gallery reviewed at 390px and 1440px with isolated mock authorization",
+    "physicalPhone": "not tested",
+    "liveAuthenticatedBrowser": "not tested"
+  }
+}

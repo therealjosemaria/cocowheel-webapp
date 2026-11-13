@@ -120,7 +120,7 @@ try {
     // Provider artifact hosts only, never send API authorization to asset storage.
     if (
       address.protocol !== "https:" ||
-      !/(^|\.)(tripo3d\.ai|tripo-data\.s3\.amazonaws\.com|amazonaws\.com)$/.test(
+      !/(^|\.)(tripo3d\.ai|openapi-dl\.data\.tripo3d\.com|tripo-data\.s3\.amazonaws\.com|amazonaws\.com)$/.test(
         address.hostname,
       )
     )

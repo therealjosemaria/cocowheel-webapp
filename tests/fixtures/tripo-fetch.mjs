@@ -29,11 +29,13 @@ globalThis.fetch = async (url, init = {}) => {
       data: {
         status: "success",
         output: {
-          model_url: "https://cdn.tripo3d.ai/mock.glb",
-          rendered_image_url: "https://cdn.tripo3d.ai/mock.png",
+          model_url: "https://openapi-dl.data.tripo3d.com/mock.glb",
+          rendered_image_url: "https://openapi-dl.data.tripo3d.com/mock.png",
         },
       },
     });
+  if (p.startsWith("/mock.") && init.headers?.Authorization)
+    throw Error("API credential leaked to artifact storage");
   if (p === "/mock.glb") return new Response(Buffer.from("glTFtest"));
   if (p === "/mock.png") return new Response(png);
   throw Error("Unexpected network request");
