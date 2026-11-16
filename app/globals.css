@@ -3003,6 +3003,11 @@ p {
   font-size: var(--text-body);
   margin: 0;
 }
+.admin-avatar-management .admin-heading h1 { max-width: none; line-height: 1.2; letter-spacing: -0.025em; }
+.admin-avatar-media { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 420px; }
+.admin-avatar-media figure { margin: 0; min-width: 0; }
+.admin-avatar-media figcaption { font-size: var(--text-small); color: var(--muted); margin-bottom: 8px; }
+.admin-avatar-media img { display: block; width: 100%; max-width: 160px; height: 220px; object-fit: contain; }
 .admin-pagination {
   display: flex;
   justify-content: space-between;

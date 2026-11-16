@@ -1,5 +1,16 @@
 # Coco Wheels product and UI standards
 
+16 November manual avatar administration: `/admin/avatar-management` reuses the
+Admin panel, record cards, fields, caption/body hierarchy and shared action buttons.
+Back uses the existing 44px text target above the heading. Photo and generated
+render previews are contained, with no crop. Approve generation and Cancel creation
+reuse the extracted shared ConfirmationPrompt (the former DemandPrompt), including
+focus return, sentence-only copy and safe-before-destructive order. Profile adds an
+owner-only Avatar submissions notice using the existing badge/card; opening the
+menu does not acknowledge rows. Photo checking may be automatic; generation needs
+explicit admin approval. Operational errors stay in Admin, while user Profile
+keeps truthful check/waiting/creating/ready status. See [admin workflow](AVATAR_ADMIN.md).
+
 16 November map avatars: Profile adds an initially closed Avatar disclosure below
 Personal details, reusing the existing disclosure layout, inset, preview area and
 Edit/Save/Cancel actions. The single-line “Personal avatar” checkbox follows the

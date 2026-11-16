@@ -1,0 +1,154 @@
+# Manual avatar administration — 16 November 2026
+
+Supersedes automatic generation after photo checking in the initial avatar upload
+release. Baseline `e6d9898`. Implementation and verification/activation evidence
+are distinguished below. Avatar display, Personal avatar choice, P2-20260801
+parameters, journey permissions and trip history are unchanged.
+
+## Flow and owner controls
+
+Verified users upload through Profile → Avatar. The Pi stores the normalized photo;
+the Mac checks visibility/pose with the existing queue/lease rules. A successful
+check puts the photo in APPROVED, **without generation permission**. Only the
+immutable owner-admin (`jmos0905`, independent of public username) can explicitly
+approve it in `/admin/avatar-management`. Approval stores time and principal and
+is idempotent. No balance check, provider file upload or paid request occurs before
+that approval, including for pre-existing APPROVED jobs upgraded from the old schema.
+Already-submitted tasks continue polling; deployment does not undo previous spend.
+
+The page is reachable from `/admin` and the owner's Profile notifications, with
+Back above the heading. It shows active jobs first, then creation newest-first,
+25 per page. Following a notification resets a later page to the first page.
+A notification link brings that particular row first and scrolls to
+it once. Source photo, generated preview, account name/email, status, approval time,
+provider task reference and hold/error are shown in each row. No photo bytes, leases,
+submission keys, provider credentials or private file tokens are serialized in lists.
+The checker’s last successful heartbeat is shown as a timestamp, not a claim it is
+currently online. The existing comparison stays separate at `/admin/avatars`.
+
+Approve generation uses the existing sentence-only confirmation with the expected
+110-credit P2 charge. Thereafter funding/capacity recovery can resume that one
+approved job without another click. Insufficient credits, disabled/daily cap,
+balance/upload failures and retrieval errors are persisted on that job for Admin.
+No automatic paid resubmission follows an ambiguous paid response. REVIEW_REQUIRED
+shows the reconciliation reason/task ID; inspect Tripo history before cancelling
+or starting again. There is no blind retry-generation or manual photo-check bypass.
+
+Cancel creation is available for queued/checking/approved/submitting/generating/
+review-required jobs. Confirmation explains an already incurred charge cannot be
+undone here if submission may have started. Cancellation removes the local source,
+invalidates the Mac lease and blocks assignment. A late provider task response can
+record its ID but cannot revive the job. If already processing at Tripo, the task
+may continue there; the app makes no provider-cancel/refund promise. Existing assigned
+avatars remain. Cancellation is idempotent. READY/REJECTED/EXPIRED are closed.
+
+Three unsuccessful runtime/lease attempts leave the photo queued with an admin-only
+CHECK_UNAVAILABLE hold. Admin can explicitly Retry photo check; the same photo/TTL
+is retained and the normal gates still apply. Valid photo rejection still tells
+the user which requirement was uncertain and offers another upload.
+
+## User-facing status
+
+Users see queued/checking, photo passed and waiting to be created, actual generation,
+and ready. Operational holds/provider review reasons never appear in their response
+or result emails; REVIEW_REQUIRED projects to the photo-approved waiting stage.
+A hold does not pretend generation is running. A source that reaches the seven-day
+TTL expires with the existing re-upload guidance. Cancelled jobs say creation was
+cancelled and offer another upload. Source photos are not exposed to other members.
+
+On completion, the normalized transparent sprite is assigned using the existing
+shared map-avatar path and retained as a private per-job admin preview. New accounts
+stay opted out of public avatar display; replacements preserve the saved choice.
+The user can preview/enable their available avatar in Profile. No further release
+click is required after generation; no new paid call is used for an admin preview.
+
+## Notifications and email
+
+Each received photo creates a SUBMITTED admin event. Passing the Mac check creates
+a distinct VERIFIED event saying generation needs approval. Ready/rejection/expiry/
+operational changes also create admin updates. Only the newest stage of a job needs
+review; newer stages supersede older unread events to avoid redundant reminders.
+Repeated polling of an unchanged hold creates no duplicate event. Recovery clears
+hold reminders before they can send stale error notices. Self-cancellation is
+already acknowledged for the submitter; admin cancellation still notifies them.
+
+Profile polls the owner-only notice endpoint on its existing ten-second cadence,
+and adds an Avatar submissions action/count using the existing badge/card. Other
+accounts do not request or receive these notices. Menu opening is not acknowledgement.
+Viewing the specific row's status ≥60% for 700ms in a visible document acknowledges
+that admin event server-side. Approving/cancelling also resolves that row’s events.
+User result review and admin review are separate and cannot clear each other.
+
+An unreviewed latest event is eligible for one email after five minutes through
+existing Resend transport; review before the claim suppresses it. Three attempts,
+60s backoff, stable persisted payload/idempotency key; after 24h email eligibility
+expires but the in-app admin notice remains. The recipient is the existing immutable
+admin account's verified university mailbox, not a public username or new contact
+address. Emails contain a link/status only, never the submitted photo or provider
+credentials. An already sending email cannot be recalled. User result emails retain
+their own five-minute fallback, without operational diagnostics.
+
+## Storage, access and activation
+
+Additive job columns: generation_approved_at/by, hold_reason and render BLOB.
+New avatar_admin_events table cascades with jobs. Existing APPROVED jobs remain
+unapproved on migration; in-flight paid tasks retain their state. Pending legacy
+jobs receive one admin notice. No journey table or login identity is migrated.
+
+Normalized source photos are admin-readable for up to seven days from submission,
+including after rejection/generation. The existing 25-job limit also counts retained
+source photos, bounding them to approximately 50 MB plus SQLite overhead.
+Cancel/expiry clears them immediately; the
+15s maintenance pass prunes other source bytes. Metadata/private generated previews
+and cascading user/admin events expire 30 days after the job’s final update.
+Assigned account sprite retention and backups/provider copies are separate. Privacy
+and upload consent copy describe review/approval; source photos remain outside Git,
+public assets, email and general discovery.
+
+All routes below require the current owner cookie. Writes additionally require the
+existing allowed Origin and X-Admin-Request: 1 and recheck that session after body
+reading. Auth runs before ID/asset lookup, including nonexistent IDs. Responses
+are private/no-store; photo/render bytes have fixed JPEG/WebP types and nosniff.
+
+| Route | Behavior |
+| --- | --- |
+| GET `/api/admin/avatar-jobs?page=0&job=ID` | Bounded metadata list, optional focused row |
+| GET `/api/admin/avatar-jobs/notifications` | Owner-only count/link |
+| GET `/api/admin/avatar-jobs/:id/photo` | Private normalized source if retained |
+| GET `/api/admin/avatar-jobs/:id/render` | Private per-job generated sprite |
+| POST `/api/admin/avatar-jobs/:id/approve` | Verified photo → persisted generation permission |
+| POST `/api/admin/avatar-jobs/:id/cancel` | Stops local processing/assignment; no provider refund promise |
+| POST `/api/admin/avatar-jobs/:id/retry-check` | Explicit restart of an exhausted Mac check |
+| POST `/api/admin/avatar-jobs/reviewed` | Acknowledges that admin event only |
+
+Source changes need a backed-up API restart after confirming no accepted/active
+journeys. Frontend push alone does not activate the new gate/schema.
+
+## Reproduction and evidence
+
+- `node --import tsx --test tests/avatar-admin.test.ts tests/avatar-jobs.test.ts`
+- `npm test`, `npm run lint`, `npm run build`, `npm run test:security`
+- `GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts`
+- `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npx next dev --hostname 127.0.0.1 --port 3491`
+- `/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-admin.py`
+- `/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-upload.py`
+
+The fixture uses synthetic accounts, in-memory SQLite, explicit loopback controls,
+fake generation and no provider/email credentials. No paid task/live submission is
+needed. All 283 regressions, 16 avatar tests, 52 isolated security checks, lint and the
+production build pass. Optimized browser flows pass at 320/390/1440px; existing
+admin sign-in passes at 320/390/844/1440px. Whole mobile/desktop Admin, Profile
+and Privacy screens were visually reviewed. New live paid generation, real inbox
+delivery, physical Safari and authenticated production walkthrough remain unverified.
+See [sanitized evidence and retained failed baselines](results/avatar-admin-2026-11-16.json).
+
+## API activation
+
+At 2026-11-16T04:36:23.528Z a private online SQLite/config backup passed integrity
+checks, followed by a fresh zero-accepted/active-trip check and restart of only
+`cocowheels-api`. All 142 rides and 19 journey/profile/account tables matched the
+backup. Integrity is ok, foreign-key violations are zero, the four approval/hold/
+render columns and admin events table exist, and runtime configuration is unchanged.
+Local/public health return 200; anonymous management/photo requests return 403.
+No live avatar test job, paid task or reminder email was created. Frontend
+deployment is recorded separately after the exact commit is verified.

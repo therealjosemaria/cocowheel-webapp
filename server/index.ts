@@ -67,7 +67,8 @@ import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
 import { authorizeAvatarWorker, avatarUploadsEnabled, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
 import { runAvatarGeneration } from "./avatar-generation";
-import { deliverAvatarReminder } from "./avatar-email";
+import { deliverAvatarReminder, deliverAdminAvatarReminder } from "./avatar-email";
+import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "./avatar-admin";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -178,7 +179,7 @@ function errorStatus(error: unknown) {
   if (code === "ADMIN_RATE_LIMITED") return 429;
   if (code === "ADMIN_NOT_CONFIGURED") return 503;
   if (code === "GUEST_SESSION_REQUIRED") return 401;
-  if (code === "RIDE_ACCESS_DENIED" || code === "LOCATION_SOURCE_OTHER_DEVICE")
+  if (code === "RIDE_ACCESS_DENIED" || code === "LOCATION_SOURCE_OTHER_DEVICE" || code === "ADMIN_ACCESS_DENIED")
     return 403;
   if (code === "RIDE_NOT_FOUND") return 404;
   if (
@@ -502,7 +503,28 @@ export function createApiServer(
           writeJson(response, 403, { error: "ORIGIN_NOT_ALLOWED" }, cors);
           return;
         }
-        if (request.method === "GET" && adminUrl.pathname === "/api/admin/tripo") {
+        if (adminUrl.pathname === "/api/admin/avatar-jobs" || adminUrl.pathname.startsWith("/api/admin/avatar-jobs/")) {
+          expireAvatarJobs(database);
+          const path = adminUrl.pathname.split("/");
+          if (request.method === "GET" && path.length === 4) {
+            writeJson(response, 200, adminAvatarJobs(database, Number(adminUrl.searchParams.get("page")), adminUrl.searchParams.get("job") ?? undefined), cors);
+          } else if (request.method === "GET" && path.length === 5 && path[4] === "notifications") {
+            writeJson(response, 200, adminAvatarNotices(database), cors);
+          } else if (request.method === "GET" && path.length === 6 && ["photo", "render"].includes(path[5])) {
+            const bytes = adminAvatarAsset(database, path[4], path[5]);
+            if (!bytes) writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+            else { response.writeHead(200, { ...cors, "Content-Type": path[5] === "photo" ? "image/jpeg" : "image/webp", "Content-Length": bytes.length, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" }); response.end(bytes); }
+          } else if (request.method === "POST" && path.length === 5 && path[4] === "reviewed") {
+            const body = await readJson(request, 2048);
+            if (findSession(database, readGuestCookie(request.headers.cookie))?.unikey !== ADMIN_UNIKEY) throw new Error("ADMIN_ACCESS_DENIED");
+            reviewAdminAvatar(database, body.key); writeJson(response, 200, { ok: true }, cors);
+          } else if (request.method === "POST" && path.length === 6 && ["approve", "cancel", "retry-check"].includes(path[5])) {
+            await readJson(request, 2048);
+            const current = findSession(database, readGuestCookie(request.headers.cookie));
+            if (current?.unikey !== ADMIN_UNIKEY) throw new Error("ADMIN_ACCESS_DENIED");
+            writeJson(response, 200, actOnAdminAvatar(database, path[4], path[5], current.id), cors);
+          } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        } else if (request.method === "GET" && adminUrl.pathname === "/api/admin/tripo") {
           writeJson(response, 200, { comparison: await readComparison() }, cors);
         } else if (request.method === "GET" && adminUrl.pathname.startsWith("/api/admin/tripo/")) {
           const asset = comparisonAsset(adminUrl.pathname.slice("/api/admin/tripo/".length));
@@ -1408,6 +1430,7 @@ export function createApiServer(
         expireAvatarJobs(database);
         await runAvatarGeneration(database);
         await deliverAvatarReminder(database);
+        await deliverAdminAvatarReminder(database);
       })().catch(() => console.error("Avatar worker failed"))
         .finally(() => { avatarWorking = false; });
     }, 15000);

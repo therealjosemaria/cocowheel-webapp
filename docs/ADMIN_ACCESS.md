@@ -58,3 +58,12 @@ and tight denial-message spacing; shared page padding and a 16px error gap fix i
 
 Real-device Safari, live email delivery and the production deployment remain
 unverified by this local check.
+
+## Avatar management — 16 November 2026
+
+`/admin/avatar-management` and all `/api/admin/avatar-jobs` routes use the same
+verified immutable owner account. Source photos, generated previews, provider task
+IDs and operational holds remain private/no-store. Mutations require the existing
+allowed Origin and X-Admin-Request header, with session recheck after reading the
+body. The page adds no public menu item; `/admin` links to it, and only the owner
+sees Profile submission notifications. See [avatar administration](AVATAR_ADMIN.md).

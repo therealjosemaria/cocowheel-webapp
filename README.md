@@ -1,8 +1,20 @@
 # GUMWHEEL
 
+16 November manual avatar management supersedes automatic generation below.
+The protected `/admin/avatar-management` page shows private submitted photos,
+photo-check status, generation approval, operational holds and generated previews.
+Only the immutable owner-admin account can approve generation or cancel other
+accounts’ jobs; submitters retain their own cancellation controls. Mac verification
+alone never authorizes a paid task. Profile gives the admin
+submission/result notifications with a five-minute unread email fallback. Users
+see photo-check/creation progress without credit or provider errors. Photos are
+retained for admin review for up to seven days (cancel removes them immediately);
+job previews and events last up to 30 days after the final update. See
+[avatar administration](docs/AVATAR_ADMIN.md) for transitions, privacy and checks.
+
 16 November avatar creation: Profile includes Upload photo / Update photo for
-verified accounts, private queued photo checks on the Mac, automatic P2 generation
-after approval, and Profile results with a five-minute unread email fallback.
+verified accounts, private queued photo checks on the Mac, P2 generation
+after separate admin approval, and Profile results with a five-minute unread email fallback.
 Requests persist on the Pi while the Mac is offline; insufficient Tripo credit
 leaves approved photos queued. The previous assigned-avatar-only boundary below
 is superseded. See [avatar creation and activation](docs/AVATAR_CREATION.md) for

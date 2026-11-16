@@ -4,7 +4,7 @@ import sharp from "sharp";
 import type { Db } from "./core";
 import { comparisonPayload } from "../lib/tripo-comparison";
 import { prepareAvatarSprite } from "./map-avatars";
-import { AVATAR_CREDITS, AVATAR_MODEL, completeGeneratedAvatar, expireAvatarJobs, finishAvatarJob, type AvatarJobRow } from "./avatar-jobs";
+import { AVATAR_CREDITS, AVATAR_MODEL, clearAvatarHold, completeGeneratedAvatar, expireAvatarJobs, finishAvatarJob, holdAvatarJob, type AvatarJobRow } from "./avatar-jobs";
 
 type ProviderResult = { balance?: number; file_token?: string; task_id?: string; status?: string; output?: { rendered_image_url?: string } };
 export type AvatarProvider = { request: (path: string, body?: FormData | Record<string, unknown>) => Promise<ProviderResult>; image: (url: string) => Promise<Buffer> };
@@ -63,6 +63,8 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
       db.prepare("UPDATE avatar_jobs SET next_at=? WHERE id=?").run(now + 15_000, pending.id);
       try {
         const task = await api.request(`/tasks/${encodeURIComponent(pending.task_id)}`);
+        if (!db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(pending.id)) return;
+        if (!task.status) throw new Error("MISSING_TASK_STATUS");
         if (task.status === "success") {
           if (!task.output?.rendered_image_url) throw new Error("NO_AVATAR_RENDER");
           const image = await api.image(task.output.rendered_image_url);
@@ -70,47 +72,58 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
           if (!stats.channels[3] || stats.channels[3].min === 255) throw new Error("OPAQUE_AVATAR_RENDER");
           completeGeneratedAvatar(db, pending.id, await prepareAvatarSprite(image), now);
         } else if (["failed", "cancelled", "canceled", "expired", "banned"].includes(task.status ?? "")) {
-          finishAvatarJob(db, pending.id, "FAILED", "PROVIDER_FAILED", now);
-        }
+          if (db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(pending.id))
+            finishAvatarJob(db, pending.id, "REVIEW_REQUIRED", "PROVIDER_FAILED", now);
+        } else clearAvatarHold(db, pending.id, now);
       } catch {
         // Retain the task ID; downloads/polls retry this result, never create another paid task.
         db.prepare("UPDATE avatar_jobs SET next_at=? WHERE id=? AND status='GENERATING'").run(now + 60_000, pending.id);
+        holdAvatarJob(db, pending.id, "RESULT_UNAVAILABLE", now);
       }
       return;
     }
     if (db.prepare("SELECT 1 FROM avatar_jobs WHERE status IN ('SUBMITTING','GENERATING')").get()) return;
-    const job = db.prepare("SELECT * FROM avatar_jobs WHERE status='APPROVED' AND next_at<=? ORDER BY created_at,id LIMIT 1").get(now) as AvatarJobRow | undefined;
+    const job = db.prepare("SELECT * FROM avatar_jobs WHERE status='APPROVED' AND generation_approved_at IS NOT NULL AND generation_approved_by IS NOT NULL AND next_at<=? ORDER BY created_at,id LIMIT 1").get(now) as AvatarJobRow | undefined;
     if (!job || !job.photo) return;
     db.prepare("UPDATE avatar_jobs SET next_at=? WHERE id=? AND status='APPROVED'").run(now + 60_000, job.id);
     const cap = Number(process.env.COCOWHEELS_AVATAR_DAILY_CREDITS ?? 330);
-    if (!Number.isFinite(cap) || cap < AVATAR_CREDITS) return;
+    if (!Number.isFinite(cap) || cap < AVATAR_CREDITS) { holdAvatarJob(db, job.id, "GENERATION_PAUSED", now); return; }
     let balance: ProviderResult;
-    try { balance = await api.request("/account/balance"); } catch { return; }
-    if (!Number.isFinite(balance.balance) || balance.balance! < AVATAR_CREDITS) return;
+    try { balance = await api.request("/account/balance"); } catch { holdAvatarJob(db, job.id, "PROVIDER_UNAVAILABLE", now); return; }
+    if (!Number.isFinite(balance.balance)) { holdAvatarJob(db, job.id, "PROVIDER_UNAVAILABLE", now); return; }
+    if (balance.balance! < AVATAR_CREDITS) { holdAvatarJob(db, job.id, "INSUFFICIENT_CREDITS", now); return; }
+    // Cancellation during an awaited provider request must stop subsequent work.
+    if (!db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='APPROVED' AND generation_approved_at IS NOT NULL").get(job.id)) return;
     let token = job.file_token;
     if (!token) {
       const file = new FormData();
       file.append("file", new Blob([new Uint8Array(job.photo)], { type: "image/jpeg" }), "avatar-photo.jpg");
-      try { token = (await api.request("/files", file)).file_token ?? null; } catch { return; }
-      if (!token || token.length > 300) return;
+      try { token = (await api.request("/files", file)).file_token ?? null; } catch { holdAvatarJob(db, job.id, "UPLOAD_FAILED", now); return; }
+      if (!token || token.length > 300) { holdAvatarJob(db, job.id, "UPLOAD_FAILED", now); return; }
     }
     const claimed = db.transaction(() => {
       const day = new Date(now).toISOString().slice(0, 10);
       const count = (db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs WHERE submitted_at>=?").get(Date.parse(`${day}T00:00:00Z`)) as { n: number }).n;
-      if ((count + 1) * AVATAR_CREDITS > cap) return false;
-      return db.prepare("UPDATE avatar_jobs SET status='SUBMITTING',file_token=?,submitted_at=?,updated_at=? WHERE id=? AND status='APPROVED'")
+      if ((count + 1) * AVATAR_CREDITS > cap) { holdAvatarJob(db, job.id, "DAILY_LIMIT", now); return false; }
+      const changed = db.prepare("UPDATE avatar_jobs SET status='SUBMITTING',file_token=?,submitted_at=?,updated_at=?,hold_reason=NULL WHERE id=? AND status='APPROVED' AND generation_approved_at IS NOT NULL AND generation_approved_by IS NOT NULL")
         .run(token, now, now, job.id).changes === 1;
+      if (changed) clearAvatarHold(db, job.id, now);
+      return changed;
     })();
     if (!claimed) return;
     try {
       const task = await api.request("/generation/image-to-model", comparisonPayload(token, AVATAR_MODEL));
       if (!task.task_id || !/^[a-zA-Z0-9-]{1,100}$/.test(task.task_id)) throw new Error("MISSING_TASK_ID");
-      db.prepare("UPDATE avatar_jobs SET status='GENERATING',task_id=?,photo=NULL,updated_at=?,next_at=? WHERE id=? AND status='SUBMITTING'")
-        .run(task.task_id, now, now + 15_000, job.id);
+      // Keep the private source for the seven-day admin review window. A late
+      // response may record its task ID, but cannot revive a cancelled job.
+      db.prepare("UPDATE avatar_jobs SET task_id=? WHERE id=? AND status IN ('SUBMITTING','CANCELLED')").run(task.task_id, job.id);
+      db.prepare("UPDATE avatar_jobs SET status='GENERATING',updated_at=?,next_at=? WHERE id=? AND status='SUBMITTING'")
+        .run(now, now + 15_000, job.id);
     } catch (error) {
       if (error instanceof TripoError && error.definitive) {
         db.prepare("UPDATE avatar_jobs SET status='APPROVED',submitted_at=NULL,updated_at=?,next_at=? WHERE id=? AND status='SUBMITTING'")
           .run(now, now + 60_000, job.id);
+        holdAvatarJob(db, job.id, "SUBMISSION_REJECTED", now);
       } else finishAvatarJob(db, job.id, "REVIEW_REQUIRED", "SUBMISSION_UNCERTAIN", now);
     }
   } finally { working.delete(db); }

@@ -1,6 +1,7 @@
-# Read-only admin
+# Admin
 
-Sign in with the verified `jmos0905` UniKey, then use the Admin menu link.
+Sign in with the verified `jmos0905` UniKey, then open `/admin` directly.
+There is no Admin menu entry.
 The page and API reject all other accounts, including the Gmail testing account.
 No separate admin password is required. Overview shows all-time ride
 counts (including samples); Trips provides status filters and 25-record pages;
@@ -41,4 +42,16 @@ public menu entry. New read-only `/api/admin/tripo` and allowlisted asset paths
 remain inside that API authorization boundary, with private/no-store responses.
 See [Tripo comparison](docs/TRIPO_AVATAR_COMPARISON.md) for the explicit paid CLI,
 private filesystem configuration, recovery rules and deployment requirements.
-The API key is used only by the operator CLI; opening the page cannot spend credits.
+Comparison routes never call the paid provider; opening that page cannot spend
+credits. The separate avatar worker uses the existing key only after explicit
+generation approval in Avatar management.
+
+## Avatar management (16 November 2026)
+
+`/admin/avatar-management` manages private avatar submissions separately from the
+read-only trip reports. It shows submitted photos, check status, admin generation
+approval, provider/credit holds and generated previews. Approve generation is
+required before any new paid task; Cancel creation removes its source and prevents
+assignment, without promising cancellation/refund at the provider. Profile gives
+the owner-only notifications and five-minute unread email fallback.
+See [workflow, permissions and verification](docs/AVATAR_ADMIN.md).

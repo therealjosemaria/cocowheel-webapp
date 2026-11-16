@@ -1,0 +1,138 @@
+{
+  "date": "2026-11-16",
+  "recordedAt": "2026-11-16T04:35:04.496072+00:00",
+  "sourceBaseline": "e6d989881f08294bf1f8c81098882afdfe4a68ad",
+  "sourceSha256": {
+    "app/admin/avatar-management/page.tsx": "b4d86095b79783f1d8a0b92f5bc8592c216c7bf4678dbe95fade3a8065a0c1a7",
+    "app/globals.css": "0ac9066e86b5f1ac2be70314409eb8d7ed2cccb3d84e9d0ca8c1ce7a08311bf9",
+    "app/privacy/page.tsx": "b30263c6d21bab3f42f29d29e07398e38cd8fa71718e4d9b8ee2c6b3574afe00",
+    "components/admin-avatar-management.tsx": "1e04b3f2eb6ab3fd4289152b9b1d5b74d28171ac23277e2ec555ff0b9337a7e9",
+    "components/admin-panel.tsx": "5f8499baa21395c621ecf9193a2eb765d56fce4e3ee043b12ee5a73dc0f1febc",
+    "components/app-navigation.tsx": "fff47cf953d3fddd74591a9f35924bc57ddaaecc98f6771d3b217be9e5935ad1",
+    "components/avatar-details.tsx": "c36e814ac713d3b752544b35048fd8fd6d93b531fd5516fbe918f2046ca68727",
+    "components/confirmation-prompt.tsx": "7f5d0567451e0153f99583fc4abf203339a4dd8ea7cf134caf6ebf1546f08752",
+    "components/rider-demands.tsx": "32ed4f8019f8d9cd4d969488c8455dcb6eb563f8cd1b92d4ab7d98aff991ca5b",
+    "lib/admin-api.ts": "ee8e1b3d708864a43041e5b8f314ee021d7f63c01cb5c7114b73192eabaa337d",
+    "lib/admin-avatar.ts": "dbd796dc05a75c3e5e2f1430ac1a09bec645b5f7b7e50e0031ea82254d0f037c",
+    "lib/avatar-job.ts": "7a2455c709f31498b13441b996f2fdc09477763ed037866038ecdba3476d9b99",
+    "scripts/check-avatar-admin.py": "387b4a98c6d0cb23965764743599f706197deb02aeff3bed103d0107fbc0d70e",
+    "scripts/check-avatar-upload.py": "d3567ec546c8eccfc1112c0dae5af8ec8e3c27edee1e48693880598e1f0e977d",
+    "scripts/serve-map-avatar-fixture.mts": "bcb8270127d71117c303e21bffa9fdfa638ad3f39bc0e5cf6ba8e919fd081a1d",
+    "server/avatar-admin.ts": "8430df37270ed68be9df123391388a30e6d2d70561093d33170649222777c0e0",
+    "server/avatar-email.ts": "668a46b2dd1047e3196694ea84a0d969059c610c66086b3028bee8ec00b0da3d",
+    "server/avatar-generation.ts": "9151146f59910fa6cdee77e61c870e826d7ba58bafc68b5cc0f5b3aa86e611cf",
+    "server/avatar-jobs.ts": "8c34f7053edcc306c8dcecec70d61eadf55dca759ec0c6853623406e247db729",
+    "server/index.ts": "c748fa1726b0b6c4392a083ac01ef37b047b146b00328cf48ed01b4a21e7a6cd",
+    "tests/avatar-admin.test.ts": "e3896c76e45c4ddb8b0b299e625068d6be8aceb7ed746cf827fbbc4b842379f4",
+    "tests/avatar-jobs.test.ts": "e0f1842d6d626bbd7fff2c2105a78e245717c0d240b07dd787a219bcdcb5e9c5"
+  },
+  "isolation": "Synthetic accounts, in-memory SQLite, loopback API, fake Tripo and captured email transport. No live uploads, paid tasks or real reminder emails created.",
+  "checks": {
+    "regressions": {
+      "passed": 283,
+      "failed": 0
+    },
+    "avatarTargeted": {
+      "passed": 16,
+      "failed": 0
+    },
+    "security": {
+      "passed": 52,
+      "failed": 0
+    },
+    "lint": "pass",
+    "productionBuild": "pass",
+    "standaloneTypecheck": "28 existing diagnostics in untouched test files; no new avatar/production diagnostics after correcting a test HeadersInit union",
+    "browserWidths": [
+      320,
+      390,
+      1440
+    ],
+    "browser": "Optimized frontend: Profile admin notice, private source photo, per-stage visible review, explicit approval, uncertain action response retained through refresh, credit holds hidden from the user, fake P2 completion/private render preview, cancellation preserving an existing avatar and non-owner denial. Ordinary upload/rejection/result/opt-in flow also passes. Notification navigation from a simulated second list page resets to the correct focused first-page row.",
+    "adminEntryWidths": [
+      320,
+      390,
+      844,
+      1440
+    ],
+    "visualReview": "Whole mobile/desktop admin pending/approval/credit hold/ready/cancelled/error views, confirmation spacing/focus, Profile admin notification and ordinary upload consent, denied account and Privacy page. Existing typography, regular supporting copy, buttons and spacing retained. No horizontal overflow or page exceptions.",
+    "cancellationBoundaries": [
+      "Mac lease",
+      "balance check",
+      "paid submission response",
+      "generated render retrieval"
+    ],
+    "storage": "Seven-day source retention and 25-retained-photo cap, terminal preview/event pruning after 30 days without removing the assigned account avatar",
+    "notifications": "Five-minute delay, per-stage admin/user acknowledgement isolation, stable bounded email retries, recovered holds suppressed and self-cancellation acknowledged"
+  },
+  "failedBaselines": [
+    {
+      "finding": "Sandboxed tsx CLI could not create its IPC socket",
+      "resolution": "Use node --import tsx with isolated loopback permission; test suites pass"
+    },
+    {
+      "finding": "Old tests expected automatic generation, failed Mac checks to close, and early photo deletion",
+      "resolution": "Tests now require explicit immutable-admin approval, hold exhausted checks for manual retry and verify seven-day private review retention"
+    },
+    {
+      "finding": "Browser credit-hold assertion raced an approval POST that had not completed",
+      "resolution": "Wait until the approval button disappears after persisted approval; optimized browser flows pass at all three widths"
+    },
+    {
+      "finding": "Inherited ten-character heading width cramped Avatar management and Back placement",
+      "resolution": "Scoped admin heading width and existing detail Back spacing; whole-screen visual review passes"
+    },
+    {
+      "finding": "Action-error copy could disappear during the following status refresh",
+      "resolution": "Separate mutation and load errors; injected uncertain-response browser check confirms recovery copy remains visible"
+    },
+    {
+      "finding": "Retaining rejected source photos required counting them in the existing global storage cap",
+      "resolution": "Cap active jobs plus retained photos at 25; retention/cap regression passes"
+    },
+    {
+      "finding": "Standalone tsc identified a new test header-object union beside existing test diagnostics",
+      "resolution": "Explicit Record<string,string>[] header fixtures; no avatar diagnostics remain"
+    },
+    {
+      "finding": "A new notification could retain the previous admin list page offset",
+      "resolution": "Key the list state by notification target; optimized 320/390/1440 browser navigation from page two passes"
+    },
+    {
+      "finding": "Synthetic generation advanced time and made older ready events sort ahead of newer real-time submissions",
+      "resolution": "Explicit fixture controls make only synthetic jobs due, retaining the actual clock; latest-link navigation retest passes"
+    },
+    {
+      "finding": "Clearing a retrieval hold before a failed download could repeatedly reset its reminder deadline",
+      "resolution": "Clear only after genuine progress/recovery; repeated failed retrievals retain the same event key in the final targeted regression"
+    }
+  ],
+  "unverified": [
+    "New live paid Tripo generation (funding deferred)",
+    "Real inbox reminder delivery",
+    "Physical iPhone/Safari",
+    "Authenticated production owner walkthrough"
+  ],
+  "activation": {
+    "api": {
+      "activatedAt": "2026-11-16T04:36:23.528Z",
+      "historyTables": 19,
+      "historyUnchanged": true,
+      "rides": 142,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "manualApprovalColumns": true,
+      "adminEventsTable": true,
+      "avatarJobs": 0,
+      "workerLastSeen": 1794803794522,
+      "configurationUnchanged": true
+    },
+    "readOnlyHttp": {
+      "localHealth": 200,
+      "publicHealth": 200,
+      "anonymousAdmin": 403,
+      "anonymousPrivatePhoto": 403
+    },
+    "frontend": "pending commit/deployment"
+  }
+}

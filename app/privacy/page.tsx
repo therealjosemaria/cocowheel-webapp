@@ -51,11 +51,12 @@ export default function PrivacyPage() {
         begins. Your existing avatar remains available while a replacement is made.
       </p>
       <p>
-        Queued photos are removed from our active database after processing or
-        after seven days, whichever comes first. Temporary checking copies are
-        removed when the check finishes or the checking worker next restarts.
-        Job and notification records are retained for up to 30 days after their
-        final update; backups and Tripo may retain their own copies. Creating an
+        Submitted photos are available to the administrator for review for up to
+        seven days, and removed earlier if the creation is cancelled. Generation
+        requires separate administrator approval after the photo passes its check.
+        Temporary checking copies are removed when the check finishes or the checking worker next restarts.
+        Job, generated-preview and notification records are retained for up to 30 days
+        after their final update; backups and Tripo may retain their own copies. Creating an
         avatar does not automatically enable its public display. Photo-check and
         avatar results appear in Profile; if the latest result is unreviewed after
         five minutes, we send an email through Resend linking to it without the photo.

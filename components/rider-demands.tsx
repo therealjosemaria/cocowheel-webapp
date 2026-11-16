@@ -31,6 +31,7 @@ import RequestRouteMap from "./request-route-map";
 import { JourneyResultsLayout, JourneyResultsList } from "./journey-results-layout";
 import RideFieldLabel, { RideFieldIcon } from "./ride-field-label";
 import ParticipantName from "./participant-name";
+import DemandPrompt from "./confirmation-prompt";
 import PaymentFields from "./payment-fields";
 import ContributionChoice from "./contribution-choice";
 import ContributionAmount from "./contribution-amount";
@@ -97,51 +98,6 @@ function DemandContribution({ request }: { request: Pick<RiderDemand, "offeredCo
   </div>;
 }
 
-function DemandPrompt({
-  label,
-  children,
-  busy,
-  close,
-  confirm,
-  action,
-  destructive = false,
-  cancelLabel = "Go back",
-}: {
-  label: string;
-  children: ReactNode;
-  busy: boolean;
-  close: () => void;
-  confirm: () => void;
-  action: string;
-  destructive?: boolean;
-  cancelLabel?: string;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  useDialogFocus(ref, close, busy);
-  return createPortal(
-    <div className="cancel-prompt-backdrop">
-      <section
-        ref={ref}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label={label}
-        className="cancel-prompt demand-prompt"
-      >
-        <p>{label}</p>
-        {children}
-        <div className="cancel-prompt-actions">
-          {destructive && <button className="secondary" disabled={busy} onClick={close}>Go back</button>}
-          <button className={destructive ? "danger" : "primary"} disabled={busy} onClick={confirm}>
-            {busy ? "Saving…" : action}
-          </button>
-          {!destructive && <button className="secondary" disabled={busy} onClick={close}>{cancelLabel}</button>}
-        </div>
-      </section>
-    </div>,
-    document.body,
-  );
-}
 
 export async function openLiftRequestId() {
   const data = await cocowheelsApi<DemandActivity>("/api/rider-demands");

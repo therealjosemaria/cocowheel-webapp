@@ -17,11 +17,11 @@ export const avatarRejections: Record<string, string> = {
 export function avatarJobMessage(job: AvatarJob) {
   switch (job.status) {
     case "QUEUED": case "CHECKING": return "Your photo is queued for checking. We’ll notify you with the results.";
-    case "APPROVED": return "Your photo passed the check. Avatar creation is queued.";
+    case "APPROVED": return "Your photo passed the check. Your avatar is waiting to be created.";
     case "SUBMITTING": case "GENERATING": return "Your photo passed the check. We’re creating your avatar.";
     case "READY": return "Your avatar is ready.";
     case "REJECTED": return avatarRejections[job.reason ?? ""] ?? avatarRejections.BODY;
-    case "CANCELLED": return "Photo check cancelled. You can upload another photo.";
+    case "CANCELLED": return "Avatar creation cancelled. You can upload another photo.";
     case "EXPIRED": return "Your photo expired before processing finished. Upload it again to queue a new check.";
     case "REVIEW_REQUIRED": return "Avatar creation needs our review. Your current avatar is unchanged. Contact us for help.";
     default: return "We couldn’t finish your avatar. Your current avatar is unchanged. You can upload another photo.";

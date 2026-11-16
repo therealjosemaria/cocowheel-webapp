@@ -1,7 +1,9 @@
 # Assigned map avatars — 16 November 2026
 
 Self-service extension: [avatar creation](AVATAR_CREATION.md) now supplies upload,
-Pi queue, Mac checks, P2 generation and result notifications. That supersedes this
+Pi queue, Mac checks, manually approved P2 generation and result notifications.
+[Avatar administration](AVATAR_ADMIN.md) is the later authority for generation
+approval and operational holds. That supersedes this
 release's operator-only creation boundary and the proposed queue section below;
 the display/storage/opt-in contract here remains in use.
 

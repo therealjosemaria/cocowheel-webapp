@@ -119,9 +119,9 @@ export default function AvatarDetails() {
           <AvatarPreview key={photo ? "photo-to-check" : preview} src={photo ?? preview} photo={Boolean(photo)} />
           {photo ? <>
             <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>
-            <p className="save-route-profile-note">Approved photos are sent to Tripo to create your avatar. You choose whether to show it on maps.</p>
+            <p className="save-route-profile-note">Photos that pass the check wait for approval before avatar creation with Tripo. You choose whether to show it on maps.</p>
             <label className="usual-alert-choice"><input type="checkbox" checked={consent}
-              onChange={event => { if (!submitting.current) { setConsent(event.target.checked); setError(""); } }} />Check my photo and create my avatar if it passes.</label>
+              onChange={event => { if (!submitting.current) { setConsent(event.target.checked); setError(""); } }} />Check my photo and submit it for avatar creation.</label>
             <div className="ride-action-buttons">
               <button className="primary" aria-busy={busy}>{busy ? "Uploading…" : "Submit photo"}</button>
               <button type="button" className="secondary" onClick={() => { if (!submitting.current) { setPhoto(null); setConsent(false); setError(""); } }}>Cancel</button>

@@ -1,5 +1,13 @@
 # Coco Wheels visual system
 
+16 November avatar administration reuses admin-panel/admin-records/admin-fields,
+existing primary/secondary buttons and the shared confirmation shell/actions.
+Photo/render previews use two minmax(0,1fr) columns, 16px gaps, contained 160×220px
+images and a 420px comparison width. Admin heading keeps the existing 24px token
+without the Home headline’s narrow character cap; Back uses the established 44px
+target and 16px bottom gap. Profile notices use existing update badges/copy.
+No new palette, font, badge or interaction pattern.
+
 16 November Personal details uses the shared contact-card SVG: 24px viewBox,
 1.8 currentColor stroke and existing --icon-label dimensions. Avatar retains the
 standing-person art. No new size, colour, background, spacing or typography token.

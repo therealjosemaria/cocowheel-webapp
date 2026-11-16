@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiErrorMessage, requestJson } from "@/lib/api-transport";
+import Link from "next/link";
 
 type Row = Record<string, string | number | null>;
 type Dashboard = {
@@ -184,6 +185,7 @@ export default function AdminPanel() {
         {!ready || !authenticated ? null : (
           <>
             <p className="admin-muted">Read-only</p>
+            <div className="ride-action-buttons"><Link className="secondary" href="/admin/avatar-management">Avatar management</Link></div>
             <nav className="admin-tabs" aria-label="Admin sections">
               {["Overview", "Trips", "Trip inspector"].map((item) => (
                 <button

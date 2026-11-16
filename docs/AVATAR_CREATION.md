@@ -6,6 +6,9 @@ paid-generation evidence are recorded separately below. Funding was explicitly
 deferred by the owner during implementation; do not label a fake-provider test
 as a live Tripo generation.
 
+The later [manual admin workflow](AVATAR_ADMIN.md) supersedes automatic creation:
+passing a Mac check never triggers generation without the owner-admin’s approval.
+
 ## Product flow
 
 Profile → Avatar shows Upload photo even for an account without an assignment.
@@ -16,18 +19,20 @@ profile-photo crop. The preview is the photo to check, not a generated avatar.
 
 Requirements: “Use a clear photo of just you standing, with your head, hands and
 feet visible.” Submission requires the explicit, initially unchecked “Check my
-photo and create my avatar if it passes.” Approved photos go to Tripo; this is
+photo and submit it for avatar creation.” Photos that pass wait for explicit
+admin generation approval before going to Tripo; this is
 explained before submission and in Privacy. Avatar creation never turns public
 display on for a new account. Replacements preserve the existing Personal avatar
 choice. The previous render remains until a replacement succeeds.
 
 Queued/checking: “Your photo is queued for checking. We’ll notify you with the
-results.” Approval: “Your photo passed the check. Avatar creation is queued.”
+results.” Approval: “Your photo passed the check. Your avatar is waiting to be created.”
 Generation: “Your photo passed the check. We’re creating your avatar.” Completion:
 “Your avatar is ready.” Rejections name only a supported uncertain region or pose
-and offer another upload. Review-required outcomes offer Email us rather than
-blind paid resubmission. Cancel photo check / Cancel creation is available before
-paid submission begins; generation cannot be cancelled through this interface.
+and offer another upload. Provider errors and uncertain outcomes appear only to the admin; users keep
+the last completed photo-check stage, without provider/credit diagnostics.
+Profile cancellation remains available before paid submission and for operational
+review holds. Admin can also cancel in-flight creation, without a refund promise.
 No 24-hour completion promise, false maintenance label or disabled action button.
 
 Both roles use the same flow, regardless of published/accepted trips. Creation
@@ -43,17 +48,20 @@ limit, checks format/single frame, rotates, flattens alpha, resizes without
 enlargement, re-encodes JPEG 92 and checks ≥256×512 / ≤2,000,000 bytes. A process
 guard bounds concurrent decoding. HTML/URLs/SVG/animations do not enter the queue.
 
-Additive SQLite tables: `avatar_jobs`, `avatar_events`, `avatar_worker_state`.
+Additive SQLite tables: `avatar_jobs`, `avatar_events`, `avatar_worker_state`
+and `avatar_admin_events`; approval, hold and private-render columns extend jobs.
 Photo BLOBs, hashes, submission keys and provider task IDs remain private. One
 active job/account; same account/submission UUID and normalized photo is
 idempotent. Reusing that key with different bytes fails. A new submission requires
-explicit consent. Three uploads/account/rolling 24h; global active queue cap 25
+explicit consent. Three uploads/account/rolling 24h; global active/retained-photo cap 25
 limits retained photo storage to approximately 50 MB plus SQLite overhead.
 
-Photos are erased on rejection, cancellation, validation failure, uncertain paid
-submission, or provider task acceptance. Remaining queued/approved photos expire
-after seven days. Terminal/review-required job metadata and cascading event records
-are deleted after 30 days without an update. Assigned sprite retention remains
+Normalized source photos remain private for admin review for up to seven days
+from submission, including rejected and generated submissions. Cancellation or
+expiry erases local source bytes immediately. Remaining queued/checking/approved
+jobs expire at seven days. Job metadata, private generated previews and cascading
+user/admin notification records expire 30 days after the final job update.
+Assigned sprite retention remains
 unchanged. Backups/provider copies have separate retention; deleting local bytes
 does not delete Tripo's copies. The Mac keeps a private temporary copy only for
 checking; normal completion deletes it, and worker startup clears abandoned job
@@ -73,7 +81,8 @@ directories. An offline Mac cannot perform cleanup until it resumes.
 Existing Origin checks apply. Worker routes run before journey lifecycle handling;
 they do not use a person's login, have no browser UI and never expose credentials
 to Vercel/browser bundles. Worker authorization uses a constant-time comparison.
-No source-photo HTTP route is exposed. Worker replies are private/no-store.
+No source-photo HTTP route is exposed to ordinary users; owner-admin-only
+private/no-store photo/render routes are documented in AVATAR_ADMIN.md. Worker replies are private/no-store.
 
 The Mac polls over HTTPS every 30s idle / 2s after work, with 30s request timeout,
 3MB response bound and no credential-bearing redirects. Each check runs in a
@@ -81,7 +90,8 @@ separate process with a 60s limit, so an inference hang cannot stall the worker.
 Requests identify GUMWHEEL-Avatar-Worker/1.0 and accept JSON; Cloudflare rejected
 the generic Python request identity during activation. No firewall/auth rules
 were relaxed. An unavailable Mac leaves photos in the Pi's durable queue.
-Expired leases requeue up to three claims; stale,
+Expired leases requeue up to three claims; exhausted runtime retries hold the
+photo for an explicit admin Retry photo check, while the user remains queued; stale,
 cancelled or replayed results cannot approve a job. Runtime failures retry after
 one minute and never cause a paid generation. One LaunchAgent runs while the Mac
 user is logged in; it resumes after sleep/login. It does not promise processing
@@ -107,8 +117,10 @@ bare toes are not required. Unsupported/uncertain results request another photo.
 ## Generation, spend and recovery
 
 The Pi's independent 15s avatar worker does not delay the existing journey email
-worker. One P task at a time. Balance below **110 credits** leaves approved work
-queued without submitting. Daily cap defaults to **330 credits / UTC day**,
+worker. One locally active generation task at a time; provider tasks cancelled
+locally may still be processing there. Generation selects only photo-approved jobs with persisted owner-admin approval.
+Balance below **110 credits** leaves that explicitly approved work
+queued without submitting; the row records INSUFFICIENT_CREDITS for the admin. Daily cap defaults to **330 credits / UTC day**,
 configurable server-side; reservations include uncertain/failed submissions
 conservatively. API credit spend is not charged to app users by this feature.
 
@@ -117,10 +129,11 @@ is not a paid generation. Persist `SUBMITTING` before the paid POST, then persis
 its task ID; download/poll failures retry that ID, never regenerate it. An
 ambiguous timeout/5xx or missing task ID enters REVIEW_REQUIRED. An interrupted
 SUBMITTING state does the same after two minutes. Only a definite 4xx rejection
-returns to the approved queue with one-minute backoff. Operator reconciliation
+returns to the admin-approved queue with one-minute backoff and a private hold. Operator reconciliation
 must inspect Tripo history before recovering a task ID; never clear this state
-and resubmit blindly. Owner-only DB/provider inspection is required for that
-exception, not an automatic recovery claim.
+and resubmit blindly. The admin page exposes the task ID and review reason for that
+exception. Inspect provider history before cancellation/new generation; there is
+no blind resubmit or task-recovery override.
 
 Requests time out after 60s; poll at 15s, failures back off 60s; after 24h a known
 unfinished task requires review. The provider's alpha PNG/WebP poster is bounded
@@ -147,7 +160,8 @@ Opening Profile/the menu alone does not. Profile polls visible pages every 10s;
 header uses its existing 10s identity cadence. Stale pre-mutation reads cannot
 overwrite a save. Displayed new renders emit the existing map-refresh signal.
 
-Approval, rejection, ready, expiry/failure/review results create persisted events.
+Approval, rejection, ready, cancellation and expiry create user result events.
+Operational holds/failures create admin-only events; they do not send user error emails.
 A newer stage supersedes the older event. Five minutes unreviewed triggers one
 Resend email linking to the result, without photos, addresses or provider IDs.
 Three transport attempts with 60s backoff, stable payload/idempotency key; stale

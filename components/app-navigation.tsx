@@ -16,6 +16,8 @@ import type { ActiveRide } from "./active-ride-link";
 import type { RiderDemand, DemandActivity } from "@/lib/rider-demand";
 import { activeRideTabForPath } from "@/lib/navigation-state";
 import type { AvatarJob, AvatarJobs } from "@/lib/avatar-job";
+import type { AdminAvatarNotice } from "@/lib/admin-avatar";
+import { adminApi } from "@/lib/admin-api";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
@@ -34,6 +36,7 @@ export default function AppNavigation() {
   const [currents, setCurrents] = useState<ActiveRide[]>([]);
   const [demandActivity, setDemandActivity] = useState<DemandActivity | null>(null);
   const [avatarNotice, setAvatarNotice] = useState<AvatarJob | null>(null);
+  const [adminAvatarNotice, setAdminAvatarNotice] = useState<AdminAvatarNotice | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
   const reviewMemory = useRef<{ account: string | null; keys: string[] }>({ account: null, keys: [] });
@@ -43,7 +46,7 @@ export default function AppNavigation() {
     [currents, demandActivity, seen],
   );
   const updateCount = groups.length;
-  const totalUpdates = updateCount + (avatarNotice ? 1 : 0);
+  const totalUpdates = updateCount + (avatarNotice ? 1 : 0) + (adminAvatarNotice?.count ?? 0);
   const publishUpdates = usePublishJourneyUpdates();
   useEffect(() => { publishUpdates(groups); }, [groups, publishUpdates]);
   const markSeen = useCallback(
@@ -138,12 +141,14 @@ export default function AppNavigation() {
         unikey: string;
         username?: string;
         ratings?: { driver: RatingSummary; rider: RatingSummary };
+        canAdmin?: boolean;
       }>("/api/university/session");
       if (sequence !== loadSequence.current) return;
       setGuestName(result.username ?? result.unikey);
       setAccountKey(result.unikey);
       if (seenAccount.current !== result.unikey) {
         setAvatarNotice(null);
+        setAdminAvatarNotice(null);
         seenAccount.current = result.unikey;
         setActiveRide(null);
         setActivePost(null);
@@ -153,12 +158,14 @@ export default function AppNavigation() {
         setSeen(readSeen(result.unikey));
       }
       setRatings(result.ratings ?? null);
-      const [reviews, avatar] = await Promise.all([
+      const [reviews, avatar, adminAvatar] = await Promise.all([
         cocowheelsApi<{ keys?: string[] }>("/api/notifications/reviewed", {}, true).catch(() => null),
         cocowheelsApi<AvatarJobs>("/api/avatar/jobs").catch(() => null),
+        result.canAdmin ? adminApi<AdminAvatarNotice>("avatar-jobs/notifications").catch(() => null) : Promise.resolve(null),
       ]);
       if (sequence !== loadSequence.current) return;
       setAvatarNotice(avatar?.job?.notificationKey ? avatar.job : null);
+      setAdminAvatarNotice(adminAvatar?.count ? adminAvatar : null);
       if (reviews?.keys) {
         const local = Array.from(new Set([...readSeen(result.unikey),
           ...(reviewMemory.current.account === result.unikey ? reviewMemory.current.keys : []),
@@ -202,6 +209,7 @@ export default function AppNavigation() {
       if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         setGuestName(null);
         setAvatarNotice(null);
+        setAdminAvatarNotice(null);
         setDemandOffers(0);
         setActivePost(null);
         setAccountKey(null);
@@ -425,6 +433,12 @@ export default function AppNavigation() {
             <Link className="secondary profile-active-ride" href="/usual-route?avatar=1#avatar-result" onClick={() => setIdentityOpen(false)}>
               Avatar update
               <span className="active-ride-update">{avatarNotice.status === "READY" ? "Ready to use" : "Photo check result"}</span>
+            </Link>
+          </section>}
+          {guestName && adminAvatarNotice && <section className="profile-current-items" aria-label="Avatar submissions">
+            <Link className="secondary profile-active-ride" href={adminAvatarNotice.href} onClick={() => setIdentityOpen(false)}>
+              Avatar submissions
+              <span className="active-ride-update">{adminAvatarNotice.count === 1 ? adminAvatarNotice.message : `${adminAvatarNotice.count} updates to review`}</span>
             </Link>
           </section>}
           {guestName && (

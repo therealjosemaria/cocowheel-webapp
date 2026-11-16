@@ -31,7 +31,7 @@ with sync_playwright() as p:
         avatar.get_by_role('button',name='Submit photo',exact=True).click()
         expect(avatar.get_by_role('alert')).to_contain_text('Agree to')
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job'] is None
-        avatar.get_by_role('checkbox',name='Check my photo and create my avatar if it passes.',exact=True).check()
+        avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True).check()
         page.screenshot(path=str(OUT/f'upload-{width}.png'),full_page=True)
         avatar.get_by_role('button',name='Submit photo',exact=True).click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
@@ -54,15 +54,19 @@ with sync_playwright() as p:
         page.wait_for_timeout(1000)
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job']['notificationKey'] is None
         avatar.locator('input[type=file]').set_input_files('/tmp/gumwheel-avatar-normalized.jpg')
-        avatar.get_by_role('checkbox',name='Check my photo and create my avatar if it passes.',exact=True).check()
+        avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True).check()
         avatar.get_by_role('button',name='Submit photo',exact=True).click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         job=context.request.post(API+'/api/avatar-worker/claim',headers=worker,data={}).json()['job']
         assert context.request.post(API+'/api/avatar-worker/result',headers=worker,data={'id':job['id'],'lease':job['lease'],'verdict':'approved','reason':None}).ok
         page.evaluate('window.dispatchEvent(new Event("focus"))')
-        expect(avatar.get_by_role('status')).to_contain_text('creation is queued')
+        expect(avatar.get_by_role('status')).to_contain_text('waiting to be created')
+        admin=p.request.new_context(base_url=BASE,extra_http_headers={'Cookie':'cocowheels_guest=synthetic-avatar-admin','Origin':BASE,'X-Admin-Request':'1'})
+        assert admin.post('/api/admin/avatar-jobs/'+job['id']+'/approve',data={}).ok
+        assert context.request.post(CONTROL+'/credits-ready',headers={'X-Gumwheel-Fixture':'1'}).ok
         assert context.request.post(CONTROL+'/generate',headers={'X-Gumwheel-Fixture':'1'}).ok
         assert context.request.post(CONTROL+'/generate',headers={'X-Gumwheel-Fixture':'1'}).ok
+        admin.dispose()
         page.evaluate('window.dispatchEvent(new Event("focus"))')
         expect(avatar.get_by_role('status')).to_contain_text('avatar is ready')
         avatar.get_by_role('button',name='Edit',exact=True).click()

@@ -8,6 +8,7 @@ import { createGuestSession, initializeCoreSchema } from "../server/core";
 import { createApiServer } from "../server/index";
 import { AVATAR_DELAY_MS, AVATAR_LEASE_MS, AVATAR_PHOTO_TTL, avatarJobSummary, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, reviewAvatarEvent } from "../server/avatar-jobs";
 import { runAvatarGeneration, type AvatarProvider } from "../server/avatar-generation";
+import { actOnAdminAvatar } from "../server/avatar-admin";
 import { deliverAvatarReminder } from "../server/avatar-email";
 import { readMapAvatar } from "../server/map-avatars";
 
@@ -23,7 +24,7 @@ function fixture() {
     db.prepare("INSERT INTO university_sessions VALUES (?,?,?,?)").run(createHash("sha256").update(token).digest("hex"), name, session.id, "2099-01-01T00:00:00Z");
     return { id: session.id, token };
   }
-  return { db, owner: account("owner@example.com"), other: account("other@example.com") };
+  return { db, owner: account("owner@example.com"), other: account("other@example.com"), admin: account("jmos0905") };
 }
 async function image() { return sharp({ create: { width: 400, height: 800, channels: 3, background: "#999999" } }).jpeg().toBuffer(); }
 async function render() { return sharp({ create: { width: 128, height: 256, channels: 4, background: { r: 20, g: 30, b: 50, alpha: 0.5 } } }).png().toBuffer(); }
@@ -31,6 +32,8 @@ function approved(db: Database.Database, principal: string, photo: Buffer, now =
   enqueueAvatarPhoto(db, principal, photo, randomUUID(), true, now);
   const claimed = claimAvatarPhoto(db, now)!;
   completeAvatarPhoto(db, claimed.id, claimed.lease, "approved", null, now + 1);
+  const admin = db.prepare("SELECT principal_id FROM university_accounts WHERE unikey='jmos0905'").get() as { principal_id: string };
+  actOnAdminAvatar(db, claimed.id, "approve", admin.principal_id, now + 1);
   return claimed.id;
 }
 
@@ -61,6 +64,7 @@ test("queue is idempotent, private, consented, persistent and limited to one act
     assert.throws(() => cancelAvatarJob(db, other.id, claimed.id, start), /AVATAR_JOB_CHANGED/);
     assert.throws(() => completeAvatarPhoto(db, claimed.id, "invalid", "approved", null, start), /AVATAR_LEASE_EXPIRED/);
     cancelAvatarJob(db, owner.id, claimed.id, start + 1);
+    assert.equal(avatarJobSummary(db, owner.id)?.notificationKey, null, "Self-cancellation needs no redundant user reminder");
     assert.throws(() => completeAvatarPhoto(db, claimed.id, claimed.lease, "approved", null, start + 2), /AVATAR_LEASE_EXPIRED/);
     assert.equal((db.prepare("SELECT photo FROM avatar_jobs").get() as { photo: null }).photo, null);
   } finally { db.close(); }
@@ -77,7 +81,10 @@ test("offline Mac leases retry three times and stale/replayed results cannot app
     const third = claimAvatarPhoto(db, start + 2 * AVATAR_LEASE_MS + 2)!;
     assert.ok(third);
     expireAvatarJobs(db, start + 3 * AVATAR_LEASE_MS + 3);
-    assert.equal(avatarJobSummary(db, owner.id)?.status, "FAILED");
+    assert.equal(avatarJobSummary(db, owner.id)?.status, "QUEUED");
+    assert.equal((db.prepare("SELECT hold_reason FROM avatar_jobs").get() as { hold_reason: string }).hold_reason, "CHECK_UNAVAILABLE");
+    assert.equal(claimAvatarPhoto(db, start + 3 * AVATAR_LEASE_MS + 4), null);
+    cancelAvatarJob(db, owner.id, first.id, start + 3 * AVATAR_LEASE_MS + 5);
     enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 4 * AVATAR_LEASE_MS);
     expireAvatarJobs(db, start + AVATAR_PHOTO_TTL + 4 * AVATAR_LEASE_MS + 1);
     assert.equal(avatarJobSummary(db, owner.id)?.status, "EXPIRED");
@@ -130,6 +137,8 @@ test("P2 generation waits for funds, preserves task IDs on interruption, dedupli
     await runAvatarGeneration(db, api, start + 80_004);
     assert.equal(avatarJobSummary(db, owner.id)?.status, "READY"); assert.equal(submits, 1);
     assert.equal(readMapAvatar(db, owner.id).available, true); assert.equal(readMapAvatar(db, owner.id).enabled, false);
+    assert.ok((db.prepare("SELECT photo FROM avatar_jobs WHERE id=?").get(id) as { photo: Buffer }).photo);
+    expireAvatarJobs(db, start + AVATAR_PHOTO_TTL + 1);
     assert.equal((db.prepare("SELECT photo FROM avatar_jobs WHERE id=?").get(id) as { photo: null }).photo, null);
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM avatar_events WHERE reviewed_at IS NULL").get() as { n: number }).n, 1, "ready supersedes the approval reminder");
   } finally { db.close(); }
@@ -146,7 +155,8 @@ test("uncertain paid submissions require review and never resubmit automatically
     approved(db, owner.id, photo);
     await runAvatarGeneration(db, api, start + 2);
     await runAvatarGeneration(db, api, start + 90_000);
-    assert.equal(submits, 1); assert.equal(avatarJobSummary(db, owner.id)?.status, "REVIEW_REQUIRED");
+    assert.equal(submits, 1); assert.equal(avatarJobSummary(db, owner.id)?.status, "APPROVED");
+    assert.equal((db.prepare("SELECT status FROM avatar_jobs").get() as { status: string }).status, "REVIEW_REQUIRED");
   } finally { db.close(); }
 });
 

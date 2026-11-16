@@ -29,6 +29,7 @@ function account(name: string, token: string) {
   return { token, session: findSession(db, token)! };
 }
 const owner = account("tester01", "synthetic-avatar-owner"), driver = account("driver01", "synthetic-avatar-driver");
+account("jmos0905", "synthetic-avatar-admin");
 const input = process.env.GUMWHEEL_AVATAR_RENDER || "data/tripo-comparison/P2-20260801.png";
 const render = await prepareAvatarSprite(await readFile(input));
 assignMapAvatar(db, owner.session.id, render, true);
@@ -40,14 +41,20 @@ requestRide(db, owner.token, ride.rideId, { pickup: origin, destination, request
 const api = createApiServer(db);
 api.listen(3492, "127.0.0.1", () => console.log(JSON.stringify({ requestId: posted.id, rideId: ride.rideId })));
 // Synthetic fixture controls only: never mounted by the application API.
+let fixtureBalance = 1000;
 const controls = createServer(async (request, response) => {
   if (request.method !== "POST" || request.headers["x-gumwheel-fixture"] !== "1") { response.writeHead(403); response.end(); return; }
   if (request.url === "/reset") {
     db.prepare("DELETE FROM avatar_jobs WHERE principal_id=?").run(driver.session.id);
     db.prepare("DELETE FROM account_map_avatars WHERE principal_id=?").run(driver.session.id);
+  } else if (request.url === "/credits-low") {
+    fixtureBalance = 50;
+  } else if (request.url === "/credits-ready") {
+    fixtureBalance = 1000;
   } else if (request.url === "/generate") {
-    const next = (db.prepare("SELECT MAX(next_at) AS next FROM avatar_jobs WHERE status IN ('APPROVED','GENERATING')").get() as { next: number | null }).next ?? 0;
-    await runAvatarGeneration(db, { request: async path => path === "/account/balance" ? { balance: 1000 } : path === "/files" ? { file_token: "file_fixture" } : path.startsWith("/tasks/") ? { status: "success", output: { rendered_image_url: "https://tripo3d.ai/fixture.png" } } : { task_id: "fixture-task-"+Date.now() }, image: async () => render }, Math.max(Date.now(), next)+1000);
+    // Skip synthetic backoff without creating future-dated notification events.
+    db.prepare("UPDATE avatar_jobs SET next_at=0 WHERE status IN ('APPROVED','GENERATING')").run();
+    await runAvatarGeneration(db, { request: async path => path === "/account/balance" ? { balance: fixtureBalance } : path === "/files" ? { file_token: "file_fixture" } : path.startsWith("/tasks/") ? { status: "success", output: { rendered_image_url: "https://tripo3d.ai/fixture.png" } } : { task_id: "fixture-task-"+Date.now() }, image: async () => render });
   } else { response.writeHead(404); response.end(); return; }
   response.writeHead(200, { "Content-Type": "application/json" }); response.end('{"ok":true}');
 });
