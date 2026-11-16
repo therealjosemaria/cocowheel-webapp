@@ -2,6 +2,20 @@
 
 16 November: the separate [Avatar disclosure](MAP_AVATARS.md) controls map artwork.
 It does not replace the circular account photo or change username/email controls.
+Personal details now has a shared contact-card outline icon, distinct from
+Avatar's standing person. Only the summary's decorative icon changes; the form,
+profile data, authentication and photo processing are unchanged.
+
+Icon review (16 November): the Profile summary supplies the new semantic kind to
+RideFieldIcon, which renders a static decorative SVG with the existing 14px
+slot/currentColor/1.8 stroke. Avatar still supplies rider. Mocked Profile browser
+checks pass at 320/390/1440px: distinct icons, native keyboard disclosure controls,
+profile response rendering, no overflow, page errors or writes. Local server
+startup and Profile reads returned successfully. Whole collapsed/expanded screens
+were visually reviewed on mobile/desktop. Visual-system regression, changed-file
+ESLint and production build pass. React review found no state, effects, data flow,
+dependency or permission changes. No API restart is needed; physical-device and
+live owner sign-in checks were not performed for this icon-only change.
 
 ## Implemented contract
 

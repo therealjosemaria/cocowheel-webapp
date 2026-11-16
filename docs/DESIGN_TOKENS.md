@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+16 November Personal details uses the shared contact-card SVG: 24px viewBox,
+1.8 currentColor stroke and existing --icon-label dimensions. Avatar retains the
+standing-person art. No new size, colour, background, spacing or typography token.
+
 16 November avatar selection reuses contribution-choice/profile-disclosure,
 vehicle-fields, usual-alert-choice and existing primary/secondary action styles.
 Both previews occupy the vehicle preview's centred 144×108px area; contained alpha

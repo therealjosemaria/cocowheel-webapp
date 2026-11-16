@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { journeyRoleArtClass } from "@/lib/journey-role-art";
 
 export type RideFieldIconKind =
+  | "personal-details"
   | "route"
   | "status"
   | "driver"
@@ -41,6 +42,15 @@ export function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
     return <i className={journeyRoleArtClass(icon)} aria-hidden="true" />;
   let content: ReactNode = null;
   switch (icon) {
+    case "personal-details":
+      content = (
+        <>
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <circle cx="8" cy="10" r="2" />
+          <path d="M5 16a3 3 0 0 1 6 0M14 9h4M14 13h4" />
+        </>
+      );
+      break;
     case "route":
       content = (
         <>

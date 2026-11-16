@@ -1,7 +1,7 @@
 # Coco Wheels product and UI standards
 
 16 November map avatars: Profile adds an initially closed Avatar disclosure below
-Personal details, reusing the same person label, inset, preview area and
+Personal details, reusing the existing disclosure layout, inset, preview area and
 Edit/Save/Cancel actions. The native checkbox “Use personal avatar” follows the
 existing usual-alert-choice pattern; the preview updates before Save, and Cancel
 restores the saved choice. The saved summary uses Personal avatar with Enabled/
@@ -11,6 +11,11 @@ Accounts without an assigned avatar show the default preview without a creation
 button. Personal map artwork does not replace semantic role icons or profile
 photos. Existing 48px map slots/anchors, route colours and Home interaction rules
 are unchanged. See [map avatars](MAP_AVATARS.md).
+
+Profile icon distinction: Personal details uses the shared monochrome contact-card
+outline, while Avatar keeps the standing-person artwork. Preserve the existing
+summary typography, icon gap, disclosure target and field-icon sizing. The new
+semantic icon does not replace rider artwork elsewhere.
 
 14 November private comparison: retain the existing gallery/panel/table tokens.
 Generated previews serve as posters while 3D models load lazily; start with the

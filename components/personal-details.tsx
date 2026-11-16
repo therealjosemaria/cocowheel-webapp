@@ -48,7 +48,7 @@ export default function PersonalDetails() {
   return (
     <details className="contribution-choice profile-disclosure personal-details">
       <summary>
-        <RideFieldLabel icon="rider">Personal details</RideFieldLabel>
+        <RideFieldLabel icon="personal-details">Personal details</RideFieldLabel>
       </summary>
       <form
         className="vehicle-fields"
