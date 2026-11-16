@@ -185,6 +185,24 @@ processes afterwards. The fixture strips provider/email credentials and uses
 in-memory accounts. Never point it at production. See
 [sanitized results and retained failed baselines](results/avatar-history-timing-2026-11-16.json).
 
+Activation: implementation `af4fda7182d7b6c8fd166342e4e9d57c08fec6b8` is pushed.
+At 2026-11-16T10:35:53Z, a verified private SQLite/config backup preceded a scoped
+`cocowheels-api` restart after zero accepted/active trips and no in-flight avatar
+work. Database integrity/FKs and terminal journey records pass preservation checks;
+the additive timing columns exist. Mac source/tests match the release, private
+backups match prior source, nine installed tests pass and the LaunchAgent is running.
+The existing model helper matches source; deployment changes no credentials,
+runtime or thresholds. A fresh Mac heartbeat reached the Pi after the update.
+An initial post-install verification returned nonzero; a later read-only check
+confirmed the already-updated files and settled runtime without repeating writes.
+
+Vercel `dpl_5PNFA6VozJ65iAxLFzVPjbEAyi4V` is READY for that exact implementation
+and assigned to both production domains. Public health is 200; anonymous history
+and thumbnail requests are 401 and Admin list is 403. Production Privacy/history
+copy and the Admin sign-in gate pass at 390/1440px with whole-screen visual review.
+No production upload, paid test, real email or account/session impersonation was
+used. The authenticated/fresh-user/physical-device boundaries above still apply.
+
 ### Mac photo check
 
 `workers/avatar` is separate from Mirror PT. The copied standalone helper and

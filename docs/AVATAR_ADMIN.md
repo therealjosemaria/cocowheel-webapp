@@ -42,6 +42,12 @@ enter user emails, upload history or public map responses. They are observations
 not a processing-time promise. The prior worker did not save duration, so the
 last historical execution cannot be reconstructed accurately.
 
+Implementation `af4fda7` has a verified guarded API restart, matching running Mac
+worker, fresh worker heartbeat and exact-commit production frontend deployment.
+See [activation evidence](AVATAR_CREATION.md#private-upload-history). Old timings
+remain Not recorded; a fresh real-user timed result has not been generated for
+deployment testing.
+
 Verified users upload through Profile → Avatar. The Pi stores the normalized photo;
 the Mac checks visibility/pose with the existing queue/lease rules. A successful
 check puts the photo in APPROVED, **without generation permission**. Only the

@@ -9,7 +9,10 @@ outcomes and retake reasons. Existing seven-day photo / 30-day result retention,
 manual generation approval and notifications remain. See
 [avatar administration](docs/AVATAR_ADMIN.md#check-results-and-timing) and
 [upload history](docs/AVATAR_CREATION.md#private-upload-history) for implementation
-and verification boundaries.
+and verification boundaries. Implementation `af4fda7` is live: guarded API restart,
+matching Mac worker and exact-commit Vercel deployment are verified in the result
+record. Authenticated production history and new real-user timing delivery remain
+untested; the isolated complete flows pass.
 
 16 November photo guide navigation: normal in-app links reuse the current tab.
 A private, account-bound memory draft retains the prepared photo and submission

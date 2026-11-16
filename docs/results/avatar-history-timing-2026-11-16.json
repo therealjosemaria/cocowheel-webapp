@@ -81,10 +81,79 @@
     {
       "finding": "Initial 320px feedback column too narrow",
       "resolution": "Feedback now spans full row at <=480px; whole-screen visual review passes."
+    },
+    {
+      "finding": "Initial Mac post-install verification exited nonzero; repeat guard refused already-updated files",
+      "resolution": "Read-only installed/new and backup/previous source hash comparison passes for both worker and tests. Nine installed tests pass; LaunchAgent is running and a fresh heartbeat reached the production API. No further source overwrite was needed."
     }
   ],
   "activation": {
-    "status": "pending guarded API/Mac activation and exact-commit frontend verification"
+    "status": "verified API, Mac worker and exact implementation frontend",
+    "implementationRevision": "af4fda7182d7b6c8fd166342e4e9d57c08fec6b8",
+    "api": {
+      "timestamp": "20261116T103553Z",
+      "sourceRevision": "af4fda7182d7b6c8fd166342e4e9d57c08fec6b8",
+      "before": {
+        "underwayTrips": 0,
+        "inFlightAvatarWork": 0
+      },
+      "privateBackupVerified": true,
+      "apiRestarted": true,
+      "pidChanged": true,
+      "localHealth": true,
+      "databaseIntegrity": "ok",
+      "foreignKeyViolations": 0,
+      "terminalJourneyRecordsPreserved": true
+    },
+    "mac": {
+      "timestamp": "20261116T103704Z",
+      "running": true,
+      "sourceSha256": {
+        "worker.py": "5fa5a71d2f9f69be622887be7c0e4cbd2759e33f125ebffaa96f27e4e0aa17f9",
+        "test_worker.py": "e8e162a5e136e2a10c297a9fe81f42a7fa2c5cf639a8a0f75d8117b3ef3d706a",
+        "photo_visibility.py": "3397a6f01daaded9e8a07752a14443e6d57023653e35875aef43af217d11560b"
+      },
+      "previousSha256": {
+        "worker.py": "b3db4abf0f2fbd190add6418dfafe147335e33edd7af373d43ee05f1893f0295",
+        "test_worker.py": "567c6b1b0fbd1475e8d7d3ca7df609c17fb3662e6704180a3605ceee18ff00c3"
+      },
+      "privateSourceBackup": true,
+      "installedWorkerTestsPassed": 9,
+      "configurationChangedByDeployment": false,
+      "modelHelperChangedByDeployment": false
+    },
+    "workerHeartbeat": {
+      "heartbeatAfterMacUpdate": true,
+      "lastSeenAt": "2026-11-16T10:40:06.765000+00:00",
+      "newTimingColumnsPresent": true
+    },
+    "frontend": {
+      "id": "dpl_5PNFA6VozJ65iAxLFzVPjbEAyi4V",
+      "state": "READY",
+      "sha": "af4fda7182d7b6c8fd166342e4e9d57c08fec6b8",
+      "aliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ]
+    },
+    "anonymousApiChecks": {
+      "/api/health": 200,
+      "/api/avatar/history": 401,
+      "/api/avatar/history/not-a-job/thumbnail": 401,
+      "/api/admin/avatar-jobs": 403
+    },
+    "publicBrowser": {
+      "widths": [
+        390,
+        1440
+      ],
+      "checks": [
+        "new Privacy history disclosure",
+        "admin sign-in gate",
+        "no overflow"
+      ],
+      "passed": true
+    }
   },
   "unverified": [
     "physical Safari/Chrome devices",
