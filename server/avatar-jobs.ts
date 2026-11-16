@@ -111,7 +111,11 @@ export function enqueueAvatarPhoto(db: Db, principal: string, photo: Buffer, sub
     }
     const current = avatarJobSummary(db, principal);
     if (current && avatarJobActive(current.status)) throw new Error("AVATAR_ALREADY_QUEUED");
-    if ((db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs WHERE principal_id=? AND created_at>?").get(principal, now - 86400_000) as { n: number }).n >= 3)
+    // Count completed checks, including reviewed or later cancelled passes.
+    // A subsequent quality rejection excludes that photo from the allowance.
+    if ((db.prepare(`SELECT COUNT(*) AS n FROM avatar_jobs j WHERE j.principal_id=? AND j.status<>'REJECTED'
+      AND EXISTS (SELECT 1 FROM avatar_events e WHERE e.job_id=j.id AND e.status='APPROVED' AND e.created_at>?)`)
+      .get(principal, now - 86400_000) as { n: number }).n >= 3)
       throw new Error("AVATAR_UPLOAD_LIMIT");
     if ((db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs WHERE photo IS NOT NULL OR status IN ('QUEUED','CHECKING','APPROVED','SUBMITTING','GENERATING','REVIEW_REQUIRED')").get() as { n: number }).n >= 25)
       throw new Error("AVATAR_QUEUE_FULL");

@@ -1,5 +1,14 @@
 # GUMWHEEL
 
+16 November avatar allowance: only photos that pass the check count toward three
+per account in a rolling 24 hours, measured from the recorded pass. Automatic and
+manual quality rejections do not count. Pending uploads and cancellations before
+checking consume no slot; a later cancellation does not undo a completed pass.
+The one-active-submission rule and global retained-photo capacity remain. Existing
+result events supply the count; no schema change or Mac update is needed. This
+supersedes the earlier three-upload allowance. See
+[avatar creation](docs/AVATAR_CREATION.md#validation-and-private-storage).
+
 16 November avatar check/history: Admin separates the checkmark/cross photo verdict
 from generation progress and shows Submitted, Checked and Check duration. Checked
 is the Pi's receipt time; duration measures the Mac check subprocess, excluding

@@ -86,8 +86,45 @@ Photo BLOBs, hashes, submission keys and provider task IDs remain private. One
 active job/account; same account/submission UUID and normalized photo is
 idempotent. Reusing that key with different bytes fails. A new submission requires
 an explicit Submit photo request with the required true consent flag. Missing or
-false consent still fails server-side. Three uploads/account/rolling 24h; global active/retained-photo cap 25
-limits retained photo storage to approximately 50 MB plus SQLite overhead.
+false consent still fails server-side.
+
+The later 16 November allowance counts three passing photos/account/rolling 24h,
+superseding the earlier limit on all uploads. A job counts when its existing
+APPROVED result event was created within the previous 24 hours and its current
+status is not REJECTED. The count is by job (not event), anchored to the completed
+check rather than upload time. Reviewing notifications, generation progress and
+later cancellation do not reset a pass. Automatic check rejection, an admin's
+manual quality rejection, runtime retries and cancellation before passing do not
+consume the allowance. A prior model pass later rejected on review is excluded.
+At exactly 24 hours after a pass, that pass no longer counts. Idempotent retries of
+an existing submission return its state without counting or inserting another job.
+The check remains atomic with insertion, scoped to the verified account; one active
+submission still applies. Existing APPROVED events, including reviewed events,
+make this effective for retained history without a schema migration/backfill,
+Mac change, paid call or notification reset.
+
+The existing global active/retained-photo cap of 25 remains and still includes
+retained rejected photos, limiting source storage to approximately 50 MB plus
+SQLite overhead. Rejection retries therefore remain subject to available storage.
+The unchanged format/size gates and source/result TTLs below still apply. The
+ordinary limit message is: “Three photos have passed the check in the last 24
+hours. Try uploading again later.” It uses the existing regular upload alert and
+does not promise that a full 24-hour wait is required after the failed attempt.
+
+Allowance verification: 306 regressions, including three new tests for rejected
+retries, manual rejection, pre-/post-check cancellation, account isolation,
+idempotency and the exact rolling boundary, pass. Lint and optimized build pass.
+The real isolated API accepts a fifth submission after four rejected checks and
+blocks a fourth after three passes without inserting another job. Shared Profile
+feedback is checked at 320/390/1440px for driver and rider (the rider error is a
+browser stub, while driver quota enforcement uses the real fixture API). Whole
+screens were visually reviewed for regular text, wrapping, shared actions and
+spacing. No paid calls, real emails or production uploads were used. Reproduce
+with `COCOWHEELS_DB_PATH=/tmp/avatar-pass-limit-tests.sqlite npm test`, `npm run lint`,
+the local fixture build/setup in Private upload history below, then
+`python scripts/check-avatar-pass-limit.py`. Physical devices and authenticated
+production use remain unverified. See
+[dated allowance results](results/avatar-pass-limit-2026-11-16.json).
 
 Normalized source photos remain private for admin review for up to seven days
 from submission, including rejected and generated submissions. Cancellation or

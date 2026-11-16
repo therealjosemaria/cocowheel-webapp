@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-16",
+  "baselineRevision": "d839c8a4da7d2a562a5460c9056c85d72838e67c",
+  "sourceSha256": {
+    "server/avatar-jobs.ts": "683788f5fc2a8cef3a358f56d96cbfd8f65150af0a74cdb10000454242bea304",
+    "lib/api-transport.ts": "0968a8043539ba75d0adf17c41ccba0cd5f369b5ba92b444d235601af681580c",
+    "tests/avatar-jobs.test.ts": "ae5779d18bad4a38111cabf38fb80187509102b5270ee843b61d6b15857f201b",
+    "scripts/check-avatar-pass-limit.py": "c86e7ae3e1450678e098ce3df3dbc8a4269f4c238b28dc7352476d10bb0baeca"
+  },
+  "checks": {
+    "regressionsPassed": 306,
+    "regressionsFailed": 0,
+    "targetedAvatarPassed": 36,
+    "lint": "pass",
+    "optimizedBuild": "pass",
+    "browserWidths": [
+      320,
+      390,
+      1440
+    ],
+    "driverQuota": "real isolated API",
+    "riderFeedback": "same component, stubbed limit error",
+    "visualReview": "whole Profile selected-photo/retry/limit screens, mobile and desktop; regular type and consistent controls"
+  },
+  "isolation": {
+    "accounts": "synthetic",
+    "database": "in-memory fixture and temporary tests",
+    "paidCalls": 0,
+    "realEmails": 0,
+    "productionUploads": 0
+  },
+  "changes": {
+    "dailyAllowance": "three passing photos per verified account, rolling 24h from completed pass",
+    "rejections": "automatic or manual quality rejection excluded",
+    "cancellationBeforePass": "not counted",
+    "cancellationAfterPass": "counted",
+    "oneActiveJob": "unchanged",
+    "globalRetainedCapacity": 25,
+    "schemaMigration": false,
+    "macUpdate": false
+  },
+  "productionPreflight": {
+    "underwayTrips": 0,
+    "inFlightAvatars": 0,
+    "passedJobsMissingPassEvent": 0
+  },
+  "activation": {
+    "status": "pending"
+  },
+  "unverified": [
+    "physical browsers",
+    "authenticated production use",
+    "new paid generation",
+    "high-volume rejection capacity"
+  ]
+}

@@ -78,7 +78,7 @@ test("private history paginates newest-first, keeps retake reasons and honours b
   try {
     const ids: string[] = [];
     for (let i = 0; i < 4; i++) {
-      // Spread uploads over days to respect the existing three-per-day limit.
+      // Spread records over days to exercise history ordering and retention.
       const at = now + i * 86400_000, id = f.add(at); ids.push(id);
       const claim = claimAvatarPhoto(f.db, at)!;
       completeAvatarPhoto(f.db, id, claim.lease, "rejected", "FEET", at + 1, 321);

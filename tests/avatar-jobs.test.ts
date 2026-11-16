@@ -41,6 +41,62 @@ function approved(db: Database.Database, principal: string, photo: Buffer, now =
   return claimed.id;
 }
 
+test("rejected checks do not consume the three-pass allowance; one pending submission still applies", async () => {
+  const { db, owner } = fixture(), photo = await image();
+  try {
+    for (let i = 0; i < 4; i++) {
+      const at = start + i * 1000;
+      enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, at);
+      const claim = claimAvatarPhoto(db, at)!;
+      completeAvatarPhoto(db, claim.id, claim.lease, "rejected", "FEET", at + 1);
+    }
+    assert.equal((db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs WHERE status='REJECTED'").get() as { n: number }).n, 4);
+    assert.equal(enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 5000).job!.status, "QUEUED");
+    assert.throws(() => enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 5001), /AVATAR_ALREADY_QUEUED/);
+  } finally { db.close(); }
+});
+
+test("three completed passes count from check time, survive review/cancellation and free a slot at the exact rolling boundary", async () => {
+  const { db, owner, other, admin } = fixture(), photo = await image(), submissions: string[] = [];
+  const firstPass = start + 23 * 3600_000;
+  try {
+    for (let i = 0; i < 3; i++) {
+      const submission = randomUUID(); submissions.push(submission);
+      enqueueAvatarPhoto(db, owner.id, photo, submission, true, start + i * 1000);
+      const claim = claimAvatarPhoto(db, firstPass + i * 1000)!;
+      completeAvatarPhoto(db, claim.id, claim.lease, "approved", null, firstPass + i * 1000 + 1);
+      const result = avatarJobSummary(db, owner.id)!;
+      reviewAvatarEvent(db, owner.id, result.notificationKey, firstPass + i * 1000 + 2);
+      actOnAdminAvatar(db, claim.id, "cancel", admin.id, firstPass + i * 1000 + 3);
+    }
+    // Upload dates are already a day old, but their checks passed recently.
+    assert.throws(() => enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 86400_000 + 10_000), /AVATAR_UPLOAD_LIMIT/);
+    assert.doesNotThrow(() => enqueueAvatarPhoto(db, owner.id, photo, submissions[2], true, firstPass + 4000), "Retrying the existing submission is idempotent");
+    assert.equal(enqueueAvatarPhoto(db, other.id, photo, randomUUID(), true, firstPass + 4000).job!.status, "QUEUED");
+    assert.throws(() => enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, firstPass + 86400_000), /AVATAR_UPLOAD_LIMIT/);
+    assert.equal(enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, firstPass + 86400_000 + 1).job!.status, "QUEUED");
+  } finally { db.close(); }
+});
+
+test("manual quality rejection releases a Mac pass; cancellation before a check consumes no allowance", async () => {
+  const { db, owner, admin } = fixture(), photo = await image();
+  try {
+    for (let i = 0; i < 3; i++) {
+      const at = start + i * 1000;
+      enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, at);
+      const claim = claimAvatarPhoto(db, at)!;
+      completeAvatarPhoto(db, claim.id, claim.lease, "approved", null, at + 1);
+      actOnAdminAvatar(db, claim.id, "reject", admin.id, at + 2, "Show both hands.");
+    }
+    for (let i = 0; i < 4; i++) {
+      const at = start + 5000 + i * 1000;
+      const id = enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, at).job!.id;
+      actOnAdminAvatar(db, id, "cancel", admin.id, at + 1);
+    }
+    assert.equal(enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 10_000).job!.status, "QUEUED");
+  } finally { db.close(); }
+});
+
 test("full-body normalization strips metadata without square cropping; rejects invalid/animated/undersized images", async () => {
   const raw = await image();
   const normalized = await prepareQueuedAvatarPhoto(`data:image/jpeg;base64,${raw.toString("base64")}`);

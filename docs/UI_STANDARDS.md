@@ -1,5 +1,11 @@
 # Coco Wheels product and UI standards
 
+16 November avatar allowance: keep the existing regular upload error and actions.
+Limit copy says “Three photos have passed the check in the last 24 hours. Try
+uploading again later.” No new heading, modal, badge or disabled button. Rejected
+photos retain their retake guidance and Upload photo action. Review the selected
+photo/error and rejected/retry screens on mobile and desktop for wrapping/emphasis.
+
 16 November avatar history/check results: reuse the shared monochrome accepted
 checkmark and rejected cross beside Admin's photo verdict, with separate regular
 generation/hold text. Submitted, Checked and Check duration use existing admin

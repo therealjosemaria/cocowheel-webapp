@@ -30,7 +30,7 @@ export function apiErrorMessage(
       AVATAR_CANCELLATION_ADMIN_ONLY: "Submitted photos can’t be cancelled here. For help, email jose@gumwheel.com.",
       AVATAR_SUBMISSION_CHANGED: "This submission has changed. Choose the photo again before submitting.",
       AVATAR_UPLOADS_UNAVAILABLE: "Photo uploads are temporarily unavailable. Use the default avatar and try uploading later.",
-      AVATAR_UPLOAD_LIMIT: "You’ve reached the photo upload limit. Keep your current avatar and try again in 24 hours.",
+      AVATAR_UPLOAD_LIMIT: "Three photos have passed the check in the last 24 hours. Try uploading again later.",
       AVATAR_QUEUE_FULL: "The photo queue is full. Keep your current avatar and try uploading later.",
       INVALID_AVATAR_PREFERENCE: "Choose your map avatar in Profile and save again.",
       VEHICLE_IN_USE: VEHICLE_IN_USE_MESSAGE,

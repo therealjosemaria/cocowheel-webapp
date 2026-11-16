@@ -110,7 +110,9 @@ separate rejection_note, clears generation approval and supersedes the passed-ch
 notification. The reason appears in the private admin row and only that user's
 Profile/result email: “Your photo wasn’t approved. [reason] Upload another photo.”
 Existing avatars remain assigned; a new photo can be submitted subject to the
-existing upload/storage limits. Source retention remains seven days; rejection
+existing upload/storage limits. Under the later passing-photo allowance, this
+manual quality rejection also excludes the photo from the three-pass rolling
+24-hour count; automatic rejections never consume a slot. Source retention remains seven days; rejection
 metadata/events retain the existing 30-day lifecycle. An identical retry does not
 repeat or acknowledge the user's result. A different reason/stale approval returns
 409; late Mac responses cannot revive it.
