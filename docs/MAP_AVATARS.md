@@ -1,5 +1,10 @@
 # Assigned map avatars — 16 November 2026
 
+Offline Seedream preview: a local alpha-only cutout from the existing result was
+rendered through the same sprite preparation and Home/JourneyMap paths using
+synthetic in-memory data. This does not change the live P2 assignment or generator.
+See [cutout preview and limitations](TRIPO_AVATAR_COMPARISON.md#seedream-local-cutout-map-preview--16-november-2026).
+
 Self-service extension: [avatar creation](AVATAR_CREATION.md) now supplies upload,
 Pi queue, Mac checks, manually approved P2 generation and result notifications.
 [Avatar administration](AVATAR_ADMIN.md) is the later authority for generation

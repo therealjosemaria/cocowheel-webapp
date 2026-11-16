@@ -1,5 +1,61 @@
 # Private Tripo comparison
 
+## Seedream local cutout map preview — 16 November 2026
+
+The owner requested background removal from the existing Seedream v5 output and
+mobile/desktop map previews before choosing a replacement model. This is an
+**offline preview only**. The original Seedream output, comparison manifest, P2
+map assignment and production generator remain unchanged. No Tripo task, provider
+balance check, production database write, API restart or public media route is
+needed. A proposed Runway upload was blocked by automatic approval review because
+that external destination had not been explicitly authorised for the private
+photo-derived image; no Runway asset/upload was created. Processing continued
+locally on the Pi without sending image bytes to another service.
+
+`scripts/cutout-white-background.mjs` removes border-connected near-white pixels
+(minimum RGB channel 230; channel spread at most 24) by changing only alpha. It
+uses a four-neighbour flood fill, not a learned person-segmentation model or an
+image generator. Enclosed white clothing is retained. Every original RGB value
+in the 768×1344 source/cutout was compared: zero changed values, including the face.
+896,744 pixels became transparent. A new mode-0600 private PNG was saved; the
+source was not overwritten. Input limits: still PNG, ≤10 MB and 16 million decoded
+pixels; results with <10% or >99% removed stop for review. CLI uses exclusive
+creation for its output and cannot silently overwrite an existing file.
+
+This is appropriate to this particular plain near-white sample. It is not yet a
+production upload step and cannot reliably handle arbitrary backgrounds, white
+clothing connected to the background, enclosed background holes or fine matting.
+A faint light fringe is visible at full size against a dark surface; alpha-only
+processing preserves the original edge colours. The enlarged cutout and existing
+48px map marker were visually inspected. No claim of a perfect cutout or general
+avatar readiness follows from this one photo.
+
+Reproduce (use a new output path if it already exists):
+
+1. `node scripts/cutout-white-background.mjs data/tripo-comparison/seedream_v5.png data/tripo-comparison/seedream_v5-cutout-local.png`
+2. `GUMWHEEL_AVATAR_FIXTURE=1 GUMWHEEL_AVATAR_RENDER=data/tripo-comparison/seedream_v5-cutout-local.png node --import tsx scripts/serve-map-avatar-fixture.mts > /tmp/gumwheel-avatar-fixture.log 2>&1`
+3. `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3491` using the existing optimized build of unchanged application source.
+4. `GUMWHEEL_AVATAR_PREVIEW_DIR=/tmp/gumwheel-seedream-map-preview python3 -u scripts/preview-avatar-map.py` in a Playwright-capable environment.
+
+The fixture prepares the cutout through the existing `prepareAvatarSprite` path
+(transparent 128×256 WebP) and assigns only an in-memory synthetic account. It
+uses the actual shared Home/JourneyMap marker at its unchanged 48px slot. At
+390/1440px, the read-only preview verifies loaded artwork, real public OSM tiles,
+no document overflow or JS errors, and captures full Home, rider-request and
+driver-request views. Road geometry is mocked between public-place endpoints;
+these are demonstrations, not live rides. Tile requests contain public tile
+coordinates only, never image bytes or user details. All real writes are blocked;
+route-preview is fulfilled locally. Screenshots/cutout remain ignored private
+local artifacts, not Git/public assets. Phone and desktop screens were reviewed
+for map scale, edge visibility, full-figure framing and unchanged UI hierarchy.
+All 293 isolated regression tests and ESLint passed. The initial broad lifecycle
+harness terminated with exit 143 without a final result; it is not counted as
+passing. The focused read-only preview completed successfully. An initial sandbox
+test invocation could not create the tsx IPC socket; the authorised isolated
+rerun passed. Physical devices, production display, arbitrary-background
+segmentation and model replacement were not tested/performed. No frontend rollout claim applies
+to these local previews. See [sanitized evidence](results/seedream-cutout-preview-2026-11-16.json).
+
 ## Image-only comparison — 16 November 2026
 
 The owner authorised Sunburst and Seedream v5 tests from the same saved reference,

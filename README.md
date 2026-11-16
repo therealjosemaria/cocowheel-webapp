@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+16 November Seedream cutout preview: offline near-white background removal from
+the existing private Seedream result preserves all original RGB pixels. Local
+Home/rider/driver maps preview the transparent cutout at mobile/desktop widths,
+using synthetic accounts and routes. No model, live avatar, API or public page
+was changed and no paid generation ran. This sample-specific mask is not yet a
+general upload processor. See [preview and limits](docs/TRIPO_AVATAR_COMPARISON.md#seedream-local-cutout-map-preview--16-november-2026).
+
 16 November image-only comparison: the private `/admin/avatars` page places the
 existing P2 render beside Sunburst and Seedream v5 images from the exact same saved
 reference. One paid task per image model completed for 10 and 5 credits (US$0.15

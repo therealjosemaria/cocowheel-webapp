@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-16",
+  "baseline": "b1dd1280cd6e4a22e0bd58a21f288e1b798ddf47",
+  "scope": "Offline existing Seedream output cutout and local mobile/desktop maps; no production behavior/model/avatar change.",
+  "sourceFiles": {
+    "scripts/cutout-white-background.mjs": "1e2325b895d6a65422815dbdd3681e1b085a48dfd15a9ec31ac8b380fe3e3142",
+    "scripts/preview-avatar-map.py": "b3a3e9c14d75bc70fa4bcb42069fca638ea11b19218f0ab1390505648cf16035",
+    "tests/avatar-cutout.test.ts": "5fa4624c44e110083a49df71cb6120d2811654d49d3e0b19ba210cad6a3e5941"
+  },
+  "privacy": {
+    "externalRunwayUpload": "Automatic approval review blocked the proposed upload before asset creation; no external image processing used.",
+    "privateArtifacts": "Source, lossless cutout, map sprite and screenshots remain local/ignored; none committed.",
+    "fixture": "Actual isolated API, in-memory SQLite and synthetic sessions; public-place road geometry mocked; external requests only public OSM tiles; no image bytes sent to a provider."
+  },
+  "processing": {
+    "method": "4-neighbour border-connected near-white alpha mask, min channel 230 and max channel spread 24",
+    "width": 768,
+    "height": 1344,
+    "removedPixels": 896744,
+    "originalRGBValuesChanged": 0,
+    "sourceOverwritten": false,
+    "paidGenerations": 0,
+    "additionalTripoCredits": 0,
+    "productionP2AssignmentUnchanged": true
+  },
+  "checks": {
+    "cutout": "Passed: background alpha removed; enclosed white clothing and all RGB values retained; source untouched; blank image rejected.",
+    "regressions": {
+      "command": "npm test",
+      "passed": 293,
+      "failed": 0
+    },
+    "lint": "Passed.",
+    "browser": {
+      "command": "GUMWHEEL_AVATAR_PREVIEW_DIR=/tmp/gumwheel-seedream-map-preview python3 -u scripts/preview-avatar-map.py (fixture/build commands in guide)",
+      "widths": [
+        390,
+        1440
+      ],
+      "result": "Passed: loaded 256px source in unchanged 48px slot; real tiles; Home/rider/driver screenshots; no overflow or page exceptions; no writes/paid calls.",
+      "visual": "Whole Home and rider screens at phone/desktop and driver desktop inspected, plus enlarged cutout against light/dark surfaces."
+    }
+  },
+  "failedBaselines": [
+    {
+      "check": "Initial broad existing avatar lifecycle harness",
+      "result": "Process terminated with exit 143 without a final result; partial screenshots are not counted as a passing run.",
+      "followup": "New focused read-only map preview completed exit 0 at both widths."
+    },
+    {
+      "check": "Initial npm test",
+      "result": "Sandbox denied tsx local IPC socket with EPERM before tests ran.",
+      "followup": "Authorised isolated rerun passed all 293 tests."
+    }
+  ],
+  "limitations": [
+    "Mask relies on a near-white border-connected background; not a general person segmentation or production upload pipeline.",
+    "Faint light edge fringe on enlarged dark-background view; no repainting or edge colour correction performed.",
+    "No physical-device, live-owner or production cutout assignment/model switch.",
+    "Existing optimized application build reused because application source is unchanged; no API restart needed."
+  ]
+}
