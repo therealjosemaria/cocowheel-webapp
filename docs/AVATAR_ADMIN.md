@@ -152,3 +152,16 @@ render columns and admin events table exist, and runtime configuration is unchan
 Local/public health return 200; anonymous management/photo requests return 403.
 No live avatar test job, paid task or reminder email was created. Frontend
 deployment is recorded separately after the exact commit is verified.
+
+## Frontend deployment
+
+Implementation `b6470e24bc69b5cb4a5c79e56935c1d4771d72be` is pushed to main.
+Vercel `dpl_49Kxtsr151nfALMPM1Uydc6V8RQa` is READY for that exact commit and
+assigned to www.gumwheel.com / gumwheel.com. Fresh public Chromium checks at
+390/1440px confirm the email/code admin gate, no private photo/list content,
+403 for anonymous list/notices/photo/render requests, and the new Privacy copy.
+All non-GET/HEAD browser requests were blocked; no page exceptions or overflow.
+The exact deployment’s 15-minute Vercel query returned no error/fatal log groups.
+A fresh Mac heartbeat was observed after activation. Private owner workflows
+were verified against the isolated actual API, not by uploading a live photo or
+spending credits. Live inbox delivery and physical Safari remain unverified.

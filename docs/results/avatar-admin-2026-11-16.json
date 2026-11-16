@@ -133,6 +133,34 @@
       "anonymousAdmin": 403,
       "anonymousPrivatePhoto": 403
     },
-    "frontend": "pending commit/deployment"
+    "frontend": {
+      "implementation": "b6470e24bc69b5cb4a5c79e56935c1d4771d72be",
+      "deploymentId": "dpl_49Kxtsr151nfALMPM1Uydc6V8RQa",
+      "state": "READY",
+      "domains": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ],
+      "readOnlyBrowser": [
+        {
+          "width": 390,
+          "signedOutAdmin": "OTP gate only",
+          "privateEndpoints": 403,
+          "privacy": "new manual review/retention copy",
+          "overflow": false,
+          "pageExceptions": 0
+        },
+        {
+          "width": 1440,
+          "signedOutAdmin": "OTP gate only",
+          "privateEndpoints": 403,
+          "privacy": "new manual review/retention copy",
+          "overflow": false,
+          "pageExceptions": 0
+        }
+      ],
+      "runtimeErrors": "No error/fatal groups returned for this deployment in the 15-minute Vercel log query",
+      "macWorker": "Fresh heartbeat observed after activation (13 seconds old when checked)"
+    }
   }
 }
