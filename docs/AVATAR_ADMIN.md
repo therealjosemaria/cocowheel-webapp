@@ -268,8 +268,8 @@ or background-matting failure. It does not assess every possible input/model.
 
 Open finding AVATAR-PREVIEW-001: retain a bounded higher-resolution private
 generated preview separately from the efficient map sprite, and choose its
-retention/serving contract before implementation. That quality/storage change
-was not requested in the diagnostic and is not implemented in this release.
+retention/serving contract before implementation. The resolution change remains
+proposed; this release retains the current artwork.
 Private photos, provider URLs, task/account identifiers and diagnostic image
 files are not committed. See [sanitized verification](results/avatar-completion-2026-11-16.json).
 
@@ -291,6 +291,20 @@ fake generation and no email/provider credentials. The quality diagnosis used
 only GET retrieval of an existing completed task and a single local cutout run;
 it did not change the live assigned avatar. Live authenticated generation,
 physical browsers and the proposed resolution change remain unverified.
+
+Activation: implementation `a3986d5df775e23646d2c20887edde95b68608e5` is pushed.
+At 2026-11-16T11:32:59Z, the verified private database/config backup and fresh
+zero accepted/active-trip / zero in-flight-avatar checks preceded the scoped
+GUMWHEEL API restart. Integrity/FKs and terminal journey preservation pass;
+all assigned avatar rows/bytes match the pre-restart backup. No unread Admin
+READY events remain. The diagnostic images/identifiers created in `/tmp` were
+removed after analysis; only sanitized measurements were retained.
+
+Vercel `dpl_DRbFkzSmE3skjkUZkQPvqhBgif7j` is READY for that exact commit on both
+production domains. Public health is 200; anonymous avatar-job reads are 401 and
+Admin-job reads 403. No new paid generation or authenticated production
+walkthrough was performed for release verification; the higher-resolution
+preview finding remains open.
 
 ## Storage, access and activation
 

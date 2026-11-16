@@ -66,7 +66,40 @@
     ]
   },
   "activation": {
-    "status": "pending"
+    "status": "verified",
+    "implementationRevision": "a3986d5df775e23646d2c20887edde95b68608e5",
+    "api": {
+      "timestamp": "20261116T113259Z",
+      "sourceRevision": "a3986d5df775e23646d2c20887edde95b68608e5",
+      "before": {
+        "underwayTrips": 0,
+        "inFlightAvatarWork": 0
+      },
+      "privateBackupVerified": true,
+      "apiRestarted": true,
+      "pidChanged": true,
+      "localHealth": true,
+      "databaseIntegrity": "ok",
+      "foreignKeyViolations": 0,
+      "terminalJourneyRecordsPreserved": true
+    },
+    "frontend": {
+      "id": "dpl_DRbFkzSmE3skjkUZkQPvqhBgif7j",
+      "state": "READY",
+      "sha": "a3986d5df775e23646d2c20887edde95b68608e5",
+      "aliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ]
+    },
+    "postRestartChecks": {
+      "assignedAvatarsUnchanged": true,
+      "noUnreadAdminReadyEvents": true,
+      "/api/health": 200,
+      "/api/avatar/jobs": 401,
+      "/api/admin/avatar-jobs": 403
+    },
+    "privateDiagnosticImagesRemoved": true
   },
   "unverified": [
     "authenticated production generation walkthrough",
