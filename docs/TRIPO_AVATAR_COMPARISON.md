@@ -97,6 +97,19 @@ proxy 403 responses; corrected/direct checks passed without a product change.
 Frontend verification is recorded separately after push; API activation alone
 is not proof that the comparison UI is deployed.
 
+### Image comparison frontend deployment
+
+Implementation `daeb0f529e175c0ba751e59f501c31a833153b97` is verified READY as
+`dpl_9bRRpAavdEpZVhXq8mFCWckrPJU5`, with both `www.gumwheel.com` and
+`gumwheel.com` aliases attached. Public 390/1440px Chromium checks passed:
+`/admin/avatars` shows the email sign-in gate, no private previews appear before
+sign-in, and reference/P2/Sunburst/Seedream PNG reads return
+`ADMIN_ACCESS_DENIED` 403. The browser permitted only GET/HEAD; no real email,
+login, trip mutation or paid generation occurred. Authenticated production owner
+walkthrough remains unverified; the authorised comparison/media UI was reviewed
+against the isolated synthetic owner API above. This follow-up only records
+verified activation/deployment; it requires no further API restart.
+
 16 November follow-up: the owner selected **P2-20260801** for an explicitly enabled
 map-avatar assignment. [Map avatar storage and display](MAP_AVATARS.md) supersedes
 the no-map-integration boundary in this historical trial. Only its prepared alpha

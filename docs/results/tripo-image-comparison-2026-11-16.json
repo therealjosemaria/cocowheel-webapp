@@ -1,7 +1,7 @@
 {
   "date": "2026-11-16",
   "sourceBaseline": "51fba340be0d71f45dbf6f054daf4c20d19d416c",
-  "sourceState": "Uncommitted implementation at validation; implementation commit recorded in guide after push.",
+  "sourceState": "Validated implementation committed as daeb0f529e175c0ba751e59f501c31a833153b97",
   "sourceFiles": {
     "components/tripo-comparison.tsx": "e5f7d1191ab619313b71a68c32a823431387e9277f46f1987e673ab6d7ab5101",
     "lib/tripo-comparison.ts": "5012a6bb6e2b245af2f516044a5f2abf2eadff10f0242398cc41cde6e2f38bc9",
@@ -146,6 +146,23 @@
       "seedreamPNG": 403,
       "denial": "ADMIN_ACCESS_DENIED, tested using the valid site Origin, without authentication."
     },
-    "frontend": "Pending exact implementation deployment verification."
-  }
+    "frontend": {
+      "implementationCommit": "daeb0f529e175c0ba751e59f501c31a833153b97",
+      "deploymentId": "dpl_9bRRpAavdEpZVhXq8mFCWckrPJU5",
+      "state": "READY",
+      "verifiedAliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ],
+      "publicReadOnlyBrowser": {
+        "widths": [
+          390,
+          1440
+        ],
+        "result": "Passed: email gate, no private preview before sign-in; source/P2/Sunburst/Seedream PNG reads denied ADMIN_ACCESS_DENIED 403. Only GET/HEAD allowed. No email or paid task."
+      },
+      "boundary": "Authenticated production owner walkthrough remains unverified; authorised UI/media flow reviewed against isolated synthetic owner API."
+    }
+  },
+  "implementationCommit": "daeb0f529e175c0ba751e59f501c31a833153b97"
 }

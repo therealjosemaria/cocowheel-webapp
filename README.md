@@ -5,7 +5,9 @@ existing P2 render beside Sunburst and Seedream v5 images from the exact same sa
 reference. One paid task per image model completed for 10 and 5 credits (US$0.15
 total); no top-up or P2 regeneration was needed. The original five 3D results and
 the account's assigned map avatar remain unchanged. These are operator-run tests,
-with no generation on page load. See [image comparison](docs/TRIPO_AVATAR_COMPARISON.md#image-only-comparison--16-november-2026).
+with no generation on page load. API activation and exact implementation frontend
+READY on both production aliases are verified; authenticated owner walkthrough
+remains unverified. See [image comparison](docs/TRIPO_AVATAR_COMPARISON.md#image-only-comparison--16-november-2026).
 
 16 November Admin usage refinement: balance, configured generation cost/model and
 photo-checker connection details stay hidden until Check balance is pressed.
