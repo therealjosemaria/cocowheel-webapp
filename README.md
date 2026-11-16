@@ -5,7 +5,9 @@ enforced by the API; the former user cancellation endpoint now returns 403.
 Users can discard an unsubmitted photo, view results, and manage avatar display.
 Profile explains requirements/results, while Privacy keeps data-use, provider,
 review-access and retention disclosures without internal generation/worker steps.
-Technical lifecycle details remain in the avatar guides below.
+Technical lifecycle details remain in the avatar guides below. The exact API and
+frontend release are live; [activation evidence](docs/AVATAR_PHOTO_GUIDE_2026-11-16.md#verified-activation)
+records the safe restart, public checks and remaining test boundaries.
 
 16 November avatar submission simplification: Submit photo is the single action
 requesting a requirements check and avatar creation. The upload section explains

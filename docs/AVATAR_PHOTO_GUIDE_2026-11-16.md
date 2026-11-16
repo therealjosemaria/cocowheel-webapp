@@ -160,3 +160,35 @@ preflight currently found zero accepted/active rides and zero checking/submittin
 generating avatars. Repeat the check immediately before the private SQLite backup
 and API-only restart under the user's standing no-underway-trip approval. Exact
 source/deployment/restart evidence follows after activation.
+
+
+## Verified activation
+
+Final policy implementation `ee7fc3082314d6c93fe47baf950ac78c1a5d0023`
+includes the guide and single-action upload from `97a740e` / `76c1386`.
+Vercel `dpl_Cw9ta6yy1mx8fH9uEYfEh4giTQNb` is READY for that exact source and
+aliased to www.gumwheel.com and gumwheel.com. Anonymous production browser checks
+pass at 320/390/844/1440: guide/H1, frontal illustration, surrounding margins,
+canonical/indexing/sitemap and containment. All browser non-read requests were
+blocked. Public Privacy contains the final purpose/support copy and no user
+cancellation or internal approval-step claim. The live frontal WebP hash equals
+the committed asset. Public `/api/health` returns 200 / status ok.
+Python urllib requests returned 403 from the public path; direct curl and browser
+checks succeeded. No application change was made to bypass access controls.
+
+At 2026-11-16T08:56:35Z, a fresh read-only preflight found zero accepted/active
+journeys and zero checking/submitting/generating avatars. A private 0700/0600
+online SQLite/config backup passed quick/integrity and foreign-key checks before
+restarting only `cocowheels-api` under the standing conditional restart approval.
+The process PID changed, loopback health recovered, database quick_check is ok,
+foreign-key violations are zero, and every previously terminal journey/request
+row matched its pre-restart hash. Source was clean at the exact implementation
+revision. Backup/config files remain ignored and private; no private photo,
+credential, token, GPS record or account identifier was added to this evidence.
+
+Authenticated production upload/cancellation was not exercised; the permission
+and workflow assertions use isolated real API fixtures. No production account
+mutation, paid generation or real notification was triggered by verification.
+Physical mobile browsers remain unverified. The subsequent same-tab versus
+new-tab discussion is a recommendation only: this release still opens Photo guide
+in a new tab to preserve the selected-photo draft.
