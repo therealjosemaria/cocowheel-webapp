@@ -1,11 +1,19 @@
 # GUMWHEEL
 
+16 November avatar policy alignment: submitted-photo cancellation is admin-only,
+enforced by the API; the former user cancellation endpoint now returns 403.
+Users can discard an unsubmitted photo, view results, and manage avatar display.
+Profile explains requirements/results, while Privacy keeps data-use, provider,
+review-access and retention disclosures without internal generation/worker steps.
+Technical lifecycle details remain in the avatar guides below.
+
 16 November avatar submission simplification: Submit photo is the single action
 requesting a requirements check and avatar creation. The upload section explains
 the check/results, without a separate creation checkbox, provider name or internal
 approval instructions. Selecting a file alone submits nothing. The existing
 server consent flag, Mac verification, manual admin generation approval and result
-notifications remain unchanged. Provider/approval details stay in Privacy.
+notifications remain unchanged. Provider/data-use details stay in Privacy;
+internal approval details remain in this repository.
 See [avatar creation](docs/AVATAR_CREATION.md).
 
 16 November avatar photo guide: Profile’s Upload/Update photo area and selected
@@ -75,8 +83,8 @@ The API and exact implementation frontend were activated and verified on 16 Nove
 16 November manual avatar management supersedes automatic generation below.
 The protected `/admin/avatar-management` page shows private submitted photos,
 photo-check status, generation approval, operational holds and generated previews.
-Only the immutable owner-admin account can approve generation or cancel other
-accounts’ jobs; submitters retain their own cancellation controls. Mac verification
+Only the immutable owner-admin account can approve generation or cancel submitted
+jobs; users can discard only an unsubmitted photo. Mac verification
 alone never authorizes a paid task. Profile gives the admin
 submission/result notifications with a five-minute unread email fallback. Users
 see photo-check/creation progress without credit or provider errors. Photos are

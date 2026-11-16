@@ -39,6 +39,8 @@ with sync_playwright() as p:
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         page.reload(); avatar.locator('summary').click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
+        expect(avatar.get_by_role('button',name='Cancel photo check',exact=True)).to_have_count(0)
+        expect(avatar.get_by_role('button',name='Cancel creation',exact=True)).to_have_count(0)
         page.screenshot(path=str(OUT/f'queued-{width}.png'),full_page=True)
         job=context.request.post(API+'/api/avatar-worker/claim',headers=worker,data={}).json()['job']
         assert job
@@ -62,6 +64,7 @@ with sync_playwright() as p:
         assert context.request.post(API+'/api/avatar-worker/result',headers=worker,data={'id':job['id'],'lease':job['lease'],'verdict':'approved','reason':None}).ok
         page.evaluate('window.dispatchEvent(new Event("focus"))')
         expect(avatar.get_by_role('status')).to_contain_text('waiting to be created')
+        expect(avatar.get_by_role('button',name='Cancel creation',exact=True)).to_have_count(0)
         admin=p.request.new_context(base_url=BASE,extra_http_headers={'Cookie':'cocowheels_guest=synthetic-avatar-admin','Origin':BASE,'X-Admin-Request':'1'})
         assert admin.post('/api/admin/avatar-jobs/'+job['id']+'/approve',data={}).ok
         assert context.request.post(CONTROL+'/credits-ready',headers={'X-Gumwheel-Fixture':'1'}).ok

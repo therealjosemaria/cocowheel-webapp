@@ -6,6 +6,14 @@ are distinguished below. [Seedream/local matting](SEEDREAM_AVATARS_2026-11-16.md
 supersedes the original P2 parameters/cost. Avatar display, Personal avatar choice,
 manual approval, journey permissions and trip history remain unchanged.
 
+Later 16 November policy alignment supersedes submitter cancellation: only the
+owner-admin cancellation endpoint may cancel a submitted job. The ordinary
+`/api/avatar/jobs/cancel` endpoint rejects verified callers with 403, including
+the submitter and admin using that ordinary endpoint. Profile has no submitted-job
+cancel button. Its local draft Cancel and avatar-display Edit/Cancel are separate,
+unsaved actions. User cancellation tests/results below describe older behaviour
+where applicable; current regression evidence is in the photo-guide notes.
+
 ## Flow and owner controls
 
 Verified users upload through Profile → Avatar. The Pi stores the normalized photo;
@@ -170,8 +178,8 @@ a distinct VERIFIED event saying generation needs approval. Ready/rejection/expi
 operational changes also create admin updates. Only the newest stage of a job needs
 review; newer stages supersede older unread events to avoid redundant reminders.
 Repeated polling of an unchanged hold creates no duplicate event. Recovery clears
-hold reminders before they can send stale error notices. Self-cancellation is
-already acknowledged for the submitter; admin cancellation still notifies them.
+hold reminders before they can send stale error notices. Admin cancellation
+notifies the submitter; ordinary users cannot cancel a submitted job.
 
 Profile polls the owner-only notice endpoint on its existing ten-second cadence,
 and adds an Avatar submissions action/count using the existing badge/card. Other

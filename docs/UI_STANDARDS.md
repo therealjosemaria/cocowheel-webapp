@@ -1,12 +1,20 @@
 # Coco Wheels product and UI standards
 
+16 November avatar controls/policy: do not show Cancel photo check or Cancel
+creation to users after submission. Only Admin manages submitted-job cancellation.
+Keep Cancel for an unsubmitted selection or unsaved display edit. Give support
+email as the next step for submitted-photo help. User copy describes requirements,
+results and controls; internal checker/approval mechanics belong in repository
+documentation. Privacy still discloses actual photo use, recipients and retention.
+
 16 November Avatar submission: keep the requirements and quiet Photo guide link,
 then one regular-weight sentence: “We’ll check that your photo meets these
 requirements before creating your avatar and notify you with the results.”
 Submit photo is the explicit request; remove the redundant upload-creation
 checkbox. No provider name or internal approval instructions in this section.
 Personal avatar’s separate display checkbox/Edit/Save remains unchanged. Provider
-and manual-review disclosures remain in Privacy. Never submit on file selection.
+disclosures remain in Privacy; internal approval details stay in the README.
+Never submit on file selection.
 
 16 November avatar photo guide: use one quiet, regular-weight Photo guide link
 with the existing 44px link target beside upload requirements, after rejection,

@@ -65,7 +65,7 @@ import { readVehicle, saveProfileVehicle } from "./vehicles";
 import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
-import { authorizeAvatarWorker, avatarUploadsEnabled, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
+import { authorizeAvatarWorker, avatarUploadsEnabled, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
 import { readAdminAvatarBalance, runAvatarGeneration, type AvatarProvider } from "./avatar-generation";
 import { deliverAvatarReminder, deliverAdminAvatarReminder } from "./avatar-email";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "./avatar-admin";
@@ -154,6 +154,7 @@ function errorStatus(error: unknown) {
   if (["AVATAR_ALREADY_QUEUED", "AVATAR_JOB_CHANGED", "AVATAR_REVIEW_TOO_LATE", "AVATAR_LEASE_EXPIRED", "AVATAR_SUBMISSION_CHANGED"].includes(code)) return 409;
   if (["AVATAR_QUEUE_FULL", "AVATAR_UPLOAD_LIMIT"].includes(code)) return 429;
   if (code === "AVATAR_UPLOADS_UNAVAILABLE") return 503;
+  if (code === "AVATAR_CANCELLATION_ADMIN_ONLY") return 403;
   if (["VEHICLE_PLATE_REQUIRED", "VEHICLE_IN_USE"].includes(code)) return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
@@ -890,6 +891,10 @@ export function createApiServer(
       if (parts[0] === "api" && parts[1] === "avatar") {
         const owner = requireUniversitySession(database, token);
         if (parts.length >= 3 && parts[2] === "jobs") {
+          // Reject old clients before even running job lifecycle cleanup.
+          // Only the separately authorized Admin route can cancel submissions.
+          if (parts.length === 4 && request.method === "POST" && parts[3] === "cancel")
+            throw new Error("AVATAR_CANCELLATION_ADMIN_ONLY");
           expireAvatarJobs(database);
           if (parts.length === 3 && request.method === "GET") {
             writeJson(response, 200, readAvatarJobs(database, owner.id), cors);
@@ -900,12 +905,11 @@ export function createApiServer(
             const current = requireUniversitySession(database, token);
             if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
             writeJson(response, 200, enqueueAvatarPhoto(database, current.id, photo, body.submissionId, body.consent), cors);
-          } else if (parts.length === 4 && request.method === "POST" && ["cancel", "reviewed"].includes(parts[3])) {
+          } else if (parts.length === 4 && request.method === "POST" && parts[3] === "reviewed") {
             const body = await readJson(request, 2048);
             const current = requireUniversitySession(database, token);
             if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
-            if (parts[3] === "cancel") writeJson(response, 200, cancelAvatarJob(database, current.id, body.id), cors);
-            else { reviewAvatarEvent(database, current.id, body.key); writeJson(response, 200, { ok: true }, cors); }
+            reviewAvatarEvent(database, current.id, body.key); writeJson(response, 200, { ok: true }, cors);
           } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
           return;
         }

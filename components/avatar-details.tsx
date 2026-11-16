@@ -6,7 +6,7 @@ import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
 import type { MapAvatar } from "@/lib/map-avatar";
 import { notifyAvatarSaved } from "@/lib/vehicle-updates";
 import RideFieldLabel from "./ride-field-label";
-import { AVATAR_PHOTO_REQUIREMENTS, avatarJobActive, avatarJobCancellable, avatarJobMessage, type AvatarJobs } from "@/lib/avatar-job";
+import { AVATAR_PHOTO_REQUIREMENTS, avatarJobActive, avatarJobMessage, type AvatarJobs } from "@/lib/avatar-job";
 import { prepareAvatarPhoto } from "@/lib/avatar-photo";
 import { useVisibleReview } from "@/lib/use-visible-review";
 
@@ -154,15 +154,6 @@ export default function AvatarDetails() {
               photoInput.current?.click();
             }}>{saved.available ? "Update photo" : "Upload photo"}</button>
           </>}
-          {!photo && !editing && jobs.job && avatarJobCancellable(jobs.job.status) && <button type="button" className="secondary" onClick={async () => {
-            if (submitting.current) return;
-            submitting.current = true; mutation.current++; setError("");
-            try {
-              const state = await cocowheelsApi<AvatarJobs>("/api/avatar/jobs/cancel", { method: "POST", body: JSON.stringify({ id: jobs.job!.id }) }, true);
-              if (alive.current) setJobs(state);
-            } catch (reason) { if (alive.current) setError(apiErrorMessage(reason)); }
-            finally { submitting.current = false; }
-          }}>{jobs.job.status === "APPROVED" ? "Cancel creation" : "Cancel photo check"}</button>}
           <input ref={photoInput} type="file" hidden accept="image/jpeg,image/png,image/webp" aria-label="Avatar photo" onChange={async event => {
             const file = event.target.files?.[0]; event.target.value = "";
             if (!file || submitting.current) return;

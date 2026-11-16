@@ -107,7 +107,7 @@ The checkbox-specific assertions from the first guide run are historical and
 superseded; the current browser checks assert its absence and draft retention.
 Manual admin approval, photo checks, provider boundaries and notifications remain
 unchanged. No API restart is required for this frontend submission simplification.
-Provider/review details remain in Privacy. Final follow-up checks and activation
+Provider/data-use details remain in Privacy; internal approval steps are documented in this repository. Final follow-up checks and activation
 are recorded below.
 
 Follow-up verification, baseline `97a740e`:
@@ -122,3 +122,41 @@ Follow-up verification, baseline `97a740e`:
 Initial guide commit `97a740efa63a42e8673e678bcfd3f80ce26d1179` reached READY
 as `dpl_4uvFV621YEx5nyEzHF4fz86pWrnQ`, aliased to both public domains.
 The submission follow-up's exact activation is recorded after its push.
+
+## Policy review: submitted-job cancellation is admin-only
+
+Supersedes the earlier submitter-cancellation behaviour and the UI-only “no API
+restart” boundary above. The policy audit covered Profile/draft/queued/passed
+controls, user result messages, Privacy, Terms, Help, public photo guide, API
+permissions and current README/creation/admin/UI guides. Terms/Help cancellation
+answers refer explicitly to journey requests/rides, not avatar submissions, and
+remain unchanged. Historical dated result reports are preserved as earlier evidence.
+
+Profile has no Cancel photo check / Cancel creation action after submission.
+The ordinary POST `/api/avatar/jobs/cancel` requires sign-in and then returns
+403 `AVATAR_CANCELLATION_ADMIN_ONLY`, regardless of actor/job state; no former
+owner-cancel helper remains. Legacy clients get a support-email next step. Only
+`/api/admin/avatar-jobs/:id/cancel` retains cancellation, with its existing immutable
+owner-admin authorization, confirmation, photo removal, lease invalidation, late
+result protection and user notification. Admin does not gain a user-route bypass.
+Local draft Cancel and unsaved Personal avatar Edit/Cancel remain available.
+
+Privacy removes the inaccurate user cancellation claim and internal worker,
+background-removal and manual-approval steps. It retains meaningful disclosures:
+submission purpose, requirements review, Tripo as image recipient, private admin
+review access, seven-day source/30-day result retention, independent backup/provider
+copies, support email, public display choice and five-minute unread result email.
+Profile's requirements/process sentence and guide remain unchanged.
+
+Verification on the policy follow-up (baseline `76c1386`):
+
+- Build and lint pass. All 35 named avatar jobs/admin/Seedream/SEO regressions pass; all seven avatar API tests pass again after the final denial-before-expiry guard and admin-on-user-endpoint assertion. Eight synthetic job phases reject user cancellation with 403 and preserve job/photo state; an overdue source also remains unchanged on that denied request. Unauthenticated access is 401. Existing immutable-admin cancellation, photo erasure/lease invalidation, user result event and generation cancellation-race tests pass.
+- The isolated optimized browser fixture passes the guide flow at 320/390/844/1440 and the actual upload/API/fake-provider flow at 320/390/1440. Queued/passed states have no submitted-job cancel action; draft Submit/Cancel and display Edit/Save/Cancel retain their own responsibilities. No paid calls, production accounts or emails are used.
+- Whole Profile states and the final Privacy avatar paragraphs were visually reviewed at phone/desktop sizes: regular body weight, left alignment, existing headings/buttons/spacing and no horizontal overflow. The first Privacy capture used an obsolete text locator; updating it to the shortened paragraph produced both final captures. The four-width guide checks continue to pass with the frontal example and preserved draft.
+- Reproduce with the fixture/build commands above, `scripts/check-avatar-photo-guide.py`, `scripts/check-avatar-upload.py`, and `node --import tsx --test tests/avatar-jobs.test.ts tests/avatar-admin.test.ts tests/avatar-seedream.test.ts tests/seo.test.ts`. Real paid generation, physical mobile devices and authenticated production cancellation are not exercised by these checks.
+
+This backend permission change needs a separate API restart. A read-only live
+preflight currently found zero accepted/active rides and zero checking/submitting/
+generating avatars. Repeat the check immediately before the private SQLite backup
+and API-only restart under the user's standing no-underway-trip approval. Exact
+source/deployment/restart evidence follows after activation.

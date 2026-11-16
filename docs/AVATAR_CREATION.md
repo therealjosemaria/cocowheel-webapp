@@ -36,7 +36,7 @@ results.” Clicking Submit photo requests both checking and creation, sending t
 existing required `consent: true`; merely selecting a file never queues work.
 The separate creation checkbox is removed. This supersedes the earlier required
 checkbox, not the server consent gate or manual admin generation approval.
-Provider/review disclosures remain in Privacy; the upload section does not mention
+Provider/data-use disclosures remain in Privacy; the upload section does not mention
 Tripo or internal approval steps. Photos that pass still wait for explicit admin
 generation approval before going to Tripo. Avatar creation never turns public
 display on for a new account. Replacements preserve the existing Personal avatar
@@ -51,8 +51,12 @@ submission, with required plain-text feedback shown in Profile and the same
 five-minute unread result email. This supersedes the automated-reason-only
 boundary; it does not change Mac thresholds. Provider errors and uncertain outcomes appear only to the admin; users keep
 the last completed photo-check stage, without provider/credit diagnostics.
-Profile cancellation remains available before paid submission and for operational
-review holds. Admin can also cancel in-flight creation, without a refund promise.
+Submitted-job cancellation is admin-only at every stage, including before paid
+submission and during operational holds. The former user cancel endpoint returns
+403 without changing the job, source photo or notification. Users can still
+discard a local selected photo with Cancel before submitting, and cancel unsaved
+display-setting edits. Admin can cancel in-flight creation without a refund promise.
+For submitted-photo assistance, Privacy provides the existing support email.
 No 24-hour completion promise, false maintenance label or disabled action button.
 
 Both roles use the same flow, regardless of published/accepted trips. Creation
@@ -94,7 +98,7 @@ directories. An offline Mac cannot perform cleanup until it resumes.
 | --- | --- |
 | GET `/api/avatar/jobs` | Verified account's latest job, supported reason or admin reviewReason and unread key; never photo, lease, account selector or provider URL |
 | POST `/api/avatar/jobs` | Verified account before/after decode; bounded photo, UUID, consent; body principal fields have no authority |
-| POST `/api/avatar/jobs/cancel` | Current owner, cancellable state only |
+| POST `/api/avatar/jobs/cancel` | Retired user action: verified callers receive 403 / AVATAR_CANCELLATION_ADMIN_ONLY; no job mutation |
 | POST `/api/avatar/jobs/reviewed` | Current owner's specific event only |
 | POST `/api/avatar-worker/claim` | Separate 256-bit worker bearer credential; atomic oldest queued job + five-minute random lease + photo |
 | POST `/api/avatar-worker/result` | Same credential plus matching unexpired job lease; approved/rejected/supported reason or runtime retry |

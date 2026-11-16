@@ -27,6 +27,7 @@ export function apiErrorMessage(
       INVALID_AVATAR_SUBMISSION: "Agree to the photo check and avatar creation before submitting.",
       AVATAR_ALREADY_QUEUED: "Your photo is already queued. Check its progress in Avatar.",
       AVATAR_JOB_CHANGED: "This photo’s progress has changed. Check the latest update in Avatar.",
+      AVATAR_CANCELLATION_ADMIN_ONLY: "Submitted photos can’t be cancelled here. For help, email jose@gumwheel.com.",
       AVATAR_SUBMISSION_CHANGED: "This submission has changed. Choose the photo again before submitting.",
       AVATAR_UPLOADS_UNAVAILABLE: "Photo uploads are temporarily unavailable. Use the default avatar and try uploading later.",
       AVATAR_UPLOAD_LIMIT: "You’ve reached the photo upload limit. Keep your current avatar and try again in 24 hours.",

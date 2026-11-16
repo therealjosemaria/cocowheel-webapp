@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypt
 import sharp from "sharp";
 import type { Db } from "./core";
 import type { AvatarJob, AvatarJobs, AvatarJobStatus } from "../lib/avatar-job";
-import { avatarJobActive, avatarJobCancellable, avatarRejections } from "../lib/avatar-job";
+import { avatarJobActive, avatarRejections } from "../lib/avatar-job";
 import { assignMapAvatar } from "./map-avatars";
 
 export const AVATAR_PHOTO_TTL = 7 * 86400_000;
@@ -132,17 +132,6 @@ export function finishAvatarJob(db: Db, id: string, status: AvatarJobStatus, rea
       db.prepare(`INSERT OR IGNORE INTO avatar_events(event_key,job_id,principal_id,status,created_at,due_at,next_at) VALUES (?,?,?,?,?,?,?)`)
         .run(`avatar:${id}:${status}`, id, job.principal_id, status, now, now + AVATAR_DELAY_MS, now + AVATAR_DELAY_MS);
   })();
-}
-export function cancelAvatarJob(db: Db, principal: string, id: unknown, now = Date.now()) {
-  const job = db.prepare("SELECT * FROM avatar_jobs WHERE principal_id=? AND id=?").get(principal, typeof id === "string" ? id : "") as AvatarJobRow | undefined;
-  if (!job || (!avatarJobCancellable(job.status) && !["REVIEW_REQUIRED", "FAILED"].includes(job.status))) throw new Error("AVATAR_JOB_CHANGED");
-  db.transaction(() => {
-    finishAvatarJob(db, job.id, "CANCELLED", null, now);
-    // The submitter already knows about their own cancellation. Admin-initiated
-    // cancellations still create the normal user result notification.
-    db.prepare("UPDATE avatar_events SET reviewed_at=COALESCE(reviewed_at,?) WHERE job_id=? AND status='CANCELLED'").run(now, job.id);
-  })();
-  return readAvatarJobs(db, principal);
 }
 export function claimAvatarPhoto(db: Db, now = Date.now()) {
   return db.transaction(() => {

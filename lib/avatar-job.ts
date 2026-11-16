@@ -2,7 +2,6 @@ export type AvatarJobStatus = "QUEUED" | "CHECKING" | "APPROVED" | "SUBMITTING" 
 export type AvatarJob = { id: string; status: AvatarJobStatus; reason: string | null; reviewReason?: string | null; notificationKey: string | null; createdAt: string };
 export type AvatarJobs = { accepting: boolean; job: AvatarJob | null };
 export const avatarJobActive = (status: AvatarJobStatus) => ["QUEUED", "CHECKING", "APPROVED", "SUBMITTING", "GENERATING", "REVIEW_REQUIRED"].includes(status);
-export const avatarJobCancellable = (status: AvatarJobStatus) => ["QUEUED", "CHECKING", "APPROVED"].includes(status);
 export const AVATAR_PHOTO_REQUIREMENTS = "Use a clear photo of just you standing, with your head, hands and feet visible.";
 export const AVATAR_PHOTO_ERROR = "Choose a JPG, PNG or WebP photo up to 10 MB, at least 256 pixels wide and 512 pixels tall.";
 export const AVATAR_REVIEW_REASON_LIMIT = 400;

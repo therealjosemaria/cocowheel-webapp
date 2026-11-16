@@ -6,7 +6,7 @@ import Database from "better-sqlite3";
 import sharp from "sharp";
 import { createGuestSession, initializeCoreSchema } from "../server/core";
 import { createApiServer } from "../server/index";
-import { AVATAR_DELAY_MS, AVATAR_LEASE_MS, AVATAR_PHOTO_TTL, avatarJobSummary, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, reviewAvatarEvent } from "../server/avatar-jobs";
+import { AVATAR_DELAY_MS, AVATAR_LEASE_MS, AVATAR_PHOTO_TTL, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, reviewAvatarEvent } from "../server/avatar-jobs";
 import { runAvatarGeneration as generateAvatar, type AvatarProvider } from "../server/avatar-generation";
 import { actOnAdminAvatar } from "../server/avatar-admin";
 import { deliverAvatarReminder } from "../server/avatar-email";
@@ -52,8 +52,8 @@ test("full-body normalization strips metadata without square cropping; rejects i
   await assert.rejects(prepareQueuedAvatarPhoto(`data:image/png;base64,${small.toString("base64")}`), /INVALID_AVATAR_PHOTO/);
 });
 
-test("queue is idempotent, private, consented, persistent and limited to one active job; cancel invalidates leases", async () => {
-  const { db, owner, other } = fixture(), photo = await image(), submission = randomUUID();
+test("queue is idempotent, private, consented, persistent and limited to one active job; admin cancellation invalidates leases", async () => {
+  const { db, owner, other, admin } = fixture(), photo = await image(), submission = randomUUID();
   try {
     assert.throws(() => enqueueAvatarPhoto(db, owner.id, photo, submission, false, start), /INVALID_AVATAR_SUBMISSION/);
     const first = enqueueAvatarPhoto(db, owner.id, photo, submission, true, start);
@@ -65,17 +65,17 @@ test("queue is idempotent, private, consented, persistent and limited to one act
     initializeCoreSchema(db); assert.equal(avatarJobSummary(db, owner.id)?.status, "QUEUED");
     const claimed = claimAvatarPhoto(db, start)!;
     assert.equal(claimAvatarPhoto(db, start), null);
-    assert.throws(() => cancelAvatarJob(db, other.id, claimed.id, start), /AVATAR_JOB_CHANGED/);
+    assert.throws(() => actOnAdminAvatar(db, claimed.id, "cancel", other.id, start), /ADMIN_ACCESS_DENIED/);
     assert.throws(() => completeAvatarPhoto(db, claimed.id, "invalid", "approved", null, start), /AVATAR_LEASE_EXPIRED/);
-    cancelAvatarJob(db, owner.id, claimed.id, start + 1);
-    assert.equal(avatarJobSummary(db, owner.id)?.notificationKey, null, "Self-cancellation needs no redundant user reminder");
+    actOnAdminAvatar(db, claimed.id, "cancel", admin.id, start + 1);
+    assert.ok(avatarJobSummary(db, owner.id)?.notificationKey, "Admin cancellation notifies the submitter");
     assert.throws(() => completeAvatarPhoto(db, claimed.id, claimed.lease, "approved", null, start + 2), /AVATAR_LEASE_EXPIRED/);
     assert.equal((db.prepare("SELECT photo FROM avatar_jobs").get() as { photo: null }).photo, null);
   } finally { db.close(); }
 });
 
 test("offline Mac leases retry three times and stale/replayed results cannot approve; photo TTL removes bytes", async () => {
-  const { db, owner } = fixture(), photo = await image();
+  const { db, owner, admin } = fixture(), photo = await image();
   try {
     enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start);
     const first = claimAvatarPhoto(db, start)!;
@@ -88,7 +88,7 @@ test("offline Mac leases retry three times and stale/replayed results cannot app
     assert.equal(avatarJobSummary(db, owner.id)?.status, "QUEUED");
     assert.equal((db.prepare("SELECT hold_reason FROM avatar_jobs").get() as { hold_reason: string }).hold_reason, "CHECK_UNAVAILABLE");
     assert.equal(claimAvatarPhoto(db, start + 3 * AVATAR_LEASE_MS + 4), null);
-    cancelAvatarJob(db, owner.id, first.id, start + 3 * AVATAR_LEASE_MS + 5);
+    actOnAdminAvatar(db, first.id, "cancel", admin.id, start + 3 * AVATAR_LEASE_MS + 5);
     enqueueAvatarPhoto(db, owner.id, photo, randomUUID(), true, start + 4 * AVATAR_LEASE_MS);
     expireAvatarJobs(db, start + AVATAR_PHOTO_TTL + 4 * AVATAR_LEASE_MS + 1);
     assert.equal(avatarJobSummary(db, owner.id)?.status, "EXPIRED");
@@ -165,7 +165,7 @@ test("uncertain paid submissions require review and never resubmit automatically
 });
 
 test("HTTP routes enforce owner sessions and separate worker credentials, reject cross-origin and hide photos from users", async () => {
-  const { db, owner, other } = fixture(), photo = await image();
+  const { db, owner, other, admin } = fixture(), photo = await image();
   const server = createApiServer(db); server.listen(0, "127.0.0.1"); await once(server, "listening");
   const address = server.address(); assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}`, headers = { Authorization: `Bearer ${owner.token}`, "Content-Type": "application/json" };
@@ -176,6 +176,23 @@ test("HTTP routes enforce owner sessions and separate worker credentials, reject
     const created = await fetch(base + "/api/avatar/jobs", { method: "POST", headers, body: JSON.stringify({ photo: `data:image/jpeg;base64,${photo.toString("base64")}`, submissionId: randomUUID(), consent: true, principal: other.id }) });
     assert.equal(created.status, 200); const result = await created.json();
     assert.equal(result.job.status, "QUEUED"); assert.equal(avatarJobSummary(db, other.id), null);
+    assert.equal((await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status, 401);
+    assert.equal((await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers: { ...headers, Authorization: `Bearer ${admin.token}` }, body: JSON.stringify({ id: result.job.id }) })).status, 403);
+    // The submitter and old clients cannot cancel any phase or select another owner.
+    for (const status of ["QUEUED", "CHECKING", "APPROVED", "SUBMITTING", "GENERATING", "REVIEW_REQUIRED", "FAILED", "READY"]) {
+      db.prepare("UPDATE avatar_jobs SET status=? WHERE id=?").run(status, result.job.id);
+      const denied = await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers, body: JSON.stringify({ id: result.job.id, principal: other.id }) });
+      assert.equal(denied.status, 403);
+      assert.equal((await denied.json()).error, "AVATAR_CANCELLATION_ADMIN_ONLY");
+      assert.equal((db.prepare("SELECT status FROM avatar_jobs WHERE id=?").get(result.job.id) as { status: string }).status, status);
+      assert.ok((db.prepare("SELECT photo FROM avatar_jobs WHERE id=?").get(result.job.id) as { photo: Buffer }).photo);
+    }
+    db.prepare("UPDATE avatar_jobs SET status='QUEUED' WHERE id=?").run(result.job.id);
+    db.prepare("UPDATE avatar_jobs SET created_at=? WHERE id=?").run(Date.now() - AVATAR_PHOTO_TTL - 1, result.job.id);
+    assert.equal((await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers, body: JSON.stringify({ id: result.job.id }) })).status, 403);
+    assert.equal((db.prepare("SELECT status FROM avatar_jobs WHERE id=?").get(result.job.id) as { status: string }).status, "QUEUED", "denial must not trigger job expiry or erase source bytes");
+    assert.ok((db.prepare("SELECT photo FROM avatar_jobs WHERE id=?").get(result.job.id) as { photo: Buffer }).photo);
+    db.prepare("UPDATE avatar_jobs SET created_at=? WHERE id=?").run(start, result.job.id);
     const otherResult = await fetch(base + "/api/avatar/jobs", { headers: { Authorization: `Bearer ${other.token}` } });
     assert.equal((await otherResult.json()).job, null);
     const workerHeaders = { Authorization: `Bearer ${process.env.COCOWHEELS_AVATAR_WORKER_KEY}`, "Content-Type": "application/json" };
@@ -184,6 +201,6 @@ test("HTTP routes enforce owner sessions and separate worker credentials, reject
     const visible = await (await fetch(base + "/api/avatar/jobs", { headers })).json();
     assert.ok(!JSON.stringify(visible).includes(claim.photo)); assert.ok(!JSON.stringify(visible).includes(claim.lease));
     assert.equal((await fetch(base + "/api/avatar-worker/result", { method: "POST", headers: workerHeaders, body: JSON.stringify({ id: claim.id, lease: claim.lease, verdict: "rejected", reason: "FEET" }) })).status, 200);
-    assert.equal((await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers: { ...headers, Authorization: `Bearer ${other.token}` }, body: JSON.stringify({ id: claim.id }) })).status, 409);
+    assert.equal((await fetch(base + "/api/avatar/jobs/cancel", { method: "POST", headers: { ...headers, Authorization: `Bearer ${other.token}` }, body: JSON.stringify({ id: claim.id }) })).status, 403);
   } finally { server.close(); server.closeAllConnections(); await once(server, "close"); db.close(); }
 });

@@ -40,28 +40,21 @@ export default function PrivacyPage() {
         your message and contact details to respond.
       </p>
       <p>
-        If you upload a photo to create an avatar, we remove its metadata and
-        privately queue it for an automated visibility and standing-pose check.
-        Selecting Submit photo requests this check and avatar creation if the
-        photo passes review; selecting a file alone does not submit it.
-        These checks are estimates, not identity verification or a guarantee of
-        likeness. With your agreement, passing photos are sent to Tripo to create
-        an avatar. Tripo processes that photo under its{" "}
+        Selecting Submit photo asks us to check your photo against the stated
+        requirements and create your avatar if it passes review. Selecting a
+        file alone does not submit it. Checks may take time and do not verify
+        identity or guarantee likeness. Passing photos are shared with Tripo to
+        create your avatar under its{" "}
         <a href="https://www.tripo3d.ai/privacy" target="_blank" rel="noreferrer">privacy policy</a>.
-        Photo checks may wait until our checking service is available; approved
-        photos may wait for generation capacity. You can cancel before generation
-        begins. Your existing avatar remains available while a replacement is made.
-        We remove the generated image’s background on our server before preparing
-        its map illustration; that step does not send the image to another service.
+        Your existing avatar remains available while a replacement is made.
+        For help with a submitted photo, email{" "}
+        <a href="mailto:jose@gumwheel.com">jose@gumwheel.com</a>.
       </p>
       <p>
         Submitted photos are available to the administrator for review for up to
-        seven days, and removed earlier if the creation is cancelled. Generation
-        requires separate administrator approval after the photo passes its check.
-        We may reject a passing photo on review and explain what to change before
-        you upload another photo.
-        Temporary checking copies are removed when the check finishes or the checking worker next restarts.
-        Job, generated-preview and notification records are retained for up to 30 days
+        seven days, and removed earlier if we cancel the submission. If your
+        photo does not meet the requirements, we explain what to change before
+        you upload another photo. Result and generated-preview records are kept for up to 30 days
         after their final update; backups and Tripo may retain their own copies. Creating an
         avatar does not automatically enable its public display. Photo-check and
         avatar results appear in Profile; if the latest result is unreviewed after
