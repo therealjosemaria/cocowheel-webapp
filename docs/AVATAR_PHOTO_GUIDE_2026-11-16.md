@@ -275,3 +275,10 @@ route cleanup, no server/shared global photo cache, guarded async restoration an
 existing submission reconciliation. No real photo, production account, paid task
 or notification was used. Physical devices and authenticated production Profile
 remain unverified. Exact frontend deployment is recorded after push.
+
+Same-tab activation: `07efc99fe912ed8252a7ba679e4c3084df4150c5` is READY as
+Vercel `dpl_8Z3KUWg5UHPmAXvFWFohNN4sSq79`, assigned to both public domains.
+Anonymous production guide checks pass at 320/390/844/1440 with non-read requests
+blocked. The live 390px case clicks Back, reaches Profile at `?avatar=1` and
+confirms a single tab. Authenticated photo/draft and upload checks use the isolated
+fixture described above; no production account write or API restart was performed.
