@@ -6,6 +6,8 @@ standing-person art. No new size, colour, background, spacing or typography toke
 
 16 November avatar selection reuses contribution-choice/profile-disclosure,
 vehicle-fields, usual-alert-choice and existing primary/secondary action styles.
+Saved and edit views share the same 20px checkbox, regular small Personal avatar
+label, 8px gap and 44px row; no stacked label/value summary or separate status icon.
 Both previews occupy the vehicle preview's centred 144×108px area; contained alpha
 sprites retain the full figure. Map renders fit 48×46px inside the existing 48px
 slot with a 1px ground inset and unchanged [24,40] anchor. No new colour, font,

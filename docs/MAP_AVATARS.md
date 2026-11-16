@@ -9,9 +9,14 @@ Tripo request, credit spend, Snap import, Mac service or model inference is invo
 The public sprite is a static render of that selected model, not an animated GLB.
 
 Profile → Avatar is initially collapsed, below Personal details. Assigned accounts
-can Edit the existing Use personal avatar checkbox, preview the personal/default
-figure, then Save or Cancel. The saved summary says Personal avatar: Enabled or
-Disabled, using the existing label/value layout.
+see the same single-line Personal avatar checkbox in saved and edit views, preview
+the personal/default figure, then Save or Cancel. The tick shows the selection;
+there is no separate Enabled/Disabled line. The checkbox stays focusable and
+announces aria-readonly outside Edit (also while saving); pointer/Space activation
+and change handling preserve the saved state until Edit. Cancel restores the saved
+choice without a write. This reuses usual-alert-choice rather than a new switch
+or status icon. Native HTML checkboxes do not support the readonly attribute, so
+the component pairs ARIA semantics with an activation guard.
 The public-Home disclosure sits beside this choice. No assignment means the default
 preview and no unavailable Create button. Loading failures retain Try again;
 failed previews/map images fall back to the existing waiting-person illustration.
@@ -19,6 +24,14 @@ Buttons remain available; a synchronous in-flight guard prevents duplicate saves
 Changes affect map display only, not circular profile photos, role labels,
 car/bicycle artwork, journey permissions, acceptance or history. There is no
 rating, role, active-trip restriction or cooldown on this display preference.
+
+Pattern references: the [WAI checkbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/)
+defines the checked/unchecked state and Space interaction. The
+[HTML input standard](https://html.spec.whatwg.org/dev/input.html#the-readonly-attribute)
+does not give checkboxes a native readonly mode;
+[ARIA in HTML](https://www.w3.org/TR/html-aria/)
+permits the corresponding ARIA property where the role supports it. The app's
+activation guard enforces the requested Edit-only modification rule.
 
 ## Storage, assignment and privacy
 
@@ -162,12 +175,38 @@ restart is needed for this documentation-only follow-up.
 
 ### Personal avatar wording refinement — 16 November
 
-The saved summary now uses Personal avatar with Enabled/Disabled; the edit label
-is Use personal avatar, and the helper reads “When enabled, shown on maps,
-including public Home.” Existing label/value typography and controls are retained.
+The initial saved summary used Personal avatar with Enabled/Disabled and the edit
+label Use personal avatar; the single-line checkbox above supersedes that split.
+The helper reads “When enabled, shown on maps, including public Home.” That copy
+refinement retained the then-existing label/value typography and controls.
 Visual-system regression, component ESLint and production build pass. Mocked
 Profile browser checks pass at 320/390/1440px for enabled, disabled, unassigned,
 preview and Edit/Save/Cancel states, with no overflow or page errors. Whole screens
 were visually reviewed at 390/1440px for regular body weight, wrapping, spacing and
 action hierarchy. No API restart or data change is required; physical-device and
 live owner browser checks were not performed for this copy refinement.
+
+### Single-line checkbox refinement — 16 November
+
+Baseline `f0ac5c8`; this is a frontend-only refinement. Reuses the same checkbox
+DOM element across Edit, Save and Cancel, with regular-weight inline label and
+the existing 20px control / 8px gap / 44px row. No CSS, palette, API, assignment,
+generation or permission change; no API restart is required.
+
+Component ESLint, visual-system regression and production build pass. The initial
+sandboxed build stalled and was stopped; the authorised build completed with exit
+0. The existing isolated fixture/browser command above printed PASS at
+320/390/1440px for both roles and map refresh; its session returned 143 after those
+results. A focused Profile rerun against the actual in-memory API completed with
+exit 0 at all three widths: pointer/Space cannot toggle saved enabled or disabled
+choices, Edit reuses the same input, Cancel sends no save, and Save/reload persist
+the selected boolean. No page exceptions or horizontal overflow. Development
+console inspection also found a duplicate navigation key for the synthetic
+identity `tester01`; that navigation code is unchanged by this refinement.
+
+Whole Profile screens in saved and edit states were visually reviewed at 390 and
+1440px for one-line label fit, preview size, emphasis, colour, spacing, adjacent
+disclosures and action hierarchy. Artifacts/logs remain local under
+`/tmp/gumwheel-map-avatar-review` and `/tmp/gumwheel-avatar-checkbox-*`. Physical
+devices, assistive-technology announcements and the live owner's signed-in
+walkthrough remain unverified. Deployment is checked separately after push.

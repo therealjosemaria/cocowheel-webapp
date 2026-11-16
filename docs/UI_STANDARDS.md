@@ -2,11 +2,13 @@
 
 16 November map avatars: Profile adds an initially closed Avatar disclosure below
 Personal details, reusing the existing disclosure layout, inset, preview area and
-Edit/Save/Cancel actions. The native checkbox “Use personal avatar” follows the
-existing usual-alert-choice pattern; the preview updates before Save, and Cancel
-restores the saved choice. The saved summary uses Personal avatar with Enabled/
-Disabled. Explain public Home visibility in regular helper text without repeating
-the word avatar.
+Edit/Save/Cancel actions. The single-line “Personal avatar” checkbox follows the
+existing usual-alert-choice pattern in both saved and edit views; its tick conveys
+the state without a second Enabled/Disabled line. Outside Edit it remains focusable
+with aria-readonly, and pointer/Space activation cannot change it. Edit allows
+changes; the preview updates before Save, and Cancel restores the saved choice.
+Explain public Home visibility in regular helper text without repeating the word
+avatar.
 Accounts without an assigned avatar show the default preview without a creation
 button. Personal map artwork does not replace semantic role icons or profile
 photos. Existing 48px map slots/anchors, route colours and Home interaction rules

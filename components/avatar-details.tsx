@@ -59,10 +59,10 @@ export default function AvatarDetails() {
         : <p>Loading…</p>
         : <>
           <AvatarPreview key={preview} src={preview} />
-          {editing
-            ? <label className="usual-alert-choice"><input type="checkbox" checked={enabled}
-                onChange={event => { if (!submitting.current) setEnabled(event.target.checked); }} />Use personal avatar</label>
-            : <dl className="profile-personal-summary"><div><dt>Personal avatar</dt><dd>{saved.enabled ? "Enabled" : "Disabled"}</dd></div></dl>}
+          <label className="usual-alert-choice"><input type="checkbox" checked={Boolean(selected)}
+              aria-readonly={!editing || busy}
+              onClick={event => { if (!editing || submitting.current) event.preventDefault(); }}
+              onChange={event => { if (editing && !submitting.current) setEnabled(event.target.checked); }} />Personal avatar</label>
           {saved.available && <p className="save-route-profile-note">When enabled, shown on maps, including public Home.</p>}
           {editing ? <div className="ride-action-buttons">
             <button className="primary" aria-busy={busy}>{busy ? "Saving…" : "Save"}</button>

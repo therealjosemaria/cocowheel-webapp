@@ -10,7 +10,9 @@ assigned their own render. Source photos/3D files remain private. This supersede
 the earlier trial-only map boundary below. Self-service creation, Mac validation
 and queued photo checks are not implemented. See [map avatars](docs/MAP_AVATARS.md).
 The API and production frontend were activated and verified on 16 November.
-Profile summarises this choice as Personal avatar: Enabled or Disabled.
+Profile keeps the Personal avatar checkbox on one line in both saved and edit
+views. Its tick shows the choice; Edit permits changes, Save applies them and
+Cancel restores the saved choice.
 Personal details uses a contact-card icon; Avatar retains the standing person.
 
 14 November avatar trial: all five pinned Tripo models completed using one private
