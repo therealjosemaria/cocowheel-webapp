@@ -10,6 +10,7 @@ assigned their own render. Source photos/3D files remain private. This supersede
 the earlier trial-only map boundary below. Self-service creation, Mac validation
 and queued photo checks are not implemented. See [map avatars](docs/MAP_AVATARS.md).
 The API and production frontend were activated and verified on 16 November.
+Profile summarises this choice as Personal avatar: Enabled or Disabled.
 
 14 November avatar trial: all five pinned Tripo models completed using one private
 reference, with task-level charges totalling US$2.50. The owner-only comparison

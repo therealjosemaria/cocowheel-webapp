@@ -9,7 +9,9 @@ Tripo request, credit spend, Snap import, Mac service or model inference is invo
 The public sprite is a static render of that selected model, not an animated GLB.
 
 Profile → Avatar is initially collapsed, below Personal details. Assigned accounts
-can Edit the existing checkbox, preview My avatar / Default, then Save or Cancel.
+can Edit the existing Use personal avatar checkbox, preview the personal/default
+figure, then Save or Cancel. The saved summary says Personal avatar: Enabled or
+Disabled, using the existing label/value layout.
 The public-Home disclosure sits beside this choice. No assignment means the default
 preview and no unavailable Create button. Loading failures retain Try again;
 failed previews/map images fall back to the existing waiting-person illustration.
@@ -157,3 +159,15 @@ blocked in this production check, including analytics. Avatar controls and both
 participant roles were tested against the isolated actual API as above; the live
 owner sign-in walkthrough and physical Safari remain unverified. No further API
 restart is needed for this documentation-only follow-up.
+
+### Personal avatar wording refinement — 16 November
+
+The saved summary now uses Personal avatar with Enabled/Disabled; the edit label
+is Use personal avatar, and the helper reads “When enabled, shown on maps,
+including public Home.” Existing label/value typography and controls are retained.
+Visual-system regression, component ESLint and production build pass. Mocked
+Profile browser checks pass at 320/390/1440px for enabled, disabled, unassigned,
+preview and Edit/Save/Cancel states, with no overflow or page errors. Whole screens
+were visually reviewed at 390/1440px for regular body weight, wrapping, spacing and
+action hierarchy. No API restart or data change is required; physical-device and
+live owner browser checks were not performed for this copy refinement.

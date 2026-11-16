@@ -42,7 +42,7 @@ with sync_playwright() as p:
         assert preview.evaluate("e => e.complete && e.naturalHeight === 256")
         profile.screenshot(path=str(OUT/f"profile-{width}.png"), full_page=True)
         avatar.get_by_role("button", name="Edit", exact=True).click()
-        checkbox = avatar.get_by_role("checkbox", name="Use my avatar on maps", exact=True)
+        checkbox = avatar.get_by_role("checkbox", name="Use personal avatar", exact=True)
         expect(checkbox).to_be_checked()
         profile.screenshot(path=str(OUT/f"profile-edit-{width}.png"), full_page=True)
         checkbox.uncheck()

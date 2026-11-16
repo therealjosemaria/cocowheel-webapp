@@ -61,9 +61,9 @@ export default function AvatarDetails() {
           <AvatarPreview key={preview} src={preview} />
           {editing
             ? <label className="usual-alert-choice"><input type="checkbox" checked={enabled}
-                onChange={event => { if (!submitting.current) setEnabled(event.target.checked); }} />Use my avatar on maps</label>
-            : <dl className="profile-personal-summary"><div><dt>Map avatar</dt><dd>{saved.enabled ? "My avatar" : "Default"}</dd></div></dl>}
-          {saved.available && <p className="save-route-profile-note">Your avatar can appear on maps, including public Home.</p>}
+                onChange={event => { if (!submitting.current) setEnabled(event.target.checked); }} />Use personal avatar</label>
+            : <dl className="profile-personal-summary"><div><dt>Personal avatar</dt><dd>{saved.enabled ? "Enabled" : "Disabled"}</dd></div></dl>}
+          {saved.available && <p className="save-route-profile-note">When enabled, shown on maps, including public Home.</p>}
           {editing ? <div className="ride-action-buttons">
             <button className="primary" aria-busy={busy}>{busy ? "Saving…" : "Save"}</button>
             <button type="button" className="secondary" onClick={() => {
