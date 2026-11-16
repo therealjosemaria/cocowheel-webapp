@@ -1,5 +1,10 @@
 # GUMWHEEL
 
+17 November map seam correction: the shared map positions background tiles in
+2D to remove the thin bright join seen across Home. Tile dimensions/coordinates,
+marker rendering, feeds, zoom controls and permissions are preserved. No API
+restart is needed. See [tile rendering verification](docs/MAP_RENDERING.md#thin-tile-seam-correction--17-november-2026).
+
 17 November area loading and shared maps: Home now requests all-post coarse
 bounds once, then fetches qualifying drivers/riders for the area after pan/zoom,
 filtering before response caps. Global sampling cannot crowd out a newly viewed

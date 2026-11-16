@@ -214,3 +214,48 @@ returns 200. The read-only deployed-frontend Home suite passes 320/390/844/1440p
 with synthetic APIs and writes blocked; whole phone/desktop Home screenshots
 were reviewed. Real owner login, physical phones and production concurrency are
 still unverified. This documentation follow-up changes no runtime source.
+
+## Thin tile seam correction — 17 November 2026
+
+From baseline `b79298b`, a live guest Home inspection at 390px/DPR3 and
+1440px/DPR2 reproduced a thin bright horizontal seam through the city and ocean.
+Home contained zero SVG paths/canvases, so this was a raster tile join rather
+than journey geometry or a public location boundary. Tile borders were zero;
+separate translated tile compositor layers and additive blending exposed the
+edge. An isolated live-page switch to 2D tile positioning removed the same line.
+
+[Leaflet's upstream correction](https://github.com/Leaflet/Leaflet/pull/10471)
+explains the compositor cause. We adapt only the background tile-positioning
+part through the public `tileloadstart` event and `DomUtil.getPosition` API in
+MapSurface, shared by Home, search and journey maps. Leaflet has already stored
+and applied the tile position before firing this event. Use 2D `translate` for
+each newly requested tile, retaining the stored coordinates and 256px dimensions.
+No tile enlargement, duplicated layers, image resampling, library/prototype
+patch, provider switch or new dependency. Markers keep their existing 3D
+positioning. Existing fades, map-level zoom transforms, route paths, credits,
+controls, figure budgets, polling, privacy and permissions remain unchanged.
+No API, schema, configuration, source image or backend restart is involved.
+
+Reproduce after an optimized loopback build/fixture start from the earlier guide:
+
+```sh
+/tmp/gumwheel-ui-check-env/bin/python scripts/check-map-tile-seams.py
+GUMWHEEL_TEST_TILES=1 /tmp/gumwheel-ui-check-env/bin/python scripts/check-map-avatars.py
+GUMWHEEL_TEST_BASE_URL=http://127.0.0.1:3491 GUMWHEEL_TEST_TILES=1 /tmp/gumwheel-ui-check-env/bin/python scripts/check-home-presence.py
+```
+
+The seam check supplies opaque synthetic 256×256 raster tiles, so a long bright
+join is measurable without depending on road/label detail. It measures settled
+pixel rows, intentionally restores former 3D positioning to retain the failing
+baseline, then restores 2D positioning and checks new tiles after pan/zoom.
+Widths/DPRs: 390/3, 1440/2, 390/1.25 and 1440/1. The old baseline need not fail
+on every device scale; at least one reproduced failure and corrected result is
+required. Image dimensions and marker positioning are checked separately.
+Use normal colour tiles for whole-screen mobile/desktop aesthetic review of
+Home and both search roles; synthetic solid backgrounds alone are insufficient.
+
+Results and activation status are in
+[the sanitized record](results/map-tile-seams-2026-11-17.json). Physical Safari,
+Android/Windows GPU variations and arbitrary page/pinch zoom or animation frames
+are not certified by this settled-view test. No live account/trip mutation or
+paid provider request is part of the checks.

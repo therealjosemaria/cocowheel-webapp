@@ -1,10 +1,20 @@
 "use client";
 import { useEffect, type ComponentProps } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { DomUtil, type TileEvent } from "leaflet";
 import { MAP_TILE_URL } from "@/lib/map-style";
 import MapCredits from "./map-credits";
 import { journeyRoleArtClass } from "@/lib/journey-role-art";
 import { forgetMapImageIcon } from "@/lib/map-role-icon";
+
+const tileEvents = {
+  tileloadstart: ({ tile }: TileEvent) => {
+    // Flatten background tiles only: separate 3D layers can expose bright seams.
+    // Keep Leaflet's stored position and original image dimensions unchanged.
+    const position = DomUtil.getPosition(tile);
+    tile.style.transform = `translate(${position.x}px, ${position.y}px)`;
+  },
+};
 
 function AvatarImageFallback() {
   const map = useMap();
@@ -37,7 +47,7 @@ export default function MapSurface({
 }) {
   return <div className={frameClassName}>
     <MapContainer {...props} attributionControl={false}>
-      <TileLayer url={MAP_TILE_URL} />
+      <TileLayer url={MAP_TILE_URL} eventHandlers={tileEvents} />
       <AvatarImageFallback />
       {children}
     </MapContainer>

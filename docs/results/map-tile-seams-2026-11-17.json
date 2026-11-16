@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-17",
+  "baselineRevision": "b79298bb7ef7939e9c5c3f90a3cd0c8720b8a00c",
+  "sourceSha256": {
+    "components/map-surface.tsx": "92c9b13d05f0ca747c78e50740a29f4dc99a58897a2752fdcf44173c97b47a4b",
+    "scripts/check-map-tile-seams.py": "0df9d287d5208a81c1d6a29d9d378ac9061395e5d586eaff932594372a26c3b1"
+  },
+  "issue": "Thin bright horizontal line across live Home raster tiles",
+  "diagnosis": {
+    "liveBrowserWidthsDpr": [
+      [
+        390,
+        3
+      ],
+      [
+        1440,
+        2
+      ]
+    ],
+    "homeSvgPathCanvasCount": 0,
+    "tileBorderPixels": 0,
+    "isolatedLive2DPositionSwitchRemovedSeam": true,
+    "upstream": "https://github.com/Leaflet/Leaflet/pull/10471"
+  },
+  "implementation": "Public tileloadstart handler uses DomUtil.getPosition and 2D CSS translate only for base raster images. Original coordinates/dimensions retained; markers and level transforms unchanged; no global/private Leaflet patch, resize, new request/provider/dependency or backend restart.",
+  "isolation": "Live inspection GET/HEAD only; source browser checks on separate in-memory synthetic API and optimized frontend. Solid PNG test tiles; colour tiles for whole-screen visual review. No live trip/account actions, GPS or paid provider calls.",
+  "checks": {
+    "lint": "PASS",
+    "optimizedBuild": "PASS",
+    "pixelBaselineAndCorrection": [
+      {
+        "width": 390,
+        "dpr": 3,
+        "fixedPeakBrightRowFraction": 0.0072,
+        "legacyPeakBrightRowFraction": 0.8273,
+        "afterPanZoomPeakBrightRowFraction": 0.0036,
+        "tileDimensionsUnchanged": true,
+        "markersKeep3DPositioning": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "dpr": 2,
+        "fixedPeakBrightRowFraction": 0.0066,
+        "legacyPeakBrightRowFraction": 0.9252,
+        "afterPanZoomPeakBrightRowFraction": 0.0066,
+        "tileDimensionsUnchanged": true,
+        "markersKeep3DPositioning": true,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "dpr": 1.25,
+        "fixedPeakBrightRowFraction": 0,
+        "legacyPeakBrightRowFraction": 0.8203,
+        "afterPanZoomPeakBrightRowFraction": 0,
+        "tileDimensionsUnchanged": true,
+        "markersKeep3DPositioning": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "dpr": 1,
+        "fixedPeakBrightRowFraction": 0,
+        "legacyPeakBrightRowFraction": 0,
+        "afterPanZoomPeakBrightRowFraction": 0,
+        "tileDimensionsUnchanged": true,
+        "markersKeep3DPositioning": true,
+        "errors": []
+      }
+    ],
+    "bothRoleJourneyMaps": {
+      "result": "PASS",
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "script": "scripts/check-map-avatars.py",
+      "coverage": "Home, Profile full preview/display edits, rider selected search, requested journey detail, driver discovery/pending request, pan/zoom, route retention, cross-tab update and fallback"
+    },
+    "homeLifecycle": {
+      "result": "PASS",
+      "widths": [
+        320,
+        390,
+        844,
+        1440
+      ],
+      "script": "scripts/check-home-presence.py"
+    }
+  },
+  "visualReview": {
+    "screens": [
+      "Whole Home at 390/1440 with normal colour tiles",
+      "Rider selected search at 390/1440",
+      "Driver selected request/discovery at 390/1440"
+    ],
+    "finding": "No seam in the corrected observed screens; existing hierarchy, attribution, actions, map sizing, role artwork and selected route presentation preserved."
+  },
+  "retainedBaseline": {
+    "legacy": "Reverting tile positions to translate3d inside isolated browser reproduced a long bright row at DPR3/2/1.25; DPR1 did not reproduce it. Pixel results retain both baseline and correction.",
+    "harnessFailure": "Initial Home lifecycle command used its default :3201 while isolated Next listens :3491 and failed before page load; rerun only that suite with GUMWHEEL_TEST_BASE_URL set explicitly.",
+    "retest": "PASS Home lifecycle at all four widths with the correct fixture port"
+  },
+  "reproduction": "docs/MAP_RENDERING.md#thin-tile-seam-correction--17-november-2026",
+  "limits": [
+    "Physical Safari/Android/Windows hardware not tested",
+    "Arbitrary browser/page pinch zoom and intermediate fade/animation frames not certified",
+    "No throughput/capacity claim from this visual correction"
+  ],
+  "production": {
+    "status": "PENDING frontend push/deployment verification",
+    "apiRestartRequired": false
+  }
+}
