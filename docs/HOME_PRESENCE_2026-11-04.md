@@ -53,8 +53,21 @@ phone and desktop screens were visually reviewed for heading clearance, action
 hierarchy, map/control/credit spacing and ordinary activity scrolling. No new
 copy, palette or controls outside the shared map widget. Hook review: the ref
 only remembers framed area keys; existing effects, cleanup and polling remain.
-Physical Safari and authenticated production activity remain unverified. Exact
-frontend deployment is recorded after push.
+Physical Safari and authenticated production activity remain unverified.
+
+Implementation `7926ae0ac7cfaa3645c6e5384d4cb82be5b11a5d` is verified READY in
+Vercel production (`dpl_FS7t8SyHBH8JaT7B2GHrV6zWgq9b`) on www.gumwheel.com
+and gumwheel.com. The same presence suite passes all four widths against the
+deployed frontend, including touch pinch on phones and zoom retention. Its APIs
+are synthetic; non-GET/HEAD external requests are blocked, so no real journeys,
+GPS, account mutations, generation or email were created. Whole deployed Home
+was visually reviewed on phone/desktop. Reproduce the read-only frontend check:
+
+```sh
+GUMWHEEL_TEST_BASE_URL=https://www.gumwheel.com GUMWHEEL_TEST_TILES=1 /tmp/gumwheel-ui-check-env/bin/python scripts/check-home-presence.py
+```
+
+No API service restart was performed or needed.
 
 16 November [assigned map avatars](MAP_AVATARS.md) extends rider cells with the
 same bounded `artworks` array. Enabled account sprites use opaque public image
