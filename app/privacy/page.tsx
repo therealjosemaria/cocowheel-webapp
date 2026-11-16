@@ -40,6 +40,27 @@ export default function PrivacyPage() {
         your message and contact details to respond.
       </p>
       <p>
+        If you upload a photo to create an avatar, we remove its metadata and
+        privately queue it for an automated visibility and standing-pose check.
+        These checks are estimates, not identity verification or a guarantee of
+        likeness. With your agreement, passing photos are sent to Tripo to create
+        an avatar. Tripo processes that photo under its{" "}
+        <a href="https://www.tripo3d.ai/privacy" target="_blank" rel="noreferrer">privacy policy</a>.
+        Photo checks may wait until our checking service is available; approved
+        photos may wait for generation capacity. You can cancel before generation
+        begins. Your existing avatar remains available while a replacement is made.
+      </p>
+      <p>
+        Queued photos are removed from our active database after processing or
+        after seven days, whichever comes first. Temporary checking copies are
+        removed when the check finishes or the checking worker next restarts.
+        Job and notification records are retained for up to 30 days after their
+        final update; backups and Tripo may retain their own copies. Creating an
+        avatar does not automatically enable its public display. Photo-check and
+        avatar results appear in Profile; if the latest result is unreviewed after
+        five minutes, we send an email through Resend linking to it without the photo.
+      </p>
+      <p>
         If an avatar has been assigned to your account, you can preview it and
         choose whether to use it on maps in Profile. Enabled avatar illustrations
         are public images and can appear on the public homepage beside a general
@@ -176,7 +197,8 @@ export default function PrivacyPage() {
       <h2>Service providers</h2>
       <p>
         Vercel and Cloudflare deliver and protect the service; Resend sends
-        verification emails; Geoapify receives place searches and coordinates to
+        verification emails; Tripo receives approved photos to create requested
+        avatars; Geoapify receives place searches and coordinates to
         provide address and route results. Map tiles are requested from
         OpenStreetMap. These providers may receive technical information such as
         IP addresses and request metadata, and may process information outside

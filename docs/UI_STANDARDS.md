@@ -9,8 +9,15 @@ with aria-readonly, and pointer/Space activation cannot change it. Edit allows
 changes; the preview updates before Save, and Cancel restores the saved choice.
 Explain public Home visibility in regular helper text without repeating the word
 avatar.
-Accounts without an assigned avatar show the default preview without a creation
-button. Personal map artwork does not replace semantic role icons or profile
+The self-service extension adds Upload photo for unassigned accounts and Update
+photo for assigned accounts, using the same secondary button; selected photos
+reuse the contained preview and shared checkbox/action styles. Requirements and
+Tripo processing are concise regular helper copy; submission consent is explicit.
+Queued/results copy lives here, with Cancel available only before generation.
+The Profile badge uses the existing style and a separate Avatar update link that
+opens this disclosure/result; no creation controls in messaging or journey panels.
+No repeated requirements paragraph below a rejection/ready result. See
+[avatar creation](AVATAR_CREATION.md). Personal map artwork does not replace semantic role icons or profile
 photos. Existing 48px map slots/anchors, route colours and Home interaction rules
 are unchanged. See [map avatars](MAP_AVATARS.md).
 

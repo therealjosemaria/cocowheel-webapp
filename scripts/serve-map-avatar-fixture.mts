@@ -2,6 +2,8 @@
 // Never uses production sessions, trip records, provider credentials or paid generation.
 import Database from "better-sqlite3";
 import { createHash } from "node:crypto";
+import { createServer } from "node:http";
+import { runAvatarGeneration } from "../server/avatar-generation";
 import { readFile } from "node:fs/promises";
 import { initializeCoreSchema, createGuestSession, findSession, publishRide, requestRide } from "../server/core";
 import { postDemand } from "../server/rider-demands";
@@ -12,6 +14,11 @@ if (process.env.GUMWHEEL_AVATAR_FIXTURE !== "1") throw new Error("Local fixture 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 process.env.COCOWHEELS_FRONTEND_ORIGINS = "http://127.0.0.1:3491";
 process.env.COCOWHEELS_ROUTE_ALERTS_ENABLED = "0";
+process.env.COCOWHEELS_AVATAR_UPLOADS = "1";
+process.env.COCOWHEELS_AVATAR_WORKER_KEY = "synthetic-avatar-worker-key-".repeat(3);
+delete process.env.TRIPO_API_KEY;
+delete process.env.COCOWHEELS_TRIPO_CREDENTIALS_FILE;
+delete process.env.COCOWHEELS_RESEND_API_KEY;
 delete process.env.RESEND_API_KEY;
 const db = new Database(":memory:");
 initializeCoreSchema(db);
@@ -23,7 +30,8 @@ function account(name: string, token: string) {
 }
 const owner = account("tester01", "synthetic-avatar-owner"), driver = account("driver01", "synthetic-avatar-driver");
 const input = process.env.GUMWHEEL_AVATAR_RENDER || "data/tripo-comparison/P2-20260801.png";
-assignMapAvatar(db, owner.session.id, await prepareAvatarSprite(await readFile(input)), true);
+const render = await prepareAvatarSprite(await readFile(input));
+assignMapAvatar(db, owner.session.id, render, true);
 const origin = { latitude: -33.8923, longitude: 151.1981, label: "Redfern Station" };
 const destination = { latitude: -33.8886, longitude: 151.1872, label: "University of Sydney" };
 const posted = postDemand(db, owner.token, { origin, destination, date: "any", time: "" });
@@ -31,4 +39,17 @@ const ride = publishRide(db, driver.token, { origin, destination, priceAud: 0, s
 requestRide(db, owner.token, ride.rideId, { pickup: origin, destination, requestedDepartureAt: ride.scheduledDepartureAt });
 const api = createApiServer(db);
 api.listen(3492, "127.0.0.1", () => console.log(JSON.stringify({ requestId: posted.id, rideId: ride.rideId })));
-process.on("SIGTERM", () => api.close(() => { db.close(); process.exit(); }));
+// Synthetic fixture controls only: never mounted by the application API.
+const controls = createServer(async (request, response) => {
+  if (request.method !== "POST" || request.headers["x-gumwheel-fixture"] !== "1") { response.writeHead(403); response.end(); return; }
+  if (request.url === "/reset") {
+    db.prepare("DELETE FROM avatar_jobs WHERE principal_id=?").run(driver.session.id);
+    db.prepare("DELETE FROM account_map_avatars WHERE principal_id=?").run(driver.session.id);
+  } else if (request.url === "/generate") {
+    const next = (db.prepare("SELECT MAX(next_at) AS next FROM avatar_jobs WHERE status IN ('APPROVED','GENERATING')").get() as { next: number | null }).next ?? 0;
+    await runAvatarGeneration(db, { request: async path => path === "/account/balance" ? { balance: 1000 } : path === "/files" ? { file_token: "file_fixture" } : path.startsWith("/tasks/") ? { status: "success", output: { rendered_image_url: "https://tripo3d.ai/fixture.png" } } : { task_id: "fixture-task-"+Date.now() }, image: async () => render }, Math.max(Date.now(), next)+1000);
+  } else { response.writeHead(404); response.end(); return; }
+  response.writeHead(200, { "Content-Type": "application/json" }); response.end('{"ok":true}');
+});
+controls.listen(3494, "127.0.0.1");
+process.on("SIGTERM", () => { controls.close(); api.close(() => { db.close(); process.exit(); }); });

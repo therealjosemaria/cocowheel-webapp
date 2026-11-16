@@ -43,6 +43,7 @@ export type RequestStatus =
 export type Participant = "DRIVER" | "RIDER";
 import { initializeProfiles, publicName } from "./personal-details";
 import { initializeMapAvatars, avatarArtwork } from "./map-avatars";
+import { initializeAvatarJobs } from "./avatar-jobs";
 export type Session = { id: string; alias: string; unikey?: string };
 export type Pin = { latitude: number; longitude: number; label?: string };
 export type DirectionFit = "GOOD" | "POOR";
@@ -367,6 +368,7 @@ export function initializeCoreSchema(db: Db) {
   initializeUsualRoutes(db);
   initializeVehicles(db);
   initializeMapAvatars(db);
+  initializeAvatarJobs(db);
   allowFreeRideFares(db);
   const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;

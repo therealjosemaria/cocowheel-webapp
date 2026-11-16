@@ -65,6 +65,9 @@ import { readVehicle, saveProfileVehicle } from "./vehicles";
 import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
+import { authorizeAvatarWorker, avatarUploadsEnabled, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
+import { runAvatarGeneration } from "./avatar-generation";
+import { deliverAvatarReminder } from "./avatar-email";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -147,6 +150,9 @@ function errorStatus(error: unknown) {
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
   if (code === "AVATAR_UNAVAILABLE") return 409;
+  if (["AVATAR_ALREADY_QUEUED", "AVATAR_JOB_CHANGED", "AVATAR_LEASE_EXPIRED", "AVATAR_SUBMISSION_CHANGED"].includes(code)) return 409;
+  if (["AVATAR_QUEUE_FULL", "AVATAR_UPLOAD_LIMIT"].includes(code)) return 429;
+  if (code === "AVATAR_UPLOADS_UNAVAILABLE") return 503;
   if (["VEHICLE_PLATE_REQUIRED", "VEHICLE_IN_USE"].includes(code)) return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
@@ -468,6 +474,17 @@ export function createApiServer(
     }
     try {
       const adminUrl = new URL(request.url ?? "/", "http://api.local");
+      if (adminUrl.pathname.startsWith("/api/avatar-worker/")) {
+        if (!authorizeAvatarWorker(request.headers.authorization)) { writeJson(response, 403, { error: "WORKER_ACCESS_DENIED" }, cors); return; }
+        if (request.method === "POST" && adminUrl.pathname === "/api/avatar-worker/claim") {
+          writeJson(response, 200, { job: claimAvatarPhoto(database) }, cors);
+        } else if (request.method === "POST" && adminUrl.pathname === "/api/avatar-worker/result") {
+          const body = await readJson(request, 2048);
+          completeAvatarPhoto(database, body.id, body.lease, body.verdict, body.reason);
+          writeJson(response, 200, { ok: true }, cors);
+        } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
+      }
       if (adminUrl.pathname.startsWith("/api/admin/")) {
         response.setHeader("Cache-Control", "private, no-store");
         const universitySession = findSession(
@@ -846,6 +863,26 @@ export function createApiServer(
       }
       if (parts[0] === "api" && parts[1] === "avatar") {
         const owner = requireUniversitySession(database, token);
+        if (parts.length >= 3 && parts[2] === "jobs") {
+          expireAvatarJobs(database);
+          if (parts.length === 3 && request.method === "GET") {
+            writeJson(response, 200, readAvatarJobs(database, owner.id), cors);
+          } else if (parts.length === 3 && request.method === "POST") {
+            if (!avatarUploadsEnabled()) throw new Error("AVATAR_UPLOADS_UNAVAILABLE");
+            const body = await readJson(request, 2_804_096);
+            const photo = await prepareQueuedAvatarPhoto(body.photo);
+            const current = requireUniversitySession(database, token);
+            if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+            writeJson(response, 200, enqueueAvatarPhoto(database, current.id, photo, body.submissionId, body.consent), cors);
+          } else if (parts.length === 4 && request.method === "POST" && ["cancel", "reviewed"].includes(parts[3])) {
+            const body = await readJson(request, 2048);
+            const current = requireUniversitySession(database, token);
+            if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+            if (parts[3] === "cancel") writeJson(response, 200, cancelAvatarJob(database, current.id, body.id), cors);
+            else { reviewAvatarEvent(database, current.id, body.key); writeJson(response, 200, { ok: true }, cors); }
+          } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+          return;
+        }
         if (parts.length === 2 && request.method === "GET") {
           writeJson(response, 200, readMapAvatar(database, owner.id), cors);
           return;
@@ -1361,6 +1398,22 @@ export function createApiServer(
   let sampleTimer: ReturnType<typeof setInterval> | undefined;
   let alertTimer: ReturnType<typeof setInterval> | undefined;
   let delivering = false;
+  let avatarTimer: ReturnType<typeof setInterval> | undefined;
+  let avatarWorking = false;
+  server.on("listening", () => {
+    avatarTimer = setInterval(() => {
+      if (avatarWorking) return;
+      avatarWorking = true;
+      void (async () => {
+        expireAvatarJobs(database);
+        await runAvatarGeneration(database);
+        await deliverAvatarReminder(database);
+      })().catch(() => console.error("Avatar worker failed"))
+        .finally(() => { avatarWorking = false; });
+    }, 15000);
+    avatarTimer.unref();
+  });
+  server.on("close", () => clearInterval(avatarTimer));
   server.on("listening", () => {
     alertTimer = setInterval(() => {
       if (delivering) return;

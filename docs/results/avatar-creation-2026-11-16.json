@@ -1,0 +1,119 @@
+{
+  "date": "2026-11-16",
+  "sourceBaseline": "7ea10ede592de89796c56c7e8ffbacf49c423ca4",
+  "recordedAt": "2026-11-16T03:13:32.614520+00:00",
+  "sourceSha256": {
+    "server/avatar-jobs.ts": "9869f6cdf7075ec4fba94698298a47cca952fdbe9c26de3010b2c94ae7935bed",
+    "server/avatar-generation.ts": "15e2e8241c8e17366ad30405aee66cacc758942656dae93d4c30c030554d8122",
+    "server/avatar-email.ts": "b35196982c242e3f7596c6eab56f6e94c23a9b06140bedb219e55845f5ba501d",
+    "server/index.ts": "be1eaa7f15b19357b1a96fd61cf82b3249a0f3dcbdfad902bc7887d0946ff190",
+    "server/core.ts": "9db3cca762fa33f919ac20d991ce77894752bb7b287b37cc1cdab0562fa22a4b",
+    "components/avatar-details.tsx": "52d78725ef2803d4af4a2a968db535c23552b6ccf803c4264966e8fd76316140",
+    "components/app-navigation.tsx": "9425bf81c249a435a3f63f2d74718b24e9569b6aaace889ba5c9df34673d2754",
+    "components/usual-route-client.tsx": "546c0ebb475d6f0e981534e455e15846dffda15da01d3292185c7084223d49ce",
+    "workers/avatar/worker.py": "b3db4abf0f2fbd190add6418dfafe147335e33edd7af373d43ee05f1893f0295",
+    "tests/avatar-jobs.test.ts": "913f5006f2dd4176a350501db28ef2adef43916a54660661cfc38ec0538dee21",
+    "scripts/check-avatar-upload.py": "42c0c2e850d3d8849b0e13645ac38e50aa8b92ac821835b352a623840331107b",
+    "workers/avatar/install.py": "78feacc7b362580335f285ee24f965ed224a8da020857482d2fcf06b53eeb901",
+    "lib/use-visible-review.ts": "bfcedf160b02642beba9e2d3f61af9496fe41a0c53f983066c5fa822632d27ef"
+  },
+  "isolation": "Synthetic accounts, in-memory SQLite, loopback API, fake paid provider and captured email transport. Actual Mac inference uses private reference/sample images. No paid generation or live user writes in tests.",
+  "checks": {
+    "regressions": {
+      "passed": 274,
+      "failed": 0
+    },
+    "security": {
+      "passed": 52,
+      "failed": 0
+    },
+    "pythonGateTests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "lint": "pass",
+    "productionBuild": "pass",
+    "browserWidths": [
+      320,
+      390,
+      1440
+    ],
+    "browser": "upload and consent, queue persistence, lease result, private ownership, unreviewed closed Profile, notification deep link into mounted Profile, viewed-result acknowledgement, fake P2 render assignment and opt-in save",
+    "macRoundTrip": "actual Mac subprocess claimed synthetic Pi photo through encrypted SSH forwarding and returned APPROVED; exit 0",
+    "macSamples": {
+      "provided_reference": "approved",
+      "standing": "approved",
+      "front_squat": "rejected: STANDING",
+      "side_squat": "rejected: HANDS"
+    },
+    "visualReview": "Whole upload/default/queued/rejected/ready Profile screens at phone/desktop, plus updated Privacy page. Existing typography, contained previews, regular helpers, controls and spacing retained; no horizontal overflow or page exceptions."
+  },
+  "failedBaselines": [
+    {
+      "finding": "Full-frame landmark check falsely rejected the reference feet",
+      "fix": "One bounded closer-framing retry, visibility threshold unchanged at 0.8; source-coordinate gate retained",
+      "retest": "Reference approved; standing approved; both squat samples rejected"
+    },
+    {
+      "finding": "Distant standing face not detected in full frame",
+      "fix": "One closer head check when full-frame face count is zero",
+      "retest": "Standing approved; no relaxation of exact one-face count"
+    },
+    {
+      "finding": "Avatar update link did not expand an already-mounted Profile",
+      "fix": "React search-parameter change drives disclosure opening and result scroll",
+      "retest": "Passed at 320/390/1440"
+    },
+    {
+      "finding": "Profile PersonalDetails and VehicleDetails shared a sibling React key",
+      "fix": "Namespace each section key while preserving identity reset",
+      "retest": "Fresh Profile console has no unexpected errors"
+    },
+    {
+      "finding": "Render-time ref access in temporary upload image key failed lint",
+      "fix": "Stable semantic photo-to-check key; no photo bytes in React keys",
+      "retest": "Full lint passed"
+    },
+    {
+      "finding": "DOM stream async iterator not in configured TypeScript libs",
+      "fix": "Bounded getReader loop with cancellation/release",
+      "retest": "Production build passed"
+    },
+    {
+      "finding": "Code review caught resolution of the venv interpreter symlink in the installer",
+      "fix": "Preserve the executable path and verify Python/MediaPipe before installation",
+      "retest": "Installed LaunchAgent uses the pinned venv; actual worker connection succeeds"
+    },
+    {
+      "finding": "Mac production request received Cloudflare 403 with generic Python request identity",
+      "fix": "Explicit GUMWHEEL worker User-Agent and JSON Accept headers; no authorization or firewall relaxation",
+      "retest": "Actual authenticated Mac HTTPS claim exited 0; background heartbeat observed"
+    }
+  ],
+  "production": {
+    "status": "API and Mac worker activated; frontend pending source push",
+    "paidTripoGeneration": "deferred by owner pending top-up; insufficient balance verified without spending",
+    "backup": "private SQLite/config snapshot completed before restart",
+    "acceptedOrActiveAtRestart": 0,
+    "preservedRideRecords": 141,
+    "preservedExistingTables": 13,
+    "changedExistingTables": [],
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "localHealthHttp": 200,
+    "anonymousJobsHttp": 401,
+    "unauthorizedWorkerHttp": 403,
+    "newQueueTables": 3,
+    "liveJobsCreatedForTesting": 0,
+    "macWorker": "LaunchAgent running; actual authenticated HTTPS claim and periodic heartbeat verified",
+    "macConfigMode": "0600",
+    "testMacCopies": "removed"
+  },
+  "boundaries": [
+    "No physical iPhone/Safari file-picker test",
+    "No new live Tripo task; mocked success is not provider success",
+    "No real reminder-email delivery test",
+    "Four real inference samples and synthetic tests do not calibrate pose/likeness or establish large-scale capacity",
+    "Mac must be awake and user logged in; no promised completion time"
+  ]
+}

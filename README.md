@@ -1,5 +1,13 @@
 # GUMWHEEL
 
+16 November avatar creation: Profile includes Upload photo / Update photo for
+verified accounts, private queued photo checks on the Mac, automatic P2 generation
+after approval, and Profile results with a five-minute unread email fallback.
+Requests persist on the Pi while the Mac is offline; insufficient Tripo credit
+leaves approved photos queued. The previous assigned-avatar-only boundary below
+is superseded. See [avatar creation and activation](docs/AVATAR_CREATION.md) for
+consent, validation limits, retention, spend caps, worker setup and verification.
+
 16 November map avatars: accounts can display an individually assigned, approved
 avatar render or the default waiting person, using Profile's Avatar preview and
 Edit/Save/Cancel controls. The owner's selected **P2-20260801** result is the first
@@ -7,8 +15,8 @@ assignment. Enabled renders appear on rider maps and the public Home area feed;
 Home remains non-clickable and does not reveal names or precise locations, but a
 personal avatar may be recognisable. Other accounts stay on the default until
 assigned their own render. Source photos/3D files remain private. This supersedes
-the earlier trial-only map boundary below. Self-service creation, Mac validation
-and queued photo checks are not implemented. See [map avatars](docs/MAP_AVATARS.md).
+the earlier trial-only map boundary below. The later self-service extension is
+described above. See [map avatars](docs/MAP_AVATARS.md) for display controls.
 The API and production frontend were activated and verified on 16 November.
 Profile keeps the Personal avatar checkbox on one line in both saved and edit
 views. Its tick shows the choice; Edit permits changes, Save applies them and

@@ -1,5 +1,6 @@
 import { PLATE_ERROR, VEHICLE_YEAR_ERROR, VEHICLE_IN_USE_MESSAGE } from "./vehicle";
 import { CONTRIBUTION_ERROR } from "./fare";
+import { AVATAR_PHOTO_ERROR } from "./avatar-job";
 
 export const CONNECTION_MESSAGE =
   "We can’t reach the server. Please try again shortly.";
@@ -22,6 +23,14 @@ export function apiErrorMessage(
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
       AVATAR_UNAVAILABLE: "Your avatar isn’t ready. Use the default avatar for now.",
+      INVALID_AVATAR_PHOTO: AVATAR_PHOTO_ERROR,
+      INVALID_AVATAR_SUBMISSION: "Agree to the photo check and avatar creation before submitting.",
+      AVATAR_ALREADY_QUEUED: "Your photo is already queued. Check its progress in Avatar.",
+      AVATAR_JOB_CHANGED: "This photo’s progress has changed. Check the latest update in Avatar.",
+      AVATAR_SUBMISSION_CHANGED: "This submission has changed. Choose the photo again before submitting.",
+      AVATAR_UPLOADS_UNAVAILABLE: "Photo uploads are temporarily unavailable. Use the default avatar and try uploading later.",
+      AVATAR_UPLOAD_LIMIT: "You’ve reached the photo upload limit. Keep your current avatar and try again in 24 hours.",
+      AVATAR_QUEUE_FULL: "The photo queue is full. Keep your current avatar and try uploading later.",
       INVALID_AVATAR_PREFERENCE: "Choose your map avatar in Profile and save again.",
       VEHICLE_IN_USE: VEHICLE_IN_USE_MESSAGE,
       BICYCLE_SEAT_REQUIRED: "Confirm your bicycle is designed for a passenger and has a passenger seat.",
@@ -108,6 +117,7 @@ export async function requestJson<T>(
       "EMAIL_NOT_CONFIGURED",
       "EMAIL_SEND_FAILED",
       "ADMIN_NOT_CONFIGURED",
+      "AVATAR_UPLOADS_UNAVAILABLE",
     ].includes(payload?.error ?? "");
     if (gateway && !providerFailure)
       throw new ApiError("SERVICE_UNAVAILABLE", response.status);

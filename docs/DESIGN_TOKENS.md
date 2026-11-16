@@ -12,6 +12,10 @@ Both previews occupy the vehicle preview's centred 144×108px area; contained al
 sprites retain the full figure. Map renders fit 48×46px inside the existing 48px
 slot with a 1px ground inset and unchanged [24,40] anchor. No new colour, font,
 switch style, badge or map controls. Generic role labels stay unchanged.
+The upload extension reuses the same contained 144×108 preview, small regular
+helper/result text, usual-alert-choice, and primary/secondary action rows. Profile
+avatar updates reuse the existing profile badge/action typography and spacing;
+no new palette, icons, modal, progress spinner or typography token.
 
 14 November private comparison: retain the existing gallery/panel/table tokens.
 Generated previews serve as posters while 3D models load lazily; start with the

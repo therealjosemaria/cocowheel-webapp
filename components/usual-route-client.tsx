@@ -182,7 +182,7 @@ export default function UsualRouteClient({ alertsEntry = false }: { alertsEntry?
     <section className="activity-page">
       <div className="activity-panel usual-route-panel">
         <h1 className="page-title">Profile</h1>
-        {verified && <PersonalDetails key={draftOwner} />}
+        {verified && <PersonalDetails key={`personal:${draftOwner}`} />}
         {verified && <AvatarDetails key={`avatar:${draftOwner}`} />}
         <details className="contribution-choice profile-disclosure usual-route-disclosure" open={alertsEntry ? true : undefined}>
           <summary><RideFieldLabel icon="route">Usual route</RideFieldLabel></summary>
@@ -361,7 +361,7 @@ export default function UsualRouteClient({ alertsEntry = false }: { alertsEntry?
           )}
         </div>
         </details>
-        {verified && <VehicleDetails key={draftOwner} />}
+        {verified && <VehicleDetails key={`vehicle:${draftOwner}`} />}
         {confirmMute && (
           <MuteAlertsPrompt
             busy={busy}

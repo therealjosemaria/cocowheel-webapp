@@ -15,6 +15,7 @@ import { requestJson } from "@/lib/api-transport";
 import type { ActiveRide } from "./active-ride-link";
 import type { RiderDemand, DemandActivity } from "@/lib/rider-demand";
 import { activeRideTabForPath } from "@/lib/navigation-state";
+import type { AvatarJob, AvatarJobs } from "@/lib/avatar-job";
 
 export default function AppNavigation() {
   const [open, setOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function AppNavigation() {
   const [demandOffers, setDemandOffers] = useState(0);
   const [currents, setCurrents] = useState<ActiveRide[]>([]);
   const [demandActivity, setDemandActivity] = useState<DemandActivity | null>(null);
+  const [avatarNotice, setAvatarNotice] = useState<AvatarJob | null>(null);
   const [seen, setSeen] = useState<string[]>([]);
   const seenAccount = useRef<string | null>(null);
   const reviewMemory = useRef<{ account: string | null; keys: string[] }>({ account: null, keys: [] });
@@ -41,6 +43,7 @@ export default function AppNavigation() {
     [currents, demandActivity, seen],
   );
   const updateCount = groups.length;
+  const totalUpdates = updateCount + (avatarNotice ? 1 : 0);
   const publishUpdates = usePublishJourneyUpdates();
   useEffect(() => { publishUpdates(groups); }, [groups, publishUpdates]);
   const markSeen = useCallback(
@@ -140,6 +143,7 @@ export default function AppNavigation() {
       setGuestName(result.username ?? result.unikey);
       setAccountKey(result.unikey);
       if (seenAccount.current !== result.unikey) {
+        setAvatarNotice(null);
         seenAccount.current = result.unikey;
         setActiveRide(null);
         setActivePost(null);
@@ -149,8 +153,12 @@ export default function AppNavigation() {
         setSeen(readSeen(result.unikey));
       }
       setRatings(result.ratings ?? null);
-      const reviews = await cocowheelsApi<{ keys?: string[] }>("/api/notifications/reviewed", {}, true).catch(() => null);
+      const [reviews, avatar] = await Promise.all([
+        cocowheelsApi<{ keys?: string[] }>("/api/notifications/reviewed", {}, true).catch(() => null),
+        cocowheelsApi<AvatarJobs>("/api/avatar/jobs").catch(() => null),
+      ]);
       if (sequence !== loadSequence.current) return;
+      setAvatarNotice(avatar?.job?.notificationKey ? avatar.job : null);
       if (reviews?.keys) {
         const local = Array.from(new Set([...readSeen(result.unikey),
           ...(reviewMemory.current.account === result.unikey ? reviewMemory.current.keys : []),
@@ -193,6 +201,7 @@ export default function AppNavigation() {
       if (sequence !== loadSequence.current) return;
       if (reason instanceof ApiError && [401, 403].includes(reason.status)) {
         setGuestName(null);
+        setAvatarNotice(null);
         setDemandOffers(0);
         setActivePost(null);
         setAccountKey(null);
@@ -217,6 +226,7 @@ export default function AppNavigation() {
     window.addEventListener("cocowheels:identity-changed", refresh);
     window.addEventListener("cocowheels:profile-changed", refresh);
     window.addEventListener("cocowheels:messages-updated", refresh);
+    window.addEventListener("cocowheels:avatar-job-changed", refresh);
     return () => {
       window.clearTimeout(initial);
       window.clearInterval(timer);
@@ -224,6 +234,7 @@ export default function AppNavigation() {
       window.removeEventListener("cocowheels:identity-changed", refresh);
       window.removeEventListener("cocowheels:profile-changed", refresh);
       window.removeEventListener("cocowheels:messages-updated", refresh);
+      window.removeEventListener("cocowheels:avatar-job-changed", refresh);
     };
   }, [loadIdentities]);
 
@@ -333,7 +344,7 @@ export default function AppNavigation() {
           className="guest-identity-button"
           aria-expanded={identityOpen}
           aria-controls="guest-identity-popover"
-          aria-label={`Profile: ${identityLabel}${updateCount ? `, ${updateCount} updates` : ""}`}
+          aria-label={`Profile: ${identityLabel}${totalUpdates ? `, ${totalUpdates} updates` : ""}`}
           onClick={() => {
             clearTimeout(identityCloseTimer.current);
             setOpen(false);
@@ -351,11 +362,11 @@ export default function AppNavigation() {
           {guestName && (
             <ProfileMenuPhoto key={guestName} username={guestName} />
           )}
-          {updateCount > 0 && (
+          {totalUpdates > 0 && (
             <span className="profile-update-badge" aria-hidden="true">
-              {updateCount > 99
+              {totalUpdates > 99
                 ? "99+"
-                : updateCount}
+                : totalUpdates}
             </span>
           )}
         </button>
@@ -408,6 +419,12 @@ export default function AppNavigation() {
                   {updateCount} update{updateCount === 1 ? "" : "s"} to review
                 </span>
               )}
+            </Link>
+          </section>}
+          {guestName && avatarNotice && <section className="profile-current-items" aria-label="Avatar update">
+            <Link className="secondary profile-active-ride" href="/usual-route?avatar=1#avatar-result" onClick={() => setIdentityOpen(false)}>
+              Avatar update
+              <span className="active-ride-update">{avatarNotice.status === "READY" ? "Ready to use" : "Photo check result"}</span>
             </Link>
           </section>}
           {guestName && (
