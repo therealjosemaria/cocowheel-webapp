@@ -3,6 +3,7 @@ import ParticipantName from "./participant-name";
 import { VehiclePlatePrompt, RideVehicle } from "./vehicle-details";
 import { fareLabel } from "@/lib/fare";
 import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
+import { useOwnMapAvatar } from "@/lib/use-map-avatar";
 import { REQUEST_MESSAGE_HINT, requestedRideUrl } from "@/lib/messaging-types";
 import { requestTarget, pickupTarget } from "@/lib/ride-updates";
 import RideRating, { RatingBadge } from "./ride-rating";
@@ -207,6 +208,7 @@ export default function RidePreviewClient({
         }
       : null;
   const riderRoute = useMemo<{
+    avatarArtwork?: string;
     pickup: Pin;
     destination: Pin;
     directionFit?: "GOOD" | "POOR";
@@ -219,12 +221,14 @@ export default function RidePreviewClient({
       );
       return participantRide?.rider
         ? {
+            avatarArtwork: participantRide.rider.avatarArtwork,
             pickup: participantRide.rider.pickup,
             destination: participantRide.rider.destination,
             directionFit: participantRide.rider.directionFit,
           }
         : selectedRequest
           ? {
+              avatarArtwork: selectedRequest.avatarArtwork,
               pickup: selectedRequest.pickup,
               destination: selectedRequest.destination,
               directionFit: selectedRequest.directionFit,
@@ -233,6 +237,7 @@ export default function RidePreviewClient({
     }
     if (activityRequest) {
       return {
+        avatarArtwork: activityRequest.avatarArtwork,
         pickup: activityRequest.pickup,
         destination: activityRequest.destination,
         directionFit: activityRequest.directionFit,
@@ -246,6 +251,7 @@ export default function RidePreviewClient({
     rideId,
     selectedRequestId,
   ]);
+  const ownAvatar = useOwnMapAvatar(!driverOwned && Boolean(riderRoute));
   const [riderRoadResult, setRiderRoadResult] = useState<{
     key: string;
     points: Pin[];
@@ -768,6 +774,7 @@ export default function RidePreviewClient({
           <div className="ride-preview-content">
             <div className="ride-selection-map" id="ride-comparison-map">
               <JourneyMap
+                riderArtwork={driverOwned ? riderRoute?.avatarArtwork : ownAvatar}
                 vehicle={privateRide?.vehicle}
                 vehicleArtwork={!privateRide || ["PUBLISHED", "REQUESTED"].includes(privateRide.status) ? publicRide?.vehicleArtwork : undefined}
                 followZoom={ride.isSample ? 14 : 16}

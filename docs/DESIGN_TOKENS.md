@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+16 November avatar selection reuses contribution-choice/profile-disclosure,
+vehicle-fields, usual-alert-choice and existing primary/secondary action styles.
+Both previews occupy the vehicle preview's centred 144×108px area; contained alpha
+sprites retain the full figure. Map renders fit 48×46px inside the existing 48px
+slot with a 1px ground inset and unchanged [24,40] anchor. No new colour, font,
+switch style, badge or map controls. Generic role labels stay unchanged.
+
 14 November private comparison: retain the existing gallery/panel/table tokens.
 Generated previews serve as posters while 3D models load lazily; start with the
 same front-facing camera, without the animated interaction hand. No public UI change.

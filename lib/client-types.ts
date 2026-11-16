@@ -70,6 +70,7 @@ export type Ride = {
   expiresAt: string;
   acceptedAt?: string | null;
   request?: {
+    avatarArtwork?: string;
     requestId: string;
     riderAlias: string;
     status: RequestStatus;
@@ -82,6 +83,7 @@ export type Ride = {
   };
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
+    avatarArtwork?: string;
     rating?: RatingSummary;
     alias: string;
     pickup: Pin;
@@ -90,6 +92,7 @@ export type Ride = {
     directionFit: "GOOD" | "POOR";
   };
   requests?: Array<{
+    avatarArtwork?: string;
     rating?: RatingSummary;
     requestId: string;
     riderAlias: string;

@@ -360,10 +360,13 @@ try {
     },
   );
   await check(
-    "public discovery and preview omit private rider/payment/code data",
+    "discovery requires sign-in and signed-in previews omit private rider/payment/code data",
     async () => {
       for (const path of ["/api/availability", `${ridePath}/preview`]) {
-        const r = await call(path);
+        const anonymous = await call(path);
+        assert.equal(anonymous.status, 401);
+        noPrivate(anonymous.data);
+        const r = await call(path, outsider);
         assert.equal(r.status, 200);
         noPrivate(r.data);
       }

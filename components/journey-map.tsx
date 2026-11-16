@@ -207,6 +207,7 @@ function PinMarkers({
   pins,
   vehicle,
   vehicleArtwork,
+  riderArtwork,
   markerKinds,
   markerLabels,
   labelPins,
@@ -214,6 +215,7 @@ function PinMarkers({
   pins: Pin[];
   vehicle?: Vehicle;
   vehicleArtwork?: string;
+  riderArtwork?: string;
   markerKinds?: Array<MarkerKind | undefined>;
   markerLabels?: Array<MarkerLabel | undefined>;
   labelPins?: Pin[];
@@ -399,6 +401,8 @@ function PinMarkers({
               })
             : markerKind === "driver" && (vehicle || vehicleArtwork)
               ? modelMarkerIcon("driver", "Driver", true, [0, 0], vehicle, vehicleArtwork)
+              : markerKind === "pickup" && riderArtwork
+                ? modelMarkerIcon("rider", "Pickup", true, [0, 0], undefined, riderArtwork)
               : markerKind
                 ? mapMarkerIcons[markerKind]
                 : undefined;
@@ -462,6 +466,7 @@ export default function JourneyMap({
   pins = [],
   vehicle,
   vehicleArtwork,
+  riderArtwork,
   fitPins,
   followPins,
   recenterPin,
@@ -478,6 +483,7 @@ export default function JourneyMap({
   /** Full vehicle is private; discovery carries only a validated artwork path. */
   vehicle?: Vehicle;
   vehicleArtwork?: string;
+  riderArtwork?: string;
   fitPins?: Pin[];
   followPins?: Pin[];
   recenterPin?: Pin;
@@ -521,6 +527,7 @@ export default function JourneyMap({
           pins={pins}
           vehicle={vehicle}
           vehicleArtwork={vehicleArtwork}
+          riderArtwork={riderArtwork}
           markerKinds={markerKinds}
           markerLabels={markerLabels}
           labelPins={labelPins}

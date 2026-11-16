@@ -8,9 +8,10 @@ import { cachedRoadPath, cacheRoadPath } from "@/lib/ride-preview-cache";
 import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import { JourneyResultsMap } from "./journey-results-layout";
 import { useVehicleArtwork } from "@/lib/use-vehicle-artwork";
+import { useOwnMapAvatar } from "@/lib/use-map-avatar";
 
 const JourneyMap = dynamic(() => import("./journey-map"), { ssr: false });
-type Route = { origin?: Pin; destination?: Pin; vehicleType?: "car" | "bicycle" };
+type Route = { origin?: Pin; destination?: Pin; vehicleType?: "car" | "bicycle"; avatarArtwork?: string };
 
 function useRoadPath(route: Route | undefined, revision: number, mode: "drive" | "bicycle" = "drive") {
   const key =
@@ -74,13 +75,16 @@ export default function RequestRouteMap({
   riderLabel = "Rider route",
   back,
   ownDriver = false,
+  ownRider = false,
 }: {
   driver?: Route;
   rider?: Route;
   riderLabel?: string;
   back?: () => void;
   ownDriver?: boolean;
+  ownRider?: boolean;
 }) {
+  const ownAvatar = useOwnMapAvatar(ownRider && Boolean(rider?.origin));
   const vehicleArtwork = useVehicleArtwork(ownDriver && Boolean(driver?.origin));
   const [revision, setRevision] = useState(0);
   const driverPath = useRoadPath(driver, revision, driver?.vehicleType === "bicycle" ? "bicycle" : "drive");
@@ -98,6 +102,7 @@ export default function RequestRouteMap({
     ...(riderPath.points ? [{ points: riderPath.points, ...RIDER_ROUTE }] : []),
   ];
   const map = <JourneyMap
+          riderArtwork={ownRider ? ownAvatar : rider?.avatarArtwork}
           vehicleArtwork={vehicleArtwork}
           pins={pins}
           markerKinds={[

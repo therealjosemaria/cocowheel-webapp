@@ -1,5 +1,8 @@
 # Email accounts and Personal details — 24 October 2026
 
+16 November: the separate [Avatar disclosure](MAP_AVATARS.md) controls map artwork.
+It does not replace the circular account photo or change username/email controls.
+
 ## Implemented contract
 
 Any syntactically valid email can request an OTP; mailbox delivery/verification is

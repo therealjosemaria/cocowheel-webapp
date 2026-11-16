@@ -2,6 +2,7 @@ import { divIcon } from "leaflet";
 import { journeyRoleArtClass, type JourneyRoleArt } from "./journey-role-art";
 import { vehicleArtwork, isVehicleArtworkPath, vehicleArtworkDisplayPath } from "./vehicle-catalogue";
 import type { Vehicle } from "./vehicle";
+import { isMapAvatarPath } from "./map-avatar";
 
 export const modelMarkerIcon = (
   role: JourneyRoleArt,
@@ -13,10 +14,10 @@ export const modelMarkerIcon = (
 ) => {
   const src = role === "driver"
     ? vehicleArtwork(vehicle) ?? (isVehicleArtworkPath(artworkPath) ? artworkPath : undefined)
-    : undefined;
-  // src is catalogue-derived, never a user-supplied URL or HTML fragment.
+    : isMapAvatarPath(artworkPath) ? artworkPath : undefined;
+  // src is a catalogue path or strict local avatar route, never arbitrary HTML/URLs.
   const art = src
-    ? `<img class="vehicle-artwork-marker" src="${vehicleArtworkDisplayPath(src)}" alt="" aria-hidden="true" />`
+    ? `<img class="${role === "driver" ? "vehicle-artwork-marker" : "map-avatar-artwork"}" src="${role === "driver" ? vehicleArtworkDisplayPath(src) : src}" alt="" aria-hidden="true" />`
     : `<i class="${journeyRoleArtClass(role)}" aria-hidden="true"></i>`;
   return divIcon({
     className: "journey-marker-icon",

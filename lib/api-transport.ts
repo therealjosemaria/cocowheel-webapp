@@ -21,6 +21,8 @@ export function apiErrorMessage(
 ) {
   if (error instanceof ApiError) {
     const messages: Record<string, string> = {
+      AVATAR_UNAVAILABLE: "Your avatar isn’t ready. Use the default avatar for now.",
+      INVALID_AVATAR_PREFERENCE: "Choose your map avatar in Profile and save again.",
       VEHICLE_IN_USE: VEHICLE_IN_USE_MESSAGE,
       BICYCLE_SEAT_REQUIRED: "Confirm your bicycle is designed for a passenger and has a passenger seat.",
       BICYCLE_FREE_ONLY: "Bicycle journeys must be free. Remove the contribution and try again.",

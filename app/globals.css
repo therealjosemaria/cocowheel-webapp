@@ -3066,13 +3066,15 @@ p {
 .vehicle-choice-field { display: grid; gap: 8px; min-width: 0; }
 .vehicle-choice-field > input { margin: 0; }
 .vehicle-artwork-preview { display: block; width: 144px; height: 108px; object-fit: contain; justify-self: center; }
+.avatar-default-preview { display: block; width: 144px; height: 108px; justify-self: center; }
+.map-avatar-artwork { display: block; width: 48px; height: 46px; object-fit: contain; align-self: end; margin-bottom: 1px; }
 .vehicle-artwork-generic { display: grid; place-items: center; }
 .vehicle-artwork-generic .journey-role-art { --role-art-size: 96px; }
 .vehicle-artwork-marker { width: 48px; height: 40px; object-fit: contain; align-self: end; }
 .profile-disclosure { margin: 0 16px 16px; }
 .usual-route-disclosure, .personal-details { margin-top: 16px; }
 .usual-route-disclosure > .usual-route-body { padding: 12px 0; }
-.vehicle-details .vehicle-fields, .personal-details .vehicle-fields { margin: 12px 0; }
+.vehicle-details .vehicle-fields, .personal-details .vehicle-fields, .avatar-details .vehicle-fields { margin: 12px 0; }
 .ride-vehicle { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); font-size: var(--text-small); }
 .ride-vehicle p { margin: 4px 0 0; overflow-wrap: anywhere; }
 .usual-route-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }

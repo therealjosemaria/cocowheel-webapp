@@ -1,5 +1,11 @@
 # Pre-pilot security regression campaign — 16 October 2026
 
+16 November map-avatar follow-up: the original harness still expected anonymous
+journey discovery, superseded by the 4 November sign-in requirement. Its initial
+51/52 result was corrected by asserting anonymous 401 **and** signed-in private
+data redaction; no application permission was weakened. Final harness 52/52 and
+new avatar ownership/opt-in tests pass. See [avatar evidence](results/map-avatars-2026-11-16.json).
+
 ## Result and reproducibility
 
 **52/52 authorization/privacy checks passed**, against application revision

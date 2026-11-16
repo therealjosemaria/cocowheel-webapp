@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      revision={{ date: "2026-11-04", label: "4 November 2026" }}
+      revision={{ date: "2026-11-16", label: "16 November 2026" }}
     >
       <p>
         This notice explains how the GUMWHEEL carpool pilot handles
@@ -38,6 +38,17 @@ export default function PrivacyPage() {
         coordinates and addresses, fares, statuses and timestamps. These support
         ride matching, pickup and activity history. If you email us, we receive
         your message and contact details to respond.
+      </p>
+      <p>
+        If an avatar has been assigned to your account, you can preview it and
+        choose whether to use it on maps in Profile. Enabled avatar illustrations
+        are public images and can appear on the public homepage beside a general
+        area, without a username or precise location. An avatar may still be
+        recognisable. Choosing the default stops serving your avatar illustration
+        and removes it from subsequent map updates; it cannot recall copies
+        already viewed or saved by others. Source photos and downloadable 3D
+        models are not made public by this choice. We retain the assigned render
+        until it is replaced or removed manually; backups may retain older copies.
       </p>
       <p>
         Posting a ride request shares its pickup and destination addresses,

@@ -22,6 +22,7 @@ import { DRIVER_ROUTE, RIDER_ROUTE } from "@/lib/map-style";
 import ActiveRideLink from "./active-ride-link";
 import { mapLocationText } from "@/lib/map-label";
 import { subscribeVehicleSaved } from "@/lib/vehicle-updates";
+import { useOwnMapAvatar } from "@/lib/use-map-avatar";
 import { isVehicleArtworkPath } from "@/lib/vehicle-catalogue";
 
 import dynamic from "next/dynamic";
@@ -1189,6 +1190,7 @@ function RideSelection({
   searching: boolean;
   back: () => void;
 }) {
+  const ownAvatar = useOwnMapAvatar(true);
   const selectedCandidate =
     candidates.find((candidate) => candidate.rideId === selected) ?? null;
   const visibleCandidates = candidates.slice(0, 20);
@@ -1350,6 +1352,7 @@ function RideSelection({
     <JourneyResultsLayout>
       <JourneyResultsMap back={back}>
         <JourneyMap
+          riderArtwork={ownAvatar}
           animateViewport={false}
           vehicleArtwork={selectedCandidate?.vehicleArtwork}
           pins={mapPins}
@@ -1580,6 +1583,7 @@ function RideStatus({
                   : "Current location received"}
               </p>
               <JourneyMap
+                riderArtwork={ride.rider?.avatarArtwork}
                 vehicle={driver ? undefined : ride.vehicle}
                 markerKinds={[driver ? "pickup" : "driver"]}
                 pins={[

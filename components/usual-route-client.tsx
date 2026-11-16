@@ -1,5 +1,6 @@
 "use client";
 import PersonalDetails from "./personal-details";
+import AvatarDetails from "./avatar-details";
 import VehicleDetails from "./vehicle-details";
 import { useEffect, useRef, useState } from "react";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
@@ -182,6 +183,7 @@ export default function UsualRouteClient({ alertsEntry = false }: { alertsEntry?
       <div className="activity-panel usual-route-panel">
         <h1 className="page-title">Profile</h1>
         {verified && <PersonalDetails key={draftOwner} />}
+        {verified && <AvatarDetails key={`avatar:${draftOwner}`} />}
         <details className="contribution-choice profile-disclosure usual-route-disclosure" open={alertsEntry ? true : undefined}>
           <summary><RideFieldLabel icon="route">Usual route</RideFieldLabel></summary>
         <div className="usual-route-body">

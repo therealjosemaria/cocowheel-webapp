@@ -303,7 +303,7 @@ export function FindRiders({
       </div>}
       {results && searched ? (
         <JourneyResultsLayout>
-          <RequestRouteMap ownDriver driver={searched} rider={selected ?? undefined} back={() => {
+          <RequestRouteMap ownDriver ownRider={selected?.isOwn} driver={searched} rider={selected ?? undefined} back={() => {
             setResults(null);
             setOffer(null);
             setSelected(null);
@@ -685,7 +685,7 @@ export function RiderDemandActivity({
           key={request.id}
         >
           <span className="activity-role"><RideFieldIcon icon="rider" />Journey requested</span>
-          {requestId && <RequestRouteMap rider={request} riderLabel="Your route" />}
+          {requestId && <RequestRouteMap ownRider rider={request} riderLabel="Your route" />}
           <RequestedJourneyFields request={request} details={Boolean(requestId)} />
           {requestId && request.status === "OPEN" && (
             <p className="save-route-profile-note">

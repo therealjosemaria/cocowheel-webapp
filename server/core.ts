@@ -42,6 +42,7 @@ export type RequestStatus =
   "PENDING" | "ACCEPTED" | "DECLINED" | "DISCARDED" | "CANCELLED";
 export type Participant = "DRIVER" | "RIDER";
 import { initializeProfiles, publicName } from "./personal-details";
+import { initializeMapAvatars, avatarArtwork } from "./map-avatars";
 export type Session = { id: string; alias: string; unikey?: string };
 export type Pin = { latitude: number; longitude: number; label?: string };
 export type DirectionFit = "GOOD" | "POOR";
@@ -249,6 +250,7 @@ export type RideView = {
   request?: RiderRequestView;
   plannedRoute?: { origin: Pin; destination: Pin };
   rider?: {
+    avatarArtwork?: string;
     rating?: RatingSummary;
     alias: string;
     pickup: Pin;
@@ -257,6 +259,7 @@ export type RideView = {
     directionFit: DirectionFit;
   };
   requests?: Array<{
+    avatarArtwork?: string;
     rating?: RatingSummary;
     requestId: string;
     riderAlias: string;
@@ -279,6 +282,7 @@ export type RideView = {
   cancellationReason?: string | null;
 };
 export type RiderRequestView = {
+  avatarArtwork?: string;
   requestId: string;
   riderAlias: string;
   status: RequestStatus;
@@ -362,6 +366,7 @@ export function initializeCoreSchema(db: Db) {
   );
   initializeUsualRoutes(db);
   initializeVehicles(db);
+  initializeMapAvatars(db);
   allowFreeRideFares(db);
   const pickupColumns = db.prepare("PRAGMA table_info(rides)").all() as Array<{
     name: string;
@@ -2088,6 +2093,7 @@ function riderRequestView(
   request: RequestRow,
 ): RiderRequestView {
   return {
+    avatarArtwork: avatarArtwork(db, request.rider_session_id),
     requestId: request.id,
     riderAlias: publicName(db, request.rider_session_id, request.rider_alias),
     status: request.status,
@@ -2149,6 +2155,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
     },
     rider: selected
       ? {
+          avatarArtwork: avatarArtwork(db, selected.rider_session_id),
           alias: publicName(db, selected.rider_session_id, selected.rider_alias),
           rating: ratingSummary(db, selected.rider_session_id, "RIDER", now),
           pickup: {
@@ -2166,6 +2173,7 @@ function driverView(db: Db, row: RideRow, now: Date): RideView {
         }
       : undefined,
     requests: requests.map((request) => ({
+      avatarArtwork: avatarArtwork(db, request.rider_session_id),
       requestId: request.id,
       riderAlias: publicName(db, request.rider_session_id, request.rider_alias),
       rating: ratingSummary(db, request.rider_session_id, "RIDER", now),

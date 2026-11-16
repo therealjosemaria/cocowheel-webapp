@@ -3,7 +3,8 @@ import { vehicleArtwork } from '../lib/vehicle-catalogue';
 import { presenceCell, PRESENCE_LIMIT_PER_ROLE, PRESENCE_MAX_ICONS, PRESENCE_MAX_PER_AREA, type PresenceCell } from '../lib/home-presence';
 
 // Separate public projection: never serialize IDs, names, labels, destinations,
-// schedules, photos, saved routes or live-location records to Home.
+// schedules, source photos, saved routes or live-location records to Home.
+// Enabled map-avatar renders are public by the account's explicit display choice.
 export function homePresence(db: Db, now = new Date()): PresenceCell[] {
   const result: PresenceCell[] = [];
   const timestamp = now.toISOString();
@@ -14,7 +15,8 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
       AND COALESCE(offer_expires_at, strftime('%Y-%m-%dT%H:%M:%fZ', scheduled_departure_at, '+6 hours')) > ?
       ORDER BY origin_latitude, origin_longitude`).iterate(timestamp)],
     ['rider', db.prepare(`SELECT json_extract(d.body,'$.origin.latitude') AS latitude,
-      json_extract(d.body,'$.origin.longitude') AS longitude FROM rider_demands d
+      json_extract(d.body,'$.origin.longitude') AS longitude, a.asset_id AS avatar_asset
+      FROM rider_demands d LEFT JOIN account_map_avatars a ON a.principal_id=d.owner_id AND a.enabled=1
       WHERE d.status='OPEN' AND d.expires_at>?
       AND NOT EXISTS (SELECT 1 FROM rides r WHERE r.driver_session_id=d.owner_id
         AND r.status IN ('PUBLISHED','REQUESTED','ACCEPTED','RIDE_ACTIVE','CO_RIDE_ACTIVE'))
@@ -26,7 +28,7 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
   for (const [role, rows] of sources) {
     const seen = new Map<string, PresenceCell>();
     for (const value of rows) {
-      const row = value as { latitude: number; longitude: number; vehicle_body?: string };
+      const row = value as { latitude: number; longitude: number; vehicle_body?: string; avatar_asset?: string };
       if (typeof row.latitude !== 'number' || typeof row.longitude !== 'number') continue;
       const cell = presenceCell(role, row.latitude, row.longitude);
       if (!cell) continue;
@@ -36,6 +38,7 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
       if (role === 'driver' && row.vehicle_body) {
         try { art = vehicleArtwork(JSON.parse(row.vehicle_body)) ?? null; } catch { /* Invalid legacy detail keeps generic art. */ }
       }
+      if (role === 'rider' && row.avatar_asset) art = `/api/map-avatar/${row.avatar_asset}.webp`;
       if (existing) {
         if (existing.count < PRESENCE_MAX_PER_AREA) {
           existing.count++;
@@ -45,7 +48,7 @@ export function homePresence(db: Db, now = new Date()): PresenceCell[] {
       }
       if (seen.size === PRESENCE_LIMIT_PER_ROLE) continue;
       seen.set(key, cell);
-      if (role === 'driver') cell.artworks = [art];
+      cell.artworks = [art];
       result.push(cell);
     }
   }

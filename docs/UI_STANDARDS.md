@@ -1,5 +1,15 @@
 # Coco Wheels product and UI standards
 
+16 November map avatars: Profile adds an initially closed Avatar disclosure below
+Personal details, reusing the same person label, inset, preview area and
+Edit/Save/Cancel actions. The native checkbox “Use my avatar on maps” follows the
+existing usual-alert-choice pattern; the preview updates before Save, and Cancel
+restores the saved choice. Explain public Home visibility beside the choice.
+Accounts without an assigned avatar show the default preview without a creation
+button. Personal map artwork does not replace semantic role icons or profile
+photos. Existing 48px map slots/anchors, route colours and Home interaction rules
+are unchanged. See [map avatars](MAP_AVATARS.md).
+
 14 November private comparison: retain the existing gallery/panel/table tokens.
 Generated previews serve as posters while 3D models load lazily; start with the
 same front-facing camera, without the animated interaction hand. No public UI change.

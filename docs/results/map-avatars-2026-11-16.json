@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-16",
+  "baseline_revision": "289449dbd3d8009c2d4d56866f0d4ec4ebb3ba56",
+  "source": "baseline plus this map-avatar change series",
+  "isolation": "in-memory SQLite, synthetic accounts and public-place endpoints; public OSM tiles allowed for browser review; road geometry mocked; no production test journeys, GPS, emails or paid generation",
+  "selected_model": "P2-20260801",
+  "new_paid_tasks": 0,
+  "baseline_findings": [
+    {
+      "check": "first sandbox HTTP tests",
+      "result": "local port binding denied (EPERM)",
+      "remediation": "rerun isolated fixtures with loopback permission"
+    },
+    {
+      "check": "first full regression suite",
+      "passed": 265,
+      "total": 267,
+      "failure": "two legacy-schema fixtures omitted the additive avatar table",
+      "remediation": "initialize the avatar table in those old fixtures; 267/267 final pass"
+    },
+    {
+      "check": "first browser passes",
+      "failure": "driver fixture used public preview route, then selected nested messaging summary",
+      "remediation": "use Activity detail and direct-child request summary; all three widths pass"
+    },
+    {
+      "check": "first security harness",
+      "passed": 51,
+      "total": 52,
+      "failures": [
+        "public discovery and preview omit private rider/payment/code data"
+      ],
+      "remediation": "replace obsolete anonymous-discovery expectation with 401 check plus signed-in redaction check"
+    },
+    {
+      "check": "first live health verification command",
+      "failure": "stdin TypeScript module interop, then Node fetch rejects port 5060 as bad port",
+      "remediation": "use repository-compatible loader and curl for local health; public HTTPS checks pass"
+    }
+  ],
+  "final_checks": {
+    "regression_tests": {
+      "passed": 267,
+      "total": 267
+    },
+    "security": {
+      "passed": 52,
+      "total": 52
+    },
+    "lint": "passed",
+    "production_build": "passed",
+    "browser_widths": [
+      320,
+      390,
+      1440
+    ],
+    "browser_flows": [
+      "Profile assigned/default preview, Edit/Save/Cancel",
+      "Home anonymous area marker/non-clickable",
+      "Find own rider marker",
+      "requested-journey detail",
+      "driver selected pending request",
+      "cross-tab save refresh",
+      "failed-image generic fallback",
+      "other account remains default",
+      "no overflow or page exceptions"
+    ],
+    "visual_review": [
+      "mobile and desktop Profile read/edit",
+      "Home hierarchy and noninteractive map",
+      "Find and driver maps",
+      "requested-journey details",
+      "Privacy full page"
+    ],
+    "react_review": "effect cleanup and stale-response guards; synchronous mutation guard; semantic native checkbox; existing disclosure/action styles; no render-time provider call"
+  },
+  "api_activation": {
+    "backup": "consistent private SQLite backup verified",
+    "accepted_or_active_trips_before_restart": 0,
+    "service_restarted": "cocowheels-api only",
+    "retained_rides": 141,
+    "integrity": "ok",
+    "foreign_key_violations": 0,
+    "history_and_profile_tables_match_backup": true,
+    "assigned_accounts": 1,
+    "stored_and_public_sprite_match_selected_P2_preparation": true,
+    "local_health": 200,
+    "public_health": 200,
+    "anonymous_settings": 401,
+    "anonymous_private_preview": 401,
+    "anonymous_original_model": 403
+  },
+  "frontend_deployment": "pending source push and verification",
+  "not_implemented": [
+    "self-service photo uploads",
+    "Mac validation service",
+    "photo-check queue and notifications",
+    "automatic Tripo generation"
+  ],
+  "unverified": [
+    "physical iPhone/Safari",
+    "live owner sign-in walkthrough",
+    "large/concurrent avatar workloads"
+  ]
+}

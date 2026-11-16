@@ -1,5 +1,11 @@
 # Private Tripo comparison
 
+16 November follow-up: the owner selected **P2-20260801** for an explicitly enabled
+map-avatar assignment. [Map avatar storage and display](MAP_AVATARS.md) supersedes
+the no-map-integration boundary in this historical trial. Only its prepared alpha
+sprite is made public when enabled; reference photos, original previews and GLBs
+remain owner-only. This follow-up generates no new Tripo tasks.
+
 ## Completed trial — 14 November 2026
 
 Five generations completed successfully from the same normalized full-body

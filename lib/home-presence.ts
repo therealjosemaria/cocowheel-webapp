@@ -1,5 +1,6 @@
 import type { JourneyRoleArt } from './journey-role-art';
 import { isVehicleArtworkPath } from './vehicle-catalogue';
+import { isMapAvatarPath } from './map-avatar';
 
 export type PresenceCell = { role: JourneyRoleArt; latitude: number; longitude: number; count: number; artworks?: Array<string | null> };
 export const PRESENCE_REFRESH_MS = 60_000;
@@ -34,8 +35,9 @@ export function readPresenceCells(payload: unknown): PresenceCell[] {
     roles.add(`${key}:${cell.role}`);
     total += cell.count;
     if (total > PRESENCE_MAX_ICONS) throw new Error('INVALID_PRESENCE');
-    if (cell.artworks !== undefined && (cell.role !== 'driver' || !Array.isArray(cell.artworks) ||
-      cell.artworks.length !== cell.count || !cell.artworks.every((art: unknown) => art === null || isVehicleArtworkPath(art)))) throw new Error('INVALID_PRESENCE');
+    if (cell.artworks !== undefined && (!Array.isArray(cell.artworks) ||
+      cell.artworks.length !== cell.count || !cell.artworks.every((art: unknown) => art === null ||
+        (cell.role === 'driver' ? isVehicleArtworkPath(art) : isMapAvatarPath(art))))) throw new Error('INVALID_PRESENCE');
     return { ...safe, count: cell.count, ...(cell.artworks ? { artworks: [...cell.artworks] } : {}) };
   });
 }

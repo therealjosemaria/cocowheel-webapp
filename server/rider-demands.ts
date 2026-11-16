@@ -27,6 +27,7 @@ import {
 } from "./core";
 import { requireUniversitySession } from "./university-auth";
 import { publicName } from "./personal-details";
+import { avatarArtwork } from "./map-avatars";
 import { corridorMatches } from "./usual-routes";
 import { readVehicle, rideVehicle, saveVehicle, snapshotVehicle } from "./vehicles";
 import { emptyVehicle, requirePassengerVehicle } from "../lib/vehicle";
@@ -104,6 +105,7 @@ function view(db: Db, row: Row): RiderDemand {
     ...JSON.parse(row.body),
     id: row.id,
     alias: publicName(db, row.owner_id, "Member"),
+    avatarArtwork: avatarArtwork(db, row.owner_id),
     status: row.status,
     createdAt: row.created_at,
     expiresAt: row.expires_at,

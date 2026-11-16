@@ -1,5 +1,15 @@
 # GUMWHEEL
 
+16 November map avatars: accounts can display an individually assigned, approved
+avatar render or the default waiting person, using Profile's Avatar preview and
+Edit/Save/Cancel controls. The owner's selected **P2-20260801** result is the first
+assignment. Enabled renders appear on rider maps and the public Home area feed;
+Home remains non-clickable and does not reveal names or precise locations, but a
+personal avatar may be recognisable. Other accounts stay on the default until
+assigned their own render. Source photos/3D files remain private. This supersedes
+the earlier trial-only map boundary below. Self-service creation, Mac validation
+and queued photo checks are not implemented. See [map avatars](docs/MAP_AVATARS.md).
+
 14 November avatar trial: all five pinned Tripo models completed using one private
 reference, with task-level charges totalling US$2.50. The owner-only comparison
 uses preview posters, lazy 3D loading and a consistent front-facing camera.

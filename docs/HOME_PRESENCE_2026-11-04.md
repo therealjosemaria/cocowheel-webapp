@@ -1,5 +1,13 @@
 # Home presence and discovery access — 4 November 2026
 
+16 November [assigned map avatars](MAP_AVATARS.md) extends rider cells with the
+same bounded `artworks` array. Enabled account sprites use opaque public image
+paths; selecting Default removes them from future feeds and blocks sprite reads.
+The owner explicitly opted into public Home display. An avatar may be recognisable;
+coarse areas do not make a personal illustration anonymous. Names, precise
+locations, destinations and live GPS remain excluded. Existing caps, empty-state
+hiding and non-clickable map settings are unchanged.
+
 5 November [all-map vehicle artwork](VEHICLE_MAPS_2026-11-05.md) supersedes the
 original role-only artwork projection below. Driver cells may also carry an
 `artworks` array matching count, containing only allowlisted shipped car paths or

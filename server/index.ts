@@ -64,6 +64,7 @@ import { readUsualRoute, saveUsualRoute, saveSearchRoute, removeUsualRoute, deli
 import { readVehicle, saveProfileVehicle } from "./vehicles";
 import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
+import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
 
 const MAX_BODY_BYTES = 32_768;
 const PLACE_LOOKUP_WINDOW_MS = 60_000;
@@ -145,6 +146,7 @@ function errorStatus(error: unknown) {
   if (["DEMAND_ALREADY_OPEN", "DEMAND_UNAVAILABLE", "DEMAND_CHANGED"].includes(code)) return 409;
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
+  if (code === "AVATAR_UNAVAILABLE") return 409;
   if (["VEHICLE_PLATE_REQUIRED", "VEHICLE_IN_USE"].includes(code)) return 409;
   if (code === "RATING_WINDOW_CLOSED") return 410;
   if (["RATING_ALREADY_SUBMITTED", "RATING_UNAVAILABLE"].includes(code))
@@ -525,6 +527,18 @@ export function createApiServer(
         writeJson(response, 200, { cells: homePresence(database) }, cors);
         return;
       }
+      // A public, opted-in render is a read-only asset, not a lifecycle request.
+      const spritePath = new URL(request.url ?? "/", "http://api.local").pathname;
+      if (spritePath.startsWith("/api/map-avatar/")) {
+        const match = /^\/api\/map-avatar\/([a-f0-9]{32})\.webp$/.exec(spritePath);
+        const sprite = request.method === "GET" && match ? avatarSprite(database, match[1]) : undefined;
+        if (sprite) {
+          response.writeHead(200, { ...cors, "Content-Type": "image/webp", "Content-Length": sprite.length,
+            "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
+          response.end(sprite);
+        } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
+        return;
+      }
       const now = new Date();
       expireStaleRides(database, now);
       advanceSampleSimulations(database, now);
@@ -828,6 +842,31 @@ export function createApiServer(
           },
           cors,
         );
+        return;
+      }
+      if (parts[0] === "api" && parts[1] === "avatar") {
+        const owner = requireUniversitySession(database, token);
+        if (parts.length === 2 && request.method === "GET") {
+          writeJson(response, 200, readMapAvatar(database, owner.id), cors);
+          return;
+        }
+        if (parts.length === 2 && request.method === "POST") {
+          const body = await readJson(request, 2048);
+          const current = requireUniversitySession(database, token);
+          if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+          writeJson(response, 200, saveMapAvatar(database, current.id, body.enabled), cors);
+          return;
+        }
+        if (parts.length === 3 && parts[2] === "preview" && request.method === "GET") {
+          const sprite = ownAvatarSprite(database, owner.id);
+          if (sprite) {
+            response.writeHead(200, { ...cors, "Content-Type": "image/webp", "Content-Length": sprite.length,
+              "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" });
+            response.end(sprite);
+            return;
+          }
+        }
+        writeJson(response, 404, { error: "NOT_FOUND" }, cors);
         return;
       }
       if (parts.length === 3 && parts[0] === "api" && parts[1] === "profile-photo" && request.method === "GET") {
