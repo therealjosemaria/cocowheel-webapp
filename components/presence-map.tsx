@@ -1,8 +1,8 @@
 "use client";
 import MapSurface from "./map-surface";
 
-import { useEffect } from 'react';
-import { Marker, useMap } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
+import { Marker, useMap, ZoomControl } from 'react-leaflet';
 import type { PresenceCell } from '@/lib/home-presence';
 import { modelMarkerIcon } from '@/lib/map-role-icon';
 
@@ -14,7 +14,12 @@ const icons = {
 
 function AreaView({ cells }: { cells: PresenceCell[] }) {
   const map = useMap();
+  const framedAreas = useRef<string | null>(null);
   useEffect(() => {
+    // Counts/artwork refresh each minute; preserve manual zoom for the same areas.
+    const areas = [...new Set(cells.map(cell => `${cell.latitude}:${cell.longitude}`))].sort().join('|');
+    if (framedAreas.current === areas) return;
+    framedAreas.current = areas;
     if (!cells.length) {
       map.setView([-33.89, 151.2], 11, { animate: false });
       return;
@@ -42,7 +47,7 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
   }));
   return <MapSurface frameClassName="presence-map-frame" center={[-33.89, 151.2]} zoom={11}
     className="home-presence-map" attributionControl={false} zoomControl={false} dragging={false}
-    scrollWheelZoom={false} doubleClickZoom={false} touchZoom={false}
+    scrollWheelZoom={false} doubleClickZoom={false} touchZoom={true}
     boxZoom={false} keyboard={false} zoomAnimation={false} fadeAnimation={false}
     markerZoomAnimation={false}>
     <AreaView cells={cells} />
@@ -51,5 +56,6 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
         ? modelMarkerIcon(cell.role, '', false, offsets[cell.total - 1][cell.slot], undefined, cell.artwork)
         : icons[cell.role][cell.total - 1][cell.slot]}
       interactive={false} keyboard={false} />)}
+    <ZoomControl position="bottomright" />
   </MapSurface>;
 }

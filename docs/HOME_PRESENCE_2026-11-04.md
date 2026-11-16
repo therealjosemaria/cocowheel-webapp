@@ -1,5 +1,61 @@
 # Home presence and discovery access — 4 November 2026
 
+## Home zoom — 16 November 2026
+
+Supersedes the original no-zoom interaction rule below. Home now uses the same
+Leaflet ZoomControl and shared CSS as JourneyMap: one +/− pair at bottom-right,
+with accessible Zoom in/Zoom out names and keyboard activation. Two-finger pinch
+zoom is enabled; drag-to-pan, scroll-wheel, double-click and box zoom remain off
+so ordinary page scrolling and empty-map clicks retain their previous behaviour.
+All marker interaction/keyboard targets, popups and journey actions remain off.
+The 200px frame, bottom-left credits, main actions and activity order are unchanged.
+
+Initial framing still fits occupied areas with automatic zoom capped at 11.
+Routine feed responses with the same distinct area centres, including count or
+artwork changes, retain the user’s zoom. A different set of occupied areas
+reframes to the overview. Empty/failed/hidden states still remove the map; its
+next mount starts a fresh overview. No timer, feed, API or backend changes.
+
+Zoom changes only map scale. The server continues grouping planned origins into
+fixed 0.05-degree cells (about 5.6km north–south × 4.6km east–west in Sydney) and
+sends their centres, capped icons and allowed artwork. Exact endpoints, addresses,
+destinations, names and live GPS remain excluded. There is no guaranteed minimum
+offset from a real origin; recognisable avatars retain their documented limits.
+No API restart is required for this frontend change. Verification is recorded below.
+
+### Zoom verification
+
+Baseline `3e9980a`. Optimized build and lint pass. The six isolated
+`tests/home-presence.test.ts` regressions pass, retaining coarse, bounded,
+read-only public projection and symmetric discovery sign-in. No server code
+or API restart is involved. Reproduce with:
+
+```sh
+npm run build
+npm run lint
+node --import tsx --test tests/home-presence.test.ts
+# Serve the optimized frontend in another terminal:
+node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3201
+# With Playwright and /usr/bin/chromium installed:
+GUMWHEEL_TEST_TILES=1 /tmp/gumwheel-ui-check-env/bin/python scripts/check-home-presence.py
+GUMWHEEL_TEST_TILES=1 /tmp/gumwheel-ui-check-env/bin/python scripts/check-home-activity-layout.py
+```
+
+Both browser scripts pass at 320/390/844/1440px (eight cases). They cover shared
+bottom-right +/− controls and keyboard activation, real two-contact pinch events
+at 320/390px, preserved zoom on same-area/count refresh, non-clickable/non-focusable
+icons, empty/failure/hidden map removal and recovery, credits and OTP-preview
+behaviour. The activity suite covers driver, rider, defensive multiple-card and
+no-card states, stable hero/action/map positions, 200px height and no overflow.
+All API responses are synthetic and assert no journey/location/routing writes;
+only read-only public map tiles reach an external service. Whole populated/empty
+phone and desktop screens were visually reviewed for heading clearance, action
+hierarchy, map/control/credit spacing and ordinary activity scrolling. No new
+copy, palette or controls outside the shared map widget. Hook review: the ref
+only remembers framed area keys; existing effects, cleanup and polling remain.
+Physical Safari and authenticated production activity remain unverified. Exact
+frontend deployment is recorded after push.
+
 16 November [assigned map avatars](MAP_AVATARS.md) extends rider cells with the
 same bounded `artworks` array. Enabled account sprites use opaque public image
 paths; selecting Default removes them from future feeds and blocks sprite reads.

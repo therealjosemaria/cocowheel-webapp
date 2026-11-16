@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+16 November Home zoom: the public area map reuses journey maps’ bottom-right
++/− controls and supports pinch zoom. Markers remain non-clickable; the server
+still sends only fixed 0.05-degree area centres. Same-area count/artwork refreshes
+preserve the chosen zoom; a changed area set reframes the overview. No API,
+location precision or sign-in rules change. See [Home presence](docs/HOME_PRESENCE_2026-11-04.md).
+
 16 November Seedream release: new avatar jobs use Seedream v5 (5 Tripo credits)
 after the existing Mac photo check and separate owner-admin generation approval.
 Human segmentation and alpha matting run locally on the Pi in a bounded CPU
