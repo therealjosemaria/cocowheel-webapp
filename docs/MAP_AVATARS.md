@@ -119,12 +119,12 @@ Initial failures and the legacy-fixture remediation are retained in the
 
 Browser reproduction (use a compatible Python environment with Playwright):
 
-1. `GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts`
+1. `GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts > /tmp/gumwheel-avatar-fixture.log 2>&1`
 2. `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npx next dev --hostname 127.0.0.1 --port 3491`
 3. `GUMWHEEL_TEST_TILES=1 python scripts/check-map-avatars.py`
 
-Use the retained fixture metadata in `/tmp/gumwheel-avatar-fixture.log` by
-redirecting command 1 there. `GUMWHEEL_AVATAR_RENDER` can point at an approved local
+The fixture metadata is saved in `/tmp/gumwheel-avatar-fixture.log`.
+`GUMWHEEL_AVATAR_RENDER` can point at an approved local
 render; default is the private P2 trial PNG. Screenshots go to
 `/tmp/gumwheel-map-avatar-review`; none are committed. The fixture binds loopback
 and uses in-memory SQLite and synthetic sessions. Road geometry is mocked, while
@@ -145,3 +145,15 @@ P2-20260801, not another trial model. Local/public health returned 200; anonymou
 settings/preview reads returned 401, and original GLB reads remained 403.
 Frontend rollout verification follows the source push. Physical Safari, a live
 owner browser walkthrough and concurrent avatar capacity remain unverified.
+
+### Verified frontend release
+
+Implementation `d8206b8b646cda24b61f7b0e3380ca3cd4825c32` is pushed to main.
+Vercel deployment `dpl_8nh8PeTf8eG2qfH4KxAhNT6TXocD` is READY for that exact
+commit and assigned to www.gumwheel.com / gumwheel.com. Fresh public Chromium
+checks at 390/1440px confirmed the new Privacy revision/copy, retained Home layout,
+no overflow or page exceptions, and no API writes. All non-GET/HEAD requests were
+blocked in this production check, including analytics. Avatar controls and both
+participant roles were tested against the isolated actual API as above; the live
+owner sign-in walkthrough and physical Safari remain unverified. No further API
+restart is needed for this documentation-only follow-up.

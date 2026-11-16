@@ -90,7 +90,20 @@
     "anonymous_private_preview": 401,
     "anonymous_original_model": 403
   },
-  "frontend_deployment": "pending source push and verification",
+  "frontend_deployment": {
+    "id": "dpl_8nh8PeTf8eG2qfH4KxAhNT6TXocD",
+    "state": "READY",
+    "source_revision": "d8206b8b646cda24b61f7b0e3380ca3cd4825c32",
+    "aliases": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "public_browser_widths": [
+      390,
+      1440
+    ],
+    "checks": "new Privacy copy/revision, retained Home, no overflow/page exceptions/API writes; non-GET/HEAD requests blocked"
+  },
   "not_implemented": [
     "self-service photo uploads",
     "Mac validation service",
@@ -101,5 +114,6 @@
     "physical iPhone/Safari",
     "live owner sign-in walkthrough",
     "large/concurrent avatar workloads"
-  ]
+  ],
+  "implementation_revision": "d8206b8b646cda24b61f7b0e3380ca3cd4825c32"
 }
