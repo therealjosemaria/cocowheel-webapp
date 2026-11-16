@@ -32,12 +32,26 @@ with sync_playwright() as p:
         expect(avatar).to_contain_text('We’ll check that your photo meets these requirements before creating your avatar and notify you with the results.')
         assert 'Tripo' not in avatar.inner_text() and 'approval' not in avatar.inner_text()
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job'] is None
+        context.route('**/api/avatar/jobs',lambda r:r.fulfill(status=429,json={'error':'PHOTO_BUSY'}) if r.request.method=='POST' else r.continue_())
+        with page.expect_request(lambda r:r.method=='POST' and r.url==BASE+'/api/avatar/jobs') as attempt:
+            avatar.get_by_role('button',name='Submit photo',exact=True).click()
+        original_submission=attempt.value.post_data_json['submissionId']
+        expect(avatar.get_by_role('alert')).to_be_visible()
+        context.unroute('**/api/avatar/jobs')
+        draft=avatar.get_by_role('img',name='Photo to check',exact=True).get_attribute('src')
+        avatar.get_by_role('link',name='Photo guide',exact=True).click()
+        expect(page).to_have_url(BASE+'/avatar-photo-guide')
+        assert len(context.pages)==1
+        page.get_by_role('link',name='Back',exact=True).click()
+        expect(avatar.get_by_role('img',name='Photo to check',exact=True)).to_have_attribute('src',draft)
         page.screenshot(path=str(OUT/f'upload-{width}.png'),full_page=True)
         with page.expect_request(lambda r:r.method=='POST' and r.url==BASE+'/api/avatar/jobs') as submitted:
             avatar.get_by_role('button',name='Submit photo',exact=True).click()
         assert submitted.value.post_data_json['consent'] is True
+        assert submitted.value.post_data_json['submissionId']==original_submission
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
-        page.reload(); avatar.locator('summary').click()
+        page.reload()
+        if not avatar.evaluate('(e)=>e.open'): avatar.locator('summary').click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         expect(avatar.get_by_role('button',name='Cancel photo check',exact=True)).to_have_count(0)
         expect(avatar.get_by_role('button',name='Cancel creation',exact=True)).to_have_count(0)
@@ -46,7 +60,7 @@ with sync_playwright() as p:
         assert job
         assert context.request.post(API+'/api/avatar-worker/result',headers=worker,data={'id':job['id'],'lease':job['lease'],'verdict':'rejected','reason':'FEET'}).ok
         # A collapsed Profile does not mark the result reviewed.
-        page.reload(); page.wait_for_timeout(1000)
+        page.goto(BASE+'/usual-route'); page.wait_for_timeout(1000)
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job']['notificationKey']
         profile=page.get_by_role('button',name='Profile:',exact=False)
         profile.click()

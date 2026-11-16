@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+16 November photo guide navigation: normal in-app links reuse the current tab.
+A private, account-bound memory draft retains the prepared photo and submission
+UUID between Profile and the guide for up to 30 minutes. Cancel/submission,
+identity change, another route, page exit or timeout clear the retained draft;
+no photo is written to browser storage or history. API permissions and creation
+remain unchanged. See [navigation evidence](docs/AVATAR_PHOTO_GUIDE_2026-11-16.md#same-tab-navigation).
+
 16 November Avatar reference alignment: the Profile Avatar heading icon and
 default preview use the same front-facing figure as the photo guide, with the
 existing icon/preview sizes and spacing. This is scoped to Profile’s Avatar
@@ -27,8 +34,8 @@ See [avatar creation](docs/AVATAR_CREATION.md).
 16 November avatar photo guide: Profile’s Upload/Update photo area and selected
 photo view link to a public, focused guide. A front-facing version of the default
 figure demonstrates full-body framing and margins; four short tips and existing
-format/size limits accompany it. The guide opens in a new tab to retain the
-upload draft, adds no menu/legal-page links and uses no private photos.
+format/size limits accompany it. The guide opens in the same tab and retains
+the selected photo for its Back link or browser Back. It adds no menu/legal-page links and uses no private photos.
 Verification and artwork provenance are in [the guide notes](docs/AVATAR_PHOTO_GUIDE_2026-11-16.md).
 
 16 November three-photo trial: actual uploads under isolated accounts and the

@@ -220,3 +220,58 @@ is READY as Vercel `dpl_DKJtDBNb43zMdTqvqazcFs1AXLqW`, assigned to both public
 domains. Anonymous read-only verification of the public stylesheet confirms the
 exact scoped Avatar heading/default-preview rule points to the front-facing
 sample asset. No API restart or production account write was performed.
+
+## Same-tab navigation
+
+Baseline `d936c09`. Supersedes the new-tab navigation and popup-specific test
+assertions in the earlier sections. Photo guide now uses Next Link with no target
+or new-tab announcement. The existing Back link returns to `/usual-route?avatar=1`;
+browser Back/Forward also preserve the selected photo on this round trip. Public
+and direct-entry guide access, content and metadata remain unchanged.
+
+A small root client provider retains one prepared photo and its existing submission
+UUID, bound to the verified account name supplied by Profile. It is tab memory
+only: no browser storage, history state, URL, server upload or analytics payload.
+Retention is 30 minutes from preparation or reopening the guide, with a timer and
+expiry check. Cancel, submitting, identity-change events, navigation outside
+Profile/the guide, pagehide and provider teardown clear this return draft. A
+reload starts a new tab runtime and requires selecting the file again. This TTL
+bounds the return cache; it does not time out a photo still shown in the active
+upload form. Reading as a different account clears the draft. All upload/privacy
+permissions still come from the server, not this UI account binding.
+
+An initial active job supersedes a restored draft. Guide navigation is ignored
+while file preparation/submission is in progress, using the existing mutation
+guard; the link remains styled normally. A recoverable submission error keeps
+the photo and UUID in the current form, and reopening the guide retains those
+same values. There is no automatic submission or generation on return. Shared
+Profile/guide views, result acknowledgements, admin-only cancellation, provider
+configuration, file limits and frontend styling are unchanged. No API restart.
+
+Verification: optimized build, lint and all six named SEO regressions pass.
+`scripts/check-avatar-photo-guide.py` passes at 320/390/844/1440: one browser tab,
+normal Back plus browser Back/Forward with identical photo data, cleared cancelled
+drafts, no photo in browser storage/history, and no upload writes. The 390px
+case also verifies another route, identity change, different account and simulated
+30-minute expiry clear the return draft. Initial/assigned/rejected entry links
+remain available, with unchanged metadata and front-facing example.
+
+`scripts/check-avatar-upload.py` passes at 320/390/1440 against the isolated real
+API and fake provider. A synthetic recoverable PHOTO_BUSY response retains the
+photo; a guide round trip preserves its original submission UUID; the subsequent
+explicit Submit photo uses that same UUID and the required consent flag. Queue
+persistence, rejection review/deep link, manual admin approval, assignment and
+display save still pass. The first run’s old harness blindly toggled the already
+opened Avatar after returning to `?avatar=1`; correcting the harness's open-state
+check and using plain Profile for the collapsed-result check resolved it. That
+failure was not counted as a passing run.
+
+Reproduce with the earlier isolated fixture commands and the two browser scripts.
+Whole Profile/guide screens were visually reviewed at phone/desktop widths for
+unchanged spacing, hierarchy, regular body text, front-facing illustrations and
+Back placement; no overflow or page exceptions. React review: stable callbacks/
+context value, refs scoped per browser root, bounded timer, identity/pagehide/
+route cleanup, no server/shared global photo cache, guarded async restoration and
+existing submission reconciliation. No real photo, production account, paid task
+or notification was used. Physical devices and authenticated production Profile
+remain unverified. Exact frontend deployment is recorded after push.

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiErrorMessage, cocowheelsApi } from "@/lib/api-client";
@@ -9,6 +10,7 @@ import RideFieldLabel from "./ride-field-label";
 import { AVATAR_PHOTO_REQUIREMENTS, avatarJobActive, avatarJobMessage, type AvatarJobs } from "@/lib/avatar-job";
 import { prepareAvatarPhoto } from "@/lib/avatar-photo";
 import { useVisibleReview } from "@/lib/use-visible-review";
+import { useAvatarPhotoDraft } from "./avatar-photo-draft-context";
 
 function AvatarPreview({ src, photo = false }: { src: string | null; photo?: boolean }) {
   const [failed, setFailed] = useState(false);
@@ -18,12 +20,12 @@ function AvatarPreview({ src, photo = false }: { src: string | null; photo?: boo
     : <span className="journey-role-art journey-role-art-rider avatar-default-preview" role="img" aria-label="Default map avatar" />;
 }
 
-function PhotoGuideLink() {
-  return <a className="help-email avatar-photo-guide-link" href="/avatar-photo-guide" target="_blank" rel="noopener noreferrer"
-    aria-label="Photo guide (opens in a new tab)">Photo guide</a>;
+function PhotoGuideLink({ onNavigate }: { onNavigate: (event: { preventDefault: () => void }) => void }) {
+  return <Link className="help-email avatar-photo-guide-link" href="/avatar-photo-guide" onNavigate={onNavigate}>Photo guide</Link>;
 }
 
-export default function AvatarDetails() {
+export default function AvatarDetails({ owner }: { owner: string }) {
+  const { remember, read, clear } = useAvatarPhotoDraft();
   const avatarEntry = useSearchParams().get("avatar") === "1";
   const [saved, setSaved] = useState<MapAvatar | null>(null);
   const [enabled, setEnabled] = useState(false);
@@ -44,6 +46,19 @@ export default function AvatarDetails() {
   const submitting = useRef(false);
   useEffect(() => {
     let live = true;
+    void Promise.resolve().then(() => {
+      if (!live) return;
+      const draft = read(owner);
+      if (draft) { setPhoto(draft.photo); submissionId.current = draft.submissionId; }
+    });
+    return () => { live = false; };
+  }, [owner, read]);
+  const openGuide = (event: { preventDefault: () => void }) => {
+    if (submitting.current) { event.preventDefault(); return; }
+    if (photo) remember({ owner, photo, submissionId: submissionId.current });
+  };
+  useEffect(() => {
+    let live = true;
     alive.current = true;
     const load = () => {
       if (document.visibilityState !== "visible" || submitting.current) return;
@@ -53,6 +68,7 @@ export default function AvatarDetails() {
           if (seenPreview.current !== undefined && seenPreview.current !== avatar.previewUrl) notifyAvatarSaved();
           seenPreview.current = avatar.previewUrl;
           setSaved(avatar); setJobs(state); setLoadError("");
+          if (state.job && avatarJobActive(state.job.status)) { clear(); setPhoto(null); }
         }
       }).catch(reason => { if (live && version === mutation.current) setLoadError(apiErrorMessage(reason)); });
     };
@@ -61,7 +77,7 @@ export default function AvatarDetails() {
     window.addEventListener("focus", load);
     document.addEventListener("visibilitychange", load);
     return () => { live = false; alive.current = false; clearInterval(timer); window.removeEventListener("focus", load); document.removeEventListener("visibilitychange", load); };
-  }, [revision]);
+  }, [revision, clear]);
   useEffect(() => {
     if (!avatarEntry || !disclosure.current) return;
     disclosure.current.open = true;
@@ -88,11 +104,12 @@ export default function AvatarDetails() {
       try {
         if (photo) {
           // Submit photo requests checking and creation; selecting a file alone does not.
+          clear();
           const state = await cocowheelsApi<AvatarJobs>("/api/avatar/jobs", {
             method: "POST", body: JSON.stringify({ photo, consent: true, submissionId: submissionId.current }),
           }, true);
           if (!alive.current) return;
-          setJobs(state); setPhoto(null);
+          clear(); setJobs(state); setPhoto(null);
           window.dispatchEvent(new Event("cocowheels:avatar-job-changed"));
           return;
         }
@@ -106,7 +123,7 @@ export default function AvatarDetails() {
         if (photo) {
           try {
             const state = await cocowheelsApi<AvatarJobs>("/api/avatar/jobs");
-            if (alive.current && state.job && avatarJobActive(state.job.status)) { setJobs(state); setPhoto(null); return; }
+            if (alive.current && state.job && avatarJobActive(state.job.status)) { clear(); setJobs(state); setPhoto(null); return; }
           } catch { /* Preserve the submission ID; a manual retry cannot create a duplicate. */ }
         }
         if (alive.current) setError(apiErrorMessage(reason));
@@ -123,11 +140,11 @@ export default function AvatarDetails() {
           <AvatarPreview key={photo ? "photo-to-check" : preview} src={photo ?? preview} photo={Boolean(photo)} />
           {photo ? <>
             <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>
-            <PhotoGuideLink />
+            <PhotoGuideLink onNavigate={openGuide} />
             <p className="save-route-profile-note">We’ll check that your photo meets these requirements before creating your avatar and notify you with the results.</p>
             <div className="ride-action-buttons">
               <button className="primary" aria-busy={busy}>{busy ? "Uploading…" : "Submit photo"}</button>
-              <button type="button" className="secondary" onClick={() => { if (!submitting.current) { setPhoto(null); setError(""); } }}>Cancel</button>
+              <button type="button" className="secondary" onClick={() => { if (!submitting.current) { clear(); setPhoto(null); setError(""); } }}>Cancel</button>
             </div>
           </> : <>
           <label className="usual-alert-choice"><input type="checkbox" checked={Boolean(selected)}
@@ -148,7 +165,7 @@ export default function AvatarDetails() {
           </p>}
           {!photo && !editing && (!jobs.job || !avatarJobActive(jobs.job.status)) && <>
             {!jobs.job && !saved.available && <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>}
-            <PhotoGuideLink />
+            <PhotoGuideLink onNavigate={openGuide} />
             <button type="button" className="secondary" onClick={() => {
               if (!jobs.accepting) { setError("Photo uploads are temporarily unavailable. Use the default avatar and try uploading later."); return; }
               photoInput.current?.click();
@@ -160,7 +177,11 @@ export default function AvatarDetails() {
             submitting.current = true; setError("");
             try {
               const prepared = await prepareAvatarPhoto(file);
-              if (alive.current) { setPhoto(prepared); submissionId.current = crypto.randomUUID(); }
+              if (alive.current) {
+                submissionId.current = crypto.randomUUID();
+                remember({ owner, photo: prepared, submissionId: submissionId.current });
+                setPhoto(prepared);
+              }
             } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "Choose another photo."); }
             finally { submitting.current = false; }
           }} />

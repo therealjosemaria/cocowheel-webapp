@@ -19,9 +19,14 @@ passing a Mac check never triggers generation without the owner-admin’s approv
 
 The public [photo guide](AVATAR_PHOTO_GUIDE_2026-11-16.md) is linked beside
 Upload/Update photo and selected-photo requirements, including after rejection.
-It opens in a new tab, preserving the selected photo and submission ID
-in the upload tab. Its front-facing generic example and framing tips do not
-change validation thresholds or imply that every compliant photo will pass.
+It opens in the same tab. An account-bound, in-memory draft preserves the
+selected photo and submission UUID for returning via Back/browser history. The
+return draft lasts 30 minutes from selection or a guide visit and clears on
+Cancel/submission, identity changes, navigation outside Profile/the guide,
+page exit or provider teardown. It is never written to session/local storage,
+history state or a URL. A reload requires selecting the photo again. An existing
+active job supersedes a restored draft; API checks remain authoritative. The
+front-facing generic example and framing tips do not change validation thresholds or imply that every compliant photo will pass.
 
 Profile → Avatar shows Upload photo even for an account without an assignment.
 The Avatar heading icon and default preview reuse the guide’s front-facing

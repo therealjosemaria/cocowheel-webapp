@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+16 November same-tab Photo guide navigation preserves the existing underlined
+14px link, 44px target and Back-above-heading treatment. Remove the obsolete
+new-tab accessible announcement; no new visual controls or tokens.
+
 16 November Avatar reference alignment reuses the guide’s existing transparent
 front-facing WebP in the Profile Avatar heading’s role-icon slot and centred
 144×108px default preview. Preserve the shared contained rider geometry, label

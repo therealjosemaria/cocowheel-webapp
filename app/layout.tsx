@@ -7,6 +7,7 @@ import UniversityVerification from "@/components/university-verification";
 import ConnectionNotice from "@/components/connection-notice";
 import WebAnalytics from "@/components/web-analytics";
 import { JourneyUpdateProvider } from "@/components/journey-update-context";
+import { AvatarPhotoDraftProvider } from "@/components/avatar-photo-draft-context";
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/seo";
 import { siteVerification } from "@/lib/site-verification";
 import "leaflet/dist/leaflet.css";
@@ -54,7 +55,7 @@ export default function RootLayout({
           </header>
           <div className="app-content">
             <LocationTracker />
-            {children}
+            <AvatarPhotoDraftProvider>{children}</AvatarPhotoDraftProvider>
           </div>
           <SiteFooter />
         </main>
