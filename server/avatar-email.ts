@@ -37,7 +37,7 @@ export async function deliverAvatarReminder(db: Db, send: AlertSender = sender, 
 /** Owner-only operational updates, separate from each submitter's result events. */
 export async function deliverAdminAvatarReminder(db: Db, send: AlertSender = sender, now = Date.now()) {
   if (send === sender && !journeyEmailsConfigured()) return;
-  const event = db.prepare("SELECT * FROM avatar_admin_events WHERE reviewed_at IS NULL AND sent_at IS NULL AND next_at<=? AND attempts<3 ORDER BY due_at,event_key LIMIT 1").get(now) as (Event & { stage: string }) | undefined;
+  const event = db.prepare("SELECT * FROM avatar_admin_events WHERE stage<>'READY' AND reviewed_at IS NULL AND sent_at IS NULL AND next_at<=? AND attempts<3 ORDER BY due_at,event_key LIMIT 1").get(now) as (Event & { stage: string }) | undefined;
   if (!event) return;
   if (now - event.created_at > 86400_000) {
     // Expire email eligibility, without clearing the in-app review indicator.

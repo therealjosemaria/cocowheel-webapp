@@ -6,7 +6,7 @@ import Database from "better-sqlite3";
 import sharp from "sharp";
 import { createGuestSession, initializeCoreSchema } from "../server/core";
 import { createApiServer } from "../server/index";
-import { AVATAR_DELAY_MS, AVATAR_PHOTO_TTL, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, reviewAvatarEvent } from "../server/avatar-jobs";
+import { AVATAR_DELAY_MS, AVATAR_PHOTO_TTL, avatarAdminEvent, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, initializeAvatarJobs, reviewAvatarEvent } from "../server/avatar-jobs";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "../server/avatar-admin";
 import { deliverAdminAvatarReminder, deliverAvatarReminder } from "../server/avatar-email";
 import { readAdminAvatarBalance, runAvatarGeneration as generateAvatar, type AvatarProvider } from "../server/avatar-generation";
@@ -143,6 +143,51 @@ test("each submission and passed check creates an admin notification; five-minut
     assert.equal(adminAvatarNotices(f.db).count, 0);
     assert.ok(avatarJobSummary(f.db, f.owner.id)!.notificationKey, "Admin review must not clear the submitter's result");
     assert.ok(!JSON.stringify(emails).includes(f.photo.toString("base64").slice(0, 40)));
+  } finally { f.db.close(); }
+});
+
+test("completed avatar stays beside its source without Admin notices; only the unreviewed user result gets its five-minute email", async () => {
+  const f = await fixture();
+  try {
+    f.verify(); actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 2);
+    await runAvatarGeneration(f.db, f.api, now + 3);
+    const readyAt = now + 30_004;
+    await runAvatarGeneration(f.db, f.api, readyAt);
+    const job = adminAvatarJobs(f.db).jobs[0];
+    assert.equal(job.status, "READY"); assert.ok(job.photoUrl); assert.ok(job.renderUrl);
+    assert.ok(adminAvatarAsset(f.db, f.id, "photo")); assert.ok(adminAvatarAsset(f.db, f.id, "render"));
+    assert.equal(job.notificationKey, null); assert.equal(adminAvatarNotices(f.db).count, 0);
+    assert.equal((f.db.prepare("SELECT COUNT(*) AS n FROM avatar_admin_events WHERE stage='READY'").get() as { n: number }).n, 0);
+    const adminMail: string[] = [], userMail: { subject: string; to: string[] }[] = [];
+    await deliverAdminAvatarReminder(f.db, async email => { adminMail.push(email.subject); }, readyAt + AVATAR_DELAY_MS);
+    assert.deepEqual(adminMail, []);
+    await deliverAvatarReminder(f.db, async email => { userMail.push(email); }, readyAt + AVATAR_DELAY_MS - 1);
+    assert.equal(userMail.length, 0);
+    await deliverAvatarReminder(f.db, async email => { userMail.push(email); }, readyAt + AVATAR_DELAY_MS);
+    assert.equal(userMail.length, 1); assert.equal(userMail[0].subject, "Your avatar is ready");
+    assert.deepEqual(userMail[0].to, ["submitter@example.com"]);
+  } finally { f.db.close(); }
+});
+
+test("completion suppresses only its own Admin updates; startup retires old READY notices without clearing user results", async () => {
+  const f = await fixture();
+  try {
+    f.verify(); const userKey = avatarJobSummary(f.db, f.owner.id)!.notificationKey;
+    const other = enqueueAvatarPhoto(f.db, f.other.id, f.photo, randomUUID(), true, now).job!.id;
+    avatarAdminEvent(f.db, f.id, "READY", now + 1);
+    assert.equal(adminAvatarNotices(f.db).count, 1);
+    assert.equal(adminAvatarJobs(f.db).jobs.find(job => job.id === other)!.notificationKey?.includes(other), true);
+    // A previously deployed version could have left a completion reminder pending.
+    f.db.prepare("INSERT INTO avatar_admin_events(event_key,job_id,stage,created_at,due_at,next_at) VALUES (?,?,?,?,?,?)")
+      .run("legacy-ready", f.id, "READY", now, now, now);
+    const sent: string[] = [];
+    // The delivery guard also protects against legacy completion events before cleanup.
+    await deliverAdminAvatarReminder(f.db, async email => { sent.push(email.subject); }, now);
+    assert.deepEqual(sent, []);
+    initializeAvatarJobs(f.db);
+    assert.ok((f.db.prepare("SELECT reviewed_at FROM avatar_admin_events WHERE event_key='legacy-ready'").get() as { reviewed_at: number }).reviewed_at);
+    assert.equal(adminAvatarNotices(f.db).count, 1);
+    assert.equal(avatarJobSummary(f.db, f.owner.id)!.notificationKey, userKey);
   } finally { f.db.close(); }
 });
 

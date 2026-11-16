@@ -83,7 +83,31 @@ with sync_playwright() as p:
         assert user.post(CONTROL+'/generate',headers=control).ok
         page.evaluate('window.dispatchEvent(new Event("focus"))')
         expect(card.get_by_text('Generating',exact=True)).to_be_visible()
+        uc=browser.new_context(viewport={'width':width,'height':1000})
+        uc.add_cookies([{'name':'cocowheels_guest','value':'synthetic-avatar-driver','url':BASE}])
+        uc.route('**/*',lambda r:r.continue_() if r.request.url.startswith(BASE) else r.abort())
+        up=uc.new_page();up.on('pageerror',lambda e:errors.append(str(e)))
+        navigations=[];up.on('framenavigated',lambda frame:navigations.append(frame.url) if frame==up.main_frame else None)
+        up.goto(BASE+'/usual-route?avatar=1')
+        avatar=up.locator('.avatar-details')
+        expect(avatar.get_by_role('status')).to_contain_text('creating your avatar')
+        initial_navigations=len(navigations)
         assert user.post(CONTROL+'/generate',headers=control).ok
+        # Leave the user's tab open: no reload, focus event or navigation to fetch READY.
+        expect(avatar.get_by_role('status')).to_contain_text('Your avatar is ready.',timeout=15000)
+        expect(avatar.get_by_role('button',name='Edit',exact=True)).to_be_visible()
+        assert len(navigations)==initial_navigations
+        assert user.get('/api/avatar').json()['enabled'] is False
+        avatar.get_by_role('button',name='Edit',exact=True).click()
+        avatar.get_by_role('checkbox',name='Personal avatar',exact=True).check()
+        expect(avatar.get_by_role('img',name='Your map avatar',exact=True)).to_be_visible()
+        up.screenshot(path=str(OUT/f'user-ready-{width}.png'),full_page=True)
+        avatar.get_by_role('button',name='Cancel',exact=True).click()
+        up.wait_for_timeout(1000)
+        assert user.get('/api/avatar/jobs').json()['job']['notificationKey'] is None
+        assert admin.get('/api/admin/avatar-jobs/notifications').json()['count']==0
+        assert user.get('/api/avatar').json()['enabled'] is False
+        uc.close()
         page.evaluate('window.dispatchEvent(new Event("focus"))')
         expect(card.get_by_role('img',name='Generated avatar for',exact=False)).to_be_visible()
         expect(card.get_by_text('Ready',exact=True)).to_be_visible()
@@ -130,5 +154,5 @@ with sync_playwright() as p:
         assert dp.evaluate('document.documentElement.scrollWidth<=innerWidth')
         dp.screenshot(path=str(OUT/f'denied-{width}.png'),full_page=True)
         denied.close()
-        print(f'PASS {width}: Profile notice, private photo, review acknowledgment, manual approval, credit hold hidden from user, fake generation preview, cancellation and denied member',flush=True)
+        print(f'PASS {width}: approval/errors retained, original and generated previews, no Admin success notice, user tab updates without reload and preserves display choice, review acknowledgement, cancellation and denied member',flush=True)
     browser.close()

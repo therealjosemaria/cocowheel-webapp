@@ -38,6 +38,8 @@ export function initializeAvatarJobs(db: Db) {
     sent_at INTEGER, attempts INTEGER NOT NULL DEFAULT 0, next_at INTEGER NOT NULL, payload TEXT);
     CREATE INDEX IF NOT EXISTS avatar_admin_due ON avatar_admin_events(reviewed_at,sent_at,next_at);
     CREATE INDEX IF NOT EXISTS avatar_admin_job ON avatar_admin_events(job_id,created_at);`);
+  // Successful generation is visible on its row, without an Admin reminder.
+  db.prepare("UPDATE avatar_admin_events SET reviewed_at=COALESCE(reviewed_at,?) WHERE stage='READY' AND reviewed_at IS NULL").run(Date.now());
   for (const job of db.prepare("SELECT id,status FROM avatar_jobs WHERE status IN ('QUEUED','CHECKING','APPROVED') AND NOT EXISTS (SELECT 1 FROM avatar_admin_events e WHERE e.job_id=avatar_jobs.id)").all() as AvatarJobRow[])
     avatarAdminEvent(db, job.id, job.status === "APPROVED" ? "VERIFIED" : "SUBMITTED");
 }
@@ -185,6 +187,10 @@ export function completeGeneratedAvatar(db: Db, id: string, sprite: Buffer, now 
 
 export function avatarAdminEvent(db: Db, id: string, stage: string, now = Date.now()) {
   db.transaction(() => {
+    if (stage === "READY") {
+      db.prepare("UPDATE avatar_admin_events SET reviewed_at=COALESCE(reviewed_at,?) WHERE job_id=?").run(now, id);
+      return;
+    }
     const key = `admin-avatar:${id}:${stage}`;
     if (db.prepare("SELECT 1 FROM avatar_admin_events WHERE event_key=?").get(key)) return;
     db.prepare("UPDATE avatar_admin_events SET reviewed_at=COALESCE(reviewed_at,?) WHERE job_id=?").run(now, id);

@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+16 November avatar completion keeps the existing Submitted photo / Generated
+avatar figures and Ready status in Admin, with no success notification badge.
+User Profile retains automatic visible polling, regular ready copy and the saved
+Personal avatar display choice. Approval/error notices keep existing controls.
+The preview-resolution diagnosis proposes a larger private image; this release
+does not change artwork dimensions, layout, typography or map sprites.
+
 16 November avatar allowance: keep the existing regular upload error and actions.
 Limit copy says “Three photos have passed the check in the last 24 hours. Try
 uploading again later.” No new heading, modal, badge or disabled button. Rejected

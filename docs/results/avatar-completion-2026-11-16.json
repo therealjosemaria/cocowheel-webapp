@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-16",
+  "baselineRevision": "1614eb7c578c951391950e55b83401ed3c2f67e3",
+  "sourceSha256": {
+    "server/avatar-jobs.ts": "4b6595b6ca3026cac5b018aebbd8f218e43a4d2f54f91d9d34905c7cb301394e",
+    "server/avatar-email.ts": "e51f0dd4c1728db9d6ab8470b41ea004bdf70829553d771c15a64d3fd6da27ad",
+    "tests/avatar-admin.test.ts": "8898fbeecc839f9543fd6159d96c74375d62d524ff59fd74db4b59057d08dfd5",
+    "scripts/check-avatar-admin.py": "bcdce77951be0370dab3c14cab509396792e05b05eae6387a018279833d94950"
+  },
+  "completion": {
+    "adminSuccessNotice": false,
+    "adminApprovalAndErrors": "unchanged",
+    "userReadyNoticeAndFiveMinuteEmail": "unchanged",
+    "existingAdminReadyNotices": "retired at startup; sender excludes READY",
+    "generatedPreview": "existing figure next to source, same row"
+  },
+  "verification": {
+    "regressionsPassed": 308,
+    "targetedAvatarPassed": 38,
+    "lint": "pass",
+    "optimizedBuild": "pass",
+    "viewports": [
+      320,
+      390,
+      1440
+    ],
+    "openUserTab": "READY and avatar availability appeared on existing visible poll; no reload/focus/navigation; display choice retained",
+    "adminPreview": "original and generated image plus Ready visible",
+    "readReview": "visible user result clears unread key; Admin success count stays zero",
+    "isolation": "in-memory accounts, synthetic photos, fake generation and captured email; no production mutation"
+  },
+  "qualityDiagnosis": {
+    "status": "identified; resolution fix remains proposed",
+    "finding": "AVATAR-PREVIEW-001",
+    "providerOriginal": {
+      "width": 832,
+      "height": 1248
+    },
+    "earlierComparisonOriginal": {
+      "width": 768,
+      "height": 1344
+    },
+    "pipeline": {
+      "cutout": {
+        "width": 832,
+        "height": 1248,
+        "bytes": 1546216
+      },
+      "sprite": {
+        "width": 128,
+        "height": 256,
+        "bytes": 7566
+      },
+      "opaquePixels": 144744,
+      "changedOpaquePixels": 0,
+      "interiorFacePatchPixels": 3780,
+      "interiorFacePatchChanged": 0,
+      "reproducesSavedSprite": true,
+      "paidTasksCreated": 0
+    },
+    "boundary": "one current completed result inspected privately, existing task fetched by GET; no new paid task or account modification",
+    "cause": "Admin/Profile serve normalized 128x256 map sprite after higher-resolution cutout",
+    "proposal": "retain a bounded larger private preview separately from the small map sprite",
+    "retainedFailures": [
+      "First diagnostic Node ESM import failed before processing; corrected module interop produced a byte-identical saved sprite."
+    ]
+  },
+  "activation": {
+    "status": "pending"
+  },
+  "unverified": [
+    "authenticated production generation walkthrough",
+    "new paid generation",
+    "physical browser devices",
+    "higher-resolution preview implementation"
+  ]
+}

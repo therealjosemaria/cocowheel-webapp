@@ -1,5 +1,19 @@
 # GUMWHEEL
 
+16 November avatar completion: successful generation remains visible as Ready with
+the submitted photo and generated avatar together in Admin; it creates no Admin
+completion badge/email. Approval requests and error updates retain their existing
+five-minute unread-email fallback. Old unread Admin READY notices are retired on
+startup; user result notices are unchanged. An open, visible Profile updates on
+the existing ten-second poll and on focus/return, without a reload; saved avatar
+display preferences remain. See [admin workflow](docs/AVATAR_ADMIN.md).
+
+Avatar preview quality diagnosis: the current Admin/Profile preview uses the
+128×256 map sprite. A private comparison reproduced the observed loss at that
+resize, after background removal preserved the generated face pixels. A larger
+private preview alongside the map sprite is proposed, not implemented by this
+notification change. See [diagnosis](docs/AVATAR_ADMIN.md#preview-resolution-diagnosis).
+
 16 November avatar allowance: only photos that pass the check count toward three
 per account in a rolling 24 hours, measured from the recorded pass. Automatic and
 manual quality rejections do not count. Pending uploads and cancellations before

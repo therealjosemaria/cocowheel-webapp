@@ -208,8 +208,15 @@ click is required after generation; no new paid call is used for an admin previe
 ## Notifications and email
 
 Each received photo creates a SUBMITTED admin event. Passing the Mac check creates
-a distinct VERIFIED event saying generation needs approval. Ready/rejection/expiry/
-operational changes also create admin updates. Only the newest stage of a job needs
+a distinct VERIFIED event saying generation needs approval. Rejection/expiry/
+operational changes also create admin updates. The later 16 November completion
+policy supersedes the former READY update: successful generation clears that
+job's outstanding Admin events and creates no Admin completion badge or email.
+Its Ready status, source photo and generated result remain on the same row. Other
+jobs' pending approvals/errors are unaffected. Startup marks old unread Admin
+READY events reviewed; the email sender also excludes READY. Previously sent
+mail cannot be recalled. User READY events and five-minute emails are unchanged.
+Only the newest stage of a job needs
 review; newer stages supersede older unread events to avoid redundant reminders.
 Repeated polling of an unchanged hold creates no duplicate event. Recovery clears
 hold reminders before they can send stale error notices. Admin cancellation
@@ -230,6 +237,60 @@ admin account's verified university mailbox, not a public username or new contac
 address. Emails contain a link/status only, never the submitted photo or provider
 credentials. An already sending email cannot be recalled. User result emails retain
 their own five-minute fallback, without operational diagnostics.
+
+Profile's existing Avatar controls poll while visible every ten seconds and on
+focus/visibility return. The completed result updates status and availability
+without navigation/reload; a changed preview URL dispatches the existing shared
+avatar-saved event. It does not automatically enable a new personal avatar or
+change a saved display choice. This is periodic refresh plus network latency,
+not a server-push or guaranteed immediate delivery. Admin also retains its visible
+list polling/focus refresh; source and generated figures use the existing two-column
+contained-image layout. The source follows seven-day retention; the generated
+per-job preview follows 30 days after final update. Photo removed can therefore
+appear alongside a retained generated avatar later.
+
+### Preview resolution diagnosis
+
+One current completed Seedream result was read privately from its existing task,
+without creating a paid task or modifying an account. The generated PNG was
+832×1248. Re-running the existing Pi background removal retained 832×1248;
+144744 fully opaque pixels and a 3780-pixel interior face patch had zero changed
+RGB pixels. The final `prepareAvatarSprite` trim/resize/WebP step produced 128×256
+and byte-for-byte reproduced the saved result (7566 bytes). The Admin generated
+preview and Profile preview currently serve that same small map sprite. This
+explains substantial facial-detail loss when compared with the larger result.
+
+The earlier private comparison image is 768×1344 and that comparison page serves
+the full image, rather than the normalized map sprite. Mac checking only validates
+the uploaded photo's pose/visibility; it does not generate this avatar. The
+evidence identifies final application sizing on the Pi, without showing a hardware
+or background-matting failure. It does not assess every possible input/model.
+
+Open finding AVATAR-PREVIEW-001: retain a bounded higher-resolution private
+generated preview separately from the efficient map sprite, and choose its
+retention/serving contract before implementation. That quality/storage change
+was not requested in the diagnostic and is not implemented in this release.
+Private photos, provider URLs, task/account identifiers and diagnostic image
+files are not committed. See [sanitized verification](results/avatar-completion-2026-11-16.json).
+
+Completion verification: 308 regressions, including two new completion/email and
+legacy-ready cleanup cases, plus lint and optimized build pass. The isolated
+browser/API flow in `scripts/check-avatar-admin.py` passes at 320/390/1440px:
+both Admin figures stay visible, no Admin success update is created, and a user
+Profile left open sees Ready/available controls without reload, navigation or a
+manual focus event. Enabling the unsaved preview works immediately; Cancel keeps
+the saved display preference. Visible result acknowledgement clears the user's
+unread result, preserving the existing email suppression protocol. Whole Admin
+and Profile screens were visually reviewed for existing typography/spacing.
+
+Reproduce with `COCOWHEELS_DB_PATH=/tmp/avatar-completion-tests.sqlite npm test`,
+`npm run lint`, and the local optimized fixture build/setup in
+[upload history](AVATAR_CREATION.md#private-upload-history), followed by
+`python scripts/check-avatar-admin.py`. The fixture uses synthetic accounts,
+fake generation and no email/provider credentials. The quality diagnosis used
+only GET retrieval of an existing completed task and a single local cutout run;
+it did not change the live assigned avatar. Live authenticated generation,
+physical browsers and the proposed resolution change remain unverified.
 
 ## Storage, access and activation
 
