@@ -229,6 +229,16 @@ deployment is recorded separately after the exact commit is verified.
 
 ## Frontend deployment
 
+Quality-review/balance implementation `fa678d3a45e1aa63cf6875c7f3b29896111a0fd7`
+is pushed to main. Vercel `dpl_8LdmTmR8Zu1YiVmGSKamkwEHd3QL` is READY for that
+exact commit and assigned to www.gumwheel.com / gumwheel.com. Fresh read-only
+Chromium checks at 390/1440px confirm the OTP gate, no private records/balance,
+403 for anonymous list/notices/balance/photo/render, and the new Privacy copy.
+No exceptions/overflow; all non-GET/HEAD browser requests blocked. The exact
+deployment's 15-minute error/fatal log query returned no groups. A fresh Mac
+heartbeat (16 seconds old) was observed. Private review actions were tested on
+the isolated actual API; live paid generation and inbox delivery remain unverified.
+
 Implementation `b6470e24bc69b5cb4a5c79e56935c1d4771d72be` is pushed to main.
 Vercel `dpl_49Kxtsr151nfALMPM1Uydc6V8RQa` is READY for that exact commit and
 assigned to www.gumwheel.com / gumwheel.com. Fresh public Chromium checks at

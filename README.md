@@ -7,6 +7,7 @@ upload through Profile and the existing five-minute unread email fallback.
 Avatar management also shows a private, timestamped Tripo API balance and the
 official API top-up link. Balance reads never generate avatars. See
 [review, balance and verification](docs/AVATAR_ADMIN.md#manual-photo-rejection-and-tripo-balance).
+The API and exact implementation frontend were activated and verified on 16 November.
 
 16 November manual avatar management supersedes automatic generation below.
 The protected `/admin/avatar-management` page shows private submitted photos,

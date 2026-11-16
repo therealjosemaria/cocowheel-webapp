@@ -95,5 +95,21 @@
   "publicChecks": {
     "health": 200,
     "anonymousBalance": 403
+  },
+  "frontendDeployment": {
+    "sourceRevision": "fa678d3a45e1aa63cf6875c7f3b29896111a0fd7",
+    "id": "dpl_8LdmTmR8Zu1YiVmGSKamkwEHd3QL",
+    "state": "READY",
+    "productionAliases": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "readOnlyBrowserWidths": [
+      390,
+      1440
+    ],
+    "publicVerification": "Admin OTP gate; no private photo/list/balance content; anonymous list/notices/balance/photo/render return 403; updated Privacy visible; no page errors or overflow. All non-GET/HEAD browser requests blocked.",
+    "runtimeLogs": "Exact deployment 15-minute error/fatal query returned no log groups.",
+    "macHeartbeatAgeSeconds": 16
   }
 }
