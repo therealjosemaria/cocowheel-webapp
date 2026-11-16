@@ -64,7 +64,7 @@ with sync_playwright() as p:
         up.on('request', lambda request: requests.append(request.url) if '/api/avatar/history' in request.url else None)
         up.goto(BASE + '/usual-route?avatar=1')
         avatar = up.locator('.avatar-details')
-        expect(avatar.get_by_text('Personal avatar', exact=True)).to_be_visible()
+        expect(avatar.get_by_role('checkbox', name='Personal avatar', exact=True)).to_have_count(0)
         history = avatar.locator('.avatar-upload-history')
         assert not history.evaluate('(element) => element.open')
         assert not requests, 'History must not load while closed'

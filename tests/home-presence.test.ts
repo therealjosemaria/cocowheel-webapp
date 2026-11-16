@@ -138,6 +138,13 @@ test('anonymous Home is allowed but both discovery roles and driver preview requ
     const payload = await response.json();
     assert.equal(payload.cells.length, 2);
     assert.doesNotMatch(JSON.stringify(payload), /private|alias|rideId|destination|schedule|label|photo|payId/i);
+    const snapshot=db.serialize();
+    const overview=await fetch(base+'/api/home-presence?overview=1');
+    assert.equal(overview.status,200); assert.ok((await overview.json()).bounds);
+    const area=await fetch(base+'/api/home-presence?south=-34&north=-33.8&west=151.1&east=151.3&zoom=12');
+    assert.equal(area.status,200); assert.equal((await area.json()).cells.length,2);
+    assert.equal((await fetch(base+'/api/home-presence?south=broken')).status,400);
+    assert.deepEqual(db.serialize(),snapshot);
     const endpoints = [
       ['/api/availability', 'GET', undefined],
       [`/api/rides/${item.ride.rideId}/preview`, 'GET', undefined],
@@ -156,4 +163,65 @@ test('anonymous Home is allowed but both discovery roles and driver preview requ
       assert.equal(allowed.headers.get('cache-control'), 'no-store');
     }
   } finally { api.close(); api.closeAllConnections(); await once(api, 'close'); db.close(); }
+});
+
+test('viewport filtering happens before global caps and exposes both local roles without writes', async () => {
+  const { presenceViewport, inPresenceBounds } = await import('../lib/home-presence');
+  const { homePresenceResponse } = await import('../server/home-presence');
+  const { db, driver, request } = fixture();
+  try {
+    for (let i=0;i<150;i++) { driver(-55+i*.1); request("outside-"+i,"OPEN",new Date(+now+3600000).toISOString(),-55+i*.1); }
+    const local=driver(-20.123); request('local-rider','OPEN',new Date(+now+3600000).toISOString(),-20.124);
+    assert.equal(homePresence(db,now).some(c=>c.latitude>-21),false);
+    const view=presenceViewport({south:-20.15,north:-20.1,west:151.15,east:151.25,zoom:12});
+    const snapshot=db.serialize();
+    const cells=homePresence(db,now,view);
+    assert.deepEqual(new Set(cells.map(c=>c.role)),new Set(['driver','rider']));
+    assert.ok(cells.every(c=>inPresenceBounds(c,view)));
+    const overview=homePresenceResponse(db,new URLSearchParams('overview=1'),now);
+    assert.equal(overview.hasPresence,true); assert.equal(overview.cells.length,0);
+    assert.ok('bounds' in overview && overview.bounds!.north>=-20.1);
+    const area=homePresenceResponse(db,new URLSearchParams({...Object.fromEntries(Object.entries(view).map(([k,v])=>[k,String(v)]))}),now);
+    assert.deepEqual(area.cells,cells); assert.equal(area.hasPresence,true);
+    const broad=homePresenceResponse(db,new URLSearchParams({...Object.fromEntries(Object.entries({...view,zoom:7}).map(([k,v])=>[k,String(v)]))}),now);
+    assert.deepEqual(broad.cells,[]); assert.equal(broad.hasPresence,true);
+    assert.deepEqual(db.serialize(),snapshot);
+    assert.doesNotMatch(JSON.stringify({overview,area}), new RegExp(local.session.id));
+  } finally { db.close(); }
+});
+
+test('viewport validation, canonical cells, empty areas and dateline coverage retain privacy', async () => {
+  const { presenceViewport, readPresenceReply, presenceViewportQuery } = await import('../lib/home-presence');
+  const { homePresenceResponse } = await import('../server/home-presence');
+  const { db, driver, request }=fixture();
+  try {
+    driver(); request('rider');
+    const empty=homePresenceResponse(db,new URLSearchParams('south=10&north=11&west=10&east=11&zoom=12'),now);
+    assert.deepEqual(empty,{cells:[],hasPresence:true});
+    const a=presenceViewport({south:-33.918,north:-33.912,west:151.201,east:151.209,zoom:15});
+    const b=presenceViewport({south:-33.919,north:-33.911,west:151.202,east:151.208,zoom:15});
+    assert.deepEqual(a,b);
+    assert.deepEqual(homePresenceResponse(db,new URLSearchParams(presenceViewportQuery(a)),now),homePresenceResponse(db,new URLSearchParams(presenceViewportQuery(b)),now));
+    const atEast=driver(0.01),atWest=driver(0.02);
+    db.prepare('UPDATE rides SET origin_longitude=? WHERE public_id=?').run(179.99,atEast.ride.rideId);
+    db.prepare('UPDATE rides SET origin_longitude=? WHERE public_id=?').run(-179.99,atWest.ride.rideId);
+    const cells=homePresence(db,now,{south:0,north:.05,west:179.9,east:-179.9,zoom:12});
+    assert.equal(cells.length,2); assert.deepEqual(new Set(cells.map(c=>c.longitude)),new Set([-179.975,179.975]));
+    for (const query of ['south=0','south=0&north=1&west=0&east=1&zoom=Infinity','south=2&north=1&west=0&east=1&zoom=12','south=0&north=1&west=-181&east=1&zoom=12','south=0&north=1&west=0&east=1&zoom=12&zoom=13','overview=1&extra=1'])
+      assert.throws(()=>homePresenceResponse(db,new URLSearchParams(query),now),/INVALID_PRESENCE_VIEWPORT/);
+    assert.throws(()=>readPresenceReply({cells:[],hasPresence:'yes'}));
+    assert.throws(()=>readPresenceReply({cells:[],hasPresence:true,bounds:{south:0,north:NaN,west:0,east:1}}));
+  } finally { db.close(); }
+});
+
+
+test('public viewport snapping is idempotent at decimal cell boundaries and keeps wrapped world coverage', async () => {
+  const {presenceViewport}=await import('../lib/home-presence');
+  for (const south of [-33.95,-33.9,.15,.3,-89.95]) {
+    const view=presenceViewport({south,north:south+.1,west:151.2,east:151.3,zoom:12});
+    assert.deepEqual(presenceViewport(view),view);
+  }
+  assert.deepEqual(presenceViewport({south:-60,north:60,west:179.99,east:179.98,zoom:1}),{south:-60,north:60,west:-180,east:180,zoom:1});
+  const narrow=presenceViewport({south:0,north:.05,west:179.9,east:-179.9,zoom:12});
+  assert.equal(narrow.west,179.9);assert.equal(narrow.east,-179.9);
 });

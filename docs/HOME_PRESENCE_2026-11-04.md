@@ -1,5 +1,11 @@
 # Home presence and discovery access — 4 November 2026
 
+Later [area loading/shared maps](HOME_AREA_LOADING.md) supersedes the old global
+sample, Home occupancy policy and saved-view Personal avatar checkbox where
+described below. Historical verification remains; current behaviour is in that
+guide, including indexed area selection and mode-specific permissions.
+
+
 16 November [map rendering policy](MAP_RENDERING.md) adds a visible-viewport
 50-figure budget, 40px overlap spacing, light/detail image tiers, broad-zoom hiding
 and a conservative slowdown fallback. It preserves the 120-candidate response,

@@ -1,0 +1,334 @@
+{
+  "date": "2026-11-17",
+  "baselineRevision": "bcf812ce5fa90e98078a8368201a1d09764ca6a7",
+  "testedWorkingTreeSha256": {
+    "components/avatar-details.tsx": "09408fb5c9df4f07aeb484aa44a0055b42de8e913ef7c112b93f82c393a5a3cb",
+    "components/home-presence-layer.tsx": "dd78b7aef08725a3c65d97493666b610c9e75e6fbe41e8f94a9b99ae2eaeb85f",
+    "components/home-presence.tsx": "5fa84e48a7358d28d2855aec8f1afda0e27f05c9456b9bfa92c1bd409bfdc7f8",
+    "components/journey-map.tsx": "c3515070ac12604b10e461c500535e66441389d11f80ef680b6d5985b5b743b3",
+    "components/presence-map.tsx": "3a314cc19646a108491e735c0870f2586d394ebdf93656a2b65e2ea126f30da7",
+    "lib/home-presence.ts": "3e33348853f72cc569ba0347029a1b771daf8f397c56df82dcf1be7c86a5afbc",
+    "lib/map-marker-budget.ts": "39378eb5b4c9ed8803f837fd68920ff3cf9c419ed55aa5b0980944d2cf08806c",
+    "scripts/benchmark-home-viewport.mts": "1d5891a25a4566d9cd5d808fc8225f8e049160076c7d93013f5b4317135d7874",
+    "scripts/check-avatar-admin.py": "c9598d4f4be488d4edffb87ddbb6bdb1e90870f026ff53785cb99d0489a7ce02",
+    "scripts/check-avatar-history.py": "e2a7f3ce083bb8835c1be1e3a5ff7902db4c79dce79ec035d2ee30f9e403b4be",
+    "scripts/check-avatar-upload.py": "f28bfe18d66c7fe135f4d06d71dbdbbc3c8f2aa7ddce7c24b4e49234f57b73aa",
+    "scripts/check-home-presence.py": "679019ed22882f5dd8bd7f487d82756931783f46647904dc2db87dad3677a597",
+    "scripts/check-home-viewport.py": "1b6441464a7d8cd770cfb5142feddc168d2fa584a7ac5167e54ec923da770dc1",
+    "scripts/check-map-avatar-quality.py": "ef41e5abd42627c81677a5ce20ede2b217f2012ef00e6170ecb5168781659a0a",
+    "scripts/check-map-avatars.py": "e6d0a1f86b0f44ae8c835210cd178011832e4e39ef68469cb3260427e99c46b6",
+    "scripts/restore-assigned-avatar-preview.mts": "513100704d9523a0f511723de66ed521ed3136c5a6a36058313298f6965bd787",
+    "scripts/seed-home-viewport-fixture.mts": "e7e58ed2ddec1b7cc7215b20f8671462d5411e0d6e08c353ce39d4a71fa2278c",
+    "scripts/serve-map-avatar-fixture.mts": "00c9aa589edc9655508963c9b066c03c35baa7cab0dd5c40dc62d4eaf26e8465",
+    "server/avatar-preview-recovery.ts": "4b490507b996915a17393e2795c67888764f83c6fcadd23a1b7b1ef9357eb6d7",
+    "server/core.ts": "ee2766197cbfabace967abd3f151086fd04a65b9692a39ab3c83531ba7cdeef7",
+    "server/home-presence.ts": "dc396432815d603bbf4144de77c3adebf4e83d775b71793fb8efac1a7920ba1c",
+    "server/index.ts": "0087f40ba9d850381b6d5c68bca13810661ff7a6633cb415f085dedf8a1f9924",
+    "tests/home-presence.test.ts": "88bc29fb5484a0c1122ec28e9f9634823a2796a8cd841f835222982cc4b15360",
+    "tests/map-avatars.test.ts": "8f6db2aa6ca270951f45ec7e6f16c001fb7801c19d25a20ec1c9fbf1852fa47e",
+    "tests/map-marker-budget.test.ts": "7588ceb6669bdbee6a4fa4fd69536d8df9e5ae038ca010469c85e19fb1aac713"
+  },
+  "isolation": "Separate in-memory SQLite fixture, synthetic accounts/routes/images; local optimized frontend; no production stress, paid provider calls, real email, live trip actions or GPS collection.",
+  "checks": {
+    "regressions": {
+      "passed": 321,
+      "failed": 0
+    },
+    "security": {
+      "passed": 52,
+      "failed": 0
+    },
+    "lint": "PASS",
+    "optimizedBuild": "PASS",
+    "reactReview": "Effects have cleanup/abort and obsolete-response guards; stable viewport callback; dynamically loaded shared map; no new UI dependency or data-permission merge."
+  },
+  "areaQueryBenchmark": {
+    "population": 10004,
+    "isolation": "in-memory synthetic only; no HTTP, live records, GPS, emails or provider calls",
+    "results": [
+      {
+        "name": "overview",
+        "repetitions": 50,
+        "p95Ms": 26.889,
+        "maxMs": 27.246,
+        "bytes": 93,
+        "cells": 0
+      },
+      {
+        "name": "sydney",
+        "repetitions": 50,
+        "p95Ms": 1.411,
+        "maxMs": 3.153,
+        "bytes": 220,
+        "cells": 2
+      },
+      {
+        "name": "melbourne",
+        "repetitions": 50,
+        "p95Ms": 1.256,
+        "maxMs": 3.341,
+        "bytes": 220,
+        "cells": 2
+      },
+      {
+        "name": "empty",
+        "repetitions": 50,
+        "p95Ms": 0.756,
+        "maxMs": 0.836,
+        "bytes": 31,
+        "cells": 0
+      },
+      {
+        "name": "broad",
+        "repetitions": 50,
+        "p95Ms": 0.096,
+        "maxMs": 0.114,
+        "bytes": 31,
+        "cells": 0
+      },
+      {
+        "name": "crowded",
+        "repetitions": 50,
+        "p95Ms": 72.146,
+        "maxMs": 95.464,
+        "bytes": 11430,
+        "cells": 120
+      }
+    ]
+  },
+  "selectorOnlyBenchmark": {
+    "kind": "selector-only",
+    "results": [
+      {
+        "population": 1000,
+        "viewport": [
+          390,
+          200
+        ],
+        "repetitions": 120,
+        "visible": 7,
+        "p95Ms": 0.179,
+        "maxMs": 0.895
+      },
+      {
+        "population": 1000,
+        "viewport": [
+          1440,
+          200
+        ],
+        "repetitions": 120,
+        "visible": 35,
+        "p95Ms": 0.321,
+        "maxMs": 0.936
+      },
+      {
+        "population": 10000,
+        "viewport": [
+          390,
+          200
+        ],
+        "repetitions": 120,
+        "visible": 9,
+        "p95Ms": 0.208,
+        "maxMs": 13.878
+      },
+      {
+        "population": 10000,
+        "viewport": [
+          1440,
+          200
+        ],
+        "repetitions": 120,
+        "visible": 35,
+        "p95Ms": 0.536,
+        "maxMs": 0.666
+      }
+    ]
+  },
+  "browserAreaQueries": [
+    {
+      "width": 320,
+      "population": 10004,
+      "sydneyAndMelbourneBothRoles": true,
+      "emptyAndFailureKeepPan": true,
+      "obsoleteRequestHandled": true,
+      "requests": 82,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "population": 10004,
+      "sydneyAndMelbourneBothRoles": true,
+      "emptyAndFailureKeepPan": true,
+      "obsoleteRequestHandled": true,
+      "requests": 82,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "population": 10004,
+      "sydneyAndMelbourneBothRoles": true,
+      "emptyAndFailureKeepPan": true,
+      "obsoleteRequestHandled": true,
+      "requests": 82,
+      "errors": []
+    }
+  ],
+  "browserMixedFigures": [
+    {
+      "width": 320,
+      "dpr": 3,
+      "candidates": 120,
+      "cityVisible": 6,
+      "maxVisible": 50,
+      "detailRequested": true,
+      "mixedRoles": true,
+      "broadViewVisible": 0,
+      "uniqueMapImagesRequested": 14,
+      "idleFrameP95Ms": 16.7,
+      "interactionFrameP95Ms": 16.8,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "dpr": 3,
+      "candidates": 120,
+      "cityVisible": 6,
+      "maxVisible": 50,
+      "detailRequested": true,
+      "mixedRoles": true,
+      "broadViewVisible": 0,
+      "uniqueMapImagesRequested": 14,
+      "idleFrameP95Ms": 16.8,
+      "interactionFrameP95Ms": 16.8,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "dpr": 2,
+      "candidates": 120,
+      "cityVisible": 6,
+      "maxVisible": 50,
+      "detailRequested": true,
+      "mixedRoles": true,
+      "broadViewVisible": 0,
+      "uniqueMapImagesRequested": 18,
+      "idleFrameP95Ms": 16.7,
+      "interactionFrameP95Ms": 16.7,
+      "errors": []
+    }
+  ],
+  "otherBrowserChecks": [
+    {
+      "script": "scripts/check-home-presence.py",
+      "widths": [
+        320,
+        390,
+        844,
+        1440
+      ],
+      "result": "PASS",
+      "coverage": "Pan/zoom, minute refresh, hidden-tab pause/resume, global empty hides, established failure clears figures, sign-in resume, noninteractive icons, no mutations/GPS/routing"
+    },
+    {
+      "script": "scripts/check-map-avatars.py",
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "result": "PASS",
+      "coverage": "Non-admin full private preview; edit-only display control, Save/Cancel, cross-tab refresh/fallback, rider Find selected journey, driver discovery selected request, requested detail, route markers persist at broad zoom; map interaction does not rerun search"
+    },
+    {
+      "script": "scripts/check-avatar-admin.py",
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "result": "PASS",
+      "coverage": "Upload/check/manual approval/fake generation/result, original and generated previews, admin/member gates, user ready refresh and visible review acknowledgement; no provider task"
+    },
+    {
+      "script": "scripts/check-avatar-history.py",
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "result": "PASS",
+      "coverage": "Read-only lazy history, removed photos/outcomes, both roles/admin timing and mobile containment"
+    }
+  ],
+  "visualReview": {
+    "wholeScreens": [
+      "Home dense mixed figures at 390/1440",
+      "Profile saved/edit at 390/1440",
+      "rider selected search and journey detail at 390/1440",
+      "driver selected discovery/request detail at 390/1440",
+      "Admin/history at mobile/desktop"
+    ],
+    "findings": "Existing hierarchy, controls and spacing retained; quiet Home figures do not overlap main actions or credits; display checkbox absent until Edit. Synthetic figures/routes are not live geography."
+  },
+  "policy": {
+    "combinedFigureCeiling": 50,
+    "areaPixelsPerFigure": 8100,
+    "differentAreaMinimumPixels": 64,
+    "sameAreaMinimumPixels": 40,
+    "homeTypicalAreaBudget": "7\u20138 phone / 16 desktop before spacing/edge culling",
+    "minimumZoom": 8,
+    "detailZoom": 12,
+    "slowFallback": "25/light after three consecutive >50ms interaction frames; stricter visual rules still apply",
+    "selectedJourneyMarkers": "Essential selected/private journey markers persist; Home presence feed is not injected into signed-in search"
+  },
+  "retainedFailedBaselines": [
+    {
+      "finding": "Initial cap regression seeded only outside drivers, so a lone local rider correctly remained in the legacy feed.",
+      "remediation": "Seed outside posts for both roles.",
+      "retest": "PASS viewport-before-cap regression and three-width actual area browser"
+    },
+    {
+      "finding": "Sandbox loopback denial prevented initial HTTP test launch.",
+      "remediation": "Run isolated listener checks with authorized network permissions.",
+      "retest": "PASS 321 regressions and browser suites"
+    },
+    {
+      "finding": "One-second Admin notification test expected review while status was offscreen after layout reflow.",
+      "remediation": "Scroll result into view and poll the existing 700ms review acknowledgement. No production notification change.",
+      "retest": "PASS Admin/user suite at 320/390/1440"
+    },
+    {
+      "finding": "Old Home fake-clock test asserted no fetch after zoom; area-loading intentionally changes this contract.",
+      "remediation": "Preserve lifecycle checks and separately verify actual settled-area requests with seeded API.",
+      "retest": "PASS four-width Home lifecycle plus three-width actual area API"
+    },
+    {
+      "finding": "First synthetic pan test flung map with inertia and interpreted snapped viewport as exact screen centre at close zoom.",
+      "remediation": "Pause before pointer release and centre using the public marker position; no private GPS.",
+      "retest": "PASS Sydney/Melbourne both roles at all three widths"
+    },
+    {
+      "finding": "Driver discovery test used Search while actual established control is SEARCH.",
+      "remediation": "Correct test selector.",
+      "retest": "PASS both-role map and history suite at 320/390/1440"
+    },
+    {
+      "finding": "Decimal cell snapping could expand again due to binary rounding; near-global date-line bounds could collapse on snapping.",
+      "remediation": "Normalize near-integer scaled cell boundaries and retain world coverage when wrapped edges overlap.",
+      "retest": "PASS explicit idempotence/date-line regression plus actual area browser"
+    }
+  ],
+  "reproductionGuide": "docs/HOME_AREA_LOADING.md#verification-and-reproduction",
+  "unverifiedBoundaries": [
+    "Physical iPhone/Android GPU and battery/network behavior",
+    "Sustained production request concurrency, unlimited population or fixed response-time guarantees",
+    "Authenticated real-owner journey walkthrough",
+    "Standalone legacy check-avatar-upload.py was selector-updated but not rerun; Admin suite covers real fixture upload/check/approval/result",
+    "Initial full-population extent and dense-area grouping costs still grow with stored population",
+    "Synthetic mixed-image test is not 50 simultaneous unique full-resolution images or 10,004 DOM figures"
+  ],
+  "activation": {
+    "status": "PENDING guarded API activation, legacy preview backfill and exact frontend deployment verification"
+  }
+}

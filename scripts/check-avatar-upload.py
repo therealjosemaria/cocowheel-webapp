@@ -20,9 +20,9 @@ with sync_playwright() as p:
         page=context.new_page(); errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(BASE+'/usual-route')
-        avatar=page.locator('.avatar-details'); avatar.locator('summary').click()
+        avatar=page.locator('.avatar-details'); avatar.locator(':scope > summary').click()
         expect(avatar.get_by_role('button',name='Upload photo',exact=True)).to_be_visible()
-        expect(avatar.get_by_role('checkbox',name='Personal avatar',exact=True)).not_to_be_checked()
+        expect(avatar.get_by_role('checkbox',name='Personal avatar',exact=True)).to_have_count(0)
         page.screenshot(path=str(OUT/f'default-{width}.png'),full_page=True)
         avatar.locator('input[type=file]').set_input_files({'name':'bad.svg','mimeType':'image/svg+xml','buffer':b'<svg/>'})
         expect(avatar.get_by_role('alert')).to_contain_text('JPG, PNG or WebP')
@@ -51,7 +51,7 @@ with sync_playwright() as p:
         assert submitted.value.post_data_json['submissionId']==original_submission
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         page.reload()
-        if not avatar.evaluate('(e)=>e.open'): avatar.locator('summary').click()
+        if not avatar.evaluate('(e)=>e.open'): avatar.locator(':scope > summary').click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         expect(avatar.get_by_role('button',name='Cancel photo check',exact=True)).to_have_count(0)
         expect(avatar.get_by_role('button',name='Cancel creation',exact=True)).to_have_count(0)

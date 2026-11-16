@@ -208,3 +208,23 @@ test("nullable rendition migration retains legacy sprites, versions and display 
     assert.deepEqual(avatarSprite(db, id, true), bytes);
   } finally { db.close(); }
 });
+
+test("all account types use full-resolution previews; legacy local-render recovery keeps user choices and refuses replacements", async () => {
+  const { restoreAssignedAvatarPreview }=await import('../server/avatar-preview-recovery');
+  const { db,owner,other }=fixture();
+  try {
+    const assets=await prepareAvatarRenditions(await sharp({create:{width:768,height:1344,channels:4,background:{r:25,g:45,b:65,alpha:.8}}}).png().toBuffer());
+    for(const [account,enabled] of [[owner,true],[other,false]] as const) {
+      assignMapAvatar(db,account.session.id,assets.sprite,enabled);
+      const before=db.prepare('SELECT * FROM account_map_avatars WHERE principal_id=?').get(account.session.id) as Record<string,unknown>;
+      restoreAssignedAvatarPreview(db,account.session.id,assets.sprite,assets);
+      const after=db.prepare('SELECT * FROM account_map_avatars WHERE principal_id=?').get(account.session.id) as Record<string,unknown>;
+      assert.equal(after.assigned_at,before.assigned_at);assert.equal(after.enabled,before.enabled);assert.deepEqual(after.sprite,before.sprite);
+      assert.deepEqual(ownAvatarSprite(db,account.session.id),assets.preview);
+      assert.equal((await sharp(ownAvatarSprite(db,account.session.id)!).metadata()).height,1344);
+      assert.throws(()=>restoreAssignedAvatarPreview(db,account.session.id,assets.sprite,assets),/AVATAR_RECOVERY_CHANGED/);
+    }
+    assert.equal((db.prepare('SELECT count(*) AS n FROM avatar_jobs').get() as {n:number}).n,0);
+    assert.equal((db.prepare('SELECT count(*) AS n FROM avatar_events').get() as {n:number}).n,0);
+  } finally {db.close();}
+});

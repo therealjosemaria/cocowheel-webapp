@@ -9,6 +9,7 @@ import { initializeCoreSchema, createGuestSession, findSession, publishRide, req
 import { postDemand } from "../server/rider-demands";
 import { assignMapAvatar, prepareAvatarRenditions } from "../server/map-avatars";
 import { createApiServer } from "../server/index";
+import { seedHomeViewportFixture } from "./seed-home-viewport-fixture.mts";
 
 if (process.env.GUMWHEEL_AVATAR_FIXTURE !== "1") throw new Error("Local fixture requires GUMWHEEL_AVATAR_FIXTURE=1");
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
@@ -39,7 +40,10 @@ const destination = { latitude: -33.8886, longitude: 151.1872, label: "Universit
 const posted = postDemand(db, owner.token, { origin, destination, date: "any", time: "" });
 const ride = publishRide(db, driver.token, { origin, destination, priceAud: 0, scheduledDepartureAt: new Date(Date.now()+3600000).toISOString() }).ride;
 requestRide(db, owner.token, ride.rideId, { pickup: origin, destination, requestedDepartureAt: ride.scheduledDepartureAt });
+const searchableDriver=account("driver02","synthetic-search-driver");
+publishRide(db,searchableDriver.token,{origin,destination,priceAud:0,scheduledDepartureAt:new Date(Date.now()+3600000).toISOString()});
 let fixtureBalance = 1000;
+let viewportSeeded = false;
 const api = createApiServer(db, { avatarBalanceProvider: {
   request: async () => ({ balance: fixtureBalance, frozen: 0 }), image: async () => { throw new Error("Balance fixture cannot download images"); },
 } });
@@ -50,6 +54,8 @@ const controls = createServer(async (request, response) => {
   if (request.url === "/reset") {
     db.prepare("DELETE FROM avatar_jobs WHERE principal_id=?").run(driver.session.id);
     db.prepare("DELETE FROM account_map_avatars WHERE principal_id=?").run(driver.session.id);
+  } else if (request.url === "/seed-viewport") {
+    if (!viewportSeeded) { seedHomeViewportFixture(db); viewportSeeded=true; }
   } else if (request.url === "/credits-low") {
     fixtureBalance = 4;
   } else if (request.url === "/credits-ready") {

@@ -1,5 +1,19 @@
 # GUMWHEEL
 
+17 November area loading and shared maps: Home now requests all-post coarse
+bounds once, then fetches qualifying drivers/riders for the area after pan/zoom,
+filtering before response caps. Global sampling cannot crowd out a newly viewed
+region. Empty/failing areas retain a map to pan; no qualifying posts anywhere
+hides it. Indexed queries, whole-cell privacy bounds, request cancellation and
+minute refreshes are documented in [Home area loading](docs/HOME_AREA_LOADING.md).
+Home now uses JourneyMap with public-presence constraints; search/detail/tracking
+retain their data/access rules and selected-route behaviour. The 50 ceiling is
+combined vehicles/riders; visual spacing/area budgets normally show about 7–8 on
+phones and 16 on desktop Home. Profile's Personal avatar checkbox is edit-only;
+all accounts retain full-resolution private previews. Earlier global-sample and
+64px occupancy rules below are superseded. Activation is recorded separately.
+
+
 16 November avatar completion: successful generation remains visible as Ready with
 the submitted photo and generated avatar together in Admin; it creates no Admin
 completion badge/email. Approval requests and error updates retain their existing

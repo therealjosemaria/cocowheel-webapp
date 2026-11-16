@@ -41,3 +41,46 @@ export function readPresenceCells(payload: unknown): PresenceCell[] {
     return { ...safe, count: cell.count, ...(cell.artworks ? { artworks: [...cell.artworks] } : {}) };
   });
 }
+
+export type PresenceBounds = { south: number; north: number; west: number; east: number };
+export type PresenceViewport = PresenceBounds & { zoom: number };
+export type PresenceReply = { cells: PresenceCell[]; hasPresence: boolean; bounds?: PresenceBounds };
+export const PRESENCE_MOVE_DELAY_MS = 300;
+
+/** Canonical whole public cells: narrow requests cannot probe positions inside a cell. */
+export function presenceViewport(value: PresenceViewport): PresenceViewport {
+  const { south, north, west, east, zoom } = value;
+  if (![south,north,west,east,zoom].every(Number.isFinite) || south < -90 || north > 90 || south >= north || west < -180 || west > 180 || east < -180 || east > 180 || west === east || !Number.isInteger(zoom) || zoom < 0 || zoom > 22)
+    throw new Error('INVALID_PRESENCE_VIEWPORT');
+  const snap = (n: number, up: boolean) => {
+    const scaled=n/PRESENCE_GRID_DEGREES, nearest=Math.round(scaled);
+    // Avoid re-expanding an already canonical decimal due to binary rounding.
+    const aligned=Math.abs(scaled-nearest)<1e-9 ? nearest : scaled;
+    return Number(((up ? Math.ceil(aligned) : Math.floor(aligned))*PRESENCE_GRID_DEGREES).toFixed(3));
+  };
+  let left=Math.max(-180,snap(west,false)),right=Math.min(180,snap(east,true));
+  if (west>east && left<=right) { left=-180;right=180; }
+  if (left===right) { left=Math.max(-180,left-PRESENCE_GRID_DEGREES); right=Math.min(180,right+PRESENCE_GRID_DEGREES); }
+  return { south:Math.max(-90,snap(south,false)),north:Math.min(90,snap(north,true)),west:left,east:right,zoom };
+}
+export function inPresenceBounds(cell: Pick<PresenceCell,'latitude'|'longitude'>, bounds: PresenceBounds) {
+  return cell.latitude >= bounds.south && cell.latitude <= bounds.north && (bounds.west <= bounds.east
+    ? cell.longitude >= bounds.west && cell.longitude <= bounds.east : cell.longitude >= bounds.west || cell.longitude <= bounds.east);
+}
+export function presenceViewportQuery(view: PresenceViewport) {
+  return new URLSearchParams(Object.entries(view).map(([k,v]) => [k,String(v)])).toString();
+}
+export function readPresenceReply(payload: unknown): PresenceReply {
+  const cells = readPresenceCells(payload);
+  const data = payload as { hasPresence?: unknown; bounds?: unknown };
+  if (data.hasPresence !== undefined && typeof data.hasPresence !== 'boolean') throw new Error('INVALID_PRESENCE');
+  const hasPresence = data.hasPresence === undefined ? cells.length > 0 : data.hasPresence;
+  if (!hasPresence && cells.length) throw new Error('INVALID_PRESENCE');
+  let bounds: PresenceBounds | undefined;
+  if (data.bounds !== undefined) {
+    const b = data.bounds as PresenceBounds;
+    if (!b || typeof b !== 'object' || ![b.south,b.north,b.west,b.east].every(n => typeof n === 'number' && Number.isFinite(n)) || b.south < -90 || b.north > 90 || b.south >= b.north || b.west < -180 || b.east > 180 || b.west >= b.east) throw new Error('INVALID_PRESENCE');
+    bounds = { south:b.south,north:b.north,west:b.west,east:b.east };
+  }
+  return { cells, hasPresence, ...(bounds ? { bounds } : {}) };
+}

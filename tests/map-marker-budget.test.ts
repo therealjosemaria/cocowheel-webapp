@@ -11,7 +11,7 @@ test("overview hides at broad zoom, culls offscreen/overlap and bounds thousands
   assert.equal(visibleMapMarkers(markers, 1200, 800, 7.99).length, 0);
   assert.equal(visibleMapMarkers(markers, 1200, 800, 8).length, 50);
   assert.equal(visibleMapMarkers(markers, 1200, 800, 15, true).length, 25);
-  assert.ok(visibleMapMarkers(markers, 390, 200, 12).length <= 19);
+  assert.ok(visibleMapMarkers(markers, 390, 200, 12).length <= 9);
   assert.deepEqual(visibleMapMarkers(markers, 0, 200, 12), []);
   const dense = visibleMapMarkers([{ key: "a", x: 100, y: 100 }, { key: "b", x: 101, y: 101 }, { key: "off", x: -100, y: 100 }, { key: "invalid", x: NaN, y: 100 }], 300, 200, 12);
   assert.equal(dense.length, 1);
@@ -37,4 +37,21 @@ test("slow rendering degrades only after three consecutive interaction stalls", 
   }
   assert.deepEqual(mapFrameBudgetExceeded(280, 296, slow), { slow: 0, exceeded: false });
   assert.deepEqual(mapFrameBudgetExceeded(0, 10000, 0), { slow: 0, exceeded: false });
+});
+
+test("the 50-figure ceiling is shared by vehicles and avatars, including an all-vehicle view", () => {
+  const mixed=Array.from({length:2000},(_,i)=>({key:`mixed-${i}`,x:(i%40)*50,y:Math.floor(i/40)*50,role:i%2?'driver':'rider'}));
+  const selected=visibleMapMarkers(mixed,1400,900,12);
+  assert.equal(selected.length,50);assert.deepEqual(new Set(selected.map(p=>p.role)),new Set(['driver','rider']));
+  assert.equal(visibleMapMarkers(mixed.map(p=>({...p,role:'driver'})),1400,900,12).length,50);
+  assert.equal(visibleMapMarkers(mixed,1400,900,12,true).length,25);
+});
+
+
+test("visual spacing precedes the rendering ceiling and preserves established same-area groups", () => {
+  const area=[{key:'left',area:'a',x:128,y:88},{key:'right',area:'a',x:172,y:88},{key:'rider',area:'a',x:150,y:122}];
+  assert.equal(visibleMapMarkers(area,300,200,11).length,3);
+  const nearby=[...area,{key:'other-area',area:'b',x:155,y:135}];
+  const selected=visibleMapMarkers(nearby,300,200,11);
+  assert.ok(selected.length<=3);assert.ok(!selected.some(p=>p.area==='a') || !selected.some(p=>p.area==='b'));
 });

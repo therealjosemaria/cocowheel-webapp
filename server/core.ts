@@ -449,6 +449,11 @@ export function initializeCoreSchema(db: Db) {
     );
   if (!rideColumns.some((column) => column.name === "sample_key"))
     db.exec("ALTER TABLE rides ADD COLUMN sample_key TEXT");
+  // Partial spatial indexes are built after legacy ride columns have migrated.
+  db.exec(`CREATE INDEX IF NOT EXISTS rides_home_area ON rides(origin_latitude,origin_longitude)
+    WHERE status IN ('PUBLISHED','REQUESTED') AND is_sample=0 AND accepted_request_id IS NULL;
+    CREATE INDEX IF NOT EXISTS rides_home_owner_status ON rides(driver_session_id,status);
+    CREATE INDEX IF NOT EXISTS rider_demands_home_area ON rider_demands(json_extract(body,'$.origin.latitude'),json_extract(body,'$.origin.longitude')) WHERE status='OPEN';`);
   const routeCacheColumns = db
     .prepare("PRAGMA table_info(route_preview_cache)")
     .all() as Array<{ name: string }>;

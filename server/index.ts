@@ -1,7 +1,7 @@
 import { readFile as readComparisonFile } from "node:fs/promises";
 import { readComparison, comparisonAsset } from "./tripo-comparison";
 import { reviewedNotifications, reviewNotifications } from "./notification-outbox";
-import { homePresence } from "./home-presence";
+import { homePresenceResponse } from "./home-presence";
 import { deliverJourneyReminder } from "./notification-email";
 import {
   createServer,
@@ -569,7 +569,11 @@ export function createApiServer(
       // Public Home reads a deliberately reduced area-only projection. Do not
       // run lifecycle writes, hydrate labels or expose discovery records here.
       if (request.method === "GET" && new URL(request.url ?? "/", "http://api.local").pathname === "/api/home-presence") {
-        writeJson(response, 200, { cells: homePresence(database) }, cors);
+        try { writeJson(response, 200, homePresenceResponse(database, new URL(request.url!, "http://api.local").searchParams), cors); }
+        catch (error) {
+          if (error instanceof Error && error.message === "INVALID_PRESENCE_VIEWPORT") writeJson(response,400,{error:"INVALID_PRESENCE_VIEWPORT"},cors);
+          else throw error;
+        }
         return;
       }
       // A public, opted-in render is a read-only asset, not a lifecycle request.

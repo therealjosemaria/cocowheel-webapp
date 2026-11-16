@@ -1,5 +1,11 @@
 # Assigned map avatars — 16 November 2026
 
+Later [area loading/shared maps](HOME_AREA_LOADING.md) supersedes the old global
+sample, Home occupancy policy and saved-view Personal avatar checkbox where
+described below. Historical verification remains; current behaviour is in that
+guide, including indexed area selection and mode-specific permissions.
+
+
 Later [preview/map rendering](MAP_RENDERING.md) supersedes the single-sprite
 preview and all-candidates-on-screen Home rendering described below: private previews
 retain processed resolution; map variants stay bounded and opt-in. The historical

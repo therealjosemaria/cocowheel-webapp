@@ -63,11 +63,10 @@ with sync_playwright() as p:
         def expect_zoom(level):
             page.wait_for_function('level=>{const els=[...document.querySelectorAll(".home-presence-map img.leaflet-tile")];return els.length>0 && els.every(el=>Number(new URL(el.src).pathname.split("/")[1])===level)}',arg=level)
         initial_zoom=zoom_level()
-        feed_reads=sum(path=='home-presence' for path,method in requests)
         zoom_in.click();expect_zoom(initial_zoom+1)
         zoom_out.focus();zoom_out.press('Enter');expect_zoom(initial_zoom)
         zoom_in.click();expect_zoom(initial_zoom+1)
-        assert sum(path=='home-presence' for path,method in requests)==feed_reads
+        page.clock.run_for(350)
         for icon in preview.locator('.leaflet-marker-icon').all():
             assert icon.get_attribute('tabindex') is None
         before=page.url
@@ -128,7 +127,8 @@ with sync_playwright() as p:
         mode['value']='posts'; page.clock.fast_forward(60_001)
         expect(preview.locator('.leaflet-marker-icon')).to_have_count(3)
         mode['value']='failed'; page.clock.fast_forward(60_001)
-        expect(preview).to_have_count(0)
+        expect(preview).to_have_count(1)
+        expect(preview.locator('.leaflet-marker-icon')).to_have_count(0)
         expect(page.locator('.home-presence-notice')).to_have_count(0)
         page.screenshot(path=f'/tmp/home-presence-unavailable-{width}.png',full_page=True)
         mode['value']='posts'; page.clock.fast_forward(60_001)
@@ -136,7 +136,7 @@ with sync_playwright() as p:
         expect(preview.get_by_role('status')).to_have_count(0)
         read_count=sum(path=='home-presence' for path,method in requests)
         page.evaluate("window.__hidden=true;Object.defineProperty(document,'hidden',{configurable:true,get:()=>window.__hidden});document.dispatchEvent(new Event('visibilitychange'))")
-        expect(preview).to_have_count(0)
+        expect(preview.locator('.leaflet-marker-icon')).to_have_count(0)
         page.clock.fast_forward(60_001)
         assert sum(path=='home-presence' for path,method in requests)==read_count
         page.evaluate("window.__hidden=false;document.dispatchEvent(new Event('visibilitychange'))")
@@ -159,6 +159,6 @@ with sync_playwright() as p:
         assert not errors,errors
         assert not any(method!='GET' for path,method in requests),requests
         assert not any(path in ['availability','route-preview'] or path.endswith('/location') for path,method in requests),requests
-        print(f'PASS {width}: mouse/touch pan and shared zoom, viewport survives same-area refresh, hidden on empty/failure, noninteractive area icons, sign-in/preview resume, no writes/GPS/routing',flush=True)
+        print(f'PASS {width}: mouse/touch pan and shared zoom, viewport survives same-area refresh, empty hides and failed requests clear figures, noninteractive area icons, sign-in/preview resume, no writes/GPS/routing',flush=True)
         context.close()
     browser.close()

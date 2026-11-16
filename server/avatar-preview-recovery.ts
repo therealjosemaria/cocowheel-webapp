@@ -14,3 +14,13 @@ export function restoreAvatarPreview(db: Db, id: string, expectedSprite: Buffer,
     db.prepare("UPDATE avatar_jobs SET render=? WHERE id=?").run(assets.preview, id);
   })();
 }
+
+
+/** Backfill an operator-assigned avatar from its byte-matched approved local render. */
+export function restoreAssignedAvatarPreview(db: Db, principal: string, expectedSprite: Buffer, assets: AvatarRenditions) {
+  db.transaction(() => {
+    const current=db.prepare("SELECT sprite,preview FROM account_map_avatars WHERE principal_id=?").get(principal) as {sprite:Buffer;preview:Buffer|null}|undefined;
+    if (!current || current.preview!==null || !current.sprite.equals(expectedSprite) || !assets.sprite.equals(expectedSprite)) throw new Error("AVATAR_RECOVERY_CHANGED");
+    db.prepare("UPDATE account_map_avatars SET asset_id=?,detail=?,preview=? WHERE principal_id=?").run(randomBytes(16).toString("hex"),assets.detail,assets.preview,principal);
+  })();
+}

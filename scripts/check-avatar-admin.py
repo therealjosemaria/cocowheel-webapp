@@ -103,7 +103,10 @@ with sync_playwright() as p:
         expect(avatar.get_by_role('img',name='Your map avatar',exact=True)).to_be_visible()
         up.screenshot(path=str(OUT/f'user-ready-{width}.png'),full_page=True)
         avatar.get_by_role('button',name='Cancel',exact=True).click()
-        up.wait_for_timeout(1000)
+        avatar.get_by_role('status').scroll_into_view_if_needed()
+        for _ in range(25):
+            up.wait_for_timeout(100)
+            if user.get('/api/avatar/jobs').json()['job']['notificationKey'] is None: break
         assert user.get('/api/avatar/jobs').json()['job']['notificationKey'] is None
         assert admin.get('/api/admin/avatar-jobs/notifications').json()['count']==0
         assert user.get('/api/avatar').json()['enabled'] is False

@@ -1,5 +1,6 @@
 "use client";
 import MapSurface from "./map-surface";
+import HomePresenceLayer, { type HomePresenceLayerProps } from "./home-presence-layer";
 
 import {
   Fragment,
@@ -466,6 +467,7 @@ function PinMarkers({
 }
 export default function JourneyMap({
   pins = [],
+  homePresence,
   vehicle,
   vehicleArtwork,
   riderArtwork,
@@ -482,6 +484,7 @@ export default function JourneyMap({
   animateViewport = true,
 }: {
   pins?: Pin[];
+  homePresence?: HomePresenceLayerProps;
   /** Full vehicle is private; discovery carries only a validated artwork path. */
   vehicle?: Vehicle;
   vehicleArtwork?: string;
@@ -501,16 +504,19 @@ export default function JourneyMap({
   return (
       <MapSurface
         roadPathAttribution={roadPathAttribution}
-        center={[-33.8688, 151.2093]}
-        zoom={15}
+        frameClassName={homePresence ? "presence-map-frame" : "map-shell"}
+        center={homePresence ? [-33.89,151.2] : [-33.8688,151.2093]}
+        zoom={homePresence ? 11 : 15}
+        {...(homePresence ? { dragging:true,doubleClickZoom:false,touchZoom:true,boxZoom:false,keyboard:false } : {})}
         scrollWheelZoom={false}
         zoomControl={false}
-        zoomAnimation={animateViewport}
-        markerZoomAnimation={animateViewport}
-        fadeAnimation={animateViewport}
+        zoomAnimation={!homePresence && animateViewport}
+        markerZoomAnimation={!homePresence && animateViewport}
+        fadeAnimation={!homePresence && animateViewport}
         attributionControl={false}
-        className="journey-map"
+        className={homePresence ? "home-presence-map" : "journey-map"}
       >
+        {homePresence ? <HomePresenceLayer {...homePresence} /> : <>
         {lines.map((line, index) => (
           <Polyline
             key={index}
@@ -543,6 +549,7 @@ export default function JourneyMap({
           recenterPin={recenterPin}
           followZoom={followZoom}
         />
+        </>}
         <ZoomControl position="bottomright" />
       </MapSurface>
   );

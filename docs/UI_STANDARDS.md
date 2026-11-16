@@ -1,5 +1,15 @@
 # Coco Wheels product and UI standards
 
+17 November shared-map/area-loading extension reuses JourneyMap for Home and
+search/journey screens. Home's visual budget is one figure per 90×90px, capped at
+50 combined vehicles/riders, with 64px inter-area / 40px same-area spacing and
+existing edge padding. Typical current Home shows at most 7–8 on phones / 16 on
+desktop; selected-route essential markers remain. Profile hides the Personal
+avatar checkbox until Edit, retaining its existing native checkbox, preview and
+Save/Cancel styles. No new visual token, label, badge, control or section is added.
+See [area loading and shared behaviour](HOME_AREA_LOADING.md).
+
+
 16 November avatar resolution/map density changes preserve existing preview
 surfaces, 48px marker slots, 46px contained figure height, ground anchors, map
 controls and typography. Full processed-resolution images are private previews;

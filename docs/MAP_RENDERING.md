@@ -1,5 +1,11 @@
 # Avatar resolution and map rendering — 16 November 2026
 
+Later [area loading/shared maps](HOME_AREA_LOADING.md) supersedes the old global
+sample, Home occupancy policy and saved-view Personal avatar checkbox where
+described below. Historical verification remains; current behaviour is in that
+guide, including indexed area selection and mode-specific permissions.
+
+
 Implemented from baseline `6f140b3`; deployment is recorded separately. This
 supersedes the small-only preview in MAP_AVATARS.md and AVATAR-PREVIEW-001's
 proposed fix. Photo checks, manual generation approval, model, spend limits,
