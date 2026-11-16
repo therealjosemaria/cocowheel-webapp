@@ -4,9 +4,9 @@ Baseline `0533a6c`. A public static `/avatar-photo-guide` page supports Profile�
 Avatar upload area. Photo guide appears once beside initial Upload photo,
 Update photo, rejected-result recovery and selected-photo requirements. It uses
 an ordinary underlined link, accessible new-tab name and noopener/noreferrer.
-Opening it leaves the existing tab’s photo, consent and submission ID intact.
+Opening it leaves the existing tab’s photo and submission ID intact.
 Queued jobs and avatar-display editing keep their existing controls. No new modal,
-upload endpoint, storage, checker threshold, consent, pricing or approval rule.
+upload endpoint, storage, checker threshold, pricing or admin approval rule.
 
 The entry is in the relevant Avatar section, without a main-menu/footer/Privacy/
 Terms addition. Anyone can read the guide without signing in. Its Back link goes
@@ -65,9 +65,9 @@ That first result was not counted as full test coverage.
 `scripts/check-avatar-photo-guide.py` passes at 320/390/844/1440px against the
 optimized isolated frontend. It verifies unsigned guide access, image decoding,
 24px+ surrounding margins on all four sides, aligned Back/H1, canonical/robots/
-sitemap, Upload/Update/rejected-state links, new-tab photo-and-consent retention,
+sitemap, Upload/Update/rejected-state links, new-tab photo retention,
 no avatar upload writes, and no page exceptions or horizontal overflow. The
-source tab’s unchanged photo state also retains the existing submission UUID;
+source tab’s unchanged photo state retains the existing submission UUID;
 no new submission ID or consent handler was added by the guide link.
 
 Whole guide and Profile screens (initial, selected, rejected and assigned) were
@@ -95,3 +95,30 @@ manual front-facing artwork correction supersedes the first side-facing guide
 preview; map artwork remains unchanged. Physical devices and authenticated
 production upload use remain unverified. This frontend/static page change needs
 no API restart; exact frontend activation is recorded after push.
+
+## Follow-up: one submission action
+
+The user subsequently removed the extra creation checkbox. Requirements and the
+Photo guide link remain above this regular-weight sentence: “We’ll check that
+your photo meets these requirements before creating your avatar and notify you
+with the results.” Submit photo requests checking and creation through the same
+required `consent: true` API contract; selecting a file alone submits nothing.
+The checkbox-specific assertions from the first guide run are historical and
+superseded; the current browser checks assert its absence and draft retention.
+Manual admin approval, photo checks, provider boundaries and notifications remain
+unchanged. No API restart is required for this frontend submission simplification.
+Provider/review details remain in Privacy. Final follow-up checks and activation
+are recorded below.
+
+Follow-up verification, baseline `97a740e`:
+
+- `node --import tsx --test tests/avatar-jobs.test.ts tests/avatar-admin.test.ts tests/seo.test.ts`: all 29 named tests pass, including false consent rejection, manual generation gates, notification review/delay and private access.
+- `npm run lint` and the optimized `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build` pass. The first restricted build could not bind Turbopack's local worker port; rerunning with local process/socket access passed. This was a sandbox limitation, not a product failure.
+- With the isolated fixture commands above, `scripts/check-avatar-photo-guide.py` passes four widths (320/390/844/1440). `scripts/check-avatar-upload.py` passes 320/390/1440 against the real API and a fake provider: no POST on file selection; one Submit photo request with the required true flag; persisted queue, rejection/unread result/deep link, passed check, explicit admin approval, generated assignment and display Save. Both sample files are synthetic solid-colour images, not customer photos. Create `/tmp/gumwheel-avatar-upload-synthetic.jpg` as a 400×800 JPEG before running the upload script.
+- Whole Profile screens were visually reviewed on phone/desktop: requirements and guide remain separate from the regular-weight process sentence, existing Submit/Cancel controls retain their spacing, and Personal avatar's display checkbox is unchanged. Privacy's updated avatar paragraph was reviewed at 390/1440 with existing body weight and no horizontal overflow. The initial Privacy capture attempt occurred after the fixture had shut down; reopening the isolated fixture allowed both captures.
+- React review: removed unused consent state/guard, no new effects/listeners, no submission on selection or guide navigation, unchanged submission UUID/reconciliation/duplicate-submit guard. No schema, backend permission, provider configuration or notification-timing change.
+- No real emails, paid requests or production account writes. The real Mac/photo likeness and physical Safari/Android devices were not exercised by this UI change. The photo-trial script's obsolete checkbox selection is updated but the private three-photo trial was not rerun.
+
+Initial guide commit `97a740efa63a42e8673e678bcfd3f80ce26d1179` reached READY
+as `dpl_4uvFV621YEx5nyEzHF4fz86pWrnQ`, aliased to both public domains.
+The submission follow-up's exact activation is recorded after its push.

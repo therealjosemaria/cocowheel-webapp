@@ -1,10 +1,18 @@
 # GUMWHEEL
 
+16 November avatar submission simplification: Submit photo is the single action
+requesting a requirements check and avatar creation. The upload section explains
+the check/results, without a separate creation checkbox, provider name or internal
+approval instructions. Selecting a file alone submits nothing. The existing
+server consent flag, Mac verification, manual admin generation approval and result
+notifications remain unchanged. Provider/approval details stay in Privacy.
+See [avatar creation](docs/AVATAR_CREATION.md).
+
 16 November avatar photo guide: Profile’s Upload/Update photo area and selected
 photo view link to a public, focused guide. A front-facing version of the default
 figure demonstrates full-body framing and margins; four short tips and existing
 format/size limits accompany it. The guide opens in a new tab to retain the
-upload draft/consent, adds no menu/legal-page links and uses no private photos.
+upload draft, adds no menu/legal-page links and uses no private photos.
 Verification and artwork provenance are in [the guide notes](docs/AVATAR_PHOTO_GUIDE_2026-11-16.md).
 
 16 November three-photo trial: actual uploads under isolated accounts and the

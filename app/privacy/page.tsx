@@ -42,6 +42,8 @@ export default function PrivacyPage() {
       <p>
         If you upload a photo to create an avatar, we remove its metadata and
         privately queue it for an automated visibility and standing-pose check.
+        Selecting Submit photo requests this check and avatar creation if the
+        photo passes review; selecting a file alone does not submit it.
         These checks are estimates, not identity verification or a guarantee of
         likeness. With your agreement, passing photos are sent to Tripo to create
         an avatar. Tripo processes that photo under its{" "}

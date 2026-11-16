@@ -51,13 +51,15 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/f'profile-upload-{width}.png'),full_page=True)
         avatar.locator('input[type=file]').set_input_files(PHOTO)
         preview=avatar.get_by_role('img',name='Photo to check',exact=True);expect(preview).to_be_visible()
-        consent=avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True);consent.check()
+        expect(avatar.get_by_role('checkbox')).to_have_count(0)
+        expect(avatar).to_contain_text('We’ll check that your photo meets these requirements before creating your avatar and notify you with the results.')
+        assert 'Tripo' not in avatar.inner_text() and 'approval' not in avatar.inner_text()
         draft=preview.get_attribute('src')
         with page.expect_popup() as opened: guide.click()
         popup=opened.value
         expect(popup.get_by_role('heading',name='Avatar photo guide',exact=True)).to_be_visible()
         assert page.url==BASE+'/usual-route?avatar=1'
-        expect(preview).to_have_attribute('src',draft);expect(consent).to_be_checked()
+        expect(preview).to_have_attribute('src',draft)
         popup.close()
         page.screenshot(path=str(OUT/f'profile-draft-{width}.png'),full_page=True)
         # A rejection offers the same guide without repeating the requirements.
@@ -74,6 +76,6 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/f'profile-update-{width}.png'),full_page=True)
         assert not errors,errors
         assert not writes,writes
-        print(f'PASS {width}: public guide/SEO, complete framed example, upload/rejection/update link, new-tab draft and consent retained, no upload writes/errors/overflow',flush=True)
+        print(f'PASS {width}: public guide/SEO, complete framed example, upload/rejection/update link, new-tab draft retained, single-action submission copy, no upload writes/errors/overflow',flush=True)
         context.close()
     browser.close()

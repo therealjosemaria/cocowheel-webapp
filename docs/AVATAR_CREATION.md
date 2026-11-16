@@ -19,7 +19,7 @@ passing a Mac check never triggers generation without the owner-admin’s approv
 
 The public [photo guide](AVATAR_PHOTO_GUIDE_2026-11-16.md) is linked beside
 Upload/Update photo and selected-photo requirements, including after rejection.
-It opens in a new tab, preserving the selected photo, consent and submission ID
+It opens in a new tab, preserving the selected photo and submission ID
 in the upload tab. Its front-facing generic example and framing tips do not
 change validation thresholds or imply that every compliant photo will pass.
 
@@ -30,10 +30,15 @@ spacing. Upload preparation preserves the whole frame; it does not use the squar
 profile-photo crop. The preview is the photo to check, not a generated avatar.
 
 Requirements: “Use a clear photo of just you standing, with your head, hands and
-feet visible.” Submission requires the explicit, initially unchecked “Check my
-photo and submit it for avatar creation.” Photos that pass wait for explicit
-admin generation approval before going to Tripo; this is
-explained before submission and in Privacy. Avatar creation never turns public
+feet visible.” Beneath the requirements/guide link: “We’ll check that your photo
+meets these requirements before creating your avatar and notify you with the
+results.” Clicking Submit photo requests both checking and creation, sending the
+existing required `consent: true`; merely selecting a file never queues work.
+The separate creation checkbox is removed. This supersedes the earlier required
+checkbox, not the server consent gate or manual admin generation approval.
+Provider/review disclosures remain in Privacy; the upload section does not mention
+Tripo or internal approval steps. Photos that pass still wait for explicit admin
+generation approval before going to Tripo. Avatar creation never turns public
 display on for a new account. Replacements preserve the existing Personal avatar
 choice. The previous render remains until a replacement succeeds.
 
@@ -68,7 +73,8 @@ and `avatar_admin_events`; approval, hold and private-render columns extend jobs
 Photo BLOBs, hashes, submission keys and provider task IDs remain private. One
 active job/account; same account/submission UUID and normalized photo is
 idempotent. Reusing that key with different bytes fails. A new submission requires
-explicit consent. Three uploads/account/rolling 24h; global active/retained-photo cap 25
+an explicit Submit photo request with the required true consent flag. Missing or
+false consent still fails server-side. Three uploads/account/rolling 24h; global active/retained-photo cap 25
 limits retained photo storage to approximately 50 MB plus SQLite overhead.
 
 Normalized source photos remain private for admin review for up to seven days

@@ -26,14 +26,16 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/f'default-{width}.png'),full_page=True)
         avatar.locator('input[type=file]').set_input_files({'name':'bad.svg','mimeType':'image/svg+xml','buffer':b'<svg/>'})
         expect(avatar.get_by_role('alert')).to_contain_text('JPG, PNG or WebP')
-        avatar.locator('input[type=file]').set_input_files('/tmp/gumwheel-avatar-normalized.jpg')
+        avatar.locator('input[type=file]').set_input_files('/tmp/gumwheel-avatar-upload-synthetic.jpg')
         expect(avatar.get_by_role('img',name='Photo to check',exact=True)).to_be_visible()
-        avatar.get_by_role('button',name='Submit photo',exact=True).click()
-        expect(avatar.get_by_role('alert')).to_contain_text('Agree to')
+        expect(avatar.get_by_role('checkbox')).to_have_count(0)
+        expect(avatar).to_contain_text('We’ll check that your photo meets these requirements before creating your avatar and notify you with the results.')
+        assert 'Tripo' not in avatar.inner_text() and 'approval' not in avatar.inner_text()
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job'] is None
-        avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True).check()
         page.screenshot(path=str(OUT/f'upload-{width}.png'),full_page=True)
-        avatar.get_by_role('button',name='Submit photo',exact=True).click()
+        with page.expect_request(lambda r:r.method=='POST' and r.url==BASE+'/api/avatar/jobs') as submitted:
+            avatar.get_by_role('button',name='Submit photo',exact=True).click()
+        assert submitted.value.post_data_json['consent'] is True
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         page.reload(); avatar.locator('summary').click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
@@ -53,8 +55,7 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/f'rejected-{width}.png'),full_page=True)
         page.wait_for_timeout(1000)
         assert context.request.get(BASE+'/api/avatar/jobs').json()['job']['notificationKey'] is None
-        avatar.locator('input[type=file]').set_input_files('/tmp/gumwheel-avatar-normalized.jpg')
-        avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True).check()
+        avatar.locator('input[type=file]').set_input_files('/tmp/gumwheel-avatar-upload-synthetic.jpg')
         avatar.get_by_role('button',name='Submit photo',exact=True).click()
         expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
         job=context.request.post(API+'/api/avatar-worker/claim',headers=worker,data={}).json()['job']
@@ -78,6 +79,6 @@ with sync_playwright() as p:
         assert context.request.get(BASE+'/api/avatar').json()['enabled'] is True
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         assert not errors,errors
-        print(f'PASS {width}: upload visible, image/consent checks, queue persistence, real API worker verdict, collapsed unread result, Profile notification deep link, review, fake P2 assignment and save',flush=True)
+        print(f'PASS {width}: single-action submission, explicit request payload, image checks, queue persistence, real API worker verdict, manual generation approval, collapsed unread result, Profile deep link, fake generation assignment and save',flush=True)
         context.close()
     browser.close()

@@ -1,9 +1,17 @@
 # Coco Wheels product and UI standards
 
+16 November Avatar submission: keep the requirements and quiet Photo guide link,
+then one regular-weight sentence: “We’ll check that your photo meets these
+requirements before creating your avatar and notify you with the results.”
+Submit photo is the explicit request; remove the redundant upload-creation
+checkbox. No provider name or internal approval instructions in this section.
+Personal avatar’s separate display checkbox/Edit/Save remains unchanged. Provider
+and manual-review disclosures remain in Privacy. Never submit on file selection.
+
 16 November avatar photo guide: use one quiet, regular-weight Photo guide link
 with the existing 44px link target beside upload requirements, after rejection,
 and beside Update photo. Open a new tab (announced accessibly) to retain a selected
-photo/consent. The public guide has Back above its left-aligned standard H1, one
+photo. The public guide has Back above its left-aligned standard H1, one
 centred portrait example and four regular-weight tips. Keep upload/generation
 actions in Profile. No guide link in the main menu, Privacy or Terms; no modal,
 new client state, live photo, repeated rejection requirements or approval promise.

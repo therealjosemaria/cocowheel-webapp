@@ -34,7 +34,6 @@ export default function AvatarDetails() {
   const [revision, setRevision] = useState(0);
   const [jobs, setJobs] = useState<AvatarJobs>({ accepting: false, job: null });
   const [photo, setPhoto] = useState<string | null>(null);
-  const [consent, setConsent] = useState(false);
   const submissionId = useRef("");
   const photoInput = useRef<HTMLInputElement>(null);
   const disclosure = useRef<HTMLDetailsElement>(null);
@@ -85,15 +84,15 @@ export default function AvatarDetails() {
       event.preventDefault();
       if (submitting.current || !saved) return;
       if (!photo && !editing) return;
-      if (photo && !consent) { setError("Agree to the photo check and avatar creation before submitting."); return; }
       submitting.current = true; mutation.current++; setBusy(true); setError("");
       try {
         if (photo) {
+          // Submit photo requests checking and creation; selecting a file alone does not.
           const state = await cocowheelsApi<AvatarJobs>("/api/avatar/jobs", {
-            method: "POST", body: JSON.stringify({ photo, consent, submissionId: submissionId.current }),
+            method: "POST", body: JSON.stringify({ photo, consent: true, submissionId: submissionId.current }),
           }, true);
           if (!alive.current) return;
-          setJobs(state); setPhoto(null); setConsent(false);
+          setJobs(state); setPhoto(null);
           window.dispatchEvent(new Event("cocowheels:avatar-job-changed"));
           return;
         }
@@ -107,7 +106,7 @@ export default function AvatarDetails() {
         if (photo) {
           try {
             const state = await cocowheelsApi<AvatarJobs>("/api/avatar/jobs");
-            if (alive.current && state.job && avatarJobActive(state.job.status)) { setJobs(state); setPhoto(null); setConsent(false); return; }
+            if (alive.current && state.job && avatarJobActive(state.job.status)) { setJobs(state); setPhoto(null); return; }
           } catch { /* Preserve the submission ID; a manual retry cannot create a duplicate. */ }
         }
         if (alive.current) setError(apiErrorMessage(reason));
@@ -125,12 +124,10 @@ export default function AvatarDetails() {
           {photo ? <>
             <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>
             <PhotoGuideLink />
-            <p className="save-route-profile-note">Photos that pass the check wait for approval before avatar creation with Tripo. You choose whether to show it on maps.</p>
-            <label className="usual-alert-choice"><input type="checkbox" checked={consent}
-              onChange={event => { if (!submitting.current) { setConsent(event.target.checked); setError(""); } }} />Check my photo and submit it for avatar creation.</label>
+            <p className="save-route-profile-note">We’ll check that your photo meets these requirements before creating your avatar and notify you with the results.</p>
             <div className="ride-action-buttons">
               <button className="primary" aria-busy={busy}>{busy ? "Uploading…" : "Submit photo"}</button>
-              <button type="button" className="secondary" onClick={() => { if (!submitting.current) { setPhoto(null); setConsent(false); setError(""); } }}>Cancel</button>
+              <button type="button" className="secondary" onClick={() => { if (!submitting.current) { setPhoto(null); setError(""); } }}>Cancel</button>
             </div>
           </> : <>
           <label className="usual-alert-choice"><input type="checkbox" checked={Boolean(selected)}
@@ -172,7 +169,7 @@ export default function AvatarDetails() {
             submitting.current = true; setError("");
             try {
               const prepared = await prepareAvatarPhoto(file);
-              if (alive.current) { setPhoto(prepared); setConsent(false); submissionId.current = crypto.randomUUID(); }
+              if (alive.current) { setPhoto(prepared); submissionId.current = crypto.randomUUID(); }
             } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "Choose another photo."); }
             finally { submitting.current = false; }
           }} />

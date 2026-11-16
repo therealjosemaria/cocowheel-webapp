@@ -36,7 +36,6 @@ with sync_playwright() as p:
             avatar.locator('input[type=file]').set_input_files(str(photo))
             page.wait_for_function('()=>document.querySelector(`.avatar-details img[alt="Photo to check"], .avatar-details [role="alert"]`)')
             if avatar.get_by_role('img',name='Photo to check',exact=True).count():
-                avatar.get_by_role('checkbox',name='Check my photo and submit it for avatar creation.',exact=True).check()
                 avatar.get_by_role('button',name='Submit photo',exact=True).click()
                 expect(avatar.get_by_role('status')).to_contain_text('queued for checking')
             else:
