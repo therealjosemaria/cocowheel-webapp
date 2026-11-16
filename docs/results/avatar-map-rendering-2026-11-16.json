@@ -194,5 +194,64 @@
     "Slowdown detector tested with synthetic frame intervals; not a calibrated GPU/memory monitor.",
     "Physical iOS/Android GPUs, long-running production concurrency and authenticated owner browser are unverified."
   ],
-  "deployment": "Not yet verified; recorded after guarded activation and exact-SHA frontend checks."
+  "deployment": {
+    "implementationRevision": "4e05a96e7cb365f2ecc25b11a436a8f84390921b",
+    "id": "dpl_HeHPDHTaya71dvVebUyKnvGddqpg",
+    "state": "READY",
+    "aliases": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "publicHealth": 200,
+    "readOnlyProductionBrowserWidths": [
+      320,
+      390,
+      844,
+      1440
+    ],
+    "productionBrowserAPIs": "synthetic only; non-GET writes blocked",
+    "authenticatedOwnerBrowser": "unverified"
+  },
+  "apiActivation": {
+    "timestamp": "20261116T121256Z",
+    "sourceRevision": "4e05a96e7cb365f2ecc25b11a436a8f84390921b",
+    "before": {
+      "underwayTrips": 0,
+      "inFlightAvatarWork": 0
+    },
+    "privateBackupVerified": true,
+    "apiRestarted": true,
+    "pidChanged": true,
+    "localHealth": true,
+    "databaseIntegrity": "ok",
+    "foreignKeyViolations": 0,
+    "terminalJourneyRecordsPreserved": true
+  },
+  "existingPreviewRecovery": {
+    "restored": 1,
+    "preview": {
+      "width": 832,
+      "height": 1248,
+      "bytes": 214052
+    },
+    "mapLightBytes": 7566,
+    "mapDetailBytes": 19754,
+    "paidTasksCreated": 0,
+    "preferencesChanged": false,
+    "lifecycleChanged": false,
+    "restoredAccounts": 1,
+    "restoredJobPreviews": 1,
+    "otherAccountsAndJobsUnchanged": true,
+    "lightSpriteAndPreferencesUnchanged": true,
+    "jobLifecycleAndSourceUnchanged": true,
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "anonymousRoutes": {
+      "privatePreview": 401,
+      "adminJobs": 403,
+      "mapLight": 404,
+      "mapDetail": 404
+    },
+    "realOwnerBrowser": "not exercised"
+  }
 }

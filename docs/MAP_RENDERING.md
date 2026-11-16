@@ -183,3 +183,28 @@ regressions; live existing-result recovery is recorded below after execution.
 Initial failed spacing, stale test selector, sandbox listener denial and the
 overlapping-build fixture failure are retained in the
 [sanitized result](results/avatar-map-rendering-2026-11-16.json).
+
+### API activation and existing-result recovery
+
+Implementation `4e05a96e7cb365f2ecc25b11a436a8f84390921b` was committed and
+pushed after full source/staged diff review. At 2026-11-16T12:12:56Z, a private
+SQLite/configuration backup passed integrity/FK checks; fresh checks found zero
+accepted/active trips and zero checking/submitting/generating avatars. Only
+`cocowheels-api` restarted; health recovered, the nullable columns exist, integrity
+is ok and terminal journey records are preserved.
+
+The existing completed Seedream result was recovered using GET/local processing,
+without a paid generation task. Its private preview is 832×1248 lossless WebP
+(214052 bytes), light map image 7566 bytes (unchanged), detail map image 19754 bytes.
+A second private SQLite backup precedes the recovery transaction. Comparison with
+that backup confirms exactly one assigned account's version/preview/detail and
+one job's render changed; all other account/job fields and rows remain identical.
+Preferences, source photo, approval, status, timestamps and spend remain. This
+account had display disabled; both public variants correctly return 404. Anonymous
+private preview returns 401, Admin jobs 403. No live login is impersonated.
+Frontend deployment `dpl_HeHPDHTaya71dvVebUyKnvGddqpg` is READY for the exact
+implementation revision on www.gumwheel.com and gumwheel.com. Public API health
+returns 200. The read-only deployed-frontend Home suite passes 320/390/844/1440px
+with synthetic APIs and writes blocked; whole phone/desktop Home screenshots
+were reviewed. Real owner login, physical phones and production concurrency are
+still unverified. This documentation follow-up changes no runtime source.
