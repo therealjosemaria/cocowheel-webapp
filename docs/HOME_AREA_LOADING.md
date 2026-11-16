@@ -171,3 +171,34 @@ car artwork plus synthetic personal avatars. Review whole phone/desktop Home,
 Profile saved/edit, selected search and journey screens; tests do not replace
 that review. Physical phone GPUs, sustained production concurrency and live
 owner use remain unverified unless separately recorded below.
+
+## Guarded activation and existing preview recovery — 17 November
+
+Implementation `3bc936d` activated at 2026-11-16T13:22:24Z (17 November AEDT).
+Private database/config backup verified; a second zero-underway/zero-in-flight
+check preceded restarting only `cocowheels-api`. Health recovered, all three
+indexes exist, integrity/foreign keys pass, and terminal journey records match
+the backup. No frontend push was treated as an API restart.
+
+The one older assignment was restored from its byte-matched approved cutout:
+768×1344 lossless private preview (157,298 bytes), 18,416-byte detailed map image;
+7,696-byte light sprite, display preference and assignment time stayed identical.
+Both assigned accounts now have full private preview and detailed variants.
+The other assignment and all avatar jobs/events are unchanged; no paid task,
+provider call, photo approval or notification was created. Public sprite variants
+match the opted-in bytes; disabled assignments remain unavailable publicly.
+
+Local and public overview/area return 200/no-store with bounded public fields;
+invalid area returns 400. First verification attempts used a wrong event-table
+sort column and a Python user-agent that received a public 403; corrected
+read-only checks passed without an application/configuration change. Exact
+frontend deployment and browser observations are recorded below.
+
+Production frontend `dpl_w8hHMMymstDVb6vDj6LZWsiQZdar` is READY for exact
+implementation `3bc936d` on `www.gumwheel.com` and `gumwheel.com`. Deployed-browser
+Home checks pass at 320/390/844/1440px using synthetic intercepted feed data,
+read-only requests, and real shipped JavaScript/tiles. Actual public overview,
+area and invalid-query contracts were separately checked against the live API.
+Authenticated owner use, physical devices, runtime-log scan and sustained
+production concurrency were not tested. This documentation follow-up does not
+change runtime source or require another API restart.

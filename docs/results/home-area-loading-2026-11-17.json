@@ -317,6 +317,16 @@
       "finding": "Decimal cell snapping could expand again due to binary rounding; near-global date-line bounds could collapse on snapping.",
       "remediation": "Normalize near-integer scaled cell boundaries and retain world coverage when wrapped edges overlap.",
       "retest": "PASS explicit idempotence/date-line regression plus actual area browser"
+    },
+    {
+      "finding": "First live read-only recovery verifier sorted avatar_events by a nonexistent id column. No mutation occurred.",
+      "remediation": "Use each table\u2019s first primary-key column for deterministic ordering.",
+      "retest": "PASS byte-level assignment/jobs/events comparison"
+    },
+    {
+      "finding": "Python urllib public request received HTTP 403 while local JSON endpoint worked.",
+      "remediation": "Verify with curl and actual browser; no authorization/configuration change.",
+      "retest": "PASS public overview and area 200/no-store, invalid area 400"
     }
   ],
   "reproductionGuide": "docs/HOME_AREA_LOADING.md#verification-and-reproduction",
@@ -329,6 +339,78 @@
     "Synthetic mixed-image test is not 50 simultaneous unique full-resolution images or 10,004 DOM figures"
   ],
   "activation": {
-    "status": "PENDING guarded API activation, legacy preview backfill and exact frontend deployment verification"
+    "status": "VERIFIED API and exact production frontend; preview recovery complete",
+    "api": {
+      "timestamp": "20261116T132224Z",
+      "sourceRevision": "3bc936dbcb511088e3af1592f24cf3f146f36f04",
+      "before": {
+        "underwayTrips": 0,
+        "inFlightAvatarWork": 0
+      },
+      "privateBackupVerified": true,
+      "apiRestarted": true,
+      "pidChanged": true,
+      "localHealth": true,
+      "databaseIntegrity": "ok",
+      "foreignKeyViolations": 0,
+      "terminalJourneyRecordsPreserved": true
+    },
+    "previewRecovery": {
+      "checkedAt": "2026-11-16T13:25:52.904729+00:00",
+      "assignedAvatars": 2,
+      "allHavePreviewAndDetail": true,
+      "legacyAssignmentRestored": 1,
+      "onlyVersionPreviewDetailChanged": true,
+      "preferencesAndLightSpritesPreserved": true,
+      "avatarJobsAndEventsUnchanged": true,
+      "paidTasksCreated": 0,
+      "databaseIntegrity": "ok",
+      "foreignKeyViolations": 0,
+      "publicSpriteOptInAndVariantBytes": "PASS",
+      "homeApi": {
+        "local": {
+          "overview": 200,
+          "area": 200,
+          "invalidArea": 400,
+          "noStore": true,
+          "boundedPublicProjection": true
+        },
+        "public": {
+          "overview": 200,
+          "area": 200,
+          "invalidArea": 400,
+          "noStore": true,
+          "boundedPublicProjection": true
+        }
+      },
+      "restoredPrivatePreview": {
+        "width": 768,
+        "height": 1344,
+        "losslessWebpBytes": 157298,
+        "mapLightBytesUnchanged": 7696,
+        "mapDetailBytes": 18416
+      }
+    },
+    "frontend": {
+      "deploymentId": "dpl_w8hHMMymstDVb6vDj6LZWsiQZdar",
+      "sourceRevision": "3bc936dbcb511088e3af1592f24cf3f146f36f04",
+      "state": "READY",
+      "aliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ],
+      "framework": "Next.js",
+      "browserWidths": [
+        320,
+        390,
+        844,
+        1440
+      ],
+      "readOnlySyntheticFeedBrowser": "PASS",
+      "actualPublicOverviewAreaValidation": "PASS",
+      "authenticatedOwnerWalkthrough": "NOT_RUN",
+      "productionConcurrency": "NOT_TESTED",
+      "runtimeLogScan": "NOT_RUN"
+    }
   }
 }
