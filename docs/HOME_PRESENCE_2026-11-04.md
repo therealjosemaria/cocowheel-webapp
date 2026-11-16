@@ -42,8 +42,16 @@ unchanged hero/action/map/activity positions for driver/rider cards. Synthetic A
 assert no writes/GPS/routing. Whole mobile/desktop Home screens were visually
 reviewed for action hierarchy, map size, controls, credits and activity spacing.
 Page scrolling outside the map remains; swiping inside now deliberately pans it.
-Physical Safari and authenticated production activity remain unverified. Exact
-frontend deployment is recorded after push; no API restart is needed.
+Physical Safari and authenticated production activity remain unverified.
+
+Pan implementation `462b303b493e5be58c8c8697c2b0164ebe21e8a9` is verified READY
+in production (`dpl_GnTw3PpKtosVvGjuCMLRjT8bhSTo`) on both www.gumwheel.com
+and gumwheel.com. The same read-only presence suite passes all four widths on
+the deployed frontend, including actual touch/mouse drag events, pinch/controls,
+retained translation/zoom and non-clickable markers. Whole deployed Home was
+visually reviewed on phone/desktop. APIs were synthetic and real writes blocked;
+no production trips, accounts, GPS, generation or emails were created. Reproduce
+with the GUMWHEEL_TEST_BASE_URL command below. No API restart was needed.
 
 ### Zoom verification
 
