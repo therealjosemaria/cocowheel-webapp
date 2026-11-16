@@ -297,7 +297,7 @@ no blind resubmit or task-recovery override.
 Requests time out after 60s; poll at 15s, failures back off 60s; after 24h a known
 unfinished task requires review. The downloaded PNG/WebP result is bounded
 to 10MB / 16M pixels. Opaque Seedream results pass through Pi-local segmentation
-and matting, then the shared transparent 128×256 sprite normalizer. Uncertain
+and matting, then [separate private preview and bounded transparent map renditions](MAP_RENDERING.md). Uncertain
 cutouts stop for private admin review with a generated preview; the current
 avatar stays assigned and no paid task is repeated. Runtime/resource details
 and recovery are in the Seedream release guide. Artifact HTTPS hosts are allowlisted, redirects rejected and API

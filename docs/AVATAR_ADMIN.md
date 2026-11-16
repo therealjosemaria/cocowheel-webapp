@@ -251,6 +251,11 @@ appear alongside a retained generated avatar later.
 
 ### Preview resolution diagnosis
 
+The later [resolution/rendering implementation](MAP_RENDERING.md) remedies
+AVATAR-PREVIEW-001 with a lossless private processed-resolution preview, separate
+bounded map variants and guarded no-generation recovery. Evidence below records
+the original failed baseline; the dated rendering result records the retest.
+
 One current completed Seedream result was read privately from its existing task,
 without creating a paid task or modifying an account. The generated PNG was
 832×1248. Re-running the existing Pi background removal retained 832×1248;
@@ -266,10 +271,10 @@ the uploaded photo's pose/visibility; it does not generate this avatar. The
 evidence identifies final application sizing on the Pi, without showing a hardware
 or background-matting failure. It does not assess every possible input/model.
 
-Open finding AVATAR-PREVIEW-001: retain a bounded higher-resolution private
+Historical finding AVATAR-PREVIEW-001: retain a bounded higher-resolution private
 generated preview separately from the efficient map sprite, and choose its
-retention/serving contract before implementation. The resolution change remains
-proposed; this release retains the current artwork.
+retention/serving contract before implementation. This was proposed at the
+diagnostic revision; the later rendering implementation supersedes that boundary.
 Private photos, provider URLs, task/account identifiers and diagnostic image
 files are not committed. See [sanitized verification](results/avatar-completion-2026-11-16.json).
 
@@ -335,7 +340,7 @@ are private/no-store; photo/render bytes have fixed JPEG/WebP types and nosniff.
 | GET `/api/admin/avatar-jobs/notifications` | Owner-only count/link |
 | GET `/api/admin/avatar-jobs/balance` | Owner-only cached read-only Tripo balance |
 | GET `/api/admin/avatar-jobs/:id/photo` | Private normalized source if retained |
-| GET `/api/admin/avatar-jobs/:id/render` | Private per-job generated sprite |
+| GET `/api/admin/avatar-jobs/:id/render` | Private per-job generated preview |
 | POST `/api/admin/avatar-jobs/:id/approve` | Verified photo → persisted generation permission |
 | POST `/api/admin/avatar-jobs/:id/reject` | APPROVED → REJECTED with required reason, revoking permission |
 | POST `/api/admin/avatar-jobs/:id/cancel` | Stops local processing/assignment; no provider refund promise |

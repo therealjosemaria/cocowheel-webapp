@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react';
 import { Marker, useMap, ZoomControl } from 'react-leaflet';
 import type { PresenceCell } from '@/lib/home-presence';
 import { modelMarkerIcon } from '@/lib/map-role-icon';
+import { visibleMapMarkers } from '@/lib/map-marker-budget';
+import { useMapMarkerBudget } from './use-map-marker-budget';
 
 const offsets: [number, number][][] = [[[0, 0]], [[-22, 0], [22, 0]], [[-22, -12], [22, -12], [0, 22]]];
 const icons = {
@@ -18,7 +20,7 @@ function AreaView({ cells }: { cells: PresenceCell[] }) {
   useEffect(() => {
     // Counts/artwork refresh each minute; preserve the viewport for the same areas.
     const areas = [...new Set(cells.map(cell => `${cell.latitude}:${cell.longitude}`))].sort().join('|');
-    if (framedAreas.current === areas) return;
+    if (framedAreas.current !== null) return;
     framedAreas.current = areas;
     if (!cells.length) {
       map.setView([-33.89, 151.2], 11, { animate: false });
@@ -32,7 +34,9 @@ function AreaView({ cells }: { cells: PresenceCell[] }) {
   return null;
 }
 
-export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
+function PresenceMarkers({ cells }: { cells: PresenceCell[] }) {
+  const map = useMap();
+  const view = useMapMarkerBudget();
   const slots = new Map<string, number>();
   const totals = new Map<string, number>();
   for (const cell of cells) {
@@ -43,19 +47,27 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
     const key = `${cell.latitude}:${cell.longitude}`;
     const slot = slots.get(key) ?? 0;
     slots.set(key, slot + 1);
-    return { ...cell, artwork: cell.artworks?.[index], key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
+    const point = map.latLngToContainerPoint([cell.latitude, cell.longitude]);
+    const offset = offsets[totals.get(key)! - 1][slot];
+    return { x: point.x + offset[0], y: point.y + offset[1], ...cell, artwork: cell.artworks?.[index], key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
   }));
+  return <>
+    {visibleMapMarkers(markers, view.width, view.height, view.zoom, view.reduced).map(cell => <Marker key={cell.key}
+      position={[cell.latitude, cell.longitude]} icon={cell.artwork
+        ? modelMarkerIcon(cell.role, '', false, offsets[cell.total - 1][cell.slot], undefined, cell.artwork, view.detail)
+        : icons[cell.role][cell.total - 1][cell.slot]}
+      interactive={false} keyboard={false} />)}
+  </>;
+}
+
+export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
   return <MapSurface frameClassName="presence-map-frame" center={[-33.89, 151.2]} zoom={11}
     className="home-presence-map" attributionControl={false} zoomControl={false} dragging={true}
     scrollWheelZoom={false} doubleClickZoom={false} touchZoom={true}
     boxZoom={false} keyboard={false} zoomAnimation={false} fadeAnimation={false}
     markerZoomAnimation={false}>
     <AreaView cells={cells} />
-    {markers.map(cell => <Marker key={cell.key}
-      position={[cell.latitude, cell.longitude]} icon={cell.artwork
-        ? modelMarkerIcon(cell.role, '', false, offsets[cell.total - 1][cell.slot], undefined, cell.artwork)
-        : icons[cell.role][cell.total - 1][cell.slot]}
-      interactive={false} keyboard={false} />)}
+    <PresenceMarkers cells={cells} />
     <ZoomControl position="bottomright" />
   </MapSurface>;
 }

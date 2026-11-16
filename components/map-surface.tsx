@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { MAP_TILE_URL } from "@/lib/map-style";
 import MapCredits from "./map-credits";
 import { journeyRoleArtClass } from "@/lib/journey-role-art";
+import { forgetMapImageIcon } from "@/lib/map-role-icon";
 
 function AvatarImageFallback() {
   const map = useMap();
@@ -12,6 +13,7 @@ function AvatarImageFallback() {
     const fallback = (event: Event) => {
       const image = event.target;
       if (!(image instanceof HTMLImageElement) || !image.classList.contains("map-avatar-artwork")) return;
+      forgetMapImageIcon(image.getAttribute("src"));
       const replacement = document.createElement("i");
       replacement.className = journeyRoleArtClass("rider");
       replacement.setAttribute("aria-hidden", "true");

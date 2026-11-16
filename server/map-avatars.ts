@@ -11,6 +11,8 @@ export function initializeMapAvatars(db: Db) {
     enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),
     assigned_at TEXT NOT NULL
   )`);
+  const columns = new Set((db.prepare("PRAGMA table_info(account_map_avatars)").all() as { name: string }[]).map(column => column.name));
+  for (const name of ["preview", "detail"]) if (!columns.has(name)) db.exec(`ALTER TABLE account_map_avatars ADD COLUMN ${name} BLOB`);
 }
 
 export function avatarArtwork(db: Db, principal: string): string | undefined {
@@ -36,35 +38,55 @@ export function saveMapAvatar(db: Db, principal: string, enabled: unknown): MapA
   return readMapAvatar(db, principal);
 }
 
-export function avatarSprite(db: Db, assetId: string): Buffer | undefined {
+export function avatarSprite(db: Db, assetId: string, detail = false): Buffer | undefined {
   if (!/^[a-f0-9]{32}$/.test(assetId)) return;
-  return (db.prepare("SELECT sprite FROM account_map_avatars WHERE asset_id=? AND enabled=1")
+  return (db.prepare(`SELECT ${detail ? "COALESCE(detail,sprite)" : "sprite"} AS sprite FROM account_map_avatars WHERE asset_id=? AND enabled=1`)
     .get(assetId) as { sprite: Buffer } | undefined)?.sprite;
 }
 
 export function ownAvatarSprite(db: Db, principal: string): Buffer | undefined {
-  return (db.prepare("SELECT sprite FROM account_map_avatars WHERE principal_id=?")
+  return (db.prepare("SELECT COALESCE(preview,sprite) AS sprite FROM account_map_avatars WHERE principal_id=?")
     .get(principal) as { sprite: Buffer } | undefined)?.sprite;
 }
 
-/** Operator-only assignment of an already approved render; never called by an upload endpoint. */
-export async function prepareAvatarSprite(bytes: Buffer): Promise<Buffer> {
+export type AvatarRenditions = { sprite: Buffer; detail: Buffer; preview: Buffer };
+
+function approvedImage(bytes: Buffer) {
   if (bytes.length > 10_000_000) throw new Error("INVALID_AVATAR_IMAGE");
-  const image = sharp(bytes, { limitInputPixels: 16_000_000, failOn: "warning" });
+  return sharp(bytes, { limitInputPixels: 16_000_000, failOn: "warning" });
+}
+async function validateRender(bytes: Buffer) {
+  const image = approvedImage(bytes);
   const metadata = await image.metadata();
   if (!["png", "webp"].includes(metadata.format ?? "") || !metadata.hasAlpha || (metadata.pages ?? 1) !== 1)
     throw new Error("INVALID_AVATAR_IMAGE");
-  // Preserve the full standing figure and alpha; profile-photo square cropping is unsuitable.
+  return image;
+}
+/** Bounded, metadata-free map assets; no full-size preview is sent to a public map. */
+export async function prepareAvatarSprite(bytes: Buffer): Promise<Buffer> {
+  const image = await validateRender(bytes);
   return image.rotate().trim().resize(128, 256, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .webp({ quality: 90, alphaQuality: 100 }).toBuffer();
 }
+export async function prepareAvatarRenditions(bytes: Buffer): Promise<AvatarRenditions> {
+  const image = await validateRender(bytes);
+  const [sprite, detail, preview] = await Promise.all([
+    prepareAvatarSprite(bytes),
+    image.clone().rotate().trim().resize(256, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .webp({ quality: 92, alphaQuality: 100 }).toBuffer(),
+    // Preserve every source pixel/dimension after orientation, including facial detail.
+    image.clone().rotate().webp({ lossless: true }).toBuffer(),
+  ]);
+  if (preview.length > 10_000_000) throw new Error("INVALID_AVATAR_IMAGE");
+  return { sprite, detail, preview };
+}
 
-export function assignMapAvatar(db: Db, principal: string, sprite: Buffer, enabled = false) {
+export function assignMapAvatar(db: Db, principal: string, sprite: Buffer, enabled = false, assets?: Pick<AvatarRenditions, "detail" | "preview">) {
   if (!db.prepare("SELECT 1 FROM university_accounts WHERE principal_id=?").get(principal))
     throw new Error("AVATAR_ACCOUNT_NOT_FOUND");
-  db.prepare(`INSERT INTO account_map_avatars(principal_id,asset_id,sprite,enabled,assigned_at) VALUES (?,?,?,?,?)
+  db.prepare(`INSERT INTO account_map_avatars(principal_id,asset_id,sprite,enabled,assigned_at,detail,preview) VALUES (?,?,?,?,?,?,?)
     ON CONFLICT(principal_id) DO UPDATE SET asset_id=excluded.asset_id,sprite=excluded.sprite,
-      enabled=excluded.enabled,assigned_at=excluded.assigned_at`)
-    .run(principal, randomBytes(16).toString("hex"), sprite, Number(enabled), new Date().toISOString());
+      enabled=excluded.enabled,assigned_at=excluded.assigned_at,detail=excluded.detail,preview=excluded.preview`)
+    .run(principal, randomBytes(16).toString("hex"), sprite, Number(enabled), new Date().toISOString(), assets?.detail ?? null, assets?.preview ?? null);
   return readMapAvatar(db, principal);
 }

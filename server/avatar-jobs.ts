@@ -3,7 +3,7 @@ import sharp from "sharp";
 import type { Db } from "./core";
 import type { AvatarJob, AvatarJobs, AvatarJobStatus } from "../lib/avatar-job";
 import { avatarJobActive, avatarRejections } from "../lib/avatar-job";
-import { assignMapAvatar } from "./map-avatars";
+import { type AvatarRenditions, assignMapAvatar } from "./map-avatars";
 
 export const AVATAR_PHOTO_TTL = 7 * 86400_000;
 export const AVATAR_LEASE_MS = 5 * 60_000;
@@ -173,14 +173,16 @@ export function reviewAvatarEvent(db: Db, principal: string, key: unknown, now =
   if (typeof key !== "string" || key.length > 100) throw new Error("INVALID_NOTIFICATION_REVIEW");
   db.prepare("UPDATE avatar_events SET reviewed_at=COALESCE(reviewed_at,?) WHERE principal_id=? AND event_key=?").run(now, principal, key);
 }
-export function completeGeneratedAvatar(db: Db, id: string, sprite: Buffer, now = Date.now()) {
+export function completeGeneratedAvatar(db: Db, id: string, image: Buffer | AvatarRenditions, now = Date.now()) {
+  const assets = Buffer.isBuffer(image) ? undefined : image;
+  const sprite = Buffer.isBuffer(image) ? image : image.sprite;
   db.transaction(() => {
     const row = db.prepare("SELECT * FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(id) as AvatarJobRow | undefined;
     if (!row) throw new Error("AVATAR_JOB_CHANGED");
     // Generation never opts an account into public display; preserve its existing choice.
     const previous = db.prepare("SELECT enabled FROM account_map_avatars WHERE principal_id=?").get(row.principal_id) as { enabled: number } | undefined;
-    assignMapAvatar(db, row.principal_id, sprite, Boolean(previous?.enabled));
-    db.prepare("UPDATE avatar_jobs SET render=? WHERE id=?").run(sprite, id);
+    assignMapAvatar(db, row.principal_id, sprite, Boolean(previous?.enabled), assets);
+    db.prepare("UPDATE avatar_jobs SET render=? WHERE id=?").run(assets?.preview ?? sprite, id);
     finishAvatarJob(db, id, "READY", null, now);
   })();
 }

@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+16 November avatar resolution/map density changes preserve existing preview
+surfaces, 48px marker slots, 46px contained figure height, ground anchors, map
+controls and typography. Full processed-resolution images are private previews;
+map assets use bounded light/detail variants. Home culls hidden/overlapping figures
+and broad-zoom clutter without adding a label or cluster/count badge; journey
+markers remain. See [rendering policy](MAP_RENDERING.md). No new visual tokens.
+
 16 November avatar upload history reuses line/surface-subtle/control-radius tokens,
 16px row gaps, 64×96px contained thumbnails, 14px regular outcome/reason and 12px
 date/removed-photo text. At ≤480px, feedback spans the row below the thumbnail

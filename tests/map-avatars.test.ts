@@ -9,7 +9,7 @@ import { postDemand, searchDemands } from "../server/rider-demands";
 import { createApiServer } from "../server/index";
 import { acceptWithVehicle } from "../server/vehicle-acceptance";
 import { homePresence } from "../server/home-presence";
-import { assignMapAvatar, avatarArtwork, avatarSprite, prepareAvatarSprite, readMapAvatar, saveMapAvatar } from "../server/map-avatars";
+import { assignMapAvatar, avatarArtwork, avatarSprite, ownAvatarSprite, prepareAvatarRenditions, prepareAvatarSprite, readMapAvatar, saveMapAvatar } from "../server/map-avatars";
 import { isMapAvatarPath } from "../lib/map-avatar";
 import { readPresenceCells } from "../lib/home-presence";
 
@@ -133,4 +133,78 @@ test("private settings/preview enforce sessions; public sprites require opt-in a
     }
     assert.equal((await fetch(base+"/api/admin/tripo/P2-20260801.glb")).status, 403);
   } finally { api.close(); api.closeAllConnections(); await once(api, "close"); db.close(); }
+});
+
+
+test("full-resolution private preview retains pixels while both public map variants remain bounded and revocable", async () => {
+  const { db, owner, other } = fixture();
+  const source = await sharp({ create: { width: 832, height: 1248, channels: 4, background: { r: 34, g: 56, b: 78, alpha: 0.8 } } }).png().toBuffer();
+  const assets = await prepareAvatarRenditions(source);
+  const assigned = assignMapAvatar(db, owner.session.id, assets.sprite, true, assets);
+  const api = createApiServer(db); api.listen(0, "127.0.0.1"); await once(api, "listening");
+  const address = api.address(); assert.ok(address && typeof address !== "string");
+  const base = `http://127.0.0.1:${address.port}`, detailUrl = assigned.artworkUrl!.replace(".webp", ".detail.webp");
+  try {
+    const decoded = (bytes: Buffer) => sharp(bytes).ensureAlpha().raw().toBuffer();
+    assert.deepEqual(await decoded(assets.preview), await decoded(source));
+    assert.equal((await sharp(assets.preview).metadata()).height, 1248);
+    assert.equal((await sharp(assets.detail).metadata()).height, 512);
+    assert.equal((await sharp(assets.sprite).metadata()).height, 256);
+    initializeCoreSchema(db);
+    assert.deepEqual(ownAvatarSprite(db, owner.session.id), assets.preview);
+    assert.equal(ownAvatarSprite(db, other.session.id), undefined);
+    const publicDetail = await fetch(base + detailUrl);
+    assert.equal(publicDetail.status, 200); assert.equal(publicDetail.headers.get("cache-control"), "no-store");
+    assert.deepEqual(Buffer.from(await publicDetail.arrayBuffer()), assets.detail);
+    const preview = await fetch(base + assigned.previewUrl, { headers: { Authorization: `Bearer ${owner.token}` } });
+    assert.deepEqual(Buffer.from(await preview.arrayBuffer()), assets.preview);
+    for (const suffix of [".preview.webp", ".detail.preview.webp", ".png"])
+      assert.equal((await fetch(base + assigned.artworkUrl!.replace(".webp", suffix))).status, 404);
+    saveMapAvatar(db, owner.session.id, false);
+    assert.equal((await fetch(base + detailUrl)).status, 404);
+    assert.deepEqual(ownAvatarSprite(db, owner.session.id), assets.preview);
+    const old = assigned.artworkUrl!;
+    assignMapAvatar(db, owner.session.id, assets.sprite, true, assets);
+    assert.equal((await fetch(base + old)).status, 404);
+    assert.equal((await fetch(base + detailUrl)).status, 404);
+  } finally { api.close(); api.closeAllConnections(); await once(api, "close"); db.close(); }
+});
+
+test("operator recovery only upgrades the same assigned result, preserving preference/history/events and guarding races", async () => {
+  const { restoreAvatarPreview } = await import("../server/avatar-preview-recovery");
+  const { db, owner, other } = fixture();
+  try {
+    const assets = await prepareAvatarRenditions(await sharp({ create: { width: 400, height: 800, channels: 4, background: { r: 30, g: 50, b: 70, alpha: 0.8 } } }).png().toBuffer());
+    assignMapAvatar(db, owner.session.id, assets.sprite, false);
+    assignMapAvatar(db, other.session.id, assets.sprite, true);
+    db.prepare(`INSERT INTO avatar_jobs(id,principal_id,submission_id,photo_hash,status,created_at,updated_at,next_at,render) VALUES (?,?,?,'fixture','READY',1,2,3,?)`).run("recovery-job", owner.session.id, "recovery-submit", assets.sprite);
+    const before = db.prepare("SELECT * FROM avatar_jobs WHERE id='recovery-job'").get() as Record<string, unknown>;
+    const accountBefore = db.prepare("SELECT * FROM account_map_avatars WHERE principal_id=?").get(owner.session.id) as Record<string, unknown>;
+    const otherBefore = db.prepare("SELECT * FROM account_map_avatars WHERE principal_id=?").get(other.session.id);
+    restoreAvatarPreview(db, "recovery-job", assets.sprite, assets);
+    const after = db.prepare("SELECT * FROM avatar_jobs WHERE id='recovery-job'").get() as Record<string, unknown>;
+    assert.deepEqual({ ...after, render: null }, { ...before, render: null });
+    assert.equal((after.render as Buffer).equals(assets.preview), true);
+    assert.equal(db.prepare("SELECT 1 FROM avatar_events").get(), undefined);
+    assert.equal(db.prepare("SELECT 1 FROM avatar_admin_events").get(), undefined);
+    const accountAfter = db.prepare("SELECT * FROM account_map_avatars WHERE principal_id=?").get(owner.session.id) as Record<string, unknown>;
+    assert.equal(accountAfter.enabled, 0); assert.equal(accountAfter.assigned_at, accountBefore.assigned_at);
+    assert.deepEqual(accountAfter.sprite, accountBefore.sprite); assert.notEqual(accountAfter.asset_id, accountBefore.asset_id);
+    assert.deepEqual(db.prepare("SELECT * FROM account_map_avatars WHERE principal_id=?").get(other.session.id), otherBefore);
+    assert.throws(() => restoreAvatarPreview(db, "recovery-job", assets.sprite, assets), /AVATAR_RECOVERY_CHANGED/);
+  } finally { db.close(); }
+});
+
+
+test("nullable rendition migration retains legacy sprites, versions and display choices", async () => {
+  const { db, owner } = fixture();
+  try {
+    const bytes = await sprite(), previous = assignMapAvatar(db, owner.session.id, bytes, true);
+    db.exec("ALTER TABLE account_map_avatars DROP COLUMN preview; ALTER TABLE account_map_avatars DROP COLUMN detail");
+    initializeCoreSchema(db); initializeCoreSchema(db);
+    assert.deepEqual(readMapAvatar(db, owner.session.id), previous);
+    assert.deepEqual(ownAvatarSprite(db, owner.session.id), bytes);
+    const id = previous.artworkUrl!.split("/").pop()!.slice(0,-5);
+    assert.deepEqual(avatarSprite(db, id, true), bytes);
+  } finally { db.close(); }
 });

@@ -575,8 +575,8 @@ export function createApiServer(
       // A public, opted-in render is a read-only asset, not a lifecycle request.
       const spritePath = new URL(request.url ?? "/", "http://api.local").pathname;
       if (spritePath.startsWith("/api/map-avatar/")) {
-        const match = /^\/api\/map-avatar\/([a-f0-9]{32})\.webp$/.exec(spritePath);
-        const sprite = request.method === "GET" && match ? avatarSprite(database, match[1]) : undefined;
+        const match = /^\/api\/map-avatar\/([a-f0-9]{32})(\.detail)?\.webp$/.exec(spritePath);
+        const sprite = request.method === "GET" && match ? avatarSprite(database, match[1], Boolean(match[2])) : undefined;
         if (sprite) {
           response.writeHead(200, { ...cors, "Content-Type": "image/webp", "Content-Length": sprite.length,
             "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });

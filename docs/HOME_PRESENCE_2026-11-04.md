@@ -1,5 +1,13 @@
 # Home presence and discovery access — 4 November 2026
 
+16 November [map rendering policy](MAP_RENDERING.md) adds a visible-viewport
+50-figure budget, 40px overlap spacing, light/detail image tiers, broad-zoom hiding
+and a conservative slowdown fallback. It preserves the 120-candidate response,
+three-per-area privacy rule, non-clickable figures, controls and no-empty-label
+behaviour. The initial fit runs once per map mount; subsequent data refreshes keep
+the user's viewport even if areas change. Whole-map hiding on an empty/failed feed
+remains. Historical rendering statements below are superseded where noted.
+
 ## Home zoom and panning — 16 November 2026
 
 Supersedes the original no-zoom/no-pan interaction rules below. Home uses the same

@@ -23,6 +23,7 @@ import {
 import type { Pin } from "@/lib/client-types";
 import { modelMarkerIcon } from "@/lib/map-role-icon";
 import type { Vehicle } from "@/lib/vehicle";
+import { useMapMarkerBudget } from "./use-map-marker-budget";
 
 type Line = {
   points: Pin[];
@@ -221,6 +222,7 @@ function PinMarkers({
   labelPins?: Pin[];
 }) {
   const map = useMap();
+  const { detail } = useMapMarkerBudget();
   const [overlapping, setOverlapping] = useState<Set<number>>(() => new Set());
   const updateOverlap = useCallback(() => {
     const next = new Set<number>();
@@ -402,7 +404,7 @@ function PinMarkers({
             : markerKind === "driver" && (vehicle || vehicleArtwork)
               ? modelMarkerIcon("driver", "Driver", true, [0, 0], vehicle, vehicleArtwork)
               : markerKind === "pickup" && riderArtwork
-                ? modelMarkerIcon("rider", "Pickup", true, [0, 0], undefined, riderArtwork)
+                ? modelMarkerIcon("rider", "Pickup", true, [0, 0], undefined, riderArtwork, detail)
               : markerKind
                 ? mapMarkerIcons[markerKind]
                 : undefined;

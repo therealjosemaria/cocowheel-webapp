@@ -4,7 +4,7 @@ import sharp from "sharp";
 import type { Db } from "./core";
 import { avatarGenerationPayload } from "../lib/avatar-generation";
 import { avatarBackground, AvatarBackgroundError, type AvatarBackgroundProcessor } from "./avatar-background";
-import { prepareAvatarSprite } from "./map-avatars";
+import { prepareAvatarRenditions } from "./map-avatars";
 import { AVATAR_CREDITS, AVATAR_MODEL, clearAvatarHold, completeGeneratedAvatar, expireAvatarJobs, finishAvatarJob, holdAvatarJob, type AvatarJobRow } from "./avatar-jobs";
 import type { AdminAvatarBalance } from "../lib/admin-avatar";
 
@@ -102,7 +102,7 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
           }
           const stats = await sharp(image, { limitInputPixels: 16_000_000 }).stats();
           if (!stats.channels[3] || stats.channels[3].min === 255) throw new Error("OPAQUE_AVATAR_RENDER");
-          completeGeneratedAvatar(db, pending.id, await prepareAvatarSprite(image), now);
+          completeGeneratedAvatar(db, pending.id, await prepareAvatarRenditions(image), now);
         } else if (["failed", "cancelled", "canceled", "expired", "banned"].includes(task.status ?? "")) {
           if (db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(pending.id))
             finishAvatarJob(db, pending.id, "REVIEW_REQUIRED", "PROVIDER_FAILED", now);
@@ -161,4 +161,14 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
       } else finishAvatarJob(db, job.id, "REVIEW_REQUIRED", "SUBMISSION_UNCERTAIN", now);
     }
   } finally { working.delete(db); }
+}
+
+/** Operator recovery only: GET an already completed task. Never creates/uploads/bills a task. */
+export async function completedAvatarImage(taskId: string, legacy: boolean, api: AvatarProvider = provider): Promise<Buffer> {
+  if (!/^[a-zA-Z0-9_-]{1,200}$/.test(taskId)) throw new Error("INVALID_AVATAR_TASK");
+  const task = await api.request(`/tasks/${encodeURIComponent(taskId)}`);
+  if (task.status !== "success") throw new Error("AVATAR_RESULT_NOT_READY");
+  const url = legacy ? task.output?.rendered_image_url : task.output?.generated_image_url;
+  if (!url) throw new Error("NO_AVATAR_RENDER");
+  return api.image(url);
 }

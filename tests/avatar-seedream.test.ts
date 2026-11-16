@@ -61,7 +61,10 @@ test("Mac verification and explicit owner-admin approval precede Seedream; local
     await runAvatarGeneration(f.db, f.api, now + 80_006, { ...f.background, remove: async image => { assert.deepEqual(image, f.photo); processed++; return f.cutout; } });
     assert.equal(processed, 1); assert.equal(avatarJobSummary(f.db, f.owner)!.status, "READY");
     assert.equal(readMapAvatar(f.db, f.owner).enabled, true);
-    assert.ok(adminAvatarAsset(f.db, f.id, "render"));
+    const generatedPreview = adminAvatarAsset(f.db, f.id, "render")!;
+    assert.ok(generatedPreview);
+    const previewInfo = await sharp(generatedPreview).metadata(), sourceInfo = await sharp(f.cutout).metadata();
+    assert.equal(previewInfo.width, sourceInfo.width); assert.equal(previewInfo.height, sourceInfo.height);
     await runAvatarGeneration(f.db, f.api, now + 160_007, f.background);
     assert.equal(f.requests.filter(r => r.path === "/generation/image-to-image").length, 1);
   } finally { f.db.close(); }
@@ -119,4 +122,15 @@ test("missing local processing runtime fails closed without a provider request",
   const previous = process.env.COCOWHEELS_AVATAR_CUTOUT_PYTHON;
   try { process.env.COCOWHEELS_AVATAR_CUTOUT_PYTHON = "/missing-synthetic-python"; await assert.rejects(avatarBackground.check(), AvatarBackgroundError); }
   finally { if (previous === undefined) delete process.env.COCOWHEELS_AVATAR_CUTOUT_PYTHON; else process.env.COCOWHEELS_AVATAR_CUTOUT_PYTHON = previous; }
+});
+
+
+test("completed-result recovery issues only a GET-style read and rejects unfinished or injected task references", async () => {
+  const { completedAvatarImage } = await import("../server/avatar-generation");
+  const calls: string[] = [];
+  const api = { request: async (path: string, body?: unknown) => { assert.equal(body, undefined); calls.push(path); return { status: "success", output: { generated_image_url: "https://tripo3d.ai/fixture.png" } }; }, image: async (url: string) => { calls.push(url); return Buffer.from("fixture"); } };
+  assert.deepEqual(await completedAvatarImage("completed-fixture", false, api), Buffer.from("fixture"));
+  assert.deepEqual(calls, ["/tasks/completed-fixture", "https://tripo3d.ai/fixture.png"]);
+  await assert.rejects(completedAvatarImage("../../submit", false, api), /INVALID_AVATAR_TASK/);
+  await assert.rejects(completedAvatarImage("unfinished", false, { ...api, request: async () => ({ status: "running" }) }), /AVATAR_RESULT_NOT_READY/);
 });

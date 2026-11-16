@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+16 November avatar resolution/map density changes preserve existing preview
+surfaces, 48px marker slots, 46px contained figure height, ground anchors, map
+controls and typography. Full processed-resolution images are private previews;
+map assets use bounded light/detail variants. Home culls hidden/overlapping figures
+and broad-zoom clutter without adding a label or cluster/count badge; journey
+markers remain. See [rendering policy](MAP_RENDERING.md). No new visual tokens.
+
 16 November avatar completion keeps the existing Submitted photo / Generated
 avatar figures and Ready status in Admin, with no success notification badge.
 User Profile retains automatic visible polling, regular ready copy and the saved

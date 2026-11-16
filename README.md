@@ -10,11 +10,16 @@ display preferences remain. Implementation `a3986d5` is live after a guarded API
 restart and exact-commit frontend verification. See
 [admin workflow](docs/AVATAR_ADMIN.md) for checks and remaining test boundaries.
 
-Avatar preview quality diagnosis: the current Admin/Profile preview uses the
-128×256 map sprite. A private comparison reproduced the observed loss at that
-resize, after background removal preserved the generated face pixels. A larger
-private preview alongside the map sprite is proposed, not implemented by this
-notification change. See [diagnosis](docs/AVATAR_ADMIN.md#preview-resolution-diagnosis).
+16 November preview and map rendering: approved avatars retain a lossless private
+preview separately from 128×256 light / 256×512 detail map renditions. Home uses
+viewport/overlap filtering, at most 50 figures (25 after repeated slow interaction
+frames), light assets at zoom 8–11 and detail from 12; figures hide below 8.
+Journey maps keep essential trip markers at every zoom. Existing coarse locations,
+opt-in and access rules remain. The 120-candidate Home feed stays sampled, not a
+complete worldwide browse. Existing completed previews can be recovered without
+a new paid task. See [resolution, research, limits and recovery](docs/MAP_RENDERING.md).
+Activation and measured results are recorded separately; a push alone is not a
+verified API/frontend deployment.
 
 16 November avatar allowance: only photos that pass the check count toward three
 per account in a rolling 24 hours, measured from the recorded pass. Automatic and

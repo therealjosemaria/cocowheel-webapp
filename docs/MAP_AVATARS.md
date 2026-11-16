@@ -1,5 +1,10 @@
 # Assigned map avatars — 16 November 2026
 
+Later [preview/map rendering](MAP_RENDERING.md) supersedes the single-sprite
+preview and all-candidates-on-screen Home rendering described below: private previews
+retain processed resolution; map variants stay bounded and opt-in. The historical
+release/activation evidence below is preserved.
+
 The [Seedream release](SEEDREAM_AVATARS_2026-11-16.md) supersedes P2 for new
 generations and records the explicitly authorised owner-assignment replacement.
 The single-line Personal avatar choice and shared display/privacy contract remain

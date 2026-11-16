@@ -15,12 +15,12 @@ export function adminAvatarNotices(db: Db): AdminAvatarNotice {
 export function adminAvatarJobs(db: Db, page = 0, focus?: string): AdminAvatarJobs {
   page = Math.floor(Math.max(0, Math.min(Number(page) || 0, 100000)));
   const jobs = db.prepare(`SELECT j.id,j.status,j.reason,j.rejection_note,j.hold_reason,j.created_at,j.updated_at,j.generation_approved_at,j.task_id,j.checked_at,j.check_duration_ms,
-    (j.photo IS NOT NULL) AS has_photo,(j.render IS NOT NULL) AS has_render,a.unikey,p.username,
+    (j.photo IS NOT NULL) AS has_photo,(j.render IS NOT NULL) AS has_render,length(j.render) AS render_bytes,a.unikey,p.username,
     (SELECT event_key FROM avatar_admin_events e WHERE e.job_id=j.id AND reviewed_at IS NULL ORDER BY created_at DESC,event_key DESC LIMIT 1) AS notification_key
     FROM avatar_jobs j JOIN university_accounts a ON a.principal_id=j.principal_id
     LEFT JOIN account_profiles p ON p.principal_id=j.principal_id
     ORDER BY (j.id=?) DESC, (j.status IN ('QUEUED','CHECKING','APPROVED','SUBMITTING','GENERATING','REVIEW_REQUIRED')) DESC,j.created_at DESC,j.id DESC LIMIT 25 OFFSET ?`)
-    .all(focus ?? "", page * 25) as (AvatarJobRow & { unikey: string; username: string | null; notification_key: string | null; has_photo: number; has_render: number })[];
+    .all(focus ?? "", page * 25) as (AvatarJobRow & { unikey: string; username: string | null; notification_key: string | null; has_photo: number; has_render: number; render_bytes: number | null })[];
   const worker = db.prepare("SELECT seen_at FROM avatar_worker_state WHERE id=1").get() as { seen_at: number } | undefined;
   return {
     jobs: jobs.map(job => ({ id: job.id, username: job.username ?? job.unikey,
@@ -32,7 +32,7 @@ export function adminAvatarJobs(db: Db, page = 0, focus?: string): AdminAvatarJo
       checkedAt: job.checked_at != null ? new Date(job.checked_at).toISOString() : null, checkDurationMs: job.check_duration_ms,
       taskId: job.task_id, notificationKey: job.notification_key,
       photoUrl: job.has_photo ? `/api/admin/avatar-jobs/${job.id}/photo` : null,
-      renderUrl: job.has_render ? `/api/admin/avatar-jobs/${job.id}/render` : null,
+      renderUrl: job.has_render ? `/api/admin/avatar-jobs/${job.id}/render?v=${job.render_bytes}` : null,
     })),
     page, total: (db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs").get() as { n: number }).n,
     workerSeenAt: worker ? new Date(worker.seen_at).toISOString() : null, model: AVATAR_MODEL, creditsPerAvatar: AVATAR_CREDITS,

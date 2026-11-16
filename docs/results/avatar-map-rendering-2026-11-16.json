@@ -1,0 +1,198 @@
+{
+  "testedAt": "2026-11-16T12:11:22.054799+00:00",
+  "sourceBaseRevision": "6f140b30fea889d7d693616ebec7a89cfa82b416",
+  "sourceState": "Tested working tree; implementation revision is recorded after commit/deployment.",
+  "sourceFileSha256": {
+    "components/journey-map.tsx": "042260d0906546d2e1671fe288e03f32c68256ddc510be7c2ff4dc2edbbf1177",
+    "components/map-surface.tsx": "5e906048ccd168b4122b30b1f2d316a5e69ff46bb596b84f7a67ad5201de3964",
+    "components/presence-map.tsx": "3944f4d9aa9aa1605c1a974388872ae07970cc17a520cadb4c669b83c07fb24d",
+    "lib/map-avatar.ts": "88fa98e5a28d1ac6db09616db98b326aba328a44fe3cfba047fd267448daef69",
+    "lib/map-role-icon.ts": "71fb425ed9feacb2f5cef7a476b824e799432ddbbece2f05628cbc3cece86c41",
+    "scripts/assign-map-avatar.mts": "02b4a76a2d560e8dc131ffcd6937b45c725d4b9275931542ced1042fc86a2a98",
+    "scripts/check-map-avatars.py": "86676e1167d280fda420954eb013d16d5c3ff192bc85db2e117fcfa1784f1dfb",
+    "scripts/serve-map-avatar-fixture.mts": "c6560d0ecdc524bf067ac2af37e2ff051dc577bca9e6915be17b05df5dbcd6ca",
+    "server/avatar-admin.ts": "d417ae0ebf4badc7a4237bc59eef4bdb3347dc2db779472fc55ae0fbda1355cd",
+    "server/avatar-generation.ts": "007659b6e0b49b3b5fecdba1d03c7035b117a73ab93215c71b049d25ab8e4153",
+    "server/avatar-jobs.ts": "e8e177fc5cd2c9b871f341ad5d71080af07c6d023aad17e7c3603281414c9d6a",
+    "server/index.ts": "8fc2c45e3ba8383712b67acf5c39ea333cb191a5d27c46186cc0f810001aff46",
+    "server/map-avatars.ts": "62f53eab52425f9c09ad51a6de9b2e67e01e1a4e4c1a01bc913359be21cdb272",
+    "tests/avatar-seedream.test.ts": "74eb978be975c86288b155c617ae5aedc182ced34caefa17114da48179b223bf",
+    "tests/map-avatars.test.ts": "5b77309c389160d9bd84f555ffff34ac92d832ba2ed7ec916e4a9f33dd44c381",
+    "components/use-map-marker-budget.ts": "6eee16930784553f7e740a32d0b45069cc2decd8bfa23bfd1abd90acb2340a26",
+    "lib/map-marker-budget.ts": "621459cd3fa0ea11f99597c78552857752d9d07dd85fdad0d49ff4cc6e9ab398",
+    "scripts/benchmark-map-marker-budget.mts": "14d7bf45ca724c7ccf74ed42a53f43d2e1edb803eed3786c94686f2d26fbab03",
+    "scripts/check-map-avatar-quality.py": "ba042b96aab64b05774b159c0c95eb445db9737d0bfd34f78a1d6b8557c20a09",
+    "scripts/restore-avatar-preview.mts": "1d613a95975aaaaa8bbe3c811cf80cb7377879842433e24507ede011b8479c8b",
+    "server/avatar-preview-recovery.ts": "5ee02a3c690e35a75ddb873c4b10e46edd6596843bd34a8bef22691d4ae622a1",
+    "tests/map-marker-budget.test.ts": "bd33d55cc3008d392b69c67d7122b870cfaba6de7426170bf54ff6689d46cb3d"
+  },
+  "isolation": {
+    "accounts": "synthetic only",
+    "database": "in-memory/temporary SQLite",
+    "services": "loopback fixture, optimized Next frontend",
+    "sourcePhoto": "existing shipped mannequin; no real photos in browser tests",
+    "paidGenerationCalls": 0,
+    "realEmail": false,
+    "productionStress": false
+  },
+  "checks": {
+    "regressions": {
+      "passed": 315,
+      "failed": 0
+    },
+    "security": {
+      "passed": 52,
+      "total": 52
+    },
+    "lint": "pass",
+    "optimizedBuild": "pass",
+    "browser": [
+      {
+        "width": 320,
+        "dpr": 3,
+        "candidates": 120,
+        "cityVisible": 13,
+        "maxVisible": 50,
+        "detailRequested": true,
+        "broadViewVisible": 0,
+        "uniqueMapImagesRequested": 27,
+        "idleFrameP95Ms": 16.7,
+        "interactionFrameP95Ms": 16.7,
+        "errors": []
+      },
+      {
+        "width": 390,
+        "dpr": 3,
+        "candidates": 120,
+        "cityVisible": 17,
+        "maxVisible": 50,
+        "detailRequested": true,
+        "broadViewVisible": 0,
+        "uniqueMapImagesRequested": 35,
+        "idleFrameP95Ms": 16.7,
+        "interactionFrameP95Ms": 16.7,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "dpr": 2,
+        "candidates": 120,
+        "cityVisible": 18,
+        "maxVisible": 50,
+        "detailRequested": true,
+        "broadViewVisible": 0,
+        "uniqueMapImagesRequested": 41,
+        "idleFrameP95Ms": 16.7,
+        "interactionFrameP95Ms": 16.8,
+        "errors": []
+      }
+    ],
+    "selectorBenchmark": {
+      "kind": "selector-only",
+      "results": [
+        {
+          "population": 1000,
+          "viewport": [
+            390,
+            200
+          ],
+          "repetitions": 120,
+          "visible": 7,
+          "p95Ms": 0.175,
+          "maxMs": 0.917
+        },
+        {
+          "population": 1000,
+          "viewport": [
+            1440,
+            200
+          ],
+          "repetitions": 120,
+          "visible": 35,
+          "p95Ms": 0.246,
+          "maxMs": 0.449
+        },
+        {
+          "population": 10000,
+          "viewport": [
+            390,
+            200
+          ],
+          "repetitions": 120,
+          "visible": 19,
+          "p95Ms": 0.462,
+          "maxMs": 13.558
+        },
+        {
+          "population": 10000,
+          "viewport": [
+            1440,
+            200
+          ],
+          "repetitions": 120,
+          "visible": 50,
+          "p95Ms": 0.338,
+          "maxMs": 0.577
+        }
+      ]
+    }
+  },
+  "browserFlows": [
+    "320/390/1440 Profile full-size preview, save/cancel, owner isolation and cross-tab refresh",
+    "Home light and journey detail image dimensions through real isolated API",
+    "120 candidate unique URLs, DPR3 phone/DPR2 desktop, broad zoom hidden, pan, bounded rendered figures",
+    "failed image uses default and recovers on later map interaction",
+    "320/390/1440 Admin source/result, manual approval, no Admin success alert, visible user automatic update and saved opt-out",
+    "320/390/844/1440 Home three-per-area, touch/pinch/mouse/keyboard zoom, refresh, empty/failure hiding, visibility and OTP gates"
+  ],
+  "visualReview": "Whole phone and desktop Home city/close views, Profile preview/edit, requested journey and driver map, Admin source/generated comparison. Existing hierarchy, slots, colours, typography, controls and spacing retained; edge-clipped figures culled.",
+  "retainedBaselines": [
+    {
+      "finding": "AVATAR-PREVIEW-001",
+      "evidence": "avatar-completion-2026-11-16.json",
+      "cause": "The 128x256 sprite was reused for private previews.",
+      "remediation": "Separate lossless processed-resolution private preview and 128x256/256x512 map variants.",
+      "retest": "Dimensions/pixel preservation, private/public HTTP permissions, revoke/version migration, isolated real generation completion and browser source/result previews pass; live recovery recorded separately."
+    },
+    {
+      "finding": "MAP-DENSITY-001",
+      "cause": "Initial 42px exclusion rejected the existing three-slot layout, returning one instead of three.",
+      "remediation": "40px distance plus area-dependent occupancy and edge padding; keep the approved slots.",
+      "retest": "Existing four-width Home three-figure/pan/refresh suite passes, selector bounds pass."
+    },
+    {
+      "finding": "HARNESS-SELECTOR-001",
+      "cause": "Old Profile summary locator matched nested Upload history as well.",
+      "remediation": "Select direct child summary.",
+      "retest": "Both-role map/Profile browser checks pass at all three widths."
+    },
+    {
+      "finding": "HARNESS-BUILD-001",
+      "cause": "Sandbox blocked Turbopack internal listener and isolated HTTP sockets.",
+      "remediation": "Run only isolated tests/build with approved loopback permissions.",
+      "retest": "315 regressions and optimized build pass."
+    },
+    {
+      "finding": "HARNESS-BUILD-OVERLAP-001",
+      "cause": "Rebuilding .next while an isolated browser run still used it invalidated a later Profile screen.",
+      "remediation": "Stop the run, complete build, then start fresh fixtures against stable assets.",
+      "retest": "Full serial browser wrapper passes."
+    }
+  ],
+  "reproduction": [
+    "COCOWHEELS_DB_PATH=/tmp/gumwheel-quality-unused.sqlite npm test",
+    "npm run lint",
+    "npm run test:security",
+    "node --import tsx scripts/benchmark-map-marker-budget.mts",
+    "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build",
+    "See MAP_RENDERING.md for fixture/frontend and four browser commands."
+  ],
+  "limitations": [
+    "10,000-position benchmark measures JavaScript selection, not rendering/downloading 10,000 photos.",
+    "Home feed remains a 120-candidate coordinate-ordered sample; no viewport-based server pagination added.",
+    "50 is a configurable ceiling; map area, collision and slowdown rules can show fewer.",
+    "Slowdown detector tested with synthetic frame intervals; not a calibrated GPU/memory monitor.",
+    "Physical iOS/Android GPUs, long-running production concurrency and authenticated owner browser are unverified."
+  ],
+  "deployment": "Not yet verified; recorded after guarded activation and exact-SHA frontend checks."
+}

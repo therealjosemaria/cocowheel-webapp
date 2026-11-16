@@ -7,7 +7,7 @@ import { runAvatarGeneration } from "../server/avatar-generation";
 import { readFile } from "node:fs/promises";
 import { initializeCoreSchema, createGuestSession, findSession, publishRide, requestRide } from "../server/core";
 import { postDemand } from "../server/rider-demands";
-import { assignMapAvatar, prepareAvatarSprite } from "../server/map-avatars";
+import { assignMapAvatar, prepareAvatarRenditions } from "../server/map-avatars";
 import { createApiServer } from "../server/index";
 
 if (process.env.GUMWHEEL_AVATAR_FIXTURE !== "1") throw new Error("Local fixture requires GUMWHEEL_AVATAR_FIXTURE=1");
@@ -31,8 +31,9 @@ function account(name: string, token: string) {
 const owner = account("tester01", "synthetic-avatar-owner"), driver = account("driver01", "synthetic-avatar-driver");
 account("jmos0905", "synthetic-avatar-admin");
 const input = process.env.GUMWHEEL_AVATAR_RENDER || "data/tripo-comparison/P2-20260801.png";
-const render = await prepareAvatarSprite(await readFile(input));
-assignMapAvatar(db, owner.session.id, render, true);
+const assets = await prepareAvatarRenditions(await readFile(input));
+const render = await readFile(input);
+assignMapAvatar(db, owner.session.id, assets.sprite, true, assets);
 const origin = { latitude: -33.8923, longitude: 151.1981, label: "Redfern Station" };
 const destination = { latitude: -33.8886, longitude: 151.1872, label: "University of Sydney" };
 const posted = postDemand(db, owner.token, { origin, destination, date: "any", time: "" });
