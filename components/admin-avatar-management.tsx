@@ -42,33 +42,34 @@ function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: Admi
     </div>}
   </article>;
 }
-function TripoBalance() {
+function TripoBalance({ jobs }: { jobs: AdminAvatarJobs }) {
   const [balance, setBalance] = useState<AdminAvatarBalance | null>(null);
+  const [details, setDetails] = useState<Pick<AdminAvatarJobs, "model" | "creditsPerAvatar" | "workerSeenAt"> | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [revision, setRevision] = useState(0);
-  useEffect(() => {
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => () => request.current?.abort(), []);
+  const load = async () => {
+    if (request.current) return;
     const controller = new AbortController();
-    let running = false;
-    const load = async () => {
-      if (document.hidden || running) return;
-      running = true; setBusy(true);
-      try {
-        const value = await adminApi<AdminAvatarBalance>("avatar-jobs/balance", undefined, controller.signal);
-        if (!controller.signal.aborted) { setBalance(value); setUnavailable(value.availableCredits === null); }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          if (error instanceof ApiError && [401, 403].includes(error.status)) window.location.replace("/admin/avatar-management");
-          setBalance(null); setUnavailable(true);
-        }
-      } finally { running = false; if (!controller.signal.aborted) setBusy(false); }
-    };
-    void load();
-    const timer = setInterval(() => void load(), 60_000);
-    document.addEventListener("visibilitychange", load); window.addEventListener("focus", load);
-    return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", load); window.removeEventListener("focus", load); };
-  }, [revision]);
+    request.current = controller; setBusy(true);
+    // Freeze the existing local metadata on this explicit click. Submission polling
+    // must not silently update this panel or cause another provider request.
+    setDetails({ model: jobs.model, creditsPerAvatar: jobs.creditsPerAvatar, workerSeenAt: jobs.workerSeenAt });
+    try {
+      const value = await adminApi<AdminAvatarBalance>("avatar-jobs/balance", undefined, controller.signal);
+      if (!controller.signal.aborted) { setBalance(value); setUnavailable(value.availableCredits === null); }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        if (error instanceof ApiError && [401, 403].includes(error.status)) window.location.replace("/admin/avatar-management");
+        setBalance(null); setUnavailable(true);
+      }
+    } finally { request.current = null; if (!controller.signal.aborted) setBusy(false); }
+  };
   return <section aria-label="Tripo balance">
+    {details && <>
+    <p className="admin-muted">{details.model} · {details.creditsPerAvatar} credits per avatar.<br />
+      Photo checker: {details.workerSeenAt ? `last connected ${new Date(details.workerSeenAt).toLocaleString()}` : "not connected yet"}.</p>
     <dl className="admin-fields">
       <div><dt>Tripo API balance</dt><dd>{balance?.availableCredits != null
         ? `${balance.availableCredits.toLocaleString()} credits (US$${(balance.availableCredits / 100).toFixed(2)})` : unavailable ? "Unavailable" : "Checking…"}</dd></div>
@@ -76,8 +77,9 @@ function TripoBalance() {
       {!!balance?.frozenCredits && <div><dt>Reserved for tasks</dt><dd>{balance.frozenCredits.toLocaleString()} credits</dd></div>}
     </dl>
     {unavailable && <p className="admin-muted" role="status">Couldn’t check the balance. Refresh or open Tripo to check it.</p>}
+    </>}
     <div className="ride-action-buttons">
-      <button type="button" className="secondary" onClick={() => { if (!busy) setRevision(value => value + 1); }}>{busy ? "Checking…" : "Refresh balance"}</button>
+      <button type="button" className="secondary" aria-busy={busy} onClick={() => void load()}>{busy ? "Checking…" : details ? "Refresh balance" : "Check balance"}</button>
       <a className="secondary" href={TRIPO_TOP_UP_URL} target="_blank" rel="noopener noreferrer">Top up Tripo</a>
     </div>
   </section>;
@@ -161,9 +163,7 @@ function AvatarManagementList({ focus }: { focus: string }) {
     <p className="admin-muted">Photo checks run automatically. Generation starts only after your approval.</p>
     {(error || actionError) && <p role="alert" className="admin-message">{actionError || error} <button type="button" className="text-button" onClick={() => { setActionError(""); setRevision(value => value + 1); }}>Refresh</button></p>}
     {!data ? !error && <p className="admin-muted">Loading…</p> : <>
-      <p className="admin-muted">{data.model} · {data.creditsPerAvatar} credits per avatar.<br />
-        Photo checker: {data.workerSeenAt ? `last connected ${new Date(data.workerSeenAt).toLocaleString()}` : "not connected yet"}.</p>
-      <TripoBalance />
+      <TripoBalance jobs={data} />
       <div className="admin-records">{data.jobs.map(job => <Submission key={job.id} job={job} act={(value, action) => { if (!submitting.current) { setReason(""); setReasonError(""); setPrompt({ job: value, action }); } }} review={review} />)}</div>
       {data.total === 0 && <p className="admin-muted">No avatar photos submitted yet.</p>}
       {data.total > 25 && <nav className="admin-pagination" aria-label="Avatar pages">

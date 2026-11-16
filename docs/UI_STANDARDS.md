@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+16 November manual Admin checks: initially show only Check balance and Top up
+Tripo using the existing secondary action group. Show configured cost/model,
+checker timestamp and balance fields only after the explicit click. Keep them
+unchanged until Refresh balance; no mount/focus/timer fetch or changing timestamp
+while reviewing submissions. Reuse the current fields, regular helper copy and
+error recovery, with the same mobile/desktop spacing and typography.
+
 16 November avatar quality review reuses the admin record/action layout and
 sentence-only ConfirmationPrompt. Reject photo requests one labelled Reason
 textarea using existing field tokens; Go back precedes the destructive action.

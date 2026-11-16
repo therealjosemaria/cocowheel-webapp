@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+16 November manual Admin checks reuse the same balance fields, small regular
+copy and shared secondary action group. Hide unchecked metrics instead of adding
+placeholder text, badges or a new disclosure. No new visual tokens.
+
 16 November photo rejection adds no visual tokens: its textarea shares field
 padding/border/type with a 96px minimum height and vertical resize. Shared
 ride-action secondary link styling matches button dimensions and text treatment.

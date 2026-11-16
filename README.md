@@ -1,5 +1,12 @@
 # GUMWHEEL
 
+16 November Admin usage refinement: balance, configured generation cost/model and
+photo-checker connection details stay hidden until Check balance is pressed.
+They remain a snapshot until another manual refresh; page entry, focus and timers
+never request the dashboard balance. Submission notices and the generator's
+necessary pre-submission funds check retain their existing behaviour. See
+[manual checks](docs/AVATAR_ADMIN.md#manual-dashboard-checks).
+
 16 November avatar quality review: failed Mac checks still notify the submitter
 automatically. Before paid submission, Admin can reject a passing photo with a
 required reason; this revokes generation permission and offers the user another

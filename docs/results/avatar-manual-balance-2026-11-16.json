@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-16",
+  "recordedAt": "2026-11-16T05:33:34.219038+00:00",
+  "sourceBaseline": "e9d71776cc631f2b99cf15738576cad3e9d9f965",
+  "sourceSha256": {
+    "components/admin-avatar-management.tsx": "be1bc6583d059779fb014152b6be444097ef86cc54a68c74b2fcc573f10e653b",
+    "scripts/check-avatar-manual-balance.py": "0ba15b5dce3ad299a6558651ba9038c3055cf8f69aa1ee0233be6cfd048e6a93",
+    "scripts/check-avatar-rejection.py": "fb0218bdd1a44a2f7ae52211f56293c85c7a713838fb45ad05a1771a3fc5feab"
+  },
+  "scope": "Frontend dashboard checks only; no API/schema/settings/provider changes or API restart. No production test submissions, paid generation, real Tripo balance calls or emails.",
+  "isolation": "Actual local API with in-memory SQLite and synthetic accounts; fake Tripo balance; loopback-only browser traffic. Virtual browser clock advances beyond former 60-second cadence.",
+  "commands": [
+    "GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts",
+    "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build",
+    "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3491",
+    "/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-manual-balance.py",
+    "/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-rejection.py",
+    "npm run lint"
+  ],
+  "checks": {
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "manualBalance": "Passed in development and optimized build; initial mount, 125 seconds, focus/visibility and reload make zero balance requests. Explicit click makes one request; two overlapping clicks coalesce. Displayed cost/checker/balance remain frozen despite subsequent submission-list polling. Explicit refresh updates and failure retains recovery.",
+    "reviewRegression": "Optimized real isolated API browser flow passes at all three widths: required rejection reason, user Profile notice and acknowledgment/re-upload, maximum-length feedback, balance recovery, Privacy and no overflow/errors.",
+    "visualReview": "Whole Admin initial/checked/unavailable and populated review screens on mobile/desktop. Existing secondary action sizing, caption/body hierarchy, regular copy, alignment and spacing retained.",
+    "lint": "Passed",
+    "productionBuild": "Passed",
+    "backendRegressionPolicy": "No backend tests repeated: no server/API/schema change. Prior backend suites remain documented under their original source revision."
+  },
+  "failedBaselines": [
+    {
+      "finding": "First dev review regression stopped after its fixture shut down; frontend proxy returned 500/ECONNREFUSED during result fetch.",
+      "resolution": "Repeated the complete flow against the optimized build with both synthetic services owned by one test lifecycle; all three widths pass. No product-code change needed for the fixture shutdown."
+    }
+  ],
+  "unchanged": "Submission notifications/list continue their existing visible 10-second/focus refresh. Approved generator work still performs its funding safety checks. Server balance cache remains 30 seconds and may reuse a recent checked timestamp.",
+  "unverified": [
+    "Authenticated production owner walkthrough",
+    "Physical Safari"
+  ],
+  "frontendDeployment": "Pending exact-commit production verification."
+}

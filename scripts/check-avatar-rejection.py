@@ -35,6 +35,8 @@ with sync_playwright() as p:
         card = page.locator('#avatar-'+job_id)
         expect(card.get_by_role('button', name='Approve generation', exact=True)).to_be_visible()
         balance = page.get_by_role('region', name='Tripo balance', exact=True)
+        expect(balance.get_by_text('Tripo API balance', exact=True)).to_have_count(0)
+        balance.get_by_role('button', name='Check balance', exact=True).click()
         expect(balance.get_by_text('1,000 credits (US$10.00)', exact=True)).to_be_visible()
         topup = balance.get_by_role('link', name='Top up Tripo', exact=True)
         expect(topup).to_have_attribute('href', 'https://developers.tripo3d.ai/en/pricing?action=topup&from=pricing_hero')

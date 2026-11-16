@@ -83,8 +83,8 @@ contains only availableCredits/frozenCredits/checkedAt, never credentials or raw
 provider errors. Successful and failed balance reads share an in-memory 30-second
 cache; concurrent reads coalesce. Provider timeout is eight seconds. Failure shows
 Unavailable with Refresh / Top up controls, without presenting a stale amount as
-current or preventing submission review. The visible page loads/checks on focus
-and every 60 seconds; Refresh balance uses the same cached endpoint. This is a
+current or preventing submission review. The former page-entry/focus/60-second
+balance refresh is superseded by the manual controls below. This is a
 timestamped snapshot, not a reservation or a guarantee the next job is funded.
 No balance request uploads photos or starts generation. Owner authorization is
 checked both before and after the awaited lookup; responses are private/no-store.
@@ -95,6 +95,46 @@ official references: [billing API and credit units](https://developers.tripo3d.a
 [API pricing / Buy credits](https://developers.tripo3d.ai/en/pricing). The documented
 December 2026 console display change does not change API credit units. The API
 account and Tripo Studio have separate billing; this link targets API funding.
+
+## Manual dashboard checks
+
+The later 16 November frontend refinement makes Check balance the only trigger
+for the dashboard's balance request. No request runs on mounting, login, returning
+to the tab, visibility changes, list updates, pagination or timers. Initial view
+contains Check balance and the existing Top up Tripo link, without placeholder
+metrics. The configured model/110-credit cost, checker's last connection and balance
+fields appear only after the owner's click. These are frozen snapshots: submission
+polling cannot change their displayed values. Refresh balance explicitly captures
+the latest locally received list metadata and requests balance again. The cost is
+server configuration, not a live Tripo pricing query. The heartbeat timestamp is
+the latest received observation, not a fresh probe of the Mac.
+
+Overlapping clicks share the in-progress request; unmount aborts it and prevents
+state updates. Lookup failures clear the displayed amount and retain Refresh /
+Top up recovery controls. Reloading/navigation resets the panel to unchecked;
+no balance or cost snapshot is persisted in cookies/storage. The existing private
+endpoint, eight-second timeout and 30-second server cache remain unchanged, so
+repeated clicks within that cache window may show the same checked timestamp.
+
+Avatar submission notices/list updates still use their existing local API cadence
+(ten seconds while visible, plus focus) and never contact Tripo's pricing/balance
+endpoint. They are separate from this manual panel. The background generator
+still verifies funds before an admin-approved paid submission and can recheck a
+funding hold on its existing backoff; disabling that spend guard is outside this
+dashboard-only change. No backend/schema/permissions/provider settings change,
+and no API restart is needed.
+
+Verification: `scripts/check-avatar-manual-balance.py` passes at 320/390/1440px
+against the optimized build, asserting zero automatic requests beyond the former
+refresh interval, one request for overlapping manual clicks, frozen metadata,
+failure recovery and no reload request. The existing rejection/Profile browser
+flow also passes at those widths; lint/build pass. Whole initial/checked/failure
+Admin screens and populated review screens were visually reviewed on phone and
+desktop. Synthetic services use no real Tripo/email credentials. No backend
+suite was rerun for this frontend-only change. See
+[commands, evidence and fixture failure/retest](results/avatar-manual-balance-2026-11-16.json).
+Authenticated production owner use and physical Safari remain unverified;
+deployment is recorded after the exact implementation reaches production.
 
 ## User-facing status
 
