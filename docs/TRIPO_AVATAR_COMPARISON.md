@@ -1,5 +1,11 @@
 # Private Tripo comparison
 
+The [Seedream production release](SEEDREAM_AVATARS_2026-11-16.md) supersedes
+the preview-only/no-assignment boundary below. Original trial artifacts and
+charges remain unchanged. The gallery now labels Seedream v5 as the selected
+generation model; P2 remains its original 3D reference. Opaque/alpha labels describe
+the original provider outputs, before the separate Pi background-removal stage.
+
 ## Seedream local cutout map preview — 16 November 2026
 
 The owner requested background removal from the existing Seedream v5 output and

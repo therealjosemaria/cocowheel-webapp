@@ -7,10 +7,14 @@ import sharp from "sharp";
 import { createGuestSession, initializeCoreSchema } from "../server/core";
 import { createApiServer } from "../server/index";
 import { AVATAR_DELAY_MS, AVATAR_LEASE_MS, AVATAR_PHOTO_TTL, avatarJobSummary, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, reviewAvatarEvent } from "../server/avatar-jobs";
-import { runAvatarGeneration, type AvatarProvider } from "../server/avatar-generation";
+import { runAvatarGeneration as generateAvatar, type AvatarProvider } from "../server/avatar-generation";
 import { actOnAdminAvatar } from "../server/avatar-admin";
 import { deliverAvatarReminder } from "../server/avatar-email";
 import { readMapAvatar } from "../server/map-avatars";
+
+// Fake image processing keeps provider/lifecycle tests independent of local model files.
+const background = { check: async () => {}, remove: async (image: Buffer) => image };
+const runAvatarGeneration = (db: Database.Database, api: AvatarProvider, now: number) => generateAvatar(db, api, now, background);
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 process.env.COCOWHEELS_AVATAR_UPLOADS = "1";
@@ -114,17 +118,17 @@ test("rejection supplies only a supported reason and never calls generation; rem
   } finally { db.close(); }
 });
 
-test("P2 generation waits for funds, preserves task IDs on interruption, deduplicates submits and assigns only the approved result", async () => {
+test("Seedream generation waits for funds, preserves task IDs on interruption, deduplicates submits and assigns only the approved result", async () => {
   const { db, owner } = fixture(), photo = await image(), output = await render();
-  let balance = 50, submits = 0, uploads = 0;
+  let balance = 4, submits = 0, uploads = 0;
   const api: AvatarProvider = { request: async (path, body) => {
     if (path === "/account/balance") return { balance };
     if (path === "/files") { uploads++; return { file_token: "file_test" }; }
-    if (path === "/generation/image-to-model") {
-      submits++; assert.equal((body as Record<string, unknown>).model, "P2-20260801");
+    if (path === "/generation/image-to-image") {
+      submits++; assert.equal((body as Record<string, unknown>).model, "seedream_v5");
       return { task_id: "test-task" };
     }
-    return { status: "success", output: { rendered_image_url: "https://tripo3d.ai/test.png" } };
+    return { status: "success", output: { generated_image_url: "https://tripo3d.ai/test.png" } };
   }, image: async () => output };
   try {
     const id = approved(db, owner.id, photo);

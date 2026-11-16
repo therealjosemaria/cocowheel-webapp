@@ -9,10 +9,14 @@ import { createApiServer } from "../server/index";
 import { AVATAR_DELAY_MS, AVATAR_PHOTO_TTL, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, reviewAvatarEvent } from "../server/avatar-jobs";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "../server/avatar-admin";
 import { deliverAdminAvatarReminder, deliverAvatarReminder } from "../server/avatar-email";
-import { readAdminAvatarBalance, runAvatarGeneration, type AvatarProvider } from "../server/avatar-generation";
+import { readAdminAvatarBalance, runAvatarGeneration as generateAvatar, type AvatarProvider } from "../server/avatar-generation";
 import { assignMapAvatar, readMapAvatar } from "../server/map-avatars";
 import { avatarJobMessage } from "../lib/avatar-job";
 import type { AlertSender } from "../server/usual-routes";
+
+// Fake image processing keeps provider/lifecycle tests independent of local model files.
+const background = { check: async () => {}, remove: async (image: Buffer) => image };
+const runAvatarGeneration = (db: Database.Database, api: AvatarProvider, now: number) => generateAvatar(db, api, now, background);
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 process.env.COCOWHEELS_AVATAR_UPLOADS = "1";
@@ -34,8 +38,8 @@ async function fixture() {
   const api: AvatarProvider = { request: async path => {
     if (path === "/account/balance") return { balance };
     if (path === "/files") return { file_token: "test-file" };
-    if (path === "/generation/image-to-model") { submits++; return { task_id: "test-task" }; }
-    return { status: "success", output: { rendered_image_url: "https://tripo3d.ai/test.png" } };
+    if (path === "/generation/image-to-image") { submits++; return { task_id: "test-task" }; }
+    return { status: "success", output: { generated_image_url: "https://tripo3d.ai/test.png" } };
   }, image: async () => sharp({ create: { width: 128, height: 256, channels: 4, background: { r: 20, g: 30, b: 40, alpha: 0.5 } } }).png().toBuffer() };
   return { db, owner, other, admin, id, photo, verify, api, submits: () => submits, balance: (value: number) => { balance = value; } };
 }
@@ -71,7 +75,7 @@ test("verified photos, including upgraded jobs, never generate without explicit 
 test("funding, cap and provider holds are per-job admin data, not user errors or emails", async () => {
   const f = await fixture();
   try {
-    f.verify(); actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 2); f.balance(50);
+    f.verify(); actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 2); f.balance(4);
     await runAvatarGeneration(f.db, f.api, now + 3);
     assert.equal(adminAvatarJobs(f.db).jobs[0].hold, "INSUFFICIENT_CREDITS");
     assert.equal(avatarJobSummary(f.db, f.owner.id)!.status, "APPROVED");
@@ -110,7 +114,7 @@ test("admin cancellation invalidates checking and late paid results without assi
     let release!: () => void, submitted = 0;
     const wait = new Promise<void>(resolve => { release = resolve; });
     const work = runAvatarGeneration(f.db, { ...f.api, request: async path => {
-      if (path !== "/generation/image-to-model") return f.api.request(path);
+      if (path !== "/generation/image-to-image") return f.api.request(path);
       submitted++; await wait; return { task_id: "cancelled-task" };
     } }, now + 6);
     while (!submitted) await new Promise(resolve => setImmediate(resolve));

@@ -52,7 +52,7 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/f'approval-{width}.png'),full_page=True)
         card.get_by_role('button',name='Approve generation',exact=True).click()
         dialog=page.get_by_role('dialog')
-        expect(dialog).to_contain_text('110 Tripo credits')
+        expect(dialog).to_contain_text('5 Tripo credits')
         page.screenshot(path=str(OUT/f'approve-dialog-{width}.png'),full_page=True)
         dialog.get_by_role('button',name='Go back',exact=True).click()
         expect(card.get_by_role('button',name='Approve generation',exact=True)).to_be_focused()

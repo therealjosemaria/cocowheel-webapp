@@ -2,8 +2,9 @@
 
 Supersedes automatic generation after photo checking in the initial avatar upload
 release. Baseline `e6d9898`. Implementation and verification/activation evidence
-are distinguished below. Avatar display, Personal avatar choice, P2-20260801
-parameters, journey permissions and trip history are unchanged.
+are distinguished below. [Seedream/local matting](SEEDREAM_AVATARS_2026-11-16.md)
+supersedes the original P2 parameters/cost. Avatar display, Personal avatar choice,
+manual approval, journey permissions and trip history remain unchanged.
 
 ## Flow and owner controls
 
@@ -27,7 +28,7 @@ The checker’s last successful heartbeat is shown as a timestamp, not a claim i
 currently online. The existing comparison stays separate at `/admin/avatars`.
 
 Approve generation uses the existing sentence-only confirmation with the expected
-110-credit P2 charge. Thereafter funding/capacity recovery can resume that one
+5-credit Seedream charge. Thereafter funding/capacity recovery can resume that one
 approved job without another click. Insufficient credits, disabled/daily cap,
 balance/upload failures and retrieval errors are persisted on that job for Admin.
 No automatic paid resubmission follows an ambiguous paid response. REVIEW_REQUIRED
@@ -46,6 +47,12 @@ Three unsuccessful runtime/lease attempts leave the photo queued with an admin-o
 CHECK_UNAVAILABLE hold. Admin can explicitly Retry photo check; the same photo/TTL
 is retained and the normal gates still apply. Valid photo rejection still tells
 the user which requirement was uncertain and offers another upload.
+
+Pi-local background failures add admin-only recovery: BACKGROUND_UNAVAILABLE
+stops before a paid request; check the local runtime/model. BACKGROUND_REVIEW
+stops a known task after generation, keeps its private generated preview and
+leaves the assigned avatar unchanged. Inspect the preview/task before cancelling
+for a new upload; no automatic second generation follows that failure.
 
 ## Manual photo rejection and Tripo balance
 
@@ -74,11 +81,12 @@ during balance/file upload from becoming a paid submission. Once SUBMITTING,
 GENERATING or REVIEW_REQUIRED, rejection returns AVATAR_REVIEW_TOO_LATE; Admin is
 directed to Cancel creation to stop local delivery. Cancellation cannot undo a
 provider charge. This is a photo-quality decision, not a retrospective refund or
-identity verification. Automated Mac thresholds and P2 parameters are unchanged.
+identity verification. Automated Mac thresholds are unchanged; the later Seedream release changes only
+generation/processing settings.
 
 The private balance section queries Tripo's read-only GET `/v3/account/balance`,
 showing available credits, US-dollar equivalent, optional reserved credits and the
-time checked. The configured P2 task still uses 110 credits. The API response
+time checked. The configured Seedream task uses 5 credits. The API response
 contains only availableCredits/frozenCredits/checkedAt, never credentials or raw
 provider errors. Successful and failed balance reads share an in-memory 30-second
 cache; concurrent reads coalesce. Provider timeout is eight seconds. Failure shows
@@ -102,7 +110,7 @@ The later 16 November frontend refinement makes Check balance the only trigger
 for the dashboard's balance request. No request runs on mounting, login, returning
 to the tab, visibility changes, list updates, pagination or timers. Initial view
 contains Check balance and the existing Top up Tripo link, without placeholder
-metrics. The configured model/110-credit cost, checker's last connection and balance
+metrics. The configured model/5-credit cost, checker's last connection and balance
 fields appear only after the owner's click. These are frozen snapshots: submission
 polling cannot change their displayed values. Refresh balance explicitly captures
 the latest locally received list metadata and requests balance again. The cost is

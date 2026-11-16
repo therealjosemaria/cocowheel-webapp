@@ -1,5 +1,16 @@
 # GUMWHEEL
 
+16 November Seedream release: new avatar jobs use Seedream v5 (5 Tripo credits)
+after the existing Mac photo check and separate owner-admin generation approval.
+Human segmentation and alpha matting run locally on the Pi in a bounded CPU
+process; no second image service receives the generated image. Runtime readiness
+is checked before spending, failures stay private in Admin, and legacy P2 tasks
+retain their original IDs/results and conservative cost accounting. The owner
+authorised replacing only their existing P2 assignment with the saved Seedream
+result. Activation/deployment evidence is recorded separately in
+[Seedream avatars](docs/SEEDREAM_AVATARS_2026-11-16.md); the preview-only boundaries
+below are historical and superseded by that release.
+
 16 November Seedream cutout preview: offline near-white background removal from
 the existing private Seedream result preserves all original RGB pixels. Local
 Home/rider/driver maps preview the transparent cutout at mobile/desktop widths,

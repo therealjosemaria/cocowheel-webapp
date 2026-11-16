@@ -1,0 +1,14 @@
+coloredlogs==15.0.1
+flatbuffers==25.12.19
+humanfriendly==10.0
+llvmlite==0.45.1
+mpmath==1.3.0
+numba==0.62.1
+numpy==2.3.5
+onnxruntime==1.23.2
+packaging==26.3
+pillow==12.0.0
+protobuf==7.36.2
+PyMatting==1.1.14
+scipy==1.16.3
+sympy==1.14.0

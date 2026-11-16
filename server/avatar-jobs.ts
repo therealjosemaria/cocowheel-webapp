@@ -8,9 +8,8 @@ import { assignMapAvatar } from "./map-avatars";
 export const AVATAR_PHOTO_TTL = 7 * 86400_000;
 export const AVATAR_LEASE_MS = 5 * 60_000;
 export const AVATAR_DELAY_MS = 5 * 60_000;
-export const AVATAR_MODEL = "P2-20260801";
-export const AVATAR_CREDITS = 110;
-export type AvatarJobRow = { id: string; principal_id: string; status: AvatarJobStatus; reason: string | null; rejection_note: string | null; photo: Buffer | null; photo_hash: string; lease_hash: string | null; lease_until: number | null; check_attempts: number; task_id: string | null; file_token: string | null; created_at: number; updated_at: number; next_at: number; submitted_at: number | null; generation_approved_at: number | null; generation_approved_by: string | null; hold_reason: string | null; render: Buffer | null; };
+export { AVATAR_MODEL, AVATAR_CREDITS } from "../lib/avatar-generation";
+export type AvatarJobRow = { id: string; principal_id: string; status: AvatarJobStatus; reason: string | null; rejection_note: string | null; photo: Buffer | null; photo_hash: string; lease_hash: string | null; lease_until: number | null; check_attempts: number; task_id: string | null; file_token: string | null; created_at: number; updated_at: number; next_at: number; submitted_at: number | null; generation_approved_at: number | null; generation_approved_by: string | null; generation_model: string | null; generation_credits: number | null; hold_reason: string | null; render: Buffer | null; };
 export function initializeAvatarJobs(db: Db) {
   db.exec(`CREATE TABLE IF NOT EXISTS avatar_jobs (
     id TEXT PRIMARY KEY, principal_id TEXT NOT NULL REFERENCES guest_sessions(id),
@@ -31,7 +30,7 @@ export function initializeAvatarJobs(db: Db) {
     CREATE TABLE IF NOT EXISTS avatar_worker_state (id INTEGER PRIMARY KEY CHECK(id=1), seen_at INTEGER NOT NULL);`);
   // Existing approved jobs deliberately receive no generation approval on upgrade.
   const columns = new Set((db.prepare("PRAGMA table_info(avatar_jobs)").all() as { name: string }[]).map(row => row.name));
-  for (const [name, type] of [["generation_approved_at", "INTEGER"], ["generation_approved_by", "TEXT"], ["hold_reason", "TEXT"], ["render", "BLOB"], ["rejection_note", "TEXT"]])
+  for (const [name, type] of [["generation_approved_at", "INTEGER"], ["generation_approved_by", "TEXT"], ["hold_reason", "TEXT"], ["render", "BLOB"], ["rejection_note", "TEXT"], ["generation_model", "TEXT"], ["generation_credits", "INTEGER"]])
     if (!columns.has(name)) db.exec(`ALTER TABLE avatar_jobs ADD COLUMN ${name} ${type}`);
   db.exec(`CREATE TABLE IF NOT EXISTS avatar_admin_events (
     event_key TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES avatar_jobs(id) ON DELETE CASCADE,

@@ -9,6 +9,7 @@ import { adminAvatarIssues, adminAvatarStatus, TRIPO_TOP_UP_URL, type AdminAvata
 import { avatarJobActive, avatarRejections, avatarReviewReason, AVATAR_REVIEW_REASON_LIMIT, AVATAR_REVIEW_REASON_ERROR } from "@/lib/avatar-job";
 import { useVisibleReview } from "@/lib/use-visible-review";
 import ConfirmationPrompt from "./confirmation-prompt";
+import { AVATAR_CREDITS } from "@/lib/avatar-generation";
 
 function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: AdminAvatarJob, action: string) => void; review: (key: string) => void }) {
   const status = useRef<HTMLParagraphElement>(null);
@@ -173,7 +174,7 @@ function AvatarManagementList({ focus }: { focus: string }) {
       </nav>}
     </>}
     {prompt && <ConfirmationPrompt busy={busy} close={() => { if (!submitting.current) setPrompt(null); }} confirm={() => void confirm()}
-      label={prompt.action === "approve" ? `Approve this avatar’s generation with ${data?.creditsPerAvatar ?? 110} Tripo credits?`
+      label={prompt.action === "approve" ? `Approve this avatar’s generation with ${data?.creditsPerAvatar ?? AVATAR_CREDITS} Tripo credits?`
         : prompt.action === "reject" ? "Reject this photo? Your reason will be shown to the user."
         : prompt.action === "retry-check" ? "Queue this photo for another requirements check?"
         : prompt.job.taskId || prompt.job.status === "SUBMITTING" || prompt.job.status === "REVIEW_REQUIRED"

@@ -21,7 +21,7 @@ with sync_playwright() as p:
             expect(images.nth(i)).to_be_visible()
             images.nth(i).scroll_into_view_if_needed()
             page.wait_for_function('(image)=>image.complete && image.naturalWidth>0',arg=images.nth(i).element_handle())
-        expect(page.get_by_role('heading',name='P2 · current avatar',exact=True)).to_be_visible()
+        expect(page.get_by_role('heading',name='Seedream v5 · selected model',exact=True)).to_be_visible()
         expect(page.locator('.tripo-image-grid').get_by_text('Transparency present',exact=True)).to_be_visible()
         expect(page.locator('.tripo-image-grid').get_by_text('Opaque background',exact=True)).to_be_visible()
         for name,charge in [('Sunburst','$0.10'),('Seedream v5','$0.05')]:

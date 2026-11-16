@@ -50,13 +50,13 @@ const controls = createServer(async (request, response) => {
     db.prepare("DELETE FROM avatar_jobs WHERE principal_id=?").run(driver.session.id);
     db.prepare("DELETE FROM account_map_avatars WHERE principal_id=?").run(driver.session.id);
   } else if (request.url === "/credits-low") {
-    fixtureBalance = 50;
+    fixtureBalance = 4;
   } else if (request.url === "/credits-ready") {
     fixtureBalance = 1000;
   } else if (request.url === "/generate") {
     // Skip synthetic backoff without creating future-dated notification events.
     db.prepare("UPDATE avatar_jobs SET next_at=0 WHERE status IN ('APPROVED','GENERATING')").run();
-    await runAvatarGeneration(db, { request: async path => path === "/account/balance" ? { balance: fixtureBalance } : path === "/files" ? { file_token: "file_fixture" } : path.startsWith("/tasks/") ? { status: "success", output: { rendered_image_url: "https://tripo3d.ai/fixture.png" } } : { task_id: "fixture-task-"+Date.now() }, image: async () => render });
+    await runAvatarGeneration(db, { request: async path => path === "/account/balance" ? { balance: fixtureBalance } : path === "/files" ? { file_token: "file_fixture" } : path.startsWith("/tasks/") ? { status: "success", output: { generated_image_url: "https://tripo3d.ai/fixture.png" } } : { task_id: "fixture-task-"+Date.now() }, image: async () => render }, Date.now(), { check: async () => {}, remove: async image => image });
   } else { response.writeHead(404); response.end(); return; }
   response.writeHead(200, { "Content-Type": "application/json" }); response.end('{"ok":true}');
 });

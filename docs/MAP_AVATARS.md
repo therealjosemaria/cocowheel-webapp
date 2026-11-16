@@ -1,5 +1,10 @@
 # Assigned map avatars — 16 November 2026
 
+The [Seedream release](SEEDREAM_AVATARS_2026-11-16.md) supersedes P2 for new
+generations and records the explicitly authorised owner-assignment replacement.
+The single-line Personal avatar choice and shared display/privacy contract remain
+unchanged; earlier P2 assignment/preview evidence below is historical.
+
 Offline Seedream preview: a local alpha-only cutout from the existing result was
 rendered through the same sprite preparation and Home/JourneyMap paths using
 synthetic in-memory data. This does not change the live P2 assignment or generator.

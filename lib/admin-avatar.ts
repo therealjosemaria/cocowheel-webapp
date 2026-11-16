@@ -33,5 +33,7 @@ export const adminAvatarIssues: Record<string, string> = {
   PROVIDER_REVIEW: "Generation hasn’t completed. Check this task in Tripo before cancelling.",
   PROVIDER_FAILED: "Tripo could not complete this task. Cancel it before requesting a new photo.",
   RESULT_UNAVAILABLE: "Couldn’t retrieve a usable avatar. This task will be checked again without generating another.",
+  BACKGROUND_UNAVAILABLE: "Background removal is unavailable on the Pi. Check its local runtime and model; no generation has been submitted.",
+  BACKGROUND_REVIEW: "Background removal needs review. Inspect the generated image, then cancel this creation if a new photo is needed.",
   CHECK_UNAVAILABLE: "Photo checking failed three times. Retry the photo check or cancel this submission.",
 };

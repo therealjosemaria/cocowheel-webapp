@@ -1,5 +1,11 @@
 # Coco Wheels product and UI standards
 
+16 November Seedream release reuses the existing admin cost snapshot, approval
+modal, private issue copy and generated-preview cells. Selected-model wording in
+the comparison replaces the obsolete P2/current-avatar claim. Privacy adds one
+regular body sentence about server-local background removal. Profile controls,
+map slots, action order and manual-only balance checks are unchanged.
+
 16 November private image comparison reuses the comparison panel, grid, contained
 image surfaces, headings, table and download links. P2/current plus two 2D images
 are the first comparison; desktop has three equal columns, phones stack them.

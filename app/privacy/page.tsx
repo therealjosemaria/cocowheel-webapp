@@ -49,6 +49,8 @@ export default function PrivacyPage() {
         Photo checks may wait until our checking service is available; approved
         photos may wait for generation capacity. You can cancel before generation
         begins. Your existing avatar remains available while a replacement is made.
+        We remove the generated image’s background on our server before preparing
+        its map illustration; that step does not send the image to another service.
       </p>
       <p>
         Submitted photos are available to the administrator for review for up to

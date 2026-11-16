@@ -31,7 +31,7 @@ with sync_playwright() as p:
         panel = page.get_by_role('region', name='Tripo balance', exact=True)
         expect(panel.get_by_role('button', name='Check balance', exact=True)).to_be_visible()
         expect(panel.get_by_text('Tripo API balance', exact=True)).to_have_count(0)
-        expect(panel.get_by_text('110 credits per avatar', exact=False)).to_have_count(0)
+        expect(panel.get_by_text('5 credits per avatar', exact=False)).to_have_count(0)
         page.clock.fast_forward(125_000)
         page.evaluate('window.dispatchEvent(new Event("focus")); document.dispatchEvent(new Event("visibilitychange"))')
         page.wait_for_timeout(250)
@@ -48,7 +48,7 @@ with sync_playwright() as p:
         page.unroute('**/api/admin/avatar-jobs/balance')
         expect(panel.get_by_role('button', name='Refresh balance', exact=True)).to_be_visible()
         expect(panel.get_by_text('1,000 credits (US$10.00)', exact=True)).to_be_visible()
-        expect(panel.get_by_text('P2-20260801 · 110 credits per avatar.', exact=False)).to_be_visible()
+        expect(panel.get_by_text('seedream_v5 · 5 credits per avatar.', exact=False)).to_be_visible()
         assert requests['balance'] == 1, requests
         snapshot = panel.inner_text()
         initial_lists = requests['list']; stamp[0] = '2026-11-02T00:00:00.000Z'

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { createElement, useEffect, useState } from "react";
 import { requestJson } from "@/lib/api-transport";
 import { TRIPO_MODELS, type Comparison, type ComparisonRow } from "@/lib/tripo-comparison";
+import { AVATAR_MODEL } from "@/lib/avatar-generation";
 export default function TripoComparison() {
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const [error, setError] = useState("");
@@ -79,11 +80,11 @@ export default function TripoComparison() {
           )}
           {imageComparison.length > 0 && <>
             <section className="help-section"><h2>Avatar images</h2>
-              <p>P2’s existing render beside the new 2D results. These tests haven’t changed your map avatar.</p>
+              <p>P2’s original 3D render beside the 2D results. Seedream v5 is the selected generation model; its background is removed separately.</p>
             </section>
             <div className="tripo-grid tripo-image-grid">
               {imageComparison.map(row => <section className="help-section" key={row.id}>
-                <h3>{row.name}{row.id === "P2-20260801" ? " · current avatar" : ""}</h3>
+                <h3>{row.name}{row.id === AVATAR_MODEL ? " · selected model" : ""}</h3>
                 {row.previewReady ? <Image unoptimized width={512} height={768} src={`/api/admin/tripo/${row.id}.png`}
                   alt={`${row.name} avatar image`} className="tripo-model tripo-image" /> : <p>{row.status}</p>}
                 {row.kind === "image" && row.previewReady && <p>{row.transparent ? "Transparency present" : "Opaque background"}</p>}

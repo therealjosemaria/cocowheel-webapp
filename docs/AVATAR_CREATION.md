@@ -1,10 +1,11 @@
 # Queued avatar creation — 16 November 2026
 
 Source implements the missing self-service path after assigned-avatar display.
-Uses **P2-20260801**, the owner's selected model. Production activation and live
-paid-generation evidence are recorded separately below. Funding was explicitly
-deferred by the owner during implementation; do not label a fake-provider test
-as a live Tripo generation.
+New jobs use **Seedream v5** with Pi-local segmentation/matting; this supersedes
+the original P2-only selection. See [Seedream release](SEEDREAM_AVATARS_2026-11-16.md). Production activation and live
+paid-generation evidence are recorded separately below. Funding for the original P2 implementation was explicitly deferred; current
+funding follows the five-credit guard below. Do not label fake-provider tests
+as live Tripo generations.
 
 The later [manual admin workflow](AVATAR_ADMIN.md) supersedes automatic creation:
 passing a Mac check never triggers generation without the owner-admin’s approval.
@@ -122,12 +123,17 @@ bare toes are not required. Unsupported/uncertain results request another photo.
 The Pi's independent 15s avatar worker does not delay the existing journey email
 worker. One locally active generation task at a time; provider tasks cancelled
 locally may still be processing there. Generation selects only photo-approved jobs with persisted owner-admin approval.
-Balance below **110 credits** leaves that explicitly approved work
+Balance below **5 credits** leaves that explicitly approved work
 queued without submitting; the row records INSUFFICIENT_CREDITS for the admin. Daily cap defaults to **330 credits / UTC day**,
 configurable server-side; reservations include uncertain/failed submissions
 conservatively. API credit spend is not charged to app users by this feature.
 
-Use the same P2 textured/PBR parameters and seeds as the comparison. File upload
+Use Seedream image-to-image, 2K PNG and a clothing/identity-preserving prompt with
+a plain white background. The Pi checks its local runtime before any provider
+call, then removes the generated background with human segmentation and alpha
+matting. Legacy known P2 tasks still resume their original alpha render; their
+reserved cost remains 110 credits. New jobs persist generation_model and
+generation_credits on claim so the UTC cap sums reservations across both models. File upload
 is not a paid generation. Persist `SUBMITTING` before the paid POST, then persist
 its task ID; download/poll failures retry that ID, never regenerate it. An
 ambiguous timeout/5xx or missing task ID enters REVIEW_REQUIRED. An interrupted
@@ -139,13 +145,16 @@ exception. Inspect provider history before cancellation/new generation; there is
 no blind resubmit or task-recovery override.
 
 Requests time out after 60s; poll at 15s, failures back off 60s; after 24h a known
-unfinished task requires review. The provider's alpha PNG/WebP poster is bounded
-to 10MB / 16M pixels, requires transparency, and uses the shared 128×256 sprite
-normalizer. Artifact HTTPS hosts are allowlisted, redirects rejected and API
+unfinished task requires review. The downloaded PNG/WebP result is bounded
+to 10MB / 16M pixels. Opaque Seedream results pass through Pi-local segmentation
+and matting, then the shared transparent 128×256 sprite normalizer. Uncertain
+cutouts stop for private admin review with a generated preview; the current
+avatar stays assigned and no paid task is repeated. Runtime/resource details
+and recovery are in the Seedream release guide. Artifact HTTPS hosts are allowlisted, redirects rejected and API
 Authorization is never sent to asset hosts. No GLB is made public or stored by
 this path. There is no additional image-generator model or body-completion step.
 
-References: [P generation](https://developers.tripo3d.ai/en/docs/generation-image-to-model/p),
+References: [image generation](https://developers.tripo3d.ai/en/docs/generation-image-to-image),
 [rate limits](https://developers.tripo3d.ai/en/docs/rate-limits),
 [pricing](https://developers.tripo3d.ai/en/pricing),
 [provider privacy](https://www.tripo3d.ai/privacy). Tripo's
@@ -208,7 +217,7 @@ Baseline `7ea10ed`. Commands:
 - `python scripts/check-avatar-upload.py` (Playwright + `/usr/bin/chromium`; normalized private test photo at `/tmp/gumwheel-avatar-normalized.jpg`)
 
 The explicit fixture uses synthetic accounts/in-memory SQLite. Its additional
-3494 loopback controls reset only that fixture and run a fake P2 provider; they
+3494 loopback controls reset only that fixture and run a fake Seedream provider; they
 are never mounted by the application API. No paid tests or live user mutations.
 Evidence, failed baselines and remaining boundaries:
 [sanitized result](results/avatar-creation-2026-11-16.json).

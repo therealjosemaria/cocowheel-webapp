@@ -1,0 +1,171 @@
+{
+  "date": "2026-11-16",
+  "baseline": "8f7a64be596123a3534faace19b1d4ff99f3f62e",
+  "sourceState": "Validated uncommitted implementation; implementation/deployment commit will be recorded after push.",
+  "sourceFiles": {
+    "server/avatar-generation.ts": "b823bddfd150096ee63333981893c1b79b638fb18ccd0786bc7facb6567d976e",
+    "server/avatar-background.ts": "09f1e2e873210d1c4eda8c5d7c3742a0bc40b0fc2ab66b0dc0ef5b4639615c59",
+    "server/avatar-jobs.ts": "fff93e008fd49791c1cb4b964aecd045aedf4d98cf6eed6e7c8bac4e93b6e6bd",
+    "lib/avatar-generation.ts": "cd27cb46aa6aa75fa49d05642f4e33c3bf23ae6d8a0a92a9c861d8f470718b08",
+    "lib/admin-avatar.ts": "ff1194841a902d10f2b3bcbe753fdafc2e765f03fb01c986358b5e07bfffc29b",
+    "workers/avatar/background_remove.py": "b31d352b46edaac03f14c5b3cea9e14428d57960e30a5aad7ef22436dc356b62",
+    "workers/avatar/requirements-background.txt": "7c8b483cfae5767f401f928d5012e309dd4ae119a01a5d1a27879b47fc6ca531",
+    "scripts/setup-avatar-background.sh": "0b74b272a7b41712620ee178f73f8545a79c985c1e1964c3cd3d79238363c3dc",
+    "components/admin-avatar-management.tsx": "eb810b9bb15136c5506d007d65b1d4cea15d8ef3009b4c6ab784108270b4e8bd",
+    "components/tripo-comparison.tsx": "ced3eb09ea81517d8ee7208dbd1faf142b1d62ca1178adbb22d8f915435a376f",
+    "app/privacy/page.tsx": "1c8ff7176ada57ef8c952542999be8bf8895945a29c0ac4a13732885e79d1d7d",
+    "tests/avatar-seedream.test.ts": "c9ca98155f5bc7ca18a7ed91cc8095b89125dc1b764175cf4bc79d6c8aeb4ebb",
+    "tests/avatar-admin.test.ts": "dc1285f17d67155d5b45769e90271055d678c8638f8d22b2792b6297857e3318",
+    "tests/avatar-jobs.test.ts": "7f50109eac04b3dfc3a12c38f4f170b6cce5875977b2b2385e81ec4121b3cfbb"
+  },
+  "scope": "Seedream v5 for future manually approved jobs, Pi-local human segmentation/matting, and explicitly authorised replacement of owner P2 artwork using the existing paid Seedream image.",
+  "privacyAndIsolation": "Temporary/in-memory SQLite and synthetic providers/accounts for regressions and browser flow. Actual local image inference uses the existing private sample; no image upload or paid API call. Reference/model-output images, task IDs, credentials, runtime, model weights and database backups are excluded from Git/public assets. No live user/test job, trip or email created.",
+  "configuration": {
+    "model": "seedream_v5",
+    "credits": 5,
+    "background": "U2Net human segmentation plus bounded PyMatting alpha/foreground estimation on Pi",
+    "macRole": "Existing photo verification only; explicit owner-admin generation approval unchanged.",
+    "bounds": {
+      "inputBytes": 10000000,
+      "inputPixels": 16000000,
+      "workingImageMaximum": [
+        1024,
+        1536
+      ],
+      "processAddressSpaceGiB": 3,
+      "cpuSeconds": 120,
+      "parentWallSeconds": 120,
+      "preflightSeconds": 30,
+      "threads": 2,
+      "nice": 10
+    },
+    "modelSHA256": "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c",
+    "legacy": "Existing P2 task IDs/results retained. Added nullable per-submission model/credit columns; null legacy costs reserved as 110 credits. Default 330-credit UTC-day cap unchanged."
+  },
+  "measurements": {
+    "humanMaskOnly": {
+      "seconds": 3.223,
+      "peakRSSKiB": 448128,
+      "finding": "Light edge halo remained."
+    },
+    "maskAndMatting": {
+      "seconds": 3.97,
+      "peakRSSKiB": 819648,
+      "finding": "Dark/light surface review showed substantially cleaner boundaries."
+    },
+    "actualNodeIntegration": {
+      "preflightSeconds": 1.26,
+      "processingSeconds": 5.07,
+      "providerRequests": 0
+    },
+    "confidentForeground": {
+      "fullyOpaquePixels": 127891,
+      "changedRGBValues": 0
+    },
+    "qualification": "One existing photo on ARM64 Pi/7.9 GiB RAM; no broad likeness or concurrent-capacity claim."
+  },
+  "checks": {
+    "targetedAvatarLifecycle": {
+      "passed": 29,
+      "command": "node --import tsx --test tests/avatar-seedream.test.ts tests/avatar-jobs.test.ts tests/avatar-admin.test.ts"
+    },
+    "regressions": {
+      "passed": 299,
+      "failed": 0,
+      "command": "npm test"
+    },
+    "security": {
+      "passed": 52,
+      "command": "npm run test:security"
+    },
+    "lint": {
+      "result": "passed",
+      "command": "npm run lint"
+    },
+    "build": {
+      "result": "passed",
+      "command": "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build"
+    },
+    "browser": {
+      "result": "passed",
+      "cases": 14,
+      "scripts": [
+        "scripts/check-avatar-admin.py",
+        "scripts/check-avatar-manual-balance.py",
+        "scripts/check-avatar-rejection.py",
+        "scripts/check-tripo-images.py",
+        "scripts/preview-avatar-map.py"
+      ],
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "mapWidths": [
+        390,
+        1440
+      ],
+      "fixture": "GUMWHEEL_AVATAR_FIXTURE=1 GUMWHEEL_AVATAR_RENDER=data/tripo-comparison/seedream_v5-cutout-matted.png node --import tsx scripts/serve-map-avatar-fixture.mts; Next 3491 with API target 3492; run listed scripts with Playwright Python.",
+      "coverage": "Same approval/reject/cancel and five-minute review flows; five-credit confirmation; no mount/focus/timer balance queries; private assets denied to anonymous/ordinary users; gallery selection/costs; Home/rider/driver maps; no overflow or page exceptions."
+    },
+    "visualReview": "Whole mobile/desktop Admin, approval modal, Profile notices/results, gallery, Privacy and rider/driver/Home maps reviewed for hierarchy, regular body weight, spacing, contained image and marker geometry. No new controls/styles introduced. React review retained cleanup/ref guards, existing hooks and manual-only provider fetches.",
+    "syntax": "Python compile and bash -n setup pass.",
+    "setup": {
+      "result": "passed",
+      "command": "bash scripts/setup-avatar-background.sh",
+      "scope": "Idempotent pinned package/model verification and READY preflight; no image upload/provider request."
+    }
+  },
+  "retainedBaselines": [
+    {
+      "case": "Optional external timing utility",
+      "failure": "Exit 127; utility unavailable.",
+      "resolution": "Used Python monotonic/rusage plus actual Node wall measurement."
+    },
+    {
+      "case": "BiRefNet Lite fixed 1024px graph",
+      "failure": "Memory allocation failed under 3-GiB guard; disabling arena/pattern reuse still failed at 3 and 4 GiB.",
+      "resolution": "Not selected for production. Tested human-specific U2Net instead."
+    },
+    {
+      "case": "First alpha matting allocation",
+      "failure": "Default incomplete-Cholesky allocation requested a 1.86-GiB array and exceeded the process guard.",
+      "resolution": "Bound factor allocation to at most eight million entries; capped working image and CG. Local pipeline retest completed successfully."
+    },
+    {
+      "case": "Initial optimized build",
+      "finding": "Build passed but lacked loopback rewrites for isolated browser tests.",
+      "resolution": "Rebuilt explicitly with the fixture target before running browser mutations."
+    }
+  ],
+  "boundaries": [
+    "No paid generation from a newly uploaded production job; existing paid Seedream result reused for local processing.",
+    "Physical devices, assistive technologies and authenticated live owner walkthrough not yet tested.",
+    "No 100-user/concurrent generation capacity campaign; existing serial queue and upload caps remain.",
+    "No guarantee that matting or generation preserves every fine detail for all photos."
+  ],
+  "activation": {
+    "activatedAt": "2026-11-16T07:17:47.307Z",
+    "service": "active",
+    "health": 200,
+    "preflightUnderway": 0,
+    "rides": 142,
+    "tablesPreserved": true,
+    "tablesChecked": 18,
+    "otherAvatarsPreserved": true,
+    "assignmentCountPreserved": true,
+    "ownerReplaced": true,
+    "preferencePreserved": true,
+    "newAssetStatus": 200,
+    "newAssetMatches": true,
+    "oldAssetStatus": 404,
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "columnsAdded": true,
+    "configurationUnchanged": true,
+    "avatarJobs": 0,
+    "paidProviderCalls": 0,
+    "backup": "Private mode-0700 database/config backup retained under ignored data/backups; backup integrity checked before restart.",
+    "frontend": "Exact implementation deployment pending push/verification."
+  }
+}

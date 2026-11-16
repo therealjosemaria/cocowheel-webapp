@@ -2,12 +2,13 @@ import { readFile } from "node:fs/promises";
 import { parseEnv } from "node:util";
 import sharp from "sharp";
 import type { Db } from "./core";
-import { comparisonPayload } from "../lib/tripo-comparison";
+import { avatarGenerationPayload } from "../lib/avatar-generation";
+import { avatarBackground, AvatarBackgroundError, type AvatarBackgroundProcessor } from "./avatar-background";
 import { prepareAvatarSprite } from "./map-avatars";
 import { AVATAR_CREDITS, AVATAR_MODEL, clearAvatarHold, completeGeneratedAvatar, expireAvatarJobs, finishAvatarJob, holdAvatarJob, type AvatarJobRow } from "./avatar-jobs";
 import type { AdminAvatarBalance } from "../lib/admin-avatar";
 
-type ProviderResult = { balance?: number; frozen?: number; file_token?: string; task_id?: string; status?: string; output?: { rendered_image_url?: string } };
+type ProviderResult = { balance?: number; frozen?: number; file_token?: string; task_id?: string; status?: string; output?: { rendered_image_url?: string; generated_image_url?: string } };
 export type AvatarProvider = { request: (path: string, body?: FormData | Record<string, unknown>, timeoutMs?: number) => Promise<ProviderResult>; image: (url: string) => Promise<Buffer> };
 class TripoError extends Error { constructor(readonly definitive: boolean) { super("TRIPO_REQUEST_FAILED"); } }
 async function tripoKey() {
@@ -69,7 +70,7 @@ export function readAdminAvatarBalance(api: AvatarProvider = provider, now = Dat
 }
 const working = new WeakSet<Db>();
 /** One durable task at a time. Validation cannot call the paid provider. */
-export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider, now = Date.now()) {
+export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider, now = Date.now(), background: AvatarBackgroundProcessor = avatarBackground) {
   if (working.has(db)) return;
   if (api === provider && process.env.COCOWHEELS_AVATAR_UPLOADS !== "1") return;
   working.add(db);
@@ -84,8 +85,21 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
         if (!db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(pending.id)) return;
         if (!task.status) throw new Error("MISSING_TASK_STATUS");
         if (task.status === "success") {
-          if (!task.output?.rendered_image_url) throw new Error("NO_AVATAR_RENDER");
-          const image = await api.image(task.output.rendered_image_url);
+          const legacy = !pending.generation_model || pending.generation_model === "P2-20260801";
+          const url = legacy ? task.output?.rendered_image_url : task.output?.generated_image_url;
+          if (!url) throw new Error("NO_AVATAR_RENDER");
+          const source = await api.image(url);
+          if (!db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='GENERATING'").get(pending.id)) return;
+          let image = source;
+          try { if (!legacy) image = await background.remove(source); }
+          catch (error) {
+            if (!(error instanceof AvatarBackgroundError)) throw error;
+            // Keep a private review preview; never assign a failed cutout or regenerate it.
+            const preview = await sharp(source, { limitInputPixels: 16_000_000 }).resize({ width: 512, height: 768, fit: "inside", withoutEnlargement: true }).webp({ quality: 90 }).toBuffer();
+            if (db.prepare("UPDATE avatar_jobs SET render=? WHERE id=? AND status='GENERATING'").run(preview, pending.id).changes)
+              finishAvatarJob(db, pending.id, "REVIEW_REQUIRED", "BACKGROUND_REVIEW", now);
+            return;
+          }
           const stats = await sharp(image, { limitInputPixels: 16_000_000 }).stats();
           if (!stats.channels[3] || stats.channels[3].min === 255) throw new Error("OPAQUE_AVATAR_RENDER");
           completeGeneratedAvatar(db, pending.id, await prepareAvatarSprite(image), now);
@@ -106,6 +120,8 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
     db.prepare("UPDATE avatar_jobs SET next_at=? WHERE id=? AND status='APPROVED'").run(now + 60_000, job.id);
     const cap = Number(process.env.COCOWHEELS_AVATAR_DAILY_CREDITS ?? 330);
     if (!Number.isFinite(cap) || cap < AVATAR_CREDITS) { holdAvatarJob(db, job.id, "GENERATION_PAUSED", now); return; }
+    try { await background.check(); } catch { holdAvatarJob(db, job.id, "BACKGROUND_UNAVAILABLE", now); return; }
+    if (!db.prepare("SELECT 1 FROM avatar_jobs WHERE id=? AND status='APPROVED' AND generation_approved_at IS NOT NULL").get(job.id)) return;
     let balance: ProviderResult;
     try { balance = await api.request("/account/balance"); } catch { holdAvatarJob(db, job.id, "PROVIDER_UNAVAILABLE", now); return; }
     if (!Number.isFinite(balance.balance)) { holdAvatarJob(db, job.id, "PROVIDER_UNAVAILABLE", now); return; }
@@ -121,16 +137,16 @@ export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider
     }
     const claimed = db.transaction(() => {
       const day = new Date(now).toISOString().slice(0, 10);
-      const count = (db.prepare("SELECT COUNT(*) AS n FROM avatar_jobs WHERE submitted_at>=?").get(Date.parse(`${day}T00:00:00Z`)) as { n: number }).n;
-      if ((count + 1) * AVATAR_CREDITS > cap) { holdAvatarJob(db, job.id, "DAILY_LIMIT", now); return false; }
-      const changed = db.prepare("UPDATE avatar_jobs SET status='SUBMITTING',file_token=?,submitted_at=?,updated_at=?,hold_reason=NULL WHERE id=? AND status='APPROVED' AND generation_approved_at IS NOT NULL AND generation_approved_by IS NOT NULL")
-        .run(token, now, now, job.id).changes === 1;
+      const spent = (db.prepare("SELECT COALESCE(SUM(COALESCE(generation_credits,110)),0) AS n FROM avatar_jobs WHERE submitted_at>=?").get(Date.parse(`${day}T00:00:00Z`)) as { n: number }).n;
+      if (spent + AVATAR_CREDITS > cap) { holdAvatarJob(db, job.id, "DAILY_LIMIT", now); return false; }
+      const changed = db.prepare("UPDATE avatar_jobs SET status='SUBMITTING',file_token=?,submitted_at=?,updated_at=?,hold_reason=NULL,generation_model=?,generation_credits=? WHERE id=? AND status='APPROVED' AND generation_approved_at IS NOT NULL AND generation_approved_by IS NOT NULL")
+        .run(token, now, now, AVATAR_MODEL, AVATAR_CREDITS, job.id).changes === 1;
       if (changed) clearAvatarHold(db, job.id, now);
       return changed;
     })();
     if (!claimed) return;
     try {
-      const task = await api.request("/generation/image-to-model", comparisonPayload(token, AVATAR_MODEL));
+      const task = await api.request("/generation/image-to-image", avatarGenerationPayload(token));
       if (!task.task_id || !/^[a-zA-Z0-9-]{1,100}$/.test(task.task_id)) throw new Error("MISSING_TASK_ID");
       // Keep the private source for the seven-day admin review window. A late
       // response may record its task ID, but cannot revive a cancelled job.

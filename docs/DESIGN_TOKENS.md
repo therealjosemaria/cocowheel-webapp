@@ -1,5 +1,9 @@
 # Coco Wheels visual system
 
+16 November Seedream/matting release adds no visual tokens. Reuse the same model
+comparison headings, regular Privacy body, admin helper/status text, approval
+modal and existing 128×256 sprite / 48px map marker geometry.
+
 16 November private image comparison uses tripo-grid/tripo-model and existing
 help/body/table tokens. Images use object-fit contain on the existing 360px surface;
 the image-only grid has three minmax(0,1fr) columns from 1000px. No new palette,
