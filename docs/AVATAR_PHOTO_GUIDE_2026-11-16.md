@@ -192,3 +192,25 @@ mutation, paid generation or real notification was triggered by verification.
 Physical mobile browsers remain unverified. The subsequent same-tab versus
 new-tab discussion is a recommendation only: this release still opens Photo guide
 in a new tab to preserve the selected-photo draft.
+
+## Profile reference alignment
+
+Baseline `f04c04b`. The Profile Avatar disclosure now uses the guide's exact
+`avatar-photo-guide-front-v1.webp` for both its small heading icon and generic
+preview. A single `.avatar-details` CSS override reuses the existing role-art
+component, 20px heading slot and centred 144×108px preview. The whole figure stays
+contained, with no background/crop/new asset. Personal-avatar images keep their
+existing API source; generic rider icons outside this section retain their
+original surface variants. This supersedes the guide-only use of the frontal
+figure above, not the original map-role artwork or avatar assignment rules.
+
+Build and lint pass. The existing `scripts/check-avatar-photo-guide.py` passes
+320/390/844/1440 against the optimized isolated fixture. A GET-only browser review
+at the same four sizes checks both front-facing Profile sources, unchanged slot
+sizes, assigned-avatar source preservation, Edit/uncheck fallback and Cancel
+restoration, and unchanged Home rider artwork. Whole driver and rider Profile
+screens were visually reviewed at phone/desktop sizes for icon prominence,
+centering, typography and spacing; no overflow or page exceptions. Fixture
+commands above reproduce the screens; no paid requests, live account changes or
+API restart are needed. Physical devices and authenticated production Profile
+remain unverified. Exact frontend activation is recorded after push.

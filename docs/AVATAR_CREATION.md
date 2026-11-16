@@ -24,6 +24,9 @@ in the upload tab. Its front-facing generic example and framing tips do not
 change validation thresholds or imply that every compliant photo will pass.
 
 Profile → Avatar shows Upload photo even for an account without an assignment.
+The Avatar heading icon and default preview reuse the guide’s front-facing
+figure. Only that section’s generic artwork changes; assigned images and
+journey/map role artwork retain their current sources and dimensions.
 Assigned accounts have Update photo. Reuse the existing disclosure, preview,
 checkbox, primary/secondary buttons, Edit/Save/Cancel, body/helper typography and
 spacing. Upload preparation preserves the whole frame; it does not use the square

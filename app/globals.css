@@ -3078,6 +3078,7 @@ p {
 .vehicle-choice-field > input { margin: 0; }
 .vehicle-artwork-preview { display: block; width: 144px; height: 108px; object-fit: contain; justify-self: center; }
 .avatar-default-preview { display: block; width: 144px; height: 108px; justify-self: center; }
+.avatar-details .journey-role-art-rider::before { background-image: url("/brand/avatar-photo-guide-front-v1.webp"); }
 .avatar-photo-guide-link { justify-self: start; font-size: var(--text-small); font-weight: var(--weight-regular); }
 .avatar-guide-heading { padding: 18px 16px 16px; }
 .avatar-guide-heading .text-button { display: inline-flex; min-height: 44px; align-items: center; margin: 0 0 8px; font-size: var(--text-small); }

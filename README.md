@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+16 November Avatar reference alignment: the Profile Avatar heading icon and
+default preview use the same front-facing figure as the photo guide, with the
+existing icon/preview sizes and spacing. This is scoped to Profile’s Avatar
+section; personal avatar images and journey/map role artwork retain their sources.
+See [guide and verification notes](docs/AVATAR_PHOTO_GUIDE_2026-11-16.md).
+
 16 November avatar policy alignment: submitted-photo cancellation is admin-only,
 enforced by the API; the former user cancellation endpoint now returns 403.
 Users can discard an unsubmitted photo, view results, and manage avatar display.

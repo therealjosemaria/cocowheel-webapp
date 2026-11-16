@@ -1,5 +1,10 @@
 # Coco Wheels product and UI standards
 
+16 November Avatar reference alignment: the Avatar disclosure’s heading icon and
+default preview use the photo guide’s front-facing figure. Keep their existing
+slots, alignment and typography. Scope this artwork to the Avatar section;
+personal-avatar images and rider role/map artwork retain their existing sources.
+
 16 November avatar controls/policy: do not show Cancel photo check or Cancel
 creation to users after submission. Only Admin manages submitted-job cancellation.
 Keep Cancel for an unsubmitted selection or unsaved display edit. Give support
@@ -84,9 +89,10 @@ Explain public Home visibility in regular helper text without repeating the word
 avatar.
 The self-service extension adds Upload photo for unassigned accounts and Update
 photo for assigned accounts, using the same secondary button; selected photos
-reuse the contained preview and shared checkbox/action styles. Requirements and
-Tripo processing are concise regular helper copy; submission consent is explicit.
-Queued/results copy lives here, with Cancel available only before generation.
+reuse the contained preview and shared action styles. Requirements and results
+use concise regular helper copy; Submit photo requests checking and creation.
+Queued/results copy lives here; submitted-job cancellation is admin-only. Cancel
+remains available for an unsubmitted photo or unsaved avatar-display edit.
 The Profile badge uses the existing style and a separate Avatar update link that
 opens this disclosure/result; no creation controls in messaging or journey panels.
 No repeated requirements paragraph below a rejection/ready result. See

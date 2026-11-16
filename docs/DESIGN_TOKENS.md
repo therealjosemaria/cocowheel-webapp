@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+16 November Avatar reference alignment reuses the guide’s existing transparent
+front-facing WebP in the Profile Avatar heading’s role-icon slot and centred
+144×108px default preview. Preserve the shared contained rider geometry, label
+gap and all dimensions. The scoped source override adds no new token or asset.
+
 16 November photo guide reuses page-title, text-button Back, Help’s 18px H2/14px
 body, shared spacing and line/surface tokens. Photo guide links are 14px regular
 with existing 44px targets. The example uses a 240px-max 2:3 frame, control-radius
