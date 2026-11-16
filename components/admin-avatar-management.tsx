@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminApi } from "@/lib/admin-api";
 import { ApiError, apiErrorMessage } from "@/lib/api-transport";
-import { adminAvatarIssues, adminAvatarStatus, type AdminAvatarJob, type AdminAvatarJobs } from "@/lib/admin-avatar";
-import { avatarJobActive, avatarRejections } from "@/lib/avatar-job";
+import { adminAvatarIssues, adminAvatarStatus, TRIPO_TOP_UP_URL, type AdminAvatarBalance, type AdminAvatarJob, type AdminAvatarJobs } from "@/lib/admin-avatar";
+import { avatarJobActive, avatarRejections, avatarReviewReason, AVATAR_REVIEW_REASON_LIMIT, AVATAR_REVIEW_REASON_ERROR } from "@/lib/avatar-job";
 import { useVisibleReview } from "@/lib/use-visible-review";
 import ConfirmationPrompt from "./confirmation-prompt";
 
@@ -18,7 +18,7 @@ function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: Admi
     <p ref={status} className="admin-muted">
       {job.status === "APPROVED" && job.approvedAt ? "Queued for generation" : adminAvatarStatus[job.status]}
       {job.hold && <> · {adminAvatarIssues[job.hold] ?? "Review this submission before continuing."}</>}
-      {job.reason && <> · {adminAvatarIssues[job.reason] ?? avatarRejections[job.reason] ?? "Review this submission before continuing."}</>}
+      {job.reviewReason ? <> · {job.reviewReason}</> : job.reason && <> · {adminAvatarIssues[job.reason] ?? avatarRejections[job.reason] ?? "Review this submission before continuing."}</>}
     </p>
     <div className="admin-avatar-media">
       <figure><figcaption>Submitted photo</figcaption>{job.photoUrl
@@ -36,10 +36,51 @@ function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: Admi
     </dl>
     {(avatarJobActive(job.status) || job.status === "FAILED") && <div className="ride-action-buttons">
       {job.status === "APPROVED" && !job.approvedAt && <button type="button" className="primary" onClick={() => act(job, "approve")}>Approve generation</button>}
+      {job.status === "APPROVED" && <button type="button" className="secondary" onClick={() => act(job, "reject")}>Reject photo</button>}
       {job.hold === "CHECK_UNAVAILABLE" && <button type="button" className="secondary" onClick={() => act(job, "retry-check")}>Retry photo check</button>}
       <button type="button" className="secondary" onClick={() => act(job, "cancel")}>Cancel creation</button>
     </div>}
   </article>;
+}
+function TripoBalance() {
+  const [balance, setBalance] = useState<AdminAvatarBalance | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    let running = false;
+    const load = async () => {
+      if (document.hidden || running) return;
+      running = true; setBusy(true);
+      try {
+        const value = await adminApi<AdminAvatarBalance>("avatar-jobs/balance", undefined, controller.signal);
+        if (!controller.signal.aborted) { setBalance(value); setUnavailable(value.availableCredits === null); }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          if (error instanceof ApiError && [401, 403].includes(error.status)) window.location.replace("/admin/avatar-management");
+          setBalance(null); setUnavailable(true);
+        }
+      } finally { running = false; if (!controller.signal.aborted) setBusy(false); }
+    };
+    void load();
+    const timer = setInterval(() => void load(), 60_000);
+    document.addEventListener("visibilitychange", load); window.addEventListener("focus", load);
+    return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", load); window.removeEventListener("focus", load); };
+  }, [revision]);
+  return <section aria-label="Tripo balance">
+    <dl className="admin-fields">
+      <div><dt>Tripo API balance</dt><dd>{balance?.availableCredits != null
+        ? `${balance.availableCredits.toLocaleString()} credits (US$${(balance.availableCredits / 100).toFixed(2)})` : unavailable ? "Unavailable" : "Checking…"}</dd></div>
+      <div><dt>Checked</dt><dd>{balance?.checkedAt ? new Date(balance.checkedAt).toLocaleString() : "Not available"}</dd></div>
+      {!!balance?.frozenCredits && <div><dt>Reserved for tasks</dt><dd>{balance.frozenCredits.toLocaleString()} credits</dd></div>}
+    </dl>
+    {unavailable && <p className="admin-muted" role="status">Couldn’t check the balance. Refresh or open Tripo to check it.</p>}
+    <div className="ride-action-buttons">
+      <button type="button" className="secondary" onClick={() => { if (!busy) setRevision(value => value + 1); }}>{busy ? "Checking…" : "Refresh balance"}</button>
+      <a className="secondary" href={TRIPO_TOP_UP_URL} target="_blank" rel="noopener noreferrer">Top up Tripo</a>
+    </div>
+  </section>;
 }
 export default function AdminAvatarManagement() {
   const focus = useSearchParams().get("job") ?? "";
@@ -52,6 +93,8 @@ function AvatarManagementList({ focus }: { focus: string }) {
   const [actionError, setActionError] = useState("");
   const [revision, setRevision] = useState(0);
   const [prompt, setPrompt] = useState<{ job: AdminAvatarJob; action: string } | null>(null);
+  const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
   const sequence = useRef(0);
@@ -62,6 +105,7 @@ function AvatarManagementList({ focus }: { focus: string }) {
     if (reason instanceof ApiError && [401, 403].includes(reason.status)) window.location.replace("/admin/avatar-management");
     else (action ? setActionError : setError)(reason instanceof ApiError && reason.code === "AVATAR_JOB_CHANGED"
       ? "This submission changed. Review its latest status before continuing."
+      : reason instanceof ApiError && reason.code === "AVATAR_REVIEW_TOO_LATE" ? "Generation has started. Use Cancel creation to stop delivery."
       : action ? "Couldn’t confirm this action. Review the latest status before trying again."
       : apiErrorMessage(reason, "Couldn’t load avatar submissions. Try again."));
   }, []);
@@ -100,11 +144,15 @@ function AvatarManagementList({ focus }: { focus: string }) {
   }, []);
   const confirm = async () => {
     if (!prompt || submitting.current) return;
+    if (prompt.action === "reject" && !avatarReviewReason(reason)) { setReasonError(AVATAR_REVIEW_REASON_ERROR); return; }
     submitting.current = true; sequence.current++; setBusy(true); setActionError("");
     try {
-      await adminApi(`avatar-jobs/${prompt.job.id}/${prompt.action}`, {});
+      await adminApi(`avatar-jobs/${prompt.job.id}/${prompt.action}`, prompt.action === "reject" ? { reason } : {});
       if (alive.current) { setPrompt(null); setRevision(value => value + 1); window.dispatchEvent(new Event("cocowheels:avatar-job-changed")); }
-    } catch (reason) { if (alive.current) { setPrompt(null); fail(reason, true); setRevision(value => value + 1); } }
+    } catch (error) { if (alive.current) {
+      if (error instanceof ApiError && error.code === "INVALID_AVATAR_REVIEW_REASON") setReasonError(AVATAR_REVIEW_REASON_ERROR);
+      else { setPrompt(null); fail(error, true); setRevision(value => value + 1); }
+    } }
     finally { submitting.current = false; if (alive.current) setBusy(false); }
   };
   return <section className="page-content"><div className="admin-panel demand-detail-content admin-avatar-management">
@@ -115,7 +163,8 @@ function AvatarManagementList({ focus }: { focus: string }) {
     {!data ? !error && <p className="admin-muted">Loading…</p> : <>
       <p className="admin-muted">{data.model} · {data.creditsPerAvatar} credits per avatar.<br />
         Photo checker: {data.workerSeenAt ? `last connected ${new Date(data.workerSeenAt).toLocaleString()}` : "not connected yet"}.</p>
-      <div className="admin-records">{data.jobs.map(job => <Submission key={job.id} job={job} act={(value, action) => { if (!submitting.current) setPrompt({ job: value, action }); }} review={review} />)}</div>
+      <TripoBalance />
+      <div className="admin-records">{data.jobs.map(job => <Submission key={job.id} job={job} act={(value, action) => { if (!submitting.current) { setReason(""); setReasonError(""); setPrompt({ job: value, action }); } }} review={review} />)}</div>
       {data.total === 0 && <p className="admin-muted">No avatar photos submitted yet.</p>}
       {data.total > 25 && <nav className="admin-pagination" aria-label="Avatar pages">
         <button type="button" className="secondary" onClick={() => { if (page > 0) setPage(value => value - 1); }}>Previous</button>
@@ -125,11 +174,20 @@ function AvatarManagementList({ focus }: { focus: string }) {
     </>}
     {prompt && <ConfirmationPrompt busy={busy} close={() => { if (!submitting.current) setPrompt(null); }} confirm={() => void confirm()}
       label={prompt.action === "approve" ? `Approve this avatar’s generation with ${data?.creditsPerAvatar ?? 110} Tripo credits?`
+        : prompt.action === "reject" ? "Reject this photo? Your reason will be shown to the user."
         : prompt.action === "retry-check" ? "Queue this photo for another requirements check?"
         : prompt.job.taskId || prompt.job.status === "SUBMITTING" || prompt.job.status === "REVIEW_REQUIRED"
           ? "Cancel this creation? Tripo may already be processing it. Any charge already incurred cannot be undone here; the result won’t be assigned."
           : "Cancel this avatar creation? The submitted photo will be removed."}
-      action={prompt.action === "approve" ? "Approve generation" : prompt.action === "retry-check" ? "Retry photo check" : "Cancel creation"}
-      destructive={prompt.action === "cancel"}>{null}</ConfirmationPrompt>}
+      action={prompt.action === "approve" ? "Approve generation" : prompt.action === "reject" ? "Reject photo" : prompt.action === "retry-check" ? "Retry photo check" : "Cancel creation"}
+      destructive={prompt.action === "cancel" || prompt.action === "reject"}>
+      {prompt.action === "reject" && <>
+        <label className="field">Reason
+          <textarea value={reason} maxLength={AVATAR_REVIEW_REASON_LIMIT} rows={3} aria-required="true" aria-invalid={!!reasonError}
+            aria-describedby={reasonError ? "avatar-review-error" : undefined} onChange={event => { setReason(event.target.value); setReasonError(""); }} />
+        </label>
+        {reasonError && <p id="avatar-review-error" role="alert" className="admin-message">{reasonError}</p>}
+      </>}
+    </ConfirmationPrompt>}
   </div></section>;
 }

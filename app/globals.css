@@ -1508,6 +1508,7 @@ p {
 }
 .time-choice input[type="datetime-local"],
 .field input,
+.field textarea,
 .vehicle-choice-field select,
 .vehicle-choice-field > input,
 .code-entry input {
@@ -2412,6 +2413,7 @@ p {
   grid-auto-rows: 1fr;
 }
 .ride-action-buttons > button,
+.ride-action-buttons > a.secondary,
 .cancel-prompt-actions > button,
 .location-prompt-actions > button {
   box-sizing: border-box;
@@ -2430,6 +2432,7 @@ p {
   box-shadow: 0 2px 3px rgb(15 23 42 / 12%);
 }
 .ride-action-buttons > button:active:not(:disabled),
+.ride-action-buttons > a.secondary:active,
 .cancel-prompt-actions > button:active:not(:disabled),
 .location-prompt-actions > button:active:not(:disabled) {
   transform: translateY(1px);
@@ -3008,6 +3011,9 @@ p {
 .admin-avatar-media figure { margin: 0; min-width: 0; }
 .admin-avatar-media figcaption { font-size: var(--text-small); color: var(--muted); margin-bottom: 8px; }
 .admin-avatar-media img { display: block; width: 100%; max-width: 160px; height: 220px; object-fit: contain; }
+.demand-prompt .field textarea { resize: vertical; min-height: 96px; }
+.admin-avatar-management .admin-muted, .avatar-details #avatar-result { overflow-wrap: anywhere; }
+.ride-action-buttons > a.secondary { display: grid; place-items: center; text-align: center; text-decoration: none; }
 .admin-pagination {
   display: flex;
   justify-content: space-between;

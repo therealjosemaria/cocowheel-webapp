@@ -1,5 +1,15 @@
 # Coco Wheels product and UI standards
 
+16 November avatar quality review reuses the admin record/action layout and
+sentence-only ConfirmationPrompt. Reject photo requests one labelled Reason
+textarea using existing field tokens; Go back precedes the destructive action.
+Missing reasons keep the dialog/draft with a concise regular alert. User feedback
+and the next Upload photo action stay in Profile's Avatar section, with regular
+helper weight and long-word wrapping. Tripo balance reuses admin-fields and shared
+secondary action buttons, including a button-styled external Top up Tripo link.
+Its failure state offers Refresh or the external account page; submissions remain
+usable. Visually review full Admin, modal, Profile and Privacy on phone/desktop.
+
 16 November manual avatar administration: `/admin/avatar-management` reuses the
 Admin panel, record cards, fields, caption/body hierarchy and shared action buttons.
 Back uses the existing 44px text target above the heading. Photo and generated

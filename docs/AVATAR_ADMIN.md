@@ -47,6 +47,55 @@ CHECK_UNAVAILABLE hold. Admin can explicitly Retry photo check; the same photo/T
 is retained and the normal gates still apply. Valid photo rejection still tells
 the user which requirement was uncertain and offers another upload.
 
+## Manual photo rejection and Tripo balance
+
+Mac failures remain automatic: supported rejection reason → REJECTED → user result,
+without waiting for an admin action. A passed check remains APPROVED without paid
+generation permission. Admin can choose Approve generation or Reject photo. Reject
+photo reuses ConfirmationPrompt with a required Reason textarea (1–400 characters
+after trimming and collapsing whitespace). The reason is plain text, not HTML;
+disallowed control characters and invalid/non-text values are rejected server-side.
+The safe Go back action precedes the destructive Reject photo action. Blank
+validation preserves the draft/dialog; actions remain available before entry.
+
+Rejection atomically changes APPROVED → REJECTED, records ADMIN_REJECTED plus a
+separate rejection_note, clears generation approval and supersedes the passed-check
+notification. The reason appears in the private admin row and only that user's
+Profile/result email: “Your photo wasn’t approved. [reason] Upload another photo.”
+Existing avatars remain assigned; a new photo can be submitted subject to the
+existing upload/storage limits. Source retention remains seven days; rejection
+metadata/events retain the existing 30-day lifecycle. An identical retry does not
+repeat or acknowledge the user's result. A different reason/stale approval returns
+409; late Mac responses cannot revive it.
+
+Rejection is also allowed after generation approval while still APPROVED, including
+a funding hold. The generator's existing conditional claim prevents a rejection
+during balance/file upload from becoming a paid submission. Once SUBMITTING,
+GENERATING or REVIEW_REQUIRED, rejection returns AVATAR_REVIEW_TOO_LATE; Admin is
+directed to Cancel creation to stop local delivery. Cancellation cannot undo a
+provider charge. This is a photo-quality decision, not a retrospective refund or
+identity verification. Automated Mac thresholds and P2 parameters are unchanged.
+
+The private balance section queries Tripo's read-only GET `/v3/account/balance`,
+showing available credits, US-dollar equivalent, optional reserved credits and the
+time checked. The configured P2 task still uses 110 credits. The API response
+contains only availableCredits/frozenCredits/checkedAt, never credentials or raw
+provider errors. Successful and failed balance reads share an in-memory 30-second
+cache; concurrent reads coalesce. Provider timeout is eight seconds. Failure shows
+Unavailable with Refresh / Top up controls, without presenting a stale amount as
+current or preventing submission review. The visible page loads/checks on focus
+and every 60 seconds; Refresh balance uses the same cached endpoint. This is a
+timestamped snapshot, not a reservation or a guarantee the next job is funded.
+No balance request uploads photos or starts generation. Owner authorization is
+checked both before and after the awaited lookup; responses are private/no-store.
+
+Top up Tripo opens the official API pricing page's Buy credits destination in a new
+tab, allowing sign-in there. It does not top up or spend from GUMWHEEL. Verified
+official references: [billing API and credit units](https://developers.tripo3d.ai/en/docs/billing),
+[API pricing / Buy credits](https://developers.tripo3d.ai/en/pricing). The documented
+December 2026 console display change does not change API credit units. The API
+account and Tripo Studio have separate billing; this link targets API funding.
+
 ## User-facing status
 
 Users see queued/checking, photo passed and waiting to be created, actual generation,
@@ -90,7 +139,8 @@ their own five-minute fallback, without operational diagnostics.
 
 ## Storage, access and activation
 
-Additive job columns: generation_approved_at/by, hold_reason and render BLOB.
+Additive job columns: generation_approved_at/by, hold_reason, render BLOB and
+rejection_note (the latter added for manual quality review).
 New avatar_admin_events table cascades with jobs. Existing APPROVED jobs remain
 unapproved on migration; in-flight paid tasks retain their state. Pending legacy
 jobs receive one admin notice. No journey table or login identity is migrated.
@@ -114,9 +164,11 @@ are private/no-store; photo/render bytes have fixed JPEG/WebP types and nosniff.
 | --- | --- |
 | GET `/api/admin/avatar-jobs?page=0&job=ID` | Bounded metadata list, optional focused row |
 | GET `/api/admin/avatar-jobs/notifications` | Owner-only count/link |
+| GET `/api/admin/avatar-jobs/balance` | Owner-only cached read-only Tripo balance |
 | GET `/api/admin/avatar-jobs/:id/photo` | Private normalized source if retained |
 | GET `/api/admin/avatar-jobs/:id/render` | Private per-job generated sprite |
 | POST `/api/admin/avatar-jobs/:id/approve` | Verified photo → persisted generation permission |
+| POST `/api/admin/avatar-jobs/:id/reject` | APPROVED → REJECTED with required reason, revoking permission |
 | POST `/api/admin/avatar-jobs/:id/cancel` | Stops local processing/assignment; no provider refund promise |
 | POST `/api/admin/avatar-jobs/:id/retry-check` | Explicit restart of an exhausted Mac check |
 | POST `/api/admin/avatar-jobs/reviewed` | Acknowledges that admin event only |
@@ -126,16 +178,29 @@ journeys. Frontend push alone does not activate the new gate/schema.
 
 ## Reproduction and evidence
 
+- Quality-review/balance extension: `npm test` passes 290 regressions; the targeted
+  avatar command below passes 23. All 52 security checks, lint and production build
+  pass. `scripts/check-avatar-rejection.py` passes at 320/390/1440px in development
+  and the optimized build; existing admin/upload browser scripts pass at the same
+  widths. Whole Admin, shared rejection dialog, owner Profile and Privacy were
+  visually reviewed. The script expects a private full-body fixture at
+  `/tmp/gumwheel-avatar-normalized.jpg`; photos/screenshots stay outside Git.
+  Strict standalone TypeScript retains 28 existing diagnostics in untouched tests;
+  no avatar/production-source diagnostics remain. Read-only real balance succeeded;
+  new paid generation, real inbox delivery, physical Safari, authenticated
+  production owner flow and signed-in Tripo checkout remain unverified.
+  See [new evidence and retained failed baselines](results/avatar-review-balance-2026-11-16.json).
 - `node --import tsx --test tests/avatar-admin.test.ts tests/avatar-jobs.test.ts`
 - `npm test`, `npm run lint`, `npm run build`, `npm run test:security`
 - `GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts`
 - `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npx next dev --hostname 127.0.0.1 --port 3491`
 - `/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-admin.py`
 - `/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-upload.py`
+- `/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-rejection.py`
 
-The fixture uses synthetic accounts, in-memory SQLite, explicit loopback controls,
+The preceding manual-approval release used synthetic accounts, in-memory SQLite, explicit loopback controls,
 fake generation and no provider/email credentials. No paid task/live submission is
-needed. All 283 regressions, 16 avatar tests, 52 isolated security checks, lint and the
+needed. Its 283 regressions, 16 avatar tests, 52 isolated security checks, lint and the
 production build pass. Optimized browser flows pass at 320/390/1440px; existing
 admin sign-in passes at 320/390/844/1440px. Whole mobile/desktop Admin, Profile
 and Privacy screens were visually reviewed. New live paid generation, real inbox
@@ -143,6 +208,15 @@ delivery, physical Safari and authenticated production walkthrough remain unveri
 See [sanitized evidence and retained failed baselines](results/avatar-admin-2026-11-16.json).
 
 ## API activation
+
+Quality-review/balance extension activated at 2026-11-16T05:09:04.577Z after a
+new private online SQLite/config backup and fresh zero-underway-trip check.
+Only `cocowheels-api` restarted. The rejection_note column exists; all 142 rides
+and 19 checked journey/profile/account tables match the backup. Integrity is ok,
+foreign-key violations are zero and configuration is unchanged. Local/public
+health are 200; anonymous balance is 403. No live avatar test job was created;
+new paid generation/inbox delivery remain untested. Frontend deployment for this
+extension is verified separately after its exact commit reaches production.
 
 At 2026-11-16T04:36:23.528Z a private online SQLite/config backup passed integrity
 checks, followed by a fresh zero-accepted/active-trip check and restart of only

@@ -54,6 +54,8 @@ export default function PrivacyPage() {
         Submitted photos are available to the administrator for review for up to
         seven days, and removed earlier if the creation is cancelled. Generation
         requires separate administrator approval after the photo passes its check.
+        We may reject a passing photo on review and explain what to change before
+        you upload another photo.
         Temporary checking copies are removed when the check finishes or the checking worker next restarts.
         Job, generated-preview and notification records are retained for up to 30 days
         after their final update; backups and Tripo may retain their own copies. Creating an

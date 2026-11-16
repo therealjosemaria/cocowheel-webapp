@@ -38,10 +38,12 @@ const destination = { latitude: -33.8886, longitude: 151.1872, label: "Universit
 const posted = postDemand(db, owner.token, { origin, destination, date: "any", time: "" });
 const ride = publishRide(db, driver.token, { origin, destination, priceAud: 0, scheduledDepartureAt: new Date(Date.now()+3600000).toISOString() }).ride;
 requestRide(db, owner.token, ride.rideId, { pickup: origin, destination, requestedDepartureAt: ride.scheduledDepartureAt });
-const api = createApiServer(db);
+let fixtureBalance = 1000;
+const api = createApiServer(db, { avatarBalanceProvider: {
+  request: async () => ({ balance: fixtureBalance, frozen: 0 }), image: async () => { throw new Error("Balance fixture cannot download images"); },
+} });
 api.listen(3492, "127.0.0.1", () => console.log(JSON.stringify({ requestId: posted.id, rideId: ride.rideId })));
 // Synthetic fixture controls only: never mounted by the application API.
-let fixtureBalance = 1000;
 const controls = createServer(async (request, response) => {
   if (request.method !== "POST" || request.headers["x-gumwheel-fixture"] !== "1") { response.writeHead(403); response.end(); return; }
   if (request.url === "/reset") {

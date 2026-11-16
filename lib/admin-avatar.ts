@@ -4,7 +4,7 @@ export type AdminAvatarNotice = { count: number; href: string; message: string }
 export type AdminAvatarJob = {
   id: string; username: string; email: string; status: AvatarJobStatus;
   createdAt: string; updatedAt: string; approvedAt: string | null;
-  reason: string | null; hold: string | null; taskId: string | null;
+  reason: string | null; reviewReason: string | null; hold: string | null; taskId: string | null;
   photoUrl: string | null; renderUrl: string | null;
   notificationKey: string | null;
 };
@@ -12,6 +12,9 @@ export type AdminAvatarJobs = {
   jobs: AdminAvatarJob[]; page: number; total: number;
   workerSeenAt: string | null; model: string; creditsPerAvatar: number;
 };
+export type AdminAvatarBalance = { availableCredits: number | null; frozenCredits: number | null; checkedAt: string | null };
+// Same destination as the official API pricing page's Buy credits action.
+export const TRIPO_TOP_UP_URL = "https://developers.tripo3d.ai/en/pricing?action=topup&from=pricing_hero";
 export const adminAvatarStatus: Record<AvatarJobStatus, string> = {
   QUEUED: "Waiting for photo check", CHECKING: "Checking photo", APPROVED: "Photo verified",
   SUBMITTING: "Submitting generation", GENERATING: "Generating", READY: "Ready",

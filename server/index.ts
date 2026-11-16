@@ -66,7 +66,7 @@ import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
 import { authorizeAvatarWorker, avatarUploadsEnabled, cancelAvatarJob, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
-import { runAvatarGeneration } from "./avatar-generation";
+import { readAdminAvatarBalance, runAvatarGeneration, type AvatarProvider } from "./avatar-generation";
 import { deliverAvatarReminder, deliverAdminAvatarReminder } from "./avatar-email";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "./avatar-admin";
 
@@ -151,7 +151,7 @@ function errorStatus(error: unknown) {
   if (code === "USERNAME_UNAVAILABLE") return 409;
   if (code === "PHOTO_BUSY") return 429;
   if (code === "AVATAR_UNAVAILABLE") return 409;
-  if (["AVATAR_ALREADY_QUEUED", "AVATAR_JOB_CHANGED", "AVATAR_LEASE_EXPIRED", "AVATAR_SUBMISSION_CHANGED"].includes(code)) return 409;
+  if (["AVATAR_ALREADY_QUEUED", "AVATAR_JOB_CHANGED", "AVATAR_REVIEW_TOO_LATE", "AVATAR_LEASE_EXPIRED", "AVATAR_SUBMISSION_CHANGED"].includes(code)) return 409;
   if (["AVATAR_QUEUE_FULL", "AVATAR_UPLOAD_LIMIT"].includes(code)) return 429;
   if (code === "AVATAR_UPLOADS_UNAVAILABLE") return 503;
   if (["VEHICLE_PLATE_REQUIRED", "VEHICLE_IN_USE"].includes(code)) return 409;
@@ -440,7 +440,7 @@ function pathParts(url: string | undefined) {
 
 export function createApiServer(
   database: Db,
-  options: { sampleRides?: boolean; sendUniversityCode?: CodeSender } = {},
+  options: { sampleRides?: boolean; sendUniversityCode?: CodeSender; avatarBalanceProvider?: AvatarProvider } = {},
 ) {
   assertRuntimeConfiguration();
   initializeCoreSchema(database);
@@ -510,6 +510,10 @@ export function createApiServer(
             writeJson(response, 200, adminAvatarJobs(database, Number(adminUrl.searchParams.get("page")), adminUrl.searchParams.get("job") ?? undefined), cors);
           } else if (request.method === "GET" && path.length === 5 && path[4] === "notifications") {
             writeJson(response, 200, adminAvatarNotices(database), cors);
+          } else if (request.method === "GET" && path.length === 5 && path[4] === "balance") {
+            const balance = await readAdminAvatarBalance(options.avatarBalanceProvider);
+            if (findSession(database, readGuestCookie(request.headers.cookie))?.unikey !== ADMIN_UNIKEY) throw new Error("ADMIN_ACCESS_DENIED");
+            writeJson(response, 200, balance, { ...cors, "Cache-Control": "private, no-store" });
           } else if (request.method === "GET" && path.length === 6 && ["photo", "render"].includes(path[5])) {
             const bytes = adminAvatarAsset(database, path[4], path[5]);
             if (!bytes) writeJson(response, 404, { error: "NOT_FOUND" }, cors);
@@ -518,11 +522,11 @@ export function createApiServer(
             const body = await readJson(request, 2048);
             if (findSession(database, readGuestCookie(request.headers.cookie))?.unikey !== ADMIN_UNIKEY) throw new Error("ADMIN_ACCESS_DENIED");
             reviewAdminAvatar(database, body.key); writeJson(response, 200, { ok: true }, cors);
-          } else if (request.method === "POST" && path.length === 6 && ["approve", "cancel", "retry-check"].includes(path[5])) {
-            await readJson(request, 2048);
+          } else if (request.method === "POST" && path.length === 6 && ["approve", "reject", "cancel", "retry-check"].includes(path[5])) {
+            const body = await readJson(request, 4096);
             const current = findSession(database, readGuestCookie(request.headers.cookie));
             if (current?.unikey !== ADMIN_UNIKEY) throw new Error("ADMIN_ACCESS_DENIED");
-            writeJson(response, 200, actOnAdminAvatar(database, path[4], path[5], current.id), cors);
+            writeJson(response, 200, actOnAdminAvatar(database, path[4], path[5], current.id, Date.now(), body.reason), cors);
           } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
         } else if (request.method === "GET" && adminUrl.pathname === "/api/admin/tripo") {
           writeJson(response, 200, { comparison: await readComparison() }, cors);

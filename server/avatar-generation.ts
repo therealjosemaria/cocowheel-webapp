@@ -5,9 +5,10 @@ import type { Db } from "./core";
 import { comparisonPayload } from "../lib/tripo-comparison";
 import { prepareAvatarSprite } from "./map-avatars";
 import { AVATAR_CREDITS, AVATAR_MODEL, clearAvatarHold, completeGeneratedAvatar, expireAvatarJobs, finishAvatarJob, holdAvatarJob, type AvatarJobRow } from "./avatar-jobs";
+import type { AdminAvatarBalance } from "../lib/admin-avatar";
 
-type ProviderResult = { balance?: number; file_token?: string; task_id?: string; status?: string; output?: { rendered_image_url?: string } };
-export type AvatarProvider = { request: (path: string, body?: FormData | Record<string, unknown>) => Promise<ProviderResult>; image: (url: string) => Promise<Buffer> };
+type ProviderResult = { balance?: number; frozen?: number; file_token?: string; task_id?: string; status?: string; output?: { rendered_image_url?: string } };
+export type AvatarProvider = { request: (path: string, body?: FormData | Record<string, unknown>, timeoutMs?: number) => Promise<ProviderResult>; image: (url: string) => Promise<Buffer> };
 class TripoError extends Error { constructor(readonly definitive: boolean) { super("TRIPO_REQUEST_FAILED"); } }
 async function tripoKey() {
   if (process.env.TRIPO_API_KEY) return process.env.TRIPO_API_KEY;
@@ -15,11 +16,11 @@ async function tripoKey() {
   return path ? parseEnv(await readFile(path, "utf8")).TRIPO_API_KEY : undefined;
 }
 const provider: AvatarProvider = {
-  async request(path, body) {
+  async request(path, body, timeoutMs = 60_000) {
     const key = await tripoKey();
     if (!key) throw new TripoError(true);
     const response = await fetch(`https://openapi.tripo3d.ai/v3${path}`, {
-      method: body ? "POST" : "GET", redirect: "error", signal: AbortSignal.timeout(60_000),
+      method: body ? "POST" : "GET", redirect: "error", signal: AbortSignal.timeout(timeoutMs),
       headers: { Authorization: `Bearer ${key}`, ...(body && !(body instanceof FormData) ? { "Content-Type": "application/json" } : {}) },
       body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
     });
@@ -49,6 +50,23 @@ const provider: AvatarProvider = {
     return Buffer.concat(chunks);
   },
 };
+const balanceCache = new WeakMap<AvatarProvider, { expires: number; value: Promise<AdminAvatarBalance> }>();
+/** Read-only, owner-route-only balance. Cache failures too; never expose provider errors. */
+export function readAdminAvatarBalance(api: AvatarProvider = provider, now = Date.now()): Promise<AdminAvatarBalance> {
+  const cached = balanceCache.get(api);
+  if (cached && cached.expires > now) return cached.value;
+  const value = (async (): Promise<AdminAvatarBalance> => {
+    try {
+      const result = await api.request("/account/balance", undefined, 8_000);
+      if (typeof result.balance !== "number" || !Number.isFinite(result.balance) || result.balance < 0) throw new Error("INVALID_BALANCE");
+      return { availableCredits: result.balance,
+        frozenCredits: typeof result.frozen === "number" && Number.isFinite(result.frozen) && result.frozen >= 0 ? result.frozen : null,
+        checkedAt: new Date(now).toISOString() };
+    } catch { return { availableCredits: null, frozenCredits: null, checkedAt: null }; }
+  })();
+  balanceCache.set(api, { expires: now + 30_000, value });
+  return value;
+}
 const working = new WeakSet<Db>();
 /** One durable task at a time. Validation cannot call the paid provider. */
 export async function runAvatarGeneration(db: Db, api: AvatarProvider = provider, now = Date.now()) {

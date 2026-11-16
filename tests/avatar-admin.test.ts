@@ -6,11 +6,13 @@ import Database from "better-sqlite3";
 import sharp from "sharp";
 import { createGuestSession, initializeCoreSchema } from "../server/core";
 import { createApiServer } from "../server/index";
-import { AVATAR_DELAY_MS, AVATAR_PHOTO_TTL, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs } from "../server/avatar-jobs";
+import { AVATAR_DELAY_MS, AVATAR_PHOTO_TTL, avatarJobSummary, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, reviewAvatarEvent } from "../server/avatar-jobs";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "../server/avatar-admin";
 import { deliverAdminAvatarReminder, deliverAvatarReminder } from "../server/avatar-email";
-import { runAvatarGeneration, type AvatarProvider } from "../server/avatar-generation";
-import { readMapAvatar } from "../server/map-avatars";
+import { readAdminAvatarBalance, runAvatarGeneration, type AvatarProvider } from "../server/avatar-generation";
+import { assignMapAvatar, readMapAvatar } from "../server/map-avatars";
+import { avatarJobMessage } from "../lib/avatar-job";
+import type { AlertSender } from "../server/usual-routes";
 
 process.env.COCOWHEELS_CODE_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 process.env.COCOWHEELS_AVATAR_UPLOADS = "1";
@@ -141,14 +143,14 @@ test("each submission and passed check creates an admin notification; five-minut
 });
 
 test("admin HTTP assets, list, notices and mutations require the existing owner cookie and same-origin mutation headers", async () => {
-  const f = await fixture(), server = createApiServer(f.db);
+  const f = await fixture(), server = createApiServer(f.db, { avatarBalanceProvider: f.api });
   server.listen(0, "127.0.0.1"); await once(server, "listening");
   const address = server.address(); assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}`;
   const adminHeaders = { Cookie: `cocowheels_guest=${f.admin.token}`, "Content-Type": "application/json", "X-Admin-Request": "1", Origin: "http://localhost:3000" };
   const deniedHeaders: Record<string, string>[] = [{}, { Cookie: `cocowheels_guest=${f.owner.token}` }, { Cookie: `cocowheels_guest=${f.other.token}` }, { Authorization: `Bearer ${f.admin.token}` }];
   try {
-    for (const path of ["", "/notifications", `/${f.id}/photo`, `/${f.id}/render`]) {
+    for (const path of ["", "/notifications", "/balance", `/${f.id}/photo`, `/${f.id}/render`]) {
       for (const headers of deniedHeaders)
         assert.equal((await fetch(base + "/api/admin/avatar-jobs" + path, { headers })).status, 403);
     }
@@ -246,4 +248,168 @@ test("seven-day admin photo retention remains bounded by the global queue/storag
     expireAvatarJobs(f.db, now + AVATAR_PHOTO_TTL + 1);
     assert.ok(enqueueAvatarPhoto(f.db, f.owner.id, f.photo, randomUUID(), true, now + AVATAR_PHOTO_TTL + 2).job);
   } finally { f.db.close(); }
+});
+
+test("admin can overturn a passed photo with a required user-visible reason before generation", async () => {
+  const f = await fixture();
+  try {
+    assignMapAvatar(f.db, f.owner.id, await f.api.image("fixture"), true);
+    const previous = readMapAvatar(f.db, f.owner.id);
+    f.verify(); actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 2);
+    actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 3, "  Your face isn’t clear.\nUse better lighting.  ");
+    const result = avatarJobSummary(f.db, f.owner.id)!;
+    assert.equal(result.status, "REJECTED"); assert.equal(result.reviewReason, "Your face isn’t clear. Use better lighting.");
+    assert.equal(result.reason, null); assert.match(avatarJobMessage(result), /Upload another photo/);
+    assert.equal(adminAvatarJobs(f.db).jobs[0].approvedAt, null);
+    assert.ok(adminAvatarAsset(f.db, f.id, "photo"));
+    assert.deepEqual(readMapAvatar(f.db, f.owner.id), previous);
+    assert.equal(avatarJobSummary(f.db, f.other.id), null);
+    actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 4, result.reviewReason);
+    assert.equal(avatarJobSummary(f.db, f.owner.id)!.notificationKey, result.notificationKey);
+    reviewAvatarEvent(f.db, f.owner.id, result.notificationKey, now + 4);
+    actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 5, result.reviewReason);
+    assert.equal(avatarJobSummary(f.db, f.owner.id)!.notificationKey, null);
+    assert.throws(() => actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 4, "Different reason"), /AVATAR_JOB_CHANGED/);
+    assert.throws(() => actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 4), /AVATAR_JOB_CHANGED/);
+    let calls = 0;
+    await runAvatarGeneration(f.db, { ...f.api, request: async () => { calls++; return {}; } }, now + 5);
+    assert.equal(calls, 0);
+    const fresh = enqueueAvatarPhoto(f.db, f.owner.id, f.photo, randomUUID(), true, now + 6).job!;
+    assert.equal(fresh.status, "QUEUED"); assert.equal(fresh.reviewReason, null);
+    assert.notEqual(fresh.id, f.id);
+  } finally { f.db.close(); }
+});
+
+test("photo rejection validates reasons and state without changing automatic Mac failures", async () => {
+  const f = await fixture();
+  try {
+    assert.throws(() => actOnAdminAvatar(f.db, f.id, "reject", f.owner.id, now, "Face unclear"), /ADMIN_ACCESS_DENIED/);
+    assert.throws(() => actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now, "Face unclear"), /AVATAR_JOB_CHANGED/);
+    f.verify();
+    for (const reason of [undefined, null, 2, {}, "", " \n ", "x".repeat(401), "Bad\u0000reason"])
+      assert.throws(() => actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 2, reason), /INVALID_AVATAR_REVIEW_REASON/);
+    assert.equal(avatarJobSummary(f.db, f.owner.id)!.status, "APPROVED");
+    for (const state of ["SUBMITTING", "GENERATING", "REVIEW_REQUIRED"]) {
+      f.db.prepare("UPDATE avatar_jobs SET status=?,updated_at=? WHERE id=?").run(state, now + 2, f.id);
+      assert.throws(() => actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 3, "Face unclear"), /AVATAR_REVIEW_TOO_LATE/);
+      assert.equal(adminAvatarJobs(f.db).jobs[0].status, state);
+    }
+    actOnAdminAvatar(f.db, f.id, "cancel", f.admin.id, now + 4);
+    const next = enqueueAvatarPhoto(f.db, f.owner.id, f.photo, randomUUID(), true, now + 5).job!;
+    const claim = claimAvatarPhoto(f.db, now + 5)!;
+    completeAvatarPhoto(f.db, next.id, claim.lease, "rejected", "FEET", now + 6);
+    const failed = avatarJobSummary(f.db, f.owner.id)!;
+    assert.equal(failed.status, "REJECTED"); assert.equal(failed.reason, "FEET"); assert.equal(failed.reviewReason, null);
+    assert.match(avatarJobMessage(failed), /both feet/); assert.ok(failed.notificationKey);
+  } finally { f.db.close(); }
+});
+
+test("manual rejection during a balance check or file upload prevents paid submission and late Mac approval", async () => {
+  for (const boundary of ["/account/balance", "/files"]) {
+    const f = await fixture();
+    try {
+      const claim = claimAvatarPhoto(f.db, now)!;
+      completeAvatarPhoto(f.db, f.id, claim.lease, "approved", null, now + 1);
+      actOnAdminAvatar(f.db, f.id, "approve", f.admin.id, now + 2);
+      let entered = false, release!: () => void;
+      const waiting = new Promise<void>(resolve => { release = resolve; });
+      const work = runAvatarGeneration(f.db, { ...f.api, request: async (...args) => {
+        if (args[0] === boundary) { entered = true; await waiting; }
+        return f.api.request(...args);
+      } }, now + 3);
+      while (!entered) await new Promise(resolve => setImmediate(resolve));
+      actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, now + 4, "Both hands need to be visible.");
+      release(); await work;
+      assert.equal(f.submits(), 0); assert.equal(avatarJobSummary(f.db, f.owner.id)!.status, "REJECTED");
+      assert.throws(() => completeAvatarPhoto(f.db, f.id, claim.lease, "approved", null, now + 5), /AVATAR_LEASE_EXPIRED/);
+    } finally { f.db.close(); }
+  }
+});
+
+test("manual rejection gives one five-minute result email with escaped feedback, suppressed by user review", async () => {
+  const f = await fixture();
+  const emails: { text: string; html?: string }[] = [];
+  try {
+    f.verify();
+    const rejectedAt = now + 3;
+    actOnAdminAvatar(f.db, f.id, "reject", f.admin.id, rejectedAt, 'Your <face> & hands aren’t clear.');
+    const send: AlertSender = async email => { emails.push(email); };
+    await deliverAvatarReminder(f.db, send, rejectedAt + AVATAR_DELAY_MS - 1); assert.equal(emails.length, 0);
+    await deliverAvatarReminder(f.db, send, rejectedAt + AVATAR_DELAY_MS); assert.equal(emails.length, 1);
+    assert.match(emails[0].text, /Your <face> & hands/); assert.match(emails[0].html!, /&lt;face&gt; &amp; hands/);
+    assert.doesNotMatch(emails[0].html!, /<face>/);
+    await deliverAvatarReminder(f.db, send, rejectedAt + AVATAR_DELAY_MS + 1); assert.equal(emails.length, 1);
+    const next = enqueueAvatarPhoto(f.db, f.owner.id, f.photo, randomUUID(), true, now + 10).job!;
+    const claim = claimAvatarPhoto(f.db, now + 10)!;
+    completeAvatarPhoto(f.db, next.id, claim.lease, "approved", null, now + 11);
+    actOnAdminAvatar(f.db, next.id, "reject", f.admin.id, now + 12, "Your feet aren’t visible.");
+    reviewAvatarEvent(f.db, f.owner.id, avatarJobSummary(f.db, f.owner.id)!.notificationKey, now + 13);
+    await deliverAvatarReminder(f.db, send, now + 12 + AVATAR_DELAY_MS); assert.equal(emails.length, 1);
+  } finally { f.db.close(); }
+});
+
+test("admin rejection endpoint requires owner session and origin; balance is read-only and excludes provider internals", async () => {
+  const f = await fixture(); let balanceCalls = 0;
+  const provider: AvatarProvider = { ...f.api, request: async (path, body) => {
+    assert.equal(path, "/account/balance"); assert.equal(body, undefined); balanceCalls++;
+    return { balance: 50, frozen: 110, task_id: "private-not-for-balance" };
+  } };
+  const server = createApiServer(f.db, { avatarBalanceProvider: provider });
+  server.listen(0, "127.0.0.1"); await once(server, "listening");
+  const address = server.address(); assert.ok(address && typeof address !== "string");
+  const base = `http://127.0.0.1:${address.port}/api/admin/avatar-jobs`;
+  const headers = { Cookie: `cocowheels_guest=${f.admin.token}`, Origin: "http://localhost:3000", "X-Admin-Request": "1", "Content-Type": "application/json" };
+  try {
+    f.verify();
+    const deniedHeaders: Record<string, string>[] = [{}, { ...headers, Cookie: `cocowheels_guest=${f.owner.token}` }, { Authorization: `Bearer ${f.admin.token}` }];
+    for (const denied of deniedHeaders) {
+      assert.equal((await fetch(base + "/balance", { headers: denied })).status, 403);
+      assert.equal((await fetch(base + `/${f.id}/reject`, { method: "POST", headers: denied, body: JSON.stringify({ reason: "Face unclear" }) })).status, 403);
+    }
+    assert.equal(balanceCalls, 0);
+    assert.equal((await fetch(base + `/${f.id}/reject`, { method: "POST", headers: { ...headers, Origin: "https://attacker.invalid" }, body: '{}' })).status, 403);
+    assert.equal((await fetch(base + `/${f.id}/reject`, { method: "POST", headers, body: '{}' })).status, 400);
+    const balance = await fetch(base + "/balance", { headers });
+    assert.match(balance.headers.get("cache-control")!, /private, no-store/);
+    assert.deepEqual(Object.keys(await balance.json()).sort(), ["availableCredits", "checkedAt", "frozenCredits"]);
+    await fetch(base + "/balance", { headers }); assert.equal(balanceCalls, 1);
+    assert.equal(f.submits(), 0);
+    assert.equal((await fetch(base + `/${f.id}/reject`, { method: "POST", headers, body: JSON.stringify({ reason: "Face unclear" }) })).status, 200);
+    assert.equal(avatarJobSummary(f.db, f.owner.id)!.reviewReason, "Face unclear");
+  } finally { server.close(); server.closeAllConnections(); await once(server, "close"); f.db.close(); }
+});
+
+test("balance reads deduplicate concurrent requests, expire after 30 seconds and redact failures instead of showing stale balances", async () => {
+  let calls = 0, bad = false;
+  const api: AvatarProvider = { request: async (path, body, timeout) => {
+    assert.equal(path, "/account/balance"); assert.equal(body, undefined); assert.equal(timeout, 8000); calls++;
+    if (bad) throw new Error("private secret response");
+    return { balance: 0, frozen: 0 };
+  }, image: async () => { throw new Error("Never download"); } };
+  const results = await Promise.all(Array.from({ length: 10 }, () => readAdminAvatarBalance(api, now)));
+  assert.equal(calls, 1); assert.equal(results[0].availableCredits, 0);
+  await readAdminAvatarBalance(api, now + 29_999); assert.equal(calls, 1);
+  bad = true;
+  const failure = await readAdminAvatarBalance(api, now + 30_000);
+  assert.deepEqual(failure, { availableCredits: null, frozenCredits: null, checkedAt: null });
+  await readAdminAvatarBalance(api, now + 30_001); assert.equal(calls, 2);
+  for (const balance of [NaN, Infinity, -1, undefined])
+    assert.equal((await readAdminAvatarBalance({ ...api, request: async () => ({ balance }) }, now)).availableCredits, null);
+});
+
+test("an owner session revoked during the awaited balance request cannot receive the result", async () => {
+  const f = await fixture(); let entered = false, release!: () => void;
+  const wait = new Promise<void>(resolve => { release = resolve; });
+  const server = createApiServer(f.db, { avatarBalanceProvider: { ...f.api, request: async () => {
+    entered = true; await wait; return { balance: 500 };
+  } } });
+  server.listen(0, "127.0.0.1"); await once(server, "listening");
+  const address = server.address(); assert.ok(address && typeof address !== "string");
+  try {
+    const response = fetch(`http://127.0.0.1:${address.port}/api/admin/avatar-jobs/balance`, { headers: { Cookie: `cocowheels_guest=${f.admin.token}` } });
+    while (!entered) await new Promise(resolve => setImmediate(resolve));
+    f.db.prepare("DELETE FROM university_sessions WHERE principal_id=?").run(f.admin.id);
+    release(); const result = await response;
+    assert.equal(result.status, 403); assert.doesNotMatch(await result.text(), /500|availableCredits/);
+  } finally { server.close(); server.closeAllConnections(); await once(server, "close"); f.db.close(); }
 });

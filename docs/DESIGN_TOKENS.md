@@ -1,5 +1,11 @@
 # Coco Wheels visual system
 
+16 November photo rejection adds no visual tokens: its textarea shares field
+padding/border/type with a 96px minimum height and vertical resize. Shared
+ride-action secondary link styling matches button dimensions and text treatment.
+Balance uses existing small regular admin fields/copy, without a metric hero,
+badge or extra colour. Admin and owner feedback wrap long unbroken reasons.
+
 16 November avatar administration reuses admin-panel/admin-records/admin-fields,
 existing primary/secondary buttons and the shared confirmation shell/actions.
 Photo/render previews use two minmax(0,1fr) columns, 16px gaps, contained 160×220px

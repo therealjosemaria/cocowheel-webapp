@@ -1,5 +1,13 @@
 # GUMWHEEL
 
+16 November avatar quality review: failed Mac checks still notify the submitter
+automatically. Before paid submission, Admin can reject a passing photo with a
+required reason; this revokes generation permission and offers the user another
+upload through Profile and the existing five-minute unread email fallback.
+Avatar management also shows a private, timestamped Tripo API balance and the
+official API top-up link. Balance reads never generate avatars. See
+[review, balance and verification](docs/AVATAR_ADMIN.md#manual-photo-rejection-and-tripo-balance).
+
 16 November manual avatar management supersedes automatic generation below.
 The protected `/admin/avatar-management` page shows private submitted photos,
 photo-check status, generation approval, operational holds and generated previews.

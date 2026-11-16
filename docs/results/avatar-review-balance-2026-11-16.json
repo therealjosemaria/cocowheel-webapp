@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-16",
+  "recordedAt": "2026-11-16T05:07:46.079030+00:00",
+  "sourceBaseline": "0bb3a5b736661b3cca7ff062f4fd18bdf9408f0f",
+  "sourceSha256": {
+    "app/globals.css": "0cfefc5cc6c4de2351202ebfeea9fdb312d837563b45cd04c723479017894855",
+    "app/privacy/page.tsx": "a060b8417f64decde89f01894912e307a7148a057dad0a6141bcdb20ea037d0e",
+    "components/admin-avatar-management.tsx": "b8b722bd00b1a2a0c35d32fb87af6e22c35d5b22ef445a8411057e2c9584801d",
+    "lib/admin-avatar.ts": "28585b12599c448430cb7a39970111cd0d3af93b69948d8a0b1c8d5ffc1ffb76",
+    "lib/avatar-job.ts": "5d77002ef15a1e7ca793034af2461d4084f22cc9271c108168d109945b919e52",
+    "scripts/serve-map-avatar-fixture.mts": "5d49c759ad2749558979c2b76e155c1e3b4105f54260345d1d8de15c71288ed4",
+    "server/avatar-admin.ts": "b5c235e2b4a1005c3926cfd42dd0d0886a0aad27fa42c45bde283c093197ce34",
+    "server/avatar-generation.ts": "84a11f3f1fc55614c2ceb9a5a734269b714e9ce8cba5e3d75f68675aee0773a8",
+    "server/avatar-jobs.ts": "1f1636f09af5d95e4a1a7b493ca3ae61a4e5c41ce43d197dee1736195d677c3d",
+    "server/index.ts": "648db1402ba16746a35d4e87e733693b471990fd97529232cd803b7661df814c",
+    "tests/avatar-admin.test.ts": "c3511f57081c4fac26788c49a02082cbd441f4cefde2765c4e1c3e9fd93442fc",
+    "scripts/check-avatar-rejection.py": "85605a458c45cdfa6c41d015427ffaac287daa9db5782671e4a57deb54e6c7c8"
+  },
+  "isolation": "Synthetic accounts and in-memory SQLite; loopback-only browser/API; fake Tripo and email transport. No live test photos, jobs, paid tasks or email.",
+  "checks": {
+    "regressions": {
+      "passed": 290,
+      "command": "npm test"
+    },
+    "avatarRegressionRetest": {
+      "passed": 23,
+      "command": "node --import tsx --test tests/avatar-admin.test.ts tests/avatar-jobs.test.ts"
+    },
+    "security": {
+      "passed": 52,
+      "command": "npm run test:security"
+    },
+    "lint": "npm run lint passed",
+    "productionBuild": "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build passed",
+    "strictTypeAudit": "28 pre-existing diagnostics in untouched test files; no avatar or production-source diagnostics",
+    "browser": {
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "commands": [
+        "GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts",
+        "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npx next start --hostname 127.0.0.1 --port 3491",
+        "/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-rejection.py",
+        "/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-admin.py",
+        "/tmp/gumwheel-ui-check-env/bin/python scripts/check-avatar-upload.py"
+      ],
+      "result": "New review flow passed in dev and optimized production build. Existing admin/user flows passed in dev. Private balance and fallback, required reason, safe action order, Mac pass overridden, own Profile notice/review/re-upload, maximum 400-character unbroken feedback, Privacy, no exceptions/overflow."
+    },
+    "visualReview": "Whole Admin, shared rejection modal, Profile and Privacy reviewed on mobile and desktop; regular body/helper weight, heading hierarchy, matching action styles, left alignment, gaps and next steps checked.",
+    "lifecycle": "Automatic Mac failures unchanged; manual rejection revokes approval, blocks paid claim during awaited balance/upload, prevents replay, is idempotent and preserves assigned avatar. Five-minute email escaping and read suppression tested.",
+    "access": "Owner cookie/origin protections; ordinary/bearer-only sessions denied. Balance session revoked during awaited lookup denied. Only whitelisted balance fields; concurrent reads deduplicated and failures cached/redacted.",
+    "provider": "Read-only live balance query succeeded using existing server credential; official API top-up destination verified from pricing link. No generation or top-up performed."
+  },
+  "failedBaselines": [
+    {
+      "finding": "Initial sandboxed targeted runner exited without per-test diagnostics.",
+      "resolution": "Re-run with isolated loopback permissions passed; no product failure inferred."
+    },
+    {
+      "finding": "Initial balance HTTP test found Cache-Control no-store instead of intended private, no-store.",
+      "resolution": "Explicit response header added; targeted and full suites pass."
+    },
+    {
+      "finding": "Strict type audit caught six new diagnostics in test-only sender/header annotations.",
+      "resolution": "Annotations corrected; targeted retest passes and only the 28 untouched-test baseline diagnostics remain."
+    },
+    {
+      "finding": "Initial read-only provider probe used ESM named import for a CJS-transpiled module.",
+      "resolution": "Used its default export; live balance read succeeded with no paid request."
+    }
+  ],
+  "unverified": [
+    "New paid Tripo generation",
+    "Real inbox delivery",
+    "Physical Safari",
+    "Authenticated production owner walkthrough",
+    "Tripo checkout after sign-in"
+  ],
+  "apiActivation": {
+    "activatedAt": "2026-11-16T05:09:04.577Z",
+    "service": "active",
+    "health": 200,
+    "preflightUnderway": 0,
+    "rides": 142,
+    "tablesPreserved": true,
+    "tablesChecked": 19,
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "rejectionColumn": true,
+    "configurationUnchanged": true,
+    "avatarJobs": 0
+  },
+  "publicChecks": {
+    "health": 200,
+    "anonymousBalance": 403
+  }
+}

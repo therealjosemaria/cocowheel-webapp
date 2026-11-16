@@ -1,10 +1,20 @@
 export type AvatarJobStatus = "QUEUED" | "CHECKING" | "APPROVED" | "SUBMITTING" | "GENERATING" | "READY" | "REJECTED" | "FAILED" | "REVIEW_REQUIRED" | "CANCELLED" | "EXPIRED";
-export type AvatarJob = { id: string; status: AvatarJobStatus; reason: string | null; notificationKey: string | null; createdAt: string };
+export type AvatarJob = { id: string; status: AvatarJobStatus; reason: string | null; reviewReason?: string | null; notificationKey: string | null; createdAt: string };
 export type AvatarJobs = { accepting: boolean; job: AvatarJob | null };
 export const avatarJobActive = (status: AvatarJobStatus) => ["QUEUED", "CHECKING", "APPROVED", "SUBMITTING", "GENERATING", "REVIEW_REQUIRED"].includes(status);
 export const avatarJobCancellable = (status: AvatarJobStatus) => ["QUEUED", "CHECKING", "APPROVED"].includes(status);
 export const AVATAR_PHOTO_REQUIREMENTS = "Use a clear photo of just you standing, with your head, hands and feet visible.";
 export const AVATAR_PHOTO_ERROR = "Choose a JPG, PNG or WebP photo up to 10 MB, at least 256 pixels wide and 512 pixels tall.";
+export const AVATAR_REVIEW_REASON_LIMIT = 400;
+export const AVATAR_REVIEW_REASON_ERROR = "Add a reason of up to 400 characters so the user knows what to change.";
+export function avatarReviewReason(value: unknown): string | null {
+  if (typeof value !== "string" || Array.from(value).some(char => {
+    const code = char.charCodeAt(0);
+    return (code < 32 && ![9, 10, 13].includes(code)) || code === 127;
+  })) return null;
+  const reason = value.trim().replace(/\s+/g, " ");
+  return reason.length > 0 && reason.length <= AVATAR_REVIEW_REASON_LIMIT ? reason : null;
+}
 export const avatarRejections: Record<string, string> = {
   NO_PERSON: "We couldn’t clearly identify your full body. Upload another photo with your head, hands and feet visible.",
   HEAD: "We couldn’t clearly identify your head. Upload another photo with your whole head visible.",
@@ -20,7 +30,8 @@ export function avatarJobMessage(job: AvatarJob) {
     case "APPROVED": return "Your photo passed the check. Your avatar is waiting to be created.";
     case "SUBMITTING": case "GENERATING": return "Your photo passed the check. We’re creating your avatar.";
     case "READY": return "Your avatar is ready.";
-    case "REJECTED": return avatarRejections[job.reason ?? ""] ?? avatarRejections.BODY;
+    case "REJECTED": return job.reviewReason ? `Your photo wasn’t approved. ${job.reviewReason} Upload another photo.`
+      : avatarRejections[job.reason ?? ""] ?? avatarRejections.BODY;
     case "CANCELLED": return "Avatar creation cancelled. You can upload another photo.";
     case "EXPIRED": return "Your photo expired before processing finished. Upload it again to queue a new check.";
     case "REVIEW_REQUIRED": return "Avatar creation needs our review. Your current avatar is unchanged. Contact us for help.";

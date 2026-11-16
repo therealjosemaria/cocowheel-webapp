@@ -28,8 +28,11 @@ choice. The previous render remains until a replacement succeeds.
 Queued/checking: “Your photo is queued for checking. We’ll notify you with the
 results.” Approval: “Your photo passed the check. Your avatar is waiting to be created.”
 Generation: “Your photo passed the check. We’re creating your avatar.” Completion:
-“Your avatar is ready.” Rejections name only a supported uncertain region or pose
-and offer another upload. Provider errors and uncertain outcomes appear only to the admin; users keep
+“Your avatar is ready.” Automatic rejections name a supported uncertain region or pose
+and offer another upload. Admin may also reject a passing photo before paid
+submission, with required plain-text feedback shown in Profile and the same
+five-minute unread result email. This supersedes the automated-reason-only
+boundary; it does not change Mac thresholds. Provider errors and uncertain outcomes appear only to the admin; users keep
 the last completed photo-check stage, without provider/credit diagnostics.
 Profile cancellation remains available before paid submission and for operational
 review holds. Admin can also cancel in-flight creation, without a refund promise.
@@ -71,7 +74,7 @@ directories. An offline Mac cannot perform cleanup until it resumes.
 
 | Route | Contract |
 | --- | --- |
-| GET `/api/avatar/jobs` | Verified account's latest job, supported reason and unread key; never photo, lease, account selector or provider URL |
+| GET `/api/avatar/jobs` | Verified account's latest job, supported reason or admin reviewReason and unread key; never photo, lease, account selector or provider URL |
 | POST `/api/avatar/jobs` | Verified account before/after decode; bounded photo, UUID, consent; body principal fields have no authority |
 | POST `/api/avatar/jobs/cancel` | Current owner, cancellable state only |
 | POST `/api/avatar/jobs/reviewed` | Current owner's specific event only |
