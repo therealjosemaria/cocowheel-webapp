@@ -41,5 +41,16 @@
     "Authenticated production owner walkthrough",
     "Physical Safari"
   ],
-  "frontendDeployment": "Pending exact-commit production verification."
+  "frontendDeployment": {
+    "sourceRevision": "34c5c0358f020657c54248fa41beae8122d5df5e",
+    "id": "dpl_3NhDHKMjjAw6QPFjDY9ab5Kpps67",
+    "state": "READY",
+    "productionAliases": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "sourceHashesMatch": true,
+    "apiRestart": false,
+    "authenticatedProductionOwnerWalkthrough": "Not performed; manual-request behavior verified against optimized build and isolated actual API."
+  }
 }

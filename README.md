@@ -6,6 +6,8 @@ They remain a snapshot until another manual refresh; page entry, focus and timer
 never request the dashboard balance. Submission notices and the generator's
 necessary pre-submission funds check retain their existing behaviour. See
 [manual checks](docs/AVATAR_ADMIN.md#manual-dashboard-checks).
+The exact frontend implementation is verified READY on the production domains;
+no API restart was needed.
 
 16 November avatar quality review: failed Mac checks still notify the submitter
 automatically. Before paid submission, Admin can reject a passing photo with a

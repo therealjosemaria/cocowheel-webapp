@@ -133,8 +133,12 @@ Admin screens and populated review screens were visually reviewed on phone and
 desktop. Synthetic services use no real Tripo/email credentials. No backend
 suite was rerun for this frontend-only change. See
 [commands, evidence and fixture failure/retest](results/avatar-manual-balance-2026-11-16.json).
-Authenticated production owner use and physical Safari remain unverified;
-deployment is recorded after the exact implementation reaches production.
+Authenticated production owner use and physical Safari remain unverified.
+
+Deployment: implementation `34c5c0358f020657c54248fa41beae8122d5df5e` is pushed;
+Vercel `dpl_3NhDHKMjjAw6QPFjDY9ab5Kpps67` is READY for that exact commit and
+assigned to www.gumwheel.com / gumwheel.com. Recorded source hashes match the
+tested implementation. No API restart or production test mutation was performed.
 
 ## User-facing status
 
