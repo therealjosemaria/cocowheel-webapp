@@ -214,3 +214,9 @@ centering, typography and spacing; no overflow or page exceptions. Fixture
 commands above reproduce the screens; no paid requests, live account changes or
 API restart are needed. Physical devices and authenticated production Profile
 remain unverified. Exact frontend activation is recorded after push.
+
+Profile reference activation: `f885c77b7ac5e4cc0d18bd6bb9c3e764f10bc9ed`
+is READY as Vercel `dpl_DKJtDBNb43zMdTqvqazcFs1AXLqW`, assigned to both public
+domains. Anonymous read-only verification of the public stylesheet confirms the
+exact scoped Avatar heading/default-preview rule points to the front-facing
+sample asset. No API restart or production account write was performed.
