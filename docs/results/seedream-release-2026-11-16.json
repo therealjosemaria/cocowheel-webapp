@@ -1,7 +1,7 @@
 {
   "date": "2026-11-16",
   "baseline": "8f7a64be596123a3534faace19b1d4ff99f3f62e",
-  "sourceState": "Validated uncommitted implementation; implementation/deployment commit will be recorded after push.",
+  "sourceState": "Verified implementation commit 4edc50f6ed2a035ac7ccfed9f5cd06bcba3fccbc",
   "sourceFiles": {
     "server/avatar-generation.ts": "b823bddfd150096ee63333981893c1b79b638fb18ccd0786bc7facb6567d976e",
     "server/avatar-background.ts": "09f1e2e873210d1c4eda8c5d7c3742a0bc40b0fc2ab66b0dc0ef5b4639615c59",
@@ -166,6 +166,31 @@
     "avatarJobs": 0,
     "paidProviderCalls": 0,
     "backup": "Private mode-0700 database/config backup retained under ignored data/backups; backup integrity checked before restart.",
-    "frontend": "Exact implementation deployment pending push/verification."
-  }
+    "frontend": {
+      "commit": "4edc50f6ed2a035ac7ccfed9f5cd06bcba3fccbc",
+      "deployment": "dpl_FPgTqHc6BJRTLaEi852TmTrq7Wt4",
+      "state": "READY",
+      "productionAliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ],
+      "publicChecks": {
+        "widths": [
+          390,
+          1440
+        ],
+        "result": "passed",
+        "method": "GET/HEAD only; no credentials, uploads, email, generation or trip mutations.",
+        "coverage": [
+          "Both admin pages require email sign-in; no private gallery previews",
+          "Reference, P2, Sunburst and Seedream original images return 403 ADMIN_ACCESS_DENIED",
+          "Privacy includes local background-removal statement",
+          "Home/Privacy have no horizontal overflow or JavaScript exceptions",
+          "Public owner sprite returns 200 and byte-matches assigned Seedream sprite; API health 200"
+        ],
+        "visualReview": "Whole public Home and Privacy screens reviewed at mobile/desktop sizes. Authenticated live owner walkthrough remains unverified."
+      }
+    }
+  },
+  "implementationCommit": "4edc50f6ed2a035ac7ccfed9f5cd06bcba3fccbc"
 }

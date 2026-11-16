@@ -148,10 +148,25 @@ Only the owner's P2 assignment was replaced with the refined, already paid-for
 Seedream cutout; the existing enabled preference was retained. No provider call
 or test job was created. Only cocowheels-api restarted; health returned 200.
 
-All 142 rides and 18 other record tables were byte-for-byte unchanged; other
+All 18 checked record tables, including 142 rides, were byte-for-byte unchanged; other
 avatar rows and assignment count were preserved. New enabled sprite returned
 200 with the expected bytes, superseded asset returned 404, database integrity
 was ok with zero foreign-key violations, both nullable generation columns were
 present and configuration was unchanged. The idempotent setup script passed
 its pinned package/model verification and READY preflight. Exact frontend
 deployment and public browser checks are recorded after push.
+
+## Frontend deployment verification
+
+Implementation `4edc50f6ed2a035ac7ccfed9f5cd06bcba3fccbc` is READY in Vercel
+production (`dpl_FPgTqHc6BJRTLaEi852TmTrq7Wt4`), with both www.gumwheel.com
+and gumwheel.com aliases verified. Read-only production Chromium checks at
+390/1440px passed both admin email gates, absence of private previews, four
+original-image 403 denials, the new Privacy sentence and Home/Privacy containment
+with no JavaScript exceptions. Whole public mobile/desktop screens were visually
+reviewed; their existing hierarchy, regular body text and map geometry remain.
+Public health was 200 and the new map asset byte-matched the assigned sprite.
+All browser mutations/analytics were blocked. Authenticated live owner use,
+a new paid upload-to-generation run and physical devices remain unverified;
+review your assigned preview in Profile, or the retained original comparisons
+in Admin. No extra Tripo task was submitted to prove this deployment.
