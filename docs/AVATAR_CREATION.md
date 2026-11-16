@@ -126,6 +126,17 @@ the local fixture build/setup in Private upload history below, then
 production use remain unverified. See
 [dated allowance results](results/avatar-pass-limit-2026-11-16.json).
 
+Activation: `dcc5e820a37a2e4b55b19e5b471e644e6deddb85` is pushed. At
+2026-11-16T11:02:04Z, a verified private database/config backup and a fresh zero
+accepted/active-trip / zero in-flight-avatar check preceded the scoped GUMWHEEL
+API restart. PID changed, health recovered, integrity/FKs passed and terminal
+journey records were preserved. No schema or Mac worker change was made.
+Vercel `dpl_2KFpL2U1YwPGsezypdfxpKwVRCQz` is READY for that exact commit on
+both production domains. Public health is 200 and anonymous avatar jobs/history
+reads are 401. The new message is present in deployed Profile assets; no account
+login or production upload was used to verify it. The limits of verification
+above remain.
+
 Normalized source photos remain private for admin review for up to seven days
 from submission, including rejected and generated submissions. Cancellation or
 expiry erases local source bytes immediately. Remaining queued/checking/approved

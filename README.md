@@ -8,6 +8,9 @@ The one-active-submission rule and global retained-photo capacity remain. Existi
 result events supply the count; no schema change or Mac update is needed. This
 supersedes the earlier three-upload allowance. See
 [avatar creation](docs/AVATAR_CREATION.md#validation-and-private-storage).
+Implementation `dcc5e82` is live after a guarded API restart and verified
+exact-commit frontend deployment. The allowance tests and activation evidence are
+recorded in the guide; authenticated production uploading remains untested.
 
 16 November avatar check/history: Admin separates the checkmark/cross photo verdict
 from generation progress and shows Submitted, Checked and Check duration. Checked

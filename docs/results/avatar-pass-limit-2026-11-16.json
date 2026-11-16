@@ -45,7 +45,41 @@
     "passedJobsMissingPassEvent": 0
   },
   "activation": {
-    "status": "pending"
+    "status": "verified",
+    "implementationRevision": "dcc5e820a37a2e4b55b19e5b471e644e6deddb85",
+    "api": {
+      "timestamp": "20261116T110204Z",
+      "sourceRevision": "dcc5e820a37a2e4b55b19e5b471e644e6deddb85",
+      "before": {
+        "underwayTrips": 0,
+        "inFlightAvatarWork": 0
+      },
+      "privateBackupVerified": true,
+      "apiRestarted": true,
+      "pidChanged": true,
+      "localHealth": true,
+      "databaseIntegrity": "ok",
+      "foreignKeyViolations": 0,
+      "terminalJourneyRecordsPreserved": true
+    },
+    "frontend": {
+      "id": "dpl_2KFpL2U1YwPGsezypdfxpKwVRCQz",
+      "state": "READY",
+      "sha": "dcc5e820a37a2e4b55b19e5b471e644e6deddb85",
+      "aliases": [
+        "www.gumwheel.com",
+        "gumwheel.com"
+      ]
+    },
+    "publicChecks": {
+      "/api/health": 200,
+      "/api/avatar/jobs": 401,
+      "/api/avatar/history": 401
+    },
+    "clientCopy": {
+      "newLimitMessageInProductionProfileAssets": true,
+      "authenticatedUploadPerformed": false
+    }
   },
   "unverified": [
     "physical browsers",
