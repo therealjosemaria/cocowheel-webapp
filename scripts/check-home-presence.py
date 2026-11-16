@@ -75,14 +75,37 @@ with sync_playwright() as p:
         assert page.url==before
         assert page.locator('dialog[open]').count()==0
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-        # No drag-to-pan or wheel capture; markers still have no actions.
-        expect(preview.locator('.leaflet-container')).not_to_have_class('leaflet-grab')
+        # Dragging changes the viewport, never the area data or marker actions.
+        surface=preview.locator('.leaflet-container')
+        assert surface.evaluate('el=>el.classList.contains("leaflet-grab")')
+        preview.scroll_into_view_if_needed()
+        box=surface.bounding_box()
+        x=box['x']+70;y=box['y']+50
+        pane=preview.locator('.leaflet-map-pane')
+        before_pan=pane.evaluate('el=>el.style.transform')
+        if width<700:
+            touch=context.new_cdp_session(page)
+            touch.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y,'id':1}]})
+            for step in range(1,5):
+                touch.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':x+step*3,'y':y+step*10,'id':1}]})
+                page.clock.run_for(32)
+            page.clock.run_for(100)
+            touch.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+            touch.detach()
+        else:
+            page.mouse.move(x,y);page.mouse.down()
+            page.mouse.move(x+12,y+40,steps=8)
+            page.clock.run_for(100);page.mouse.up()
+        page.clock.run_for(1000)
+        after_pan=pane.evaluate('el=>el.style.transform')
+        assert after_pan!=before_pan, 'Touch/mouse drag must move the map.'
         page.wait_for_timeout(800)
         page.screenshot(path=f'/tmp/home-presence-posts-{width}.png',full_page=True)
-        # A new response/count in the same area must not undo manual zoom.
+        # A new response/count in the same area must not undo manual pan or zoom.
         mode['value']='single'; page.clock.fast_forward(60_001)
         expect(preview.locator('.leaflet-marker-icon')).to_have_count(1)
         expect_zoom(initial_zoom+1)
+        assert pane.evaluate('el=>el.style.transform')==after_pan
         if width<700:
             # Real two-contact touch events exercise Leaflet's pinch handler.
             preview.scroll_into_view_if_needed()
@@ -136,6 +159,6 @@ with sync_playwright() as p:
         assert not errors,errors
         assert not any(method!='GET' for path,method in requests),requests
         assert not any(path in ['availability','route-preview'] or path.endswith('/location') for path,method in requests),requests
-        print(f'PASS {width}: shared bottom-right zoom controls/keyboard, zoom survives same-area refresh, hidden on empty/failure, three noninteractive area icons, sign-in/preview resume, no writes/GPS/routing',flush=True)
+        print(f'PASS {width}: mouse/touch pan and shared zoom, viewport survives same-area refresh, hidden on empty/failure, noninteractive area icons, sign-in/preview resume, no writes/GPS/routing',flush=True)
         context.close()
     browser.close()

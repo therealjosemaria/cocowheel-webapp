@@ -969,7 +969,7 @@ p {
   border-radius: var(--radius-control);
   background: var(--surface-subtle);
 }
-.home-presence-map { width: 100%; height: 200px; cursor: default; }
+.home-presence-map { width: 100%; height: 200px; }
 .home-presence-map .leaflet-marker-icon { pointer-events: none; }
 .presence-map-frame { position: relative; }
 .home-hero {

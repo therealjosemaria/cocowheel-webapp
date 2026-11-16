@@ -1,11 +1,12 @@
 # Coco Wheels product and UI standards
 
 16 November Home zoom reuses JourneyMap’s bottom-right Leaflet +/− control and
-its existing shared dimensions, border, focus and hover styles. Pinch zoom is
-available; markers remain non-clickable, page scrolling is retained and no new
-caption, label, colours or layout tokens are introduced. Same-area feed refreshes
-preserve zoom. This supersedes earlier Home no-zoom guidance only; coarse public
-area coordinates and the existing 200px primary-group layout remain unchanged.
+its existing shared dimensions, border, focus and hover styles. Pinch zoom and
+touch/mouse dragging are available; markers remain non-clickable. Dragging inside
+the map pans it, while the page scrolls outside it. Reuse Leaflet’s existing grab
+cursor. No new caption, label, colours or layout tokens. Same-area feed refreshes
+preserve position and zoom. This supersedes earlier Home no-zoom/no-pan guidance;
+coarse public area coordinates and the 200px primary-group layout remain unchanged.
 
 16 November Seedream release reuses the existing admin cost snapshot, approval
 modal, private issue copy and generated-preview cells. Selected-model wording in

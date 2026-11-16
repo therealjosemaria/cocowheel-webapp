@@ -6,10 +6,10 @@ image failed the existing minimum width in browser and backend. User/Admin
 results, account separation and captured five-minute reminders were checked.
 No paid task or production account was changed. See [trial evidence](docs/AVATAR_PHOTO_TRIAL_2026-11-16.md).
 
-16 November Home zoom: the public area map reuses journey maps’ bottom-right
-+/− controls and supports pinch zoom. Markers remain non-clickable; the server
-still sends only fixed 0.05-degree area centres. Same-area count/artwork refreshes
-preserve the chosen zoom; a changed area set reframes the overview. No API,
+16 November Home map: the public area map reuses journey maps’ bottom-right
++/− controls, pinch zoom and touch/mouse dragging. Markers remain non-clickable;
+the server still sends only fixed 0.05-degree area centres. Same-area count/artwork
+refreshes preserve the chosen position and zoom; a changed area set reframes the overview. No API,
 location precision or sign-in rules change. See [Home presence](docs/HOME_PRESENCE_2026-11-04.md).
 
 16 November Seedream release: new avatar jobs use Seedream v5 (5 Tripo credits)

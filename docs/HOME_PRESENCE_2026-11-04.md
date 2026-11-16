@@ -1,18 +1,20 @@
 # Home presence and discovery access — 4 November 2026
 
-## Home zoom — 16 November 2026
+## Home zoom and panning — 16 November 2026
 
-Supersedes the original no-zoom interaction rule below. Home now uses the same
+Supersedes the original no-zoom/no-pan interaction rules below. Home uses the same
 Leaflet ZoomControl and shared CSS as JourneyMap: one +/− pair at bottom-right,
 with accessible Zoom in/Zoom out names and keyboard activation. Two-finger pinch
-zoom is enabled; drag-to-pan, scroll-wheel, double-click and box zoom remain off
-so ordinary page scrolling and empty-map clicks retain their previous behaviour.
+zoom and single-finger/mouse drag-to-pan are enabled, matching journey maps.
+Dragging inside the 200px map moves the map; page scrolling remains available
+outside it. Scroll-wheel, double-click and box zoom remain off. Empty-map clicks
+still open no destination.
 All marker interaction/keyboard targets, popups and journey actions remain off.
 The 200px frame, bottom-left credits, main actions and activity order are unchanged.
 
 Initial framing still fits occupied areas with automatic zoom capped at 11.
 Routine feed responses with the same distinct area centres, including count or
-artwork changes, retain the user’s zoom. A different set of occupied areas
+artwork changes, retain the user’s position and zoom. A different set of occupied areas
 reframes to the overview. Empty/failed/hidden states still remove the map; its
 next mount starts a fresh overview. No timer, feed, API or backend changes.
 
@@ -22,6 +24,26 @@ sends their centres, capped icons and allowed artwork. Exact endpoints, addresse
 destinations, names and live GPS remain excluded. There is no guaranteed minimum
 offset from a real origin; recognisable avatars retain their documented limits.
 No API restart is required for this frontend change. Verification is recorded below.
+
+### Pan extension verification
+
+Baseline `71001c1`. Home now enables the same Leaflet drag handler as journey
+maps and removes only its forced default cursor so the shared grab/grabbing
+cursors apply. No feed projection, marker interaction or API change. Same-area
+refreshes retain map translation as well as zoom; a new occupied-area set still
+reframes, as above. This supersedes the original zoom release's disabled dragging.
+
+Build/lint and the six Home privacy/access regressions pass. The presence and
+activity-layout scripts below pass eight local optimized cases at 320/390/844/1440px:
+single-contact touch dragging on phones, mouse dragging on wider screens, zoom
+controls/keyboard/pinch, retained translation/zoom on same-area count refresh,
+non-clickable markers, hidden empty/failure states, normal sign-in recovery and
+unchanged hero/action/map/activity positions for driver/rider cards. Synthetic APIs
+assert no writes/GPS/routing. Whole mobile/desktop Home screens were visually
+reviewed for action hierarchy, map size, controls, credits and activity spacing.
+Page scrolling outside the map remains; swiping inside now deliberately pans it.
+Physical Safari and authenticated production activity remain unverified. Exact
+frontend deployment is recorded after push; no API restart is needed.
 
 ### Zoom verification
 

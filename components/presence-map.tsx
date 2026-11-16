@@ -16,7 +16,7 @@ function AreaView({ cells }: { cells: PresenceCell[] }) {
   const map = useMap();
   const framedAreas = useRef<string | null>(null);
   useEffect(() => {
-    // Counts/artwork refresh each minute; preserve manual zoom for the same areas.
+    // Counts/artwork refresh each minute; preserve the viewport for the same areas.
     const areas = [...new Set(cells.map(cell => `${cell.latitude}:${cell.longitude}`))].sort().join('|');
     if (framedAreas.current === areas) return;
     framedAreas.current = areas;
@@ -46,7 +46,7 @@ export default function PresenceMap({ cells }: { cells: PresenceCell[] }) {
     return { ...cell, artwork: cell.artworks?.[index], key: `${key}:${cell.role}:${index}`, slot, total: totals.get(key)! };
   }));
   return <MapSurface frameClassName="presence-map-frame" center={[-33.89, 151.2]} zoom={11}
-    className="home-presence-map" attributionControl={false} zoomControl={false} dragging={false}
+    className="home-presence-map" attributionControl={false} zoomControl={false} dragging={true}
     scrollWheelZoom={false} doubleClickZoom={false} touchZoom={true}
     boxZoom={false} keyboard={false} zoomAnimation={false} fadeAnimation={false}
     markerZoomAnimation={false}>
