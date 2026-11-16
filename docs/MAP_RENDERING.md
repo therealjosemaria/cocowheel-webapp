@@ -259,3 +259,14 @@ Results and activation status are in
 Android/Windows GPU variations and arbitrary page/pinch zoom or animation frames
 are not certified by this settled-view test. No live account/trip mutation or
 paid provider request is part of the checks.
+
+Implementation `b65f6e7` is pushed. Vercel
+`dpl_7qRr86BDUbcdRmGnikYsiu4YwFGQ` is READY for that exact revision on
+`www.gumwheel.com` and `gumwheel.com`. Fresh live 390px/DPR3 and 1440px/DPR2
+Chromium captures show the original horizontal seam removed, all base tiles
+using 2D transforms at original dimensions, zero Home route overlays and no
+page errors. Only GET/HEAD requests were allowed. Local pixel checks pass at
+four display scales, both-role map checks at 320/390/1440px, Home lifecycle at
+320/390/844/1440px, lint and optimized build. Whole normal-colour Home and
+selected rider/driver screens were reviewed on mobile/desktop. No API restart
+or runtime-log scan; physical-device/page-zoom boundaries above remain open.

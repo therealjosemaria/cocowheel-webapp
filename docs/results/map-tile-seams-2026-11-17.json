@@ -110,7 +110,35 @@
     "No throughput/capacity claim from this visual correction"
   ],
   "production": {
-    "status": "PENDING frontend push/deployment verification",
-    "apiRestartRequired": false
+    "status": "VERIFIED exact frontend READY on both production aliases",
+    "sourceRevision": "b65f6e7a250b984dda674a814c6dd0e29834d7e1",
+    "deploymentId": "dpl_7qRr86BDUbcdRmGnikYsiu4YwFGQ",
+    "aliases": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "framework": "Next.js",
+    "checkedAt": "2026-11-16T13:49:26.768852+00:00",
+    "liveBrowser": [
+      {
+        "width": 390,
+        "dpr": 3,
+        "tiles": 4,
+        "flatOriginalSizeTiles": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "dpr": 2,
+        "tiles": 8,
+        "flatOriginalSizeTiles": true,
+        "errors": []
+      }
+    ],
+    "visualOutcome": "The originally observed horizontal bright seam is absent on fresh live 390px/DPR3 and 1440px/DPR2 map captures.",
+    "requests": "GET/HEAD only; no login/GPS/live mutations",
+    "apiRestartRequired": false,
+    "apiRestarted": false,
+    "runtimeLogScan": "NOT_RUN"
   }
 }
