@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-16",
+  "baselineRevision": "1bc464a44c7590dfe6dc99e967cfb93e86145add",
+  "scope": "Owner-only avatar history, explicit admin verdicts and Mac execution timing",
+  "sourceSha256": {
+    "app/globals.css": "aa9e1421668fa74184a9db9b631aab376e3beea63ad6faf360a1415594a13daa",
+    "components/admin-avatar-management.tsx": "48849eee032267357919166b699bfd2310fdfca618c8d14df9ad05e6940508b8",
+    "components/avatar-details.tsx": "27f787b92ba2270672dd4b255cc527783075d085e6a9a6e7ce828a5387b6e910",
+    "components/avatar-upload-history.tsx": "1625ff0b0766b38a03ed73474233a13915dfabaf4b179beaf1fd3524a4e52bdf",
+    "components/ride-field-label.tsx": "ee19c8dbbc4c99ccc76366960c19c2c8db4cee6ff3b7c8dad1a8ebdaf996f236",
+    "lib/admin-avatar.ts": "b946cacf89b1f45be37658b128f7dd0114fa317d78d9c355b2126c07aa9cadb2",
+    "lib/avatar-job.ts": "3d5c1f9f1b89477fb10015a4341ce9960934f4d9e52162bdb4b574f4ef442eca",
+    "server/avatar-admin.ts": "ce31c272cb934f26a5aa7c497faac61493b076019280a529df83636ac1bdf090",
+    "server/avatar-jobs.ts": "dc1b0d7698aaf8816989f0d2e5a404108c9a87c53961de9331f25a14ae00291e",
+    "server/avatar-history.ts": "e8be6d6adac01ba460c2fd20f066e504abe62901c2d41a0d56bcd2ec0d0ca9e4",
+    "server/index.ts": "7934894c9760f2a4b641d71e4b93962e4387af8366bf06d9d37602a8302b8a43",
+    "workers/avatar/worker.py": "5fa5a71d2f9f69be622887be7c0e4cbd2759e33f125ebffaa96f27e4e0aa17f9",
+    "workers/avatar/test_worker.py": "e8e162a5e136e2a10c297a9fe81f42a7fa2c5cf639a8a0f75d8117b3ef3d706a"
+  },
+  "isolation": {
+    "databases": "temporary/in-memory",
+    "accounts": "synthetic",
+    "realUploadsModified": false,
+    "paidCalls": 0,
+    "realEmails": 0
+  },
+  "checks": {
+    "regressionTests": {
+      "passed": 303,
+      "failed": 0
+    },
+    "targetedAvatarAndSeo": 39,
+    "pythonWorkerTestsPi": 9,
+    "pythonWorkerTestsMac": 9,
+    "lint": "pass",
+    "optimizedBuild": "pass",
+    "browserWidths": [
+      320,
+      390,
+      1440
+    ],
+    "browserFlows": [
+      "private read-only history and no eager requests",
+      "cross-account empty history and private thumbnails",
+      "automatic rejection and manual review rejection",
+      "source removal placeholder",
+      "admin timing fields and unavailable legacy values",
+      "manual generation approval and fake-provider completion",
+      "cancellation and existing review notices",
+      "maximum-length rejection feedback and privacy"
+    ],
+    "visualReview": "Whole Profile and Admin on mobile and desktop; regular text, shared icons/fields, full-width feedback at <=480px, no overflow",
+    "syntheticMacSubprocess": {
+      "durationMs": 935,
+      "verdict": "rejected",
+      "reason": "NO_PERSON",
+      "productionApiCalls": 0
+    }
+  },
+  "retainedFindings": [
+    {
+      "finding": "Restricted optimized build could not bind a build-worker socket",
+      "resolution": "Authorized local build passes."
+    },
+    {
+      "finding": "First full suite: 299/303; two typography-token violations plus two stale prior avatar contact/IndexNow expectations",
+      "resolution": "Shared CSS tokens restored. HEAD already had two Privacy support mailto links and public avatar-photo-guide; assertions updated without changing delivery or discovery settings. 303/303 retest passes."
+    },
+    {
+      "finding": "Initial browser fixture had no build-time API rewrite, then an attempted start before build completion",
+      "resolution": "Rebuilt with explicit 3492 rewrite and waited for completed build before starting; production configuration unchanged."
+    },
+    {
+      "finding": "Lazy thumbnail pixels asserted before scroll into view",
+      "resolution": "Harness scrolls thumbnails and waits for decoded pixels; all three viewports pass."
+    },
+    {
+      "finding": "Existing rejection harness expected removed backend-detail Privacy wording",
+      "resolution": "Assert current upload-history disclosure; all three viewports pass."
+    },
+    {
+      "finding": "Initial 320px feedback column too narrow",
+      "resolution": "Feedback now spans full row at <=480px; whole-screen visual review passes."
+    }
+  ],
+  "activation": {
+    "status": "pending guarded API/Mac activation and exact-commit frontend verification"
+  },
+  "unverified": [
+    "physical Safari/Chrome devices",
+    "authenticated production history UI",
+    "fresh real-user timing report to production API",
+    "new paid avatar generation",
+    "high-concurrency thumbnail capacity"
+  ]
+}

@@ -114,12 +114,16 @@ directories. An offline Mac cannot perform cleanup until it resumes.
 Existing Origin checks apply. Worker routes run before journey lifecycle handling;
 they do not use a person's login, have no browser UI and never expose credentials
 to Vercel/browser bundles. Worker authorization uses a constant-time comparison.
-No source-photo HTTP route is exposed to ordinary users; owner-admin-only
+Full source-photo HTTP routes remain owner-admin-only; submitters can obtain only
+small owner-scoped thumbnails through the history routes below. The admin
 private/no-store photo/render routes are documented in AVATAR_ADMIN.md. Worker replies are private/no-store.
 
 The Mac polls over HTTPS every 30s idle / 2s after work, with 30s request timeout,
 3MB response bound and no credential-bearing redirects. Each check runs in a
 separate process with a 60s limit, so an inference hang cannot stall the worker.
+Completed verdicts now optionally report measured subprocess duration; receipt
+and duration fields are admin-only. Older workers remain compatible. See
+[check timing](AVATAR_ADMIN.md#check-results-and-timing) for exact boundaries.
 Requests identify GUMWHEEL-Avatar-Worker/1.0 and accept JSON; Cloudflare rejected
 the generic Python request identity during activation. No firewall/auth rules
 were relaxed. An unavailable Mac leaves photos in the Pi's durable queue.
@@ -129,6 +133,57 @@ cancelled or replayed results cannot approve a job. Runtime failures retry after
 one minute and never cause a paid generation. One LaunchAgent runs while the Mac
 user is logged in; it resumes after sleep/login. It does not promise processing
 while the Mac is off or logged out.
+
+### Private upload history
+
+Profile's Avatar section adds an initially closed Upload history disclosure outside
+the upload form, available to both roles. Opening it loads three submissions per
+page, newest first with a deterministic ID tiebreaker. Newer/Older actions reuse
+existing buttons. Each entry contains a small uncropped photo, submitted date/time,
+outcome and the existing user-facing result/retake guidance. History has no edit,
+delete, cancel, approval or generation actions and acknowledges no notifications.
+Only the current result retains its existing visible-review behaviour.
+
+GET `/api/avatar/history?page=0` requires verified login and selects only the
+session owner's rows. GET `/api/avatar/history/:id/thumbnail` authenticates before
+and after image processing and rechecks source availability before serving a
+private/no-store, nosniff WebP contained within 160×240px. No photo enlargement,
+crop, metadata, raw source download, provider error, task ID, lease, timing or
+notification key enters the list. Another account, including the admin using the
+ordinary endpoint, cannot read another submitter's thumbnail. The admin continues
+to use its separately protected review routes. Only GET is supported here.
+
+Thumbnails are derived on demand, never stored as a second copy. The existing
+seven-day source TTL/cancellation removal applies; missing images say Photo removed.
+Results remain for up to 30 days after their final update under existing cleanup.
+Opening history runs that cleanup and does not renew either TTL. Invalid files
+rejected before submission never enter history. History fetches only while open,
+on page change, retry or latest-result change, without adding polling or provider
+calls. Requests abort on close/unmount; stale replies cannot replace a newer page.
+Privacy discloses private previews without internal worker/approval details.
+
+Verification (16 November): 303 regression tests, nine worker tests on Pi and Mac,
+lint and optimized build pass. The real Mac subprocess rejected a synthetic grey
+image in 935ms using an in-memory fake queue, with no production API or paid call;
+this is not a measurement of an earlier user's photo. History/Admin/approval/
+rejection browser flows pass at 320/390/1440px against the real isolated API and
+fake generation provider. Whole Profile and Admin screens were visually reviewed;
+narrow-phone feedback spans the row. Physical devices, authenticated production
+history, new real-user timing delivery and paid generation remain unverified.
+
+Reproduce with `COCOWHEELS_DB_PATH=/tmp/avatar-history-tests.sqlite npm test`,
+`python3 -m unittest discover -s workers/avatar -p test_worker.py`, `npm run lint`,
+and `COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build`. For browser
+checks, create a synthetic 400×800 JPEG at
+`/tmp/gumwheel-avatar-upload-synthetic.jpg`; start
+`COCOWHEELS_DB_PATH=/tmp/avatar-history-unused.sqlite GUMWHEEL_AVATAR_FIXTURE=1 GUMWHEEL_AVATAR_RENDER=public/brand/avatar-photo-guide-front-v1.webp node --import tsx scripts/serve-map-avatar-fixture.mts`
+and `node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3491`
+in separate terminals after the build completes. With Playwright/Chromium installed,
+run `python scripts/check-avatar-history.py`, `python scripts/check-avatar-admin.py`
+and `python scripts/check-avatar-rejection.py` sequentially; stop both fixture
+processes afterwards. The fixture strips provider/email credentials and uses
+in-memory accounts. Never point it at production. See
+[sanitized results and retained failed baselines](results/avatar-history-timing-2026-11-16.json).
 
 ### Mac photo check
 

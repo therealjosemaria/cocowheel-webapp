@@ -12,6 +12,7 @@ export type RideFieldIconKind =
   | "to"
   | "expiry"
   | "accepted"
+  | "rejected"
   | "requested"
   | "pickup-time"
   | "arrival"
@@ -109,6 +110,9 @@ export function RideFieldIcon({ icon }: { icon: RideFieldIconKind }) {
           <path d="M12 7v5l3 2" />
         </>
       );
+      break;
+    case "rejected":
+      content = <><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m0-6-6 6" /></>;
       break;
     case "pickup-time":
       content = (

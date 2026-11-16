@@ -20,7 +20,7 @@ with sync_playwright() as p:
         admin=p.request.new_context(base_url=BASE,extra_http_headers={'Cookie':'cocowheels_guest=synthetic-avatar-admin','Origin':BASE,'X-Admin-Request':'1'})
         user=p.request.new_context(base_url=BASE,extra_http_headers={'Cookie':'cocowheels_guest=synthetic-avatar-driver'})
         assert user.post(CONTROL+'/reset',headers=control).ok
-        photo=Path('/tmp/gumwheel-avatar-normalized.jpg').read_bytes()
+        photo=Path('/tmp/gumwheel-avatar-upload-synthetic.jpg').read_bytes()
         import base64,uuid,re
         created=user.post('/api/avatar/jobs',data={'photo':'data:image/jpeg;base64,'+base64.b64encode(photo).decode(),'consent':True,'submissionId':str(uuid.uuid4())})
         assert created.ok,created.text()

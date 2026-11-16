@@ -54,7 +54,8 @@ export default function PrivacyPage() {
         Submitted photos are available to the administrator for review for up to
         seven days, and removed earlier if we cancel the submission. If your
         photo does not meet the requirements, we explain what to change before
-        you upload another photo. Result and generated-preview records are kept for up to 30 days
+        you upload another photo. Your private Upload history shows results and
+        small photo previews while the photos are retained. Result and generated-preview records are kept for up to 30 days
         after their final update; backups and Tripo may retain their own copies. Creating an
         avatar does not automatically enable its public display. Photo-check and
         avatar results appear in Profile; if the latest result is unreviewed after

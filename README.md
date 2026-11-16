@@ -1,5 +1,16 @@
 # GUMWHEEL
 
+16 November avatar check/history: Admin separates the checkmark/cross photo verdict
+from generation progress and shows Submitted, Checked and Check duration. Checked
+is the Pi's receipt time; duration measures the Mac check subprocess, excluding
+queue wait. Historical durations are not backfilled. Profile's private, read-only
+Upload history shows three submissions per page with small retained-photo previews,
+outcomes and retake reasons. Existing seven-day photo / 30-day result retention,
+manual generation approval and notifications remain. See
+[avatar administration](docs/AVATAR_ADMIN.md#check-results-and-timing) and
+[upload history](docs/AVATAR_CREATION.md#private-upload-history) for implementation
+and verification boundaries.
+
 16 November photo guide navigation: normal in-app links reuse the current tab.
 A private, account-bound memory draft retains the prepared photo and submission
 UUID between Profile and the guide for up to 30 minutes. Cancel/submission,

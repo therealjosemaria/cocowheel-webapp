@@ -11,9 +11,9 @@ test("public contact links use Gumwheel email without changing the suggestion su
   for (const [page, Component] of [["help", HelpPage], ["privacy", PrivacyPage], ["terms", TermsPage], ["about", AboutPage]] as const) {
     const source = renderToStaticMarkup(createElement(Component));
     const links = [...source.matchAll(/href="(mailto:[^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(links, [page === "help"
+    assert.deepEqual(links, Array(page === "privacy" ? 2 : 1).fill(page === "help"
       ? "mailto:jose@gumwheel.com?subject=GUMWHEEL%20suggestion"
-      : "mailto:jose@gumwheel.com"]);
+      : "mailto:jose@gumwheel.com"));
     assert.ok(!source.includes("jmos0905@uni.sydney.edu.au"));
     if (page !== "help") assert.match(source, />\s*jose@gumwheel\.com\s*<\/a>/);
   }

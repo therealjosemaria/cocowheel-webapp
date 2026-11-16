@@ -9,7 +9,7 @@ export const AVATAR_PHOTO_TTL = 7 * 86400_000;
 export const AVATAR_LEASE_MS = 5 * 60_000;
 export const AVATAR_DELAY_MS = 5 * 60_000;
 export { AVATAR_MODEL, AVATAR_CREDITS } from "../lib/avatar-generation";
-export type AvatarJobRow = { id: string; principal_id: string; status: AvatarJobStatus; reason: string | null; rejection_note: string | null; photo: Buffer | null; photo_hash: string; lease_hash: string | null; lease_until: number | null; check_attempts: number; task_id: string | null; file_token: string | null; created_at: number; updated_at: number; next_at: number; submitted_at: number | null; generation_approved_at: number | null; generation_approved_by: string | null; generation_model: string | null; generation_credits: number | null; hold_reason: string | null; render: Buffer | null; };
+export type AvatarJobRow = { checked_at: number | null; check_duration_ms: number | null; id: string; principal_id: string; status: AvatarJobStatus; reason: string | null; rejection_note: string | null; photo: Buffer | null; photo_hash: string; lease_hash: string | null; lease_until: number | null; check_attempts: number; task_id: string | null; file_token: string | null; created_at: number; updated_at: number; next_at: number; submitted_at: number | null; generation_approved_at: number | null; generation_approved_by: string | null; generation_model: string | null; generation_credits: number | null; hold_reason: string | null; render: Buffer | null; };
 export function initializeAvatarJobs(db: Db) {
   db.exec(`CREATE TABLE IF NOT EXISTS avatar_jobs (
     id TEXT PRIMARY KEY, principal_id TEXT NOT NULL REFERENCES guest_sessions(id),
@@ -30,7 +30,7 @@ export function initializeAvatarJobs(db: Db) {
     CREATE TABLE IF NOT EXISTS avatar_worker_state (id INTEGER PRIMARY KEY CHECK(id=1), seen_at INTEGER NOT NULL);`);
   // Existing approved jobs deliberately receive no generation approval on upgrade.
   const columns = new Set((db.prepare("PRAGMA table_info(avatar_jobs)").all() as { name: string }[]).map(row => row.name));
-  for (const [name, type] of [["generation_approved_at", "INTEGER"], ["generation_approved_by", "TEXT"], ["hold_reason", "TEXT"], ["render", "BLOB"], ["rejection_note", "TEXT"], ["generation_model", "TEXT"], ["generation_credits", "INTEGER"]])
+  for (const [name, type] of [["generation_approved_at", "INTEGER"], ["generation_approved_by", "TEXT"], ["hold_reason", "TEXT"], ["render", "BLOB"], ["rejection_note", "TEXT"], ["generation_model", "TEXT"], ["generation_credits", "INTEGER"], ["checked_at", "INTEGER"], ["check_duration_ms", "INTEGER"]])
     if (!columns.has(name)) db.exec(`ALTER TABLE avatar_jobs ADD COLUMN ${name} ${type}`);
   db.exec(`CREATE TABLE IF NOT EXISTS avatar_admin_events (
     event_key TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES avatar_jobs(id) ON DELETE CASCADE,
@@ -68,12 +68,15 @@ export function avatarJobSummary(db: Db, principal: string): AvatarJob | null {
   const row = db.prepare("SELECT id,status,reason,rejection_note,created_at FROM avatar_jobs WHERE principal_id=? ORDER BY created_at DESC,id DESC LIMIT 1").get(principal) as Pick<AvatarJobRow, "id" | "status" | "reason" | "rejection_note" | "created_at"> | undefined;
   if (!row) return null;
   const event = db.prepare("SELECT event_key FROM avatar_events WHERE job_id=? AND reviewed_at IS NULL ORDER BY created_at DESC LIMIT 1").get(row.id) as { event_key: string } | undefined;
+  return { ...publicAvatarJob(row), notificationKey: event?.event_key ?? null };
+}
+export function publicAvatarJob(row: Pick<AvatarJobRow, "id" | "status" | "reason" | "rejection_note" | "created_at">): Omit<AvatarJob, "notificationKey"> {
   // Operational failures belong in Admin; the user retains the last completed stage.
   const status = row.status === "REVIEW_REQUIRED" ? "APPROVED"
     : row.status === "FAILED" ? (row.reason === "CHECK_UNAVAILABLE" ? "QUEUED" : "APPROVED") : row.status;
   return { id: row.id, status, reason: row.reason && avatarRejections[row.reason] ? row.reason : null,
     reviewReason: row.status === "REJECTED" && row.reason === "ADMIN_REJECTED" ? row.rejection_note : null,
-    notificationKey: event?.event_key ?? null, createdAt: new Date(row.created_at).toISOString() };
+    createdAt: new Date(row.created_at).toISOString() };
 }
 export function readAvatarJobs(db: Db, principal: string): AvatarJobs {
   return { accepting: avatarUploadsEnabled(), job: avatarJobSummary(db, principal) };
@@ -145,15 +148,18 @@ export function claimAvatarPhoto(db: Db, now = Date.now()) {
     return { id: row.id, lease, photo: row.photo.toString("base64") };
   })();
 }
-export function completeAvatarPhoto(db: Db, id: unknown, lease: unknown, verdict: unknown, reason: unknown, now = Date.now()) {
+export function completeAvatarPhoto(db: Db, id: unknown, lease: unknown, verdict: unknown, reason: unknown, now = Date.now(), durationMs?: unknown) {
   return db.transaction(() => {
     const row = db.prepare("SELECT * FROM avatar_jobs WHERE id=? AND status='CHECKING'").get(typeof id === "string" ? id : "") as AvatarJobRow | undefined;
     if (!row || typeof lease !== "string" || hash(lease) !== row.lease_hash || !row.lease_until || row.lease_until <= now) throw new Error("AVATAR_LEASE_EXPIRED");
+    if (durationMs != null && (typeof durationMs !== "number" || !Number.isInteger(durationMs) || durationMs < 0 || durationMs > 60_000)) throw new Error("INVALID_AVATAR_VERDICT");
     if (verdict === "retry") {
       if (row.check_attempts >= 3) holdAvatarCheck(db, row.id, now);
       else db.prepare("UPDATE avatar_jobs SET status='QUEUED',lease_hash=NULL,lease_until=NULL,updated_at=?,next_at=? WHERE id=?").run(now, now + 60_000, row.id);
-    } else if (verdict === "approved") finishAvatarJob(db, row.id, "APPROVED", null, now);
-    else if (verdict === "rejected" && typeof reason === "string" && Object.hasOwn(avatarRejections, reason)) finishAvatarJob(db, row.id, "REJECTED", reason, now);
+    } else if (verdict === "approved" || (verdict === "rejected" && typeof reason === "string" && Object.hasOwn(avatarRejections, reason))) {
+      db.prepare("UPDATE avatar_jobs SET checked_at=?,check_duration_ms=? WHERE id=?").run(now, durationMs ?? null, row.id);
+      finishAvatarJob(db, row.id, verdict === "approved" ? "APPROVED" : "REJECTED", verdict === "approved" ? null : reason as string, now);
+    }
     else throw new Error("INVALID_AVATAR_VERDICT");
   })();
 }

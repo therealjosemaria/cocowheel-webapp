@@ -1,6 +1,14 @@
 export type AvatarJobStatus = "QUEUED" | "CHECKING" | "APPROVED" | "SUBMITTING" | "GENERATING" | "READY" | "REJECTED" | "FAILED" | "REVIEW_REQUIRED" | "CANCELLED" | "EXPIRED";
 export type AvatarJob = { id: string; status: AvatarJobStatus; reason: string | null; reviewReason?: string | null; notificationKey: string | null; createdAt: string };
 export type AvatarJobs = { accepting: boolean; job: AvatarJob | null };
+export type AvatarHistoryItem = Omit<AvatarJob, "notificationKey"> & { thumbnailUrl: string | null };
+export type AvatarHistory = { items: AvatarHistoryItem[]; total: number; page: number; pageSize: number };
+export const avatarHistoryStatus: Record<AvatarJobStatus, string> = {
+  QUEUED: "Waiting for photo check", CHECKING: "Checking photo", APPROVED: "Photo check passed",
+  SUBMITTING: "Creating avatar", GENERATING: "Creating avatar", READY: "Avatar ready",
+  REJECTED: "Photo rejected", CANCELLED: "Cancelled", EXPIRED: "Expired",
+  FAILED: "Not completed", REVIEW_REQUIRED: "Waiting for avatar",
+};
 export const avatarJobActive = (status: AvatarJobStatus) => ["QUEUED", "CHECKING", "APPROVED", "SUBMITTING", "GENERATING", "REVIEW_REQUIRED"].includes(status);
 export const AVATAR_PHOTO_REQUIREMENTS = "Use a clear photo of just you standing, with your head, hands and feet visible.";
 export const AVATAR_PHOTO_ERROR = "Choose a JPG, PNG or WebP photo up to 10 MB, at least 256 pixels wide and 512 pixels tall.";

@@ -16,6 +16,32 @@ where applicable; current regression evidence is in the photo-guide notes.
 
 ## Flow and owner controls
 
+### Check results and timing
+
+The photo verdict uses the shared monochrome accepted checkmark or rejected cross:
+Photo check passed, Photo check failed, or Rejected on review for a manual quality
+override. Generation/hold progress remains separate regular text. An unknown,
+queued, cancelled or expired state alone never implies a passed photo check.
+
+Each private row shows Submitted (the original user upload time), Checked (Pi
+receipt time of a valid completed Mac verdict), and Check duration (seconds, one
+decimal). New nullable INTEGER columns `checked_at` and `check_duration_ms` are
+additive. Existing rows remain NULL; the UI says Not recorded rather than deriving
+duration from queue/last-update timestamps. A new worker reporting no duration
+still records receipt time. Pending checks also show Not recorded until complete.
+
+The Mac worker uses a monotonic clock around the existing bounded check subprocess,
+including Python/model startup, pose/face checks and any closer-framing retry.
+It excludes queue wait, photo download/write, result delivery and paid generation.
+`POST /api/avatar-worker/result` accepts optional `durationMs`: integer 0–60000 or
+null/omitted. Bad metrics fail the transaction; completed pass/rejection stores
+metrics only with a matching unexpired lease. Runtime retries do not record a
+completed check. Later generation approval, rejection on review and cancellation
+preserve the original check measurement. These fields are admin-only and never
+enter user emails, upload history or public map responses. They are observations,
+not a processing-time promise. The prior worker did not save duration, so the
+last historical execution cannot be reconstructed accurately.
+
 Verified users upload through Profile → Avatar. The Pi stores the normalized photo;
 the Mac checks visibility/pose with the existing queue/lease rules. A successful
 check puts the photo in APPROVED, **without generation permission**. Only the

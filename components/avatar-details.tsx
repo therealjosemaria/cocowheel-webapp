@@ -11,6 +11,7 @@ import { AVATAR_PHOTO_REQUIREMENTS, avatarJobActive, avatarJobMessage, type Avat
 import { prepareAvatarPhoto } from "@/lib/avatar-photo";
 import { useVisibleReview } from "@/lib/use-visible-review";
 import { useAvatarPhotoDraft } from "./avatar-photo-draft-context";
+import AvatarUploadHistory from "./avatar-upload-history";
 
 function AvatarPreview({ src, photo = false }: { src: string | null; photo?: boolean }) {
   const [failed, setFailed] = useState(false);
@@ -187,5 +188,6 @@ export default function AvatarDetails({ owner }: { owner: string }) {
           }} />
         </>}
     </form>
+    <AvatarUploadHistory key={owner} revision={`${jobs.job?.id}:${jobs.job?.status}:${jobs.job?.reviewReason}`} />
   </details>;
 }

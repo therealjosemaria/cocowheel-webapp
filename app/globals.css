@@ -3013,6 +3013,22 @@ p {
 .admin-avatar-media img { display: block; width: 100%; max-width: 160px; height: 220px; object-fit: contain; }
 .demand-prompt .field textarea { resize: vertical; min-height: 96px; }
 .admin-avatar-management .admin-muted, .avatar-details #avatar-result { overflow-wrap: anywhere; }
+.admin-avatar-status { display: grid; gap: 8px; }
+.admin-avatar-verification { color: var(--ink); }
+.avatar-upload-history { margin-top: 16px; }
+.avatar-history-content { display: grid; gap: 16px; padding-top: 16px; }
+.avatar-history-entry { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.avatar-history-entry > :first-child { grid-row: 1 / 3; }
+.avatar-history-message { grid-column: 2; }
+.avatar-history-entry img { width: 64px; height: 96px; object-fit: contain; border-radius: var(--radius-control); background: var(--surface-subtle); }
+.avatar-history-entry p { margin: 0; font-size: var(--text-small); font-weight: var(--weight-regular); line-height: 1.5; overflow-wrap: anywhere; }
+.avatar-history-entry p + p { margin-top: 8px; }
+.avatar-history-entry time, .avatar-history-photo-removed { color: var(--muted); font-size: var(--text-caption); }
+.avatar-history-photo-removed { display: grid; place-content: center; width: 64px; height: 96px; text-align: center; background: var(--surface-subtle); border-radius: var(--radius-control); }
+@media (max-width: 480px) {
+  .avatar-history-entry > :first-child { grid-row: 1; }
+  .avatar-history-message { grid-column: 1 / -1; }
+}
 .ride-action-buttons > a.secondary { display: grid; place-items: center; text-align: center; text-decoration: none; }
 .admin-pagination {
   display: flex;

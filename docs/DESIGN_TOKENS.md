@@ -1,5 +1,13 @@
 # Coco Wheels visual system
 
+16 November avatar upload history reuses line/surface-subtle/control-radius tokens,
+16px row gaps, 64×96px contained thumbnails, 14px regular outcome/reason and 12px
+date/removed-photo text. At ≤480px, feedback spans the row below the thumbnail
+and outcome; wider screens keep it beside the photo. No new colours, badge, font
+or bold body. Admin verdicts
+use the shared 24px currentColor 1.8-stroke accepted/rejected icons, existing icon
+dimensions and 8px status gap; timestamps use existing admin fields.
+
 16 November same-tab Photo guide navigation preserves the existing underlined
 14px link, 44px target and Back-above-heading treatment. Remove the obsolete
 new-tab accessible announcement; no new visual controls or tokens.

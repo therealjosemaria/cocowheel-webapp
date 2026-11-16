@@ -1,5 +1,14 @@
 # Coco Wheels product and UI standards
 
+16 November avatar history/check results: reuse the shared monochrome accepted
+checkmark and rejected cross beside Admin's photo verdict, with separate regular
+generation/hold text. Submitted, Checked and Check duration use existing admin
+fields; unavailable historical values say Not recorded. Profile's initially closed
+Upload history disclosure sits below the form, with three compact read-only rows,
+uncropped previews, regular outcome/date/reason text and existing Newer/Older
+secondary buttons. Keep provider/approval diagnostics out of user history; no
+edit/delete/cancel controls or new notification acknowledgements there.
+
 16 November Avatar reference alignment: the Avatar disclosure’s heading icon and
 default preview use the photo guide’s front-facing figure. Keep their existing
 slots, alignment and typography. Scope this artwork to the Avatar section;

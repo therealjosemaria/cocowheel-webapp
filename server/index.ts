@@ -66,6 +66,7 @@ import { acceptWithVehicle } from "./vehicle-acceptance";
 import { preparePhoto, readProfile, saveProfile } from "./personal-details";
 import { avatarSprite, ownAvatarSprite, readMapAvatar, saveMapAvatar } from "./map-avatars";
 import { authorizeAvatarWorker, avatarUploadsEnabled, claimAvatarPhoto, completeAvatarPhoto, enqueueAvatarPhoto, expireAvatarJobs, prepareQueuedAvatarPhoto, readAvatarJobs, reviewAvatarEvent } from "./avatar-jobs";
+import { avatarHistory, avatarHistoryThumbnail, ownAvatarHistoryPhoto } from "./avatar-history";
 import { readAdminAvatarBalance, runAvatarGeneration, type AvatarProvider } from "./avatar-generation";
 import { deliverAvatarReminder, deliverAdminAvatarReminder } from "./avatar-email";
 import { actOnAdminAvatar, adminAvatarAsset, adminAvatarJobs, adminAvatarNotices, reviewAdminAvatar } from "./avatar-admin";
@@ -482,7 +483,7 @@ export function createApiServer(
           writeJson(response, 200, { job: claimAvatarPhoto(database) }, cors);
         } else if (request.method === "POST" && adminUrl.pathname === "/api/avatar-worker/result") {
           const body = await readJson(request, 2048);
-          completeAvatarPhoto(database, body.id, body.lease, body.verdict, body.reason);
+          completeAvatarPhoto(database, body.id, body.lease, body.verdict, body.reason, Date.now(), body.durationMs);
           writeJson(response, 200, { ok: true }, cors);
         } else writeJson(response, 404, { error: "NOT_FOUND" }, cors);
         return;
@@ -890,6 +891,28 @@ export function createApiServer(
       }
       if (parts[0] === "api" && parts[1] === "avatar") {
         const owner = requireUniversitySession(database, token);
+        if (parts[2] === "history") {
+          if (request.method !== "GET") { writeJson(response, 404, { error: "NOT_FOUND" }, cors); return; }
+          expireAvatarJobs(database);
+          if (parts.length === 3) {
+            writeJson(response, 200, avatarHistory(database, owner.id, adminUrl.searchParams.get("page")), cors);
+            return;
+          }
+          if (parts.length === 5 && parts[4] === "thumbnail") {
+            const photo = ownAvatarHistoryPhoto(database, owner.id, parts[3]);
+            if (photo) {
+              const thumbnail = await avatarHistoryThumbnail(photo);
+              const current = requireUniversitySession(database, token);
+              if (current.id !== owner.id) throw new Error("RIDE_ACCESS_DENIED");
+              if (ownAvatarHistoryPhoto(database, current.id, parts[3])) {
+                response.writeHead(200, { ...cors, "Content-Type": "image/webp", "Content-Length": thumbnail.length,
+                  "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" });
+                response.end(thumbnail); return;
+              }
+            }
+          }
+          writeJson(response, 404, { error: "NOT_FOUND" }, cors); return;
+        }
         if (parts.length >= 3 && parts[2] === "jobs") {
           // Reject old clients before even running job lifecycle cleanup.
           // Only the separately authorized Admin route can cancel submissions.

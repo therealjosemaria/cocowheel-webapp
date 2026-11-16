@@ -5,21 +5,25 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminApi } from "@/lib/admin-api";
 import { ApiError, apiErrorMessage } from "@/lib/api-transport";
-import { adminAvatarIssues, adminAvatarStatus, TRIPO_TOP_UP_URL, type AdminAvatarBalance, type AdminAvatarJob, type AdminAvatarJobs } from "@/lib/admin-avatar";
+import { adminAvatarIssues, adminAvatarStatus, adminAvatarVerification, TRIPO_TOP_UP_URL, type AdminAvatarBalance, type AdminAvatarJob, type AdminAvatarJobs } from "@/lib/admin-avatar";
 import { avatarJobActive, avatarRejections, avatarReviewReason, AVATAR_REVIEW_REASON_LIMIT, AVATAR_REVIEW_REASON_ERROR } from "@/lib/avatar-job";
 import { useVisibleReview } from "@/lib/use-visible-review";
 import ConfirmationPrompt from "./confirmation-prompt";
 import { AVATAR_CREDITS } from "@/lib/avatar-generation";
+import RideFieldLabel from "./ride-field-label";
 
 function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: AdminAvatarJob, action: string) => void; review: (key: string) => void }) {
   const status = useRef<HTMLParagraphElement>(null);
+  const verification = adminAvatarVerification(job);
+  const phase = job.status === "REJECTED" ? "" : job.status === "APPROVED" && job.approvedAt ? "Queued for generation" : adminAvatarStatus[job.status];
+  const notes = [phase, job.hold && job.hold !== "AWAITING_APPROVAL" ? adminAvatarIssues[job.hold] ?? "Review this submission before continuing." : null,
+    job.reviewReason || (job.reason ? adminAvatarIssues[job.reason] ?? avatarRejections[job.reason] ?? "Review this submission before continuing." : null)].filter(Boolean).join(" · ");
   useVisibleReview(status, job.notificationKey, review);
   return <article id={`avatar-${job.id}`}>
     <h2>{job.username}</h2>
-    <p ref={status} className="admin-muted">
-      {job.status === "APPROVED" && job.approvedAt ? "Queued for generation" : adminAvatarStatus[job.status]}
-      {job.hold && <> · {adminAvatarIssues[job.hold] ?? "Review this submission before continuing."}</>}
-      {job.reviewReason ? <> · {job.reviewReason}</> : job.reason && <> · {adminAvatarIssues[job.reason] ?? avatarRejections[job.reason] ?? "Review this submission before continuing."}</>}
+    <p ref={status} className="admin-muted admin-avatar-status">
+      {verification && <span className="admin-avatar-verification"><RideFieldLabel icon={verification.icon}>{verification.label}</RideFieldLabel></span>}
+      {notes && <span>{notes}</span>}
     </p>
     <div className="admin-avatar-media">
       <figure><figcaption>Submitted photo</figcaption>{job.photoUrl
@@ -31,7 +35,9 @@ function Submission({ job, act, review }: { job: AdminAvatarJob; act: (job: Admi
     </div>
     <dl className="admin-fields">
       <div><dt>Email</dt><dd>{job.email}</dd></div>
-      <div><dt>Received</dt><dd>{new Date(job.createdAt).toLocaleString()}</dd></div>
+      <div><dt>Submitted</dt><dd>{new Date(job.createdAt).toLocaleString()}</dd></div>
+      <div><dt>Checked</dt><dd>{job.checkedAt ? new Date(job.checkedAt).toLocaleString() : "Not recorded"}</dd></div>
+      <div><dt>Check duration</dt><dd>{job.checkDurationMs != null ? `${(job.checkDurationMs / 1000).toFixed(1)} s` : "Not recorded"}</dd></div>
       <div><dt>Generation approval</dt><dd>{job.approvedAt ? new Date(job.approvedAt).toLocaleString() : "Not approved"}</dd></div>
       <div><dt>Task</dt><dd>{job.taskId ?? "Not submitted"}</dd></div>
     </dl>

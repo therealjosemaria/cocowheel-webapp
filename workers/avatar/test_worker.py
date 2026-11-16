@@ -1,7 +1,12 @@
 import copy
 import unittest
+import base64
+import json
+import subprocess
+import tempfile
+from unittest.mock import patch
 from photo_visibility import score_landmarks
-from worker import decide_photo
+from worker import decide_photo, once
 
 
 def standing():
@@ -14,6 +19,21 @@ def standing():
 
 
 class WorkerTests(unittest.TestCase):
+    def test_measures_only_check_process_and_cleans_spool(self):
+        for result in [{'verdict': 'approved', 'reason': None}, {'verdict': 'rejected', 'reason': 'FEET'}]:
+            with tempfile.TemporaryDirectory() as spool, patch('worker.request') as request, patch('worker.subprocess.run') as run, patch('worker.time.perf_counter', side_effect=[100, 100.432]):
+                request.side_effect = [{'job': {'id': 'test', 'lease': 'test', 'photo': base64.b64encode(b'photo').decode()}}, {}]
+                run.return_value.stdout = json.dumps(result)
+                self.assertTrue(once({'spool': spool}))
+                self.assertEqual(request.call_args.args[2], {'id': 'test', 'lease': 'test', **result, 'durationMs': 432})
+                from pathlib import Path
+                self.assertEqual(list(Path(spool).iterdir()), [])
+    def test_runtime_failure_retries_without_completed_duration(self):
+        with tempfile.TemporaryDirectory() as spool, patch('worker.request') as request, patch('worker.subprocess.run', side_effect=subprocess.TimeoutExpired('check', 60)):
+            request.side_effect = [{'job': {'id': 'test', 'lease': 'test', 'photo': base64.b64encode(b'photo').decode()}}, {}]
+            self.assertTrue(once({'spool': spool}))
+            self.assertEqual(request.call_args.args[2]['verdict'], 'retry')
+            self.assertIsNone(request.call_args.args[2]['durationMs'])
     def test_standing_is_admitted(self): self.assertEqual(decide_photo(standing(), 1)['verdict'], 'approved')
     def test_squat_is_not_admitted(self):
         result = standing()

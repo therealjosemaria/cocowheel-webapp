@@ -109,16 +109,19 @@ def once(config):
     # TemporaryDirectory is owner-only; neither filenames nor photos enter logs.
     with tempfile.TemporaryDirectory(prefix='photo-', dir=config['spool']) as directory:
         path = Path(directory)/'photo.jpg'
+        duration_ms = None
         try:
             data = base64.b64decode(job['photo'], validate=True)
             if len(data) > 2_000_000: raise ValueError('Oversized photo')
             path.write_bytes(data); os.chmod(path, 0o600)
+            started = time.perf_counter()
             checked = subprocess.run([sys.executable, str(Path(__file__).resolve()), '--check', str(path)],
                                      capture_output=True, text=True, check=True, timeout=60)
+            duration_ms = round((time.perf_counter() - started) * 1000)
             result = json.loads(checked.stdout)
         except Exception:
             result = {'verdict': 'retry', 'reason': None}
-        request(config, 'result', {'id':job['id'], 'lease':job['lease'], **result})
+        request(config, 'result', {'id':job['id'], 'lease':job['lease'], **result, 'durationMs': duration_ms})
         print('Photo check completed: '+result['verdict'], flush=True)
     return True
 

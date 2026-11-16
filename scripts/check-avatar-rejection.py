@@ -12,7 +12,7 @@ CONTROL = 'http://127.0.0.1:3494'
 OUT = Path('/tmp/gumwheel-avatar-rejection-review'); OUT.mkdir(exist_ok=True)
 worker = {'Authorization': 'Bearer '+'synthetic-avatar-worker-key-'*3}
 control = {'X-Gumwheel-Fixture': '1'}
-photo = 'data:image/jpeg;base64,'+base64.b64encode(Path('/tmp/gumwheel-avatar-normalized.jpg').read_bytes()).decode()
+photo = 'data:image/jpeg;base64,'+base64.b64encode(Path('/tmp/gumwheel-avatar-upload-synthetic.jpg').read_bytes()).decode()
 reason = 'Your face and both hands need to be clearly visible.'
 
 with sync_playwright() as p:
@@ -62,7 +62,8 @@ with sync_playwright() as p:
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         dialog.get_by_role('button', name='Reject photo', exact=True).click()
         expect(dialog).to_have_count(0)
-        expect(card.get_by_text('Photo rejected', exact=False)).to_contain_text(reason)
+        expect(card.get_by_text('Rejected on review', exact=True)).to_be_visible()
+        expect(card.locator('.admin-avatar-status')).to_contain_text(reason)
         expect(card.get_by_role('button', name='Approve generation', exact=True)).to_have_count(0)
         result = user.get('/api/avatar/jobs').json()['job']
         assert result['status'] == 'REJECTED' and result['reviewReason'] == reason and result['notificationKey']
@@ -92,11 +93,14 @@ with sync_playwright() as p:
         page.evaluate('window.dispatchEvent(new Event("focus"))'); up.evaluate('window.dispatchEvent(new Event("focus"))')
         expect(page.locator('#avatar-'+fresh['id'])).to_contain_text(long_reason)
         expect(avatar.get_by_role('status')).to_contain_text(long_reason)
+        history = avatar.locator('.avatar-upload-history')
+        history.locator('summary').click()
+        expect(history).to_contain_text(long_reason)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         assert up.evaluate('document.documentElement.scrollWidth <= innerWidth')
         up.screenshot(path=str(OUT/f'long-feedback-profile-{width}.png'), full_page=True)
         page.goto(BASE+'/privacy')
-        expect(page.get_by_text('We may reject a passing photo on review', exact=False)).to_be_visible()
+        expect(page.get_by_text('Your private Upload history shows results and small photo previews', exact=False)).to_be_visible()
         page.screenshot(path=str(OUT/f'privacy-{width}.png'), full_page=True)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         assert not errors, errors

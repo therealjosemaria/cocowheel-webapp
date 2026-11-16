@@ -4,6 +4,7 @@ export type AdminAvatarNotice = { count: number; href: string; message: string }
 export type AdminAvatarJob = {
   id: string; username: string; email: string; status: AvatarJobStatus;
   createdAt: string; updatedAt: string; approvedAt: string | null;
+  checkedAt?: string | null; checkDurationMs?: number | null;
   reason: string | null; reviewReason: string | null; hold: string | null; taskId: string | null;
   photoUrl: string | null; renderUrl: string | null;
   notificationKey: string | null;
@@ -16,11 +17,19 @@ export type AdminAvatarBalance = { availableCredits: number | null; frozenCredit
 // Same destination as the official API pricing page's Buy credits action.
 export const TRIPO_TOP_UP_URL = "https://developers.tripo3d.ai/en/pricing?action=topup&from=pricing_hero";
 export const adminAvatarStatus: Record<AvatarJobStatus, string> = {
-  QUEUED: "Waiting for photo check", CHECKING: "Checking photo", APPROVED: "Photo verified",
+  QUEUED: "Waiting for photo check", CHECKING: "Checking photo", APPROVED: "Waiting for generation approval",
   SUBMITTING: "Submitting generation", GENERATING: "Generating", READY: "Ready",
   REJECTED: "Photo rejected", FAILED: "Needs attention", REVIEW_REQUIRED: "Needs review",
   CANCELLED: "Cancelled", EXPIRED: "Expired",
 };
+export function adminAvatarVerification(job: Pick<AdminAvatarJob, "status" | "reason" | "approvedAt">) {
+  if (job.status === "REJECTED") return { icon: "rejected" as const,
+    label: job.reason === "ADMIN_REJECTED" ? "Rejected on review" : "Photo check failed" };
+  if (["APPROVED", "SUBMITTING", "GENERATING", "READY"].includes(job.status) || job.approvedAt ||
+      (job.status === "REVIEW_REQUIRED" && ["PROVIDER_REVIEW", "BACKGROUND_REVIEW", "PROVIDER_FAILED", "SUBMISSION_UNCERTAIN"].includes(job.reason ?? "")))
+    return { icon: "accepted" as const, label: "Photo check passed" };
+  return null;
+}
 export const adminAvatarIssues: Record<string, string> = {
   AWAITING_APPROVAL: "Waiting for your generation approval.",
   INSUFFICIENT_CREDITS: "Not enough Tripo credits. Top up the API balance; approved work will resume.",

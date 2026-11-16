@@ -9,7 +9,7 @@ test("IndexNow dry run submits nothing and exposes only approved public page URL
   const result = JSON.parse(execFileSync(process.execPath, ["--import", "tsx", "scripts/submit-indexnow.mjs"], { encoding: "utf8" }));
   assert.equal(result.submitted, false);
   assert.equal(result.key, undefined);
-  assert.deepEqual(result.urls, ["/", "/help", "/about", "/carpooling/sydney", "/privacy", "/terms"].map(path => new URL(path, "https://www.gumwheel.com").href));
+  assert.deepEqual(result.urls, ["/", "/help", "/about", "/carpooling/sydney", "/privacy", "/terms", "/avatar-photo-guide"].map(path => new URL(path, "https://www.gumwheel.com").href));
   assert.ok(result.urls.every((url: string) => !new URL(url).search && !new URL(url).hash));
   assert.throws(() => indexNowPayload("bad"));
 });

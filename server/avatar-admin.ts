@@ -14,7 +14,7 @@ export function adminAvatarNotices(db: Db): AdminAvatarNotice {
 }
 export function adminAvatarJobs(db: Db, page = 0, focus?: string): AdminAvatarJobs {
   page = Math.floor(Math.max(0, Math.min(Number(page) || 0, 100000)));
-  const jobs = db.prepare(`SELECT j.id,j.status,j.reason,j.rejection_note,j.hold_reason,j.created_at,j.updated_at,j.generation_approved_at,j.task_id,
+  const jobs = db.prepare(`SELECT j.id,j.status,j.reason,j.rejection_note,j.hold_reason,j.created_at,j.updated_at,j.generation_approved_at,j.task_id,j.checked_at,j.check_duration_ms,
     (j.photo IS NOT NULL) AS has_photo,(j.render IS NOT NULL) AS has_render,a.unikey,p.username,
     (SELECT event_key FROM avatar_admin_events e WHERE e.job_id=j.id AND reviewed_at IS NULL ORDER BY created_at DESC,event_key DESC LIMIT 1) AS notification_key
     FROM avatar_jobs j JOIN university_accounts a ON a.principal_id=j.principal_id
@@ -29,6 +29,7 @@ export function adminAvatarJobs(db: Db, page = 0, focus?: string): AdminAvatarJo
       hold: job.status === "APPROVED" && !job.generation_approved_at ? "AWAITING_APPROVAL" : job.hold_reason,
       createdAt: new Date(job.created_at).toISOString(), updatedAt: new Date(job.updated_at).toISOString(),
       approvedAt: job.generation_approved_at ? new Date(job.generation_approved_at).toISOString() : null,
+      checkedAt: job.checked_at != null ? new Date(job.checked_at).toISOString() : null, checkDurationMs: job.check_duration_ms,
       taskId: job.task_id, notificationKey: job.notification_key,
       photoUrl: job.has_photo ? `/api/admin/avatar-jobs/${job.id}/photo` : null,
       renderUrl: job.has_render ? `/api/admin/avatar-jobs/${job.id}/render` : null,
