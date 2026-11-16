@@ -1,5 +1,12 @@
 # Coco Wheels visual system
 
+16 November photo guide reuses page-title, text-button Back, Help’s 18px H2/14px
+body, shared spacing and line/surface tokens. Photo guide links are 14px regular
+with existing 44px targets. The example uses a 240px-max 2:3 frame, control-radius
+corners and a faint 20% line grid on surface-subtle; front-facing transparent art
+renders at 128×256 from a 256×512 WebP. Stack below 700px, use two columns above.
+Preserve full-body margins; no crop, animation, new palette or map-artwork change.
+
 16 November Home zoom reuses JourneyMap’s bottom-right Leaflet +/− control and
 its existing shared dimensions, border, focus and hover styles. Pinch zoom and
 touch/mouse dragging are available; markers remain non-clickable. Dragging inside

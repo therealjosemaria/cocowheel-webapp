@@ -1,5 +1,13 @@
 # Coco Wheels product and UI standards
 
+16 November avatar photo guide: use one quiet, regular-weight Photo guide link
+with the existing 44px link target beside upload requirements, after rejection,
+and beside Update photo. Open a new tab (announced accessibly) to retain a selected
+photo/consent. The public guide has Back above its left-aligned standard H1, one
+centred portrait example and four regular-weight tips. Keep upload/generation
+actions in Profile. No guide link in the main menu, Privacy or Terms; no modal,
+new client state, live photo, repeated rejection requirements or approval promise.
+
 16 November Home zoom reuses JourneyMap’s bottom-right Leaflet +/− control and
 its existing shared dimensions, border, focus and hover styles. Pinch zoom and
 touch/mouse dragging are available; markers remain non-clickable. Dragging inside

@@ -17,6 +17,12 @@ passing a Mac check never triggers generation without the owner-admin’s approv
 
 ## Product flow
 
+The public [photo guide](AVATAR_PHOTO_GUIDE_2026-11-16.md) is linked beside
+Upload/Update photo and selected-photo requirements, including after rejection.
+It opens in a new tab, preserving the selected photo, consent and submission ID
+in the upload tab. Its front-facing generic example and framing tips do not
+change validation thresholds or imply that every compliant photo will pass.
+
 Profile → Avatar shows Upload photo even for an account without an assignment.
 Assigned accounts have Update photo. Reuse the existing disclosure, preview,
 checkbox, primary/secondary buttons, Edit/Save/Cancel, body/helper typography and

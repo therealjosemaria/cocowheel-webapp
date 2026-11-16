@@ -226,7 +226,7 @@ The two existing journey buttons, icons and shared hero typography remain.
 - Canonical origin is https://www.gumwheel.com, matching the observed redirect
   from gumwheel.com. Public metadata describes Sydney carpooling without making
   registration university-only or promising available drivers.
-- `/`, `/help`, `/about`, `/carpooling/sydney`, `/privacy` and `/terms` opt into indexing and have distinct titles,
+- `/`, `/help`, `/about`, `/carpooling/sydney`, `/privacy`, `/terms` and `/avatar-photo-guide` opt into indexing and have distinct titles,
   descriptions, canonical URLs and Open Graph/Twitter summaries using the existing
   official square artwork. Root defaults to noindex/nofollow, inherited by
   Activity, private journey/detail, Profile and admin routes.
@@ -234,7 +234,7 @@ The two existing journey buttons, icons and shared hero typography remain.
   It has no canonical or social metadata containing the private match key.
   Search/post entry queries canonicalize to Home. This changes discovery metadata,
   not sharing permissions or app navigation.
-- `/sitemap.xml` contains exactly those six public information URLs, with no
+- `/sitemap.xml` contains exactly those seven public information URLs, with no
   accounts, route endpoints, user posts, dynamic journey IDs or email match links.
   No fabricated last-modified dates, inventory, reviews or ratings are advertised.
 - `/robots.txt` allows crawling public pages, disallows `/api/`, and advertises

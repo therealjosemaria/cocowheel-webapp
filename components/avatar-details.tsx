@@ -18,6 +18,11 @@ function AvatarPreview({ src, photo = false }: { src: string | null; photo?: boo
     : <span className="journey-role-art journey-role-art-rider avatar-default-preview" role="img" aria-label="Default map avatar" />;
 }
 
+function PhotoGuideLink() {
+  return <a className="help-email avatar-photo-guide-link" href="/avatar-photo-guide" target="_blank" rel="noopener noreferrer"
+    aria-label="Photo guide (opens in a new tab)">Photo guide</a>;
+}
+
 export default function AvatarDetails() {
   const avatarEntry = useSearchParams().get("avatar") === "1";
   const [saved, setSaved] = useState<MapAvatar | null>(null);
@@ -119,6 +124,7 @@ export default function AvatarDetails() {
           <AvatarPreview key={photo ? "photo-to-check" : preview} src={photo ?? preview} photo={Boolean(photo)} />
           {photo ? <>
             <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>
+            <PhotoGuideLink />
             <p className="save-route-profile-note">Photos that pass the check wait for approval before avatar creation with Tripo. You choose whether to show it on maps.</p>
             <label className="usual-alert-choice"><input type="checkbox" checked={consent}
               onChange={event => { if (!submitting.current) { setConsent(event.target.checked); setError(""); } }} />Check my photo and submit it for avatar creation.</label>
@@ -145,6 +151,7 @@ export default function AvatarDetails() {
           </p>}
           {!photo && !editing && (!jobs.job || !avatarJobActive(jobs.job.status)) && <>
             {!jobs.job && !saved.available && <p className="save-route-profile-note">{AVATAR_PHOTO_REQUIREMENTS}</p>}
+            <PhotoGuideLink />
             <button type="button" className="secondary" onClick={() => {
               if (!jobs.accepting) { setError("Photo uploads are temporarily unavailable. Use the default avatar and try uploading later."); return; }
               photoInput.current?.click();
