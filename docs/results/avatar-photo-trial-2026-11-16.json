@@ -1,0 +1,114 @@
+{
+  "date": "2026-11-16",
+  "sourceRevision": "492edfe26033b40888c73a786bdf5e7c8d5f4aa1",
+  "scope": "Three supplied photos, three distinct verified test accounts; actual browser upload/backend queue/Mac worker verdicts and admin/user result UI. Existing validation criteria unchanged.",
+  "isolation": "Fresh private SQLite beneath ignored data/, loopback API/Next, synthetic verified sessions, separate immutable test admin, random test-only worker credential and encrypted SSH reverse forwarding. No production accounts, trips, public posts or avatar assignments changed. Mac production worker/config unchanged.",
+  "cases": [
+    {
+      "photo": 1,
+      "dimensions": [
+        578,
+        1152
+      ],
+      "browserUpload": "QUEUED",
+      "macVerdict": "REJECTED",
+      "reason": "FEET",
+      "userMessage": "We couldn’t clearly identify both feet. Upload another full-body photo with your feet visible."
+    },
+    {
+      "photo": 2,
+      "dimensions": [
+        274,
+        994
+      ],
+      "browserUpload": "QUEUED",
+      "macVerdict": "REJECTED",
+      "reason": "HANDS",
+      "userMessage": "We couldn’t clearly identify both hands. Upload another photo with your hands visible and away from your body."
+    },
+    {
+      "photo": 3,
+      "dimensions": [
+        198,
+        784
+      ],
+      "browserUpload": "REJECTED",
+      "backendStatus": 400,
+      "backendCode": "INVALID_AVATAR_PHOTO",
+      "macVerdict": "NOT_QUEUED",
+      "reason": "Below 256px minimum width; no upscaling or validation bypass."
+    }
+  ],
+  "checks": {
+    "browserUpload": "passed three separate 390px contexts and backend dimension guard",
+    "macWorker": "Actual installed worker and visibility helper source digests match repository; three claims, two actual checks, one empty queue",
+    "accountIsolation": "Separate jobs and own summaries; ordinary accounts cannot read other accounts’ admin photo routes (403)",
+    "resultUI": "Three 390px Profile results and 390/1440px protected Admin review; rejected cards have no approval action; no overflow or page errors",
+    "notifications": {
+      "queuedAccounts": 2,
+      "assignedAvatars": 0,
+      "providerSubmissions": 0,
+      "reviewedDeliveries": 0,
+      "earlyDeliveries": 0,
+      "unreadVariantDeliveries": 2,
+      "delayCorrect": true,
+      "integrity": "ok"
+    },
+    "pythonGateTests": {
+      "command": "python3 -m unittest discover -s workers/avatar -p test_worker.py",
+      "passed": 7
+    },
+    "lint": "npm run lint passed",
+    "build": "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build passed"
+  },
+  "cost": {
+    "providerSubmissions": 0,
+    "creditsSpent": 0,
+    "realEmails": 0,
+    "balanceCalls": 0
+  },
+  "retainedBaselines": [
+    {
+      "failure": "Initial test selector had a JavaScript quote-escaping error before any queue submission.",
+      "resolution": "Corrected the test selector and reran uploads successfully."
+    },
+    {
+      "failure": "Test frontend lacked runtime API target, so protected Admin correctly showed its access-check recovery state.",
+      "resolution": "Restarted only the temporary frontend with the same loopback target; existing results reviewed successfully."
+    },
+    {
+      "failure": "Test assumed exact status Rejected; the established Admin copy is Photo rejected followed by feedback.",
+      "resolution": "Corrected the assertion to the existing UI and reran all results."
+    },
+    {
+      "failure": "Ad hoc notification command used named ESM imports for CommonJS TypeScript exports.",
+      "resolution": "Used the supported tsx/CommonJS loader; zero early/duplicate deliveries and two captured unread reminders verified."
+    }
+  ],
+  "cleanup": {
+    "temporaryMacFilesRemoved": true,
+    "productionWorkerSourceUnchanged": true,
+    "testServicesStopped": true,
+    "privateQueuesAndCredentialsRemoved": true,
+    "retainedArtifacts": "Private screenshots and result metadata only; no photo, credential, task ID or private image hash enters Git.",
+    "testPortsVerifiedClosed": [
+      3491,
+      3492
+    ],
+    "productionHealthAfterCleanup": 200
+  },
+  "boundaries": [
+    "All three photos stopped at a validation gate. No Seedream generation, paid-provider latency, output likeness or Pi background removal was exercised by this trial.",
+    "Login/OTP identities were seeded test sessions; actual email delivery and physical Safari were not tested.",
+    "This was sequential functional verification, not a concurrent-user capacity campaign.",
+    "Mac visibility/pose estimates are proxies, not identity or comprehensive image-quality verification."
+  ],
+  "sourceFiles": {
+    "scripts/serve-avatar-photo-trial.mts": "bd40ad475cf59ce0b31cb240cf1673028a946a7687adf7055ad9038223c2da51",
+    "scripts/check-avatar-photo-trial.py": "3df4e3275b84018fb4e3a35f6a80fbb24e8652d5b6cf275885761f06a595d71c",
+    "workers/avatar/worker.py": "b3db4abf0f2fbd190add6418dfafe147335e33edd7af373d43ee05f1893f0295",
+    "workers/avatar/photo_visibility.py": "3397a6f01daaded9e8a07752a14443e6d57023653e35875aef43af217d11560b",
+    "lib/avatar-photo.ts": "9c5c8f9b98bc656f56450418913bb08c9618d7792e81ede767dd1d71498948b6",
+    "server/avatar-jobs.ts": "fff93e008fd49791c1cb4b964aecd045aedf4d98cf6eed6e7c8bac4e93b6e6bd"
+  }
+}

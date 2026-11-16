@@ -1,5 +1,11 @@
 # GUMWHEEL
 
+16 November three-photo trial: actual uploads under isolated accounts and the
+real Mac worker returned two photo-check rejections (feet/hands); the third
+image failed the existing minimum width in browser and backend. User/Admin
+results, account separation and captured five-minute reminders were checked.
+No paid task or production account was changed. See [trial evidence](docs/AVATAR_PHOTO_TRIAL_2026-11-16.md).
+
 16 November Home zoom: the public area map reuses journey maps’ bottom-right
 +/− controls and supports pinch zoom. Markers remain non-clickable; the server
 still sends only fixed 0.05-degree area centres. Same-area count/artwork refreshes

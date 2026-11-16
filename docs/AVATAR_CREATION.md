@@ -1,5 +1,10 @@
 # Queued avatar creation — 16 November 2026
 
+The later [three-account photo trial](AVATAR_PHOTO_TRIAL_2026-11-16.md) exercises
+real browser uploads and Mac verdicts with three supplied inputs. Two failed
+visibility checks and one failed upload dimensions; no new paid generation was
+performed and no production validation criteria changed.
+
 Source implements the missing self-service path after assigned-avatar display.
 New jobs use **Seedream v5** with Pi-local segmentation/matting; this supersedes
 the original P2-only selection. See [Seedream release](SEEDREAM_AVATARS_2026-11-16.md). Production activation and live
