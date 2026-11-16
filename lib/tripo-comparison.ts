@@ -5,6 +5,16 @@ export const TRIPO_MODELS = [
   { name: "P2", id: "P2-20260801", estimatedCredits: 110 },
   { name: "P1", id: "P1-20260311", estimatedCredits: 50 },
 ] as const;
+export const TRIPO_IMAGE_MODELS = [
+  { name: "Sunburst", id: "chat_image_2.5_sunburst", estimatedCredits: 10 },
+  { name: "Seedream v5", id: "seedream_v5", estimatedCredits: 5 },
+] as const;
+export const AVATAR_IMAGE_PROMPT = "Use the person in the reference photo to create a polished, full-body 3D-looking avatar image for a map. Preserve his facial identity, face shape, hairstyle, skin tone, black suit, white shirt, white tie and black shoes. Keep realistic adult proportions with subtle stylisation and convincing soft shading, like a high-quality 3D character render. He is standing still, waiting, facing the camera at a slight three-quarter angle, with both hands relaxed and visible. Show his entire head and both feet with a small clear margin; do not crop any part of his body. Portrait 2:3 composition. Isolate the single person on a transparent background, with no room, floor, scenery, text, border or checkerboard pattern. Do not add accessories or change his outfit.";
+export function comparisonImagePayload(input: string, model: string) {
+  if (!TRIPO_IMAGE_MODELS.some(item => item.id === model)) throw new Error("Unknown image model");
+  return { input, model, prompt: AVATAR_IMAGE_PROMPT, output_format: "png",
+    ...(model === "chat_image_2.5_sunburst" ? { size: "1024x1536", quality: "medium", background: "transparent" } : { size: "2K" }) };
+}
 export type ComparisonRow = {
   name: string;
   id: string;
@@ -16,6 +26,10 @@ export type ComparisonRow = {
   chargedCredits?: number;
   modelReady?: boolean;
   previewReady?: boolean;
+  kind?: "image";
+  width?: number;
+  height?: number;
+  transparent?: boolean;
 };
 export type Comparison = { referenceHash: string; rows: ComparisonRow[] };
 export function comparisonPayload(input: string, model: string) {

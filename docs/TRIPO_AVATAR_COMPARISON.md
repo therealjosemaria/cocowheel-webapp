@@ -1,5 +1,102 @@
 # Private Tripo comparison
 
+## Image-only comparison — 16 November 2026
+
+The owner authorised Sunburst and Seedream v5 tests from the same saved reference,
+beside the already completed P2 result. A fresh read-only balance check found
+50 credits available and zero frozen: no top-up was needed for the 15-credit
+two-task plan. No other image model, higher quality tier or new P2 generation
+was authorised/submitted. Task-level usage verified the following completed costs:
+
+| Model | Pinned options | Observed completion | Actual charge | Output |
+| --- | --- | ---: | ---: | --- |
+| Sunburst (`chat_image_2.5_sunburst`) | medium, 1024×1536, transparent PNG | 37s | 10 credits / US$0.10 | 1024×1536, alpha present |
+| Seedream v5 (`seedream_v5`) | 2K, PNG; no unsupported quality/background options | 25s | 5 credits / US$0.05 | 768×1344, opaque |
+| P2 (`P2-20260801`) | Original standard textured render, reused | 82s originally | No new charge | Existing private PNG/GLB |
+
+The wallet then held 35 credits. Times are observed completion from one serial
+run, not latency/capacity guarantees. The shared prompt asks for the same standing
+person, identity, outfit and full-body framing with polished 3D-style shading.
+Reference bytes are SHA-256-checked against the original private manifest; no
+new crop/re-encoding of the reference is supplied. Output images are decoded and
+saved as metadata-stripped PNGs. Transparency present means actual alpha below
+255 was detected; it does not certify a clean background cutout. Seedream returned
+an opaque white background despite the prompt. No background removal, likeness
+score, new full-body gate, map assignment or avatar-generator replacement occurred.
+The source photo, original five rows and P2 assets were preserved.
+
+`/admin/avatars` shows three contained image previews at the top: P2, Sunburst,
+Seedream. They stack on phones and sit in three columns on desktop, reusing the
+existing comparison grid, image surface and typography. Original framing remains
+visible. Downloads are private PNGs. The results table distinguishes estimates
+from verified charges and explicitly identifies P2's historical cost/time. The
+five original rotatable 3D results remain below. No balance polling or paid action
+is added to the page. Existing `/admin/avatar-management` manual dashboard checks
+and public/personal map artwork are unchanged.
+
+Offline plan: `node --import tsx scripts/tripo-image-compare.mts`.
+Explicit paid operator run:
+`node --env-file=data/tripo-credentials.env --import tsx scripts/tripo-image-compare.mts --run`.
+The script uses the saved private reference and manifest; it does not accept a
+different photo accidentally. It shares the existing exclusive `run.lock`, checks
+full remaining list-price affordability before submission, saves an uncertain
+state before each paid POST and persists returned task IDs. There are no automatic
+POST retries. Re-running resumes those IDs or skips completed images; an uncertain
+POST without an ID stops for account-history reconciliation. Polls run every five
+seconds, for up to 20 minutes per invocation; timeout preserves IDs for safe resume.
+Every provider request has a 60-second timeout. Images are capped at 30 MB and
+16 million decoded pixels, still PNG/JPEG/WebP only, and are normalized to PNG.
+Download requests never carry the API key and refuse redirects/unrecognised hosts.
+Task-level usage verifies cost; wallet change alone is not used to attribute charges.
+The original 3D runner now ignores image rows, preventing accidental paid 3D retries.
+
+The existing admin cookie/origin boundary protects the manifest and source.
+Only the exact two model names gain `.png` asset paths; no image-model GLB,
+arbitrary filename or traversal path is exposed. Images, reference, keys, task IDs,
+signed provider URLs and manifest remain ignored private files outside Git/public
+assets; the existing comparison retention remains operator-managed. A private
+manifest backup was taken before appending rows. Backend asset changes require
+the existing guarded backup/restart procedure; frontend push alone is insufficient.
+
+Current official sources: [image editing parameters](https://developers.tripo3d.ai/en/docs/generation-image-to-image)
+and [pricing](https://developers.tripo3d.ai/en/pricing). API/Studio funding is separate.
+These two output images are samples to review, not evidence that every photo will
+preserve likeness or that either model meets our production quality requirements.
+
+### Image comparison verification
+
+Baseline `51fba340be0d71f45dbf6f054daf4c20d19d416c`; source digests,
+reproducible commands and the retained harness failure are in the
+[sanitized result](results/tripo-image-comparison-2026-11-16.json). Nine targeted
+comparison/admin checks, all 292 regressions and 52 security checks passed using
+synthetic accounts, temporary databases and fake providers. Lint and optimized
+build passed. Standalone TypeScript retains 28 diagnostics in untouched tests;
+none were reported in changed source or comparison files.
+
+The optimized local frontend against the existing synthetic owner API passed at
+320/390/1440px: private previews load, table prices/rows remain accurate, desktop
+columns align, no document overflow or JS errors, and anonymous reference/new
+image reads return 403. Whole screens at 390/1440 were visually reviewed for
+heading/body emphasis, spacing, full-image containment, links and table scrolling.
+The first harness asserted readiness before lazy images entered the viewport;
+scrolling/waiting for decode fixed the test, and all widths passed. Historical
+GLB downloads were blocked during this review; interactive rotation was not
+retested. No browser generation or provider balance call occurred. Physical
+Safari and authenticated production owner review remain unverified.
+
+### Image comparison activation
+
+On 16 November at 16:59:31 AEDT the API was restarted only after fresh zero
+ACCEPTED/RIDE_ACTIVE/CO_RIDE_ACTIVE checks and a private online SQLite/config
+backup. All 142 rides and 19 history/account tables matched before/after; SQLite
+integrity was ok, foreign-key violations were zero and configuration was unchanged.
+Local and direct public HTTPS health returned 200. Anonymous manifest, reference
+and both new PNGs returned `ADMIN_ACCESS_DENIED` 403 using the valid site Origin.
+The initial probe omitted the local `/api` prefix, then encountered environment
+proxy 403 responses; corrected/direct checks passed without a product change.
+Frontend verification is recorded separately after push; API activation alone
+is not proof that the comparison UI is deployed.
+
 16 November follow-up: the owner selected **P2-20260801** for an explicitly enabled
 map-avatar assignment. [Map avatar storage and display](MAP_AVATARS.md) supersedes
 the no-map-integration boundary in this historical trial. Only its prepared alpha

@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-16",
+  "sourceBaseline": "51fba340be0d71f45dbf6f054daf4c20d19d416c",
+  "sourceState": "Uncommitted implementation at validation; implementation commit recorded in guide after push.",
+  "sourceFiles": {
+    "components/tripo-comparison.tsx": "e5f7d1191ab619313b71a68c32a823431387e9277f46f1987e673ab6d7ab5101",
+    "lib/tripo-comparison.ts": "5012a6bb6e2b245af2f516044a5f2abf2eadff10f0242398cc41cde6e2f38bc9",
+    "server/tripo-comparison.ts": "fad74909d717c121b6545201f92c0969e17381e43afb8faa9e9e35bfe0a9b7b9",
+    "scripts/tripo-image-compare.mts": "9e48b4e841cb88292c6ac9b2f497f5801cfc753de021caffb22e06baed407eb4",
+    "scripts/tripo-compare.mts": "c0bf2e6dd775138775a909e52f99440d2887f2383fa8e9185fb12da68e39cce2",
+    "scripts/check-tripo-images.py": "cbc8a70f1db091c2021d031fb619b58e66f4b362a640677182f241a7e62f78b1",
+    "tests/tripo-comparison.test.ts": "6e2cf61bfec78a006fa0fdffe11f792035689f97f34376dbf624da3bb9476ffd",
+    "tests/admin.test.ts": "17ddfa2ebdd8cf63a864bf840425d9015df31833be8dbbc4fd5a12e12974d933",
+    "tests/fixtures/tripo-fetch.mjs": "de65f74b2ca88e404d14a8fe15b02634f961bee83a4bdfbd3ab6fd4d28d9e816",
+    "app/globals.css": "740abeee18564c9f547c7ab0e2aa6feecca2af0be6846f684de9d29cf9152ff7"
+  },
+  "scope": "Private owner-only comparison of two reference-edited avatar images beside existing P2; production avatar generator and assigned artwork unchanged.",
+  "isolation": "Regression/API tests use synthetic temporary databases/providers. Browser fixture uses a synthetic owner session and local API; existing private comparison images are rendered locally, never committed. One explicitly authorised real task per new image model; no new P2 task, email, live test account, job or trip.",
+  "liveProviderTrial": {
+    "balanceBeforeCredits": 50,
+    "frozenBeforeCredits": 0,
+    "balanceAfterCredits": 35,
+    "totalVerifiedCredits": 15,
+    "topUpRequiredUSD": 0,
+    "costAttribution": "Task-level usage verified each charge; wallet delta not used alone.",
+    "sameReferenceVerified": true,
+    "originalFiveRowsPreserved": true,
+    "existingP2AssetsUnchanged": true,
+    "results": [
+      {
+        "name": "Sunburst",
+        "model": "chat_image_2.5_sunburst",
+        "options": {
+          "quality": "medium",
+          "size": "1024x1536",
+          "background": "transparent"
+        },
+        "elapsedSeconds": 37,
+        "chargedCredits": 10,
+        "width": 1024,
+        "height": 1536,
+        "alphaPresent": true
+      },
+      {
+        "name": "Seedream v5",
+        "model": "seedream_v5",
+        "options": {
+          "size": "2K"
+        },
+        "elapsedSeconds": 25,
+        "chargedCredits": 5,
+        "width": 768,
+        "height": 1344,
+        "alphaPresent": false
+      }
+    ]
+  },
+  "checks": {
+    "targeted": {
+      "command": "node --import tsx --test tests/tripo-comparison.test.ts tests/admin.test.ts",
+      "passed": 9
+    },
+    "regressions": {
+      "command": "npm test",
+      "passed": 292,
+      "failed": 0
+    },
+    "security": {
+      "command": "npm run test:security",
+      "passed": 52,
+      "failed": 0
+    },
+    "lint": {
+      "command": "npm run lint",
+      "result": "passed"
+    },
+    "build": {
+      "command": "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 npm run build",
+      "result": "passed"
+    },
+    "browser": {
+      "commands": [
+        "GUMWHEEL_AVATAR_FIXTURE=1 node --import tsx scripts/serve-map-avatar-fixture.mts",
+        "COCOWHEELS_API_PROXY_TARGET=http://127.0.0.1:3492 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3491",
+        "/tmp/gumwheel-ui-check-env/bin/python scripts/check-tripo-images.py"
+      ],
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "result": "passed",
+      "assertions": [
+        "three loaded contained image previews",
+        "P2 explicitly identified as current; historical fee/time labelled",
+        "verified Sunburst/Seedream charges; seven table rows and five 3D posters preserved",
+        "desktop three-column alignment; no page overflow or JS errors",
+        "anonymous private reference and all three preview reads denied 403",
+        "no paid browser calls"
+      ],
+      "visualReview": "Whole affected screen reviewed at 390 and 1440: hierarchy, normal-weight body text, contained framing, spacing, download controls, table scrolling and original 3D sections. At 320 automated containment/loading also passed."
+    },
+    "standaloneTypes": {
+      "command": "npx tsc --noEmit --pretty false",
+      "result": "28 existing diagnostics in untouched test files; no changed source or comparison file diagnostic. Production build passed."
+    }
+  },
+  "failedBaselines": [
+    {
+      "check": "Initial browser image-ready assertion",
+      "result": "Failed before a lazy image entered the viewport; browser harness was corrected to scroll each image into view and wait for decode. No product change required.",
+      "retest": "All three widths pass with corrected assertion."
+    },
+    {
+      "check": "Initial post-restart read-only probe",
+      "result": "First local URL omitted /api. Subsequent urllib calls used the environment HTTP proxy, which returned unrelated 403 responses. No product change.",
+      "retest": "Correct local /api paths with no proxy and direct public Node HTTPS returned health 200 and ADMIN_ACCESS_DENIED 403 for manifest/reference/new images."
+    }
+  ],
+  "boundaries": [
+    "One photo per model, serial requests; no likeness score or capacity/concurrency claim.",
+    "Alpha present is not certification of a clean cutout. Seedream output remained opaque; no background removal/reframing was performed.",
+    "Historical GLB downloads blocked during responsive review; posters remain, interactive 3D rotation was not retested in this run.",
+    "Physical Safari/iPhone and authenticated production owner walkthrough unverified.",
+    "No production image-model replacement, public artwork assignment or new user avatar creation."
+  ],
+  "activation": {
+    "api": {
+      "activatedAt": "2026-11-16T05:59:31.009Z",
+      "service": "active",
+      "health": 200,
+      "preflightUnderway": 0,
+      "rides": 142,
+      "tablesPreserved": true,
+      "tablesChecked": 19,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "configurationUnchanged": true,
+      "avatarJobs": 0
+    },
+    "backup": "Fresh online SQLite backup plus unchanged config copied privately before restart; backup integrity passed.",
+    "publicAndLocalReads": {
+      "health": 200,
+      "manifestAndReference": 403,
+      "sunburstPNG": 403,
+      "seedreamPNG": 403,
+      "denial": "ADMIN_ACCESS_DENIED, tested using the valid site Origin, without authentication."
+    },
+    "frontend": "Pending exact implementation deployment verification."
+  }
+}

@@ -158,7 +158,7 @@ try {
   await writeFile(path.join(root, "reference.png"), bytes, { mode: 0o600 });
   await save();
   let token: string | undefined;
-  for (const row of result.rows) {
+  for (const row of result.rows.filter(row => TRIPO_MODELS.some(model => model.id === row.id))) {
     if (row.status === "success" && row.modelReady) continue;
     if (!row.taskId) {
       if (row.status !== "Not started")

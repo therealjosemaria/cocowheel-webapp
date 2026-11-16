@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { createElement, useEffect, useState } from "react";
 import { requestJson } from "@/lib/api-transport";
-import { TRIPO_MODELS, type Comparison } from "@/lib/tripo-comparison";
+import { TRIPO_MODELS, type Comparison, type ComparisonRow } from "@/lib/tripo-comparison";
 export default function TripoComparison() {
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const [error, setError] = useState("");
@@ -39,9 +39,12 @@ export default function TripoComparison() {
       active = false;
     };
   }, []);
-  const rows =
+  const rows: ComparisonRow[] =
     comparison?.rows ??
     TRIPO_MODELS.map((m) => ({ ...m, status: "Waiting for reference photo" }));
+  const images = rows.filter(row => row.kind === "image");
+  const imageComparison = images.length ? [rows.find(row => row.id === "P2-20260801"), ...images].filter((row): row is ComparisonRow => !!row) : [];
+  const tableRows = imageComparison.length ? [...imageComparison, ...rows.filter(row => !imageComparison.some(image => image.id === row.id))] : rows;
   return (
     <section className="activity-page">
       <div className="activity-panel">
@@ -52,8 +55,8 @@ export default function TripoComparison() {
           </a>
           {error && <p role="alert">{error}</p>}
           <p>
-            Five models, one reference photo. Rotate each result to compare
-            likeness and shape.
+            One reference photo. Compare the avatar images, then rotate the 3D
+            results below to inspect likeness and shape.
           </p>
           {loaded && !comparison && (
             <p>
@@ -71,9 +74,23 @@ export default function TripoComparison() {
                 alt="Shared reference for this comparison"
                 className="tripo-reference"
               />
-              <figcaption>Same reference used for all five models</figcaption>
+              <figcaption>Same reference used for every result</figcaption>
             </figure>
           )}
+          {imageComparison.length > 0 && <>
+            <section className="help-section"><h2>Avatar images</h2>
+              <p>P2’s existing render beside the new 2D results. These tests haven’t changed your map avatar.</p>
+            </section>
+            <div className="tripo-grid tripo-image-grid">
+              {imageComparison.map(row => <section className="help-section" key={row.id}>
+                <h3>{row.name}{row.id === "P2-20260801" ? " · current avatar" : ""}</h3>
+                {row.previewReady ? <Image unoptimized width={512} height={768} src={`/api/admin/tripo/${row.id}.png`}
+                  alt={`${row.name} avatar image`} className="tripo-model tripo-image" /> : <p>{row.status}</p>}
+                {row.kind === "image" && row.previewReady && <p>{row.transparent ? "Transparency present" : "Opaque background"}</p>}
+                {row.previewReady && <a className="help-email" href={`/api/admin/tripo/${row.id}.png`} download={`${row.name}.png`}>Download image</a>}
+              </section>)}
+            </div>
+          </>}
           <div className="tripo-table">
             <table>
               <caption>Generation results — costs in USD</caption>
@@ -87,7 +104,7 @@ export default function TripoComparison() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {tableRows.map((row) => (
                   <tr key={row.id}>
                     <th scope="row">{row.name}</th>
                     <td>{row.status}</td>
@@ -115,9 +132,10 @@ export default function TripoComparison() {
           <p>
             ¹Time includes submission and provider waiting, measured until
             completion is observed. Estimates are separate from actual charges.
+            {images.length > 0 && " P2 was reused; its charge and time are from the original test."}
           </p>
           <div className="tripo-grid">
-            {rows.map((row) => (
+            {rows.filter(row => row.kind !== "image").map((row) => (
               <section className="help-section" key={row.id}>
                 <h2>{row.name}</h2>
                 <p>{row.id}</p>
@@ -159,10 +177,10 @@ export default function TripoComparison() {
               animated character.
             </p>
             <p>
-              Tripo’s published default pools allow 10 H-series or 5 P-series
+              For 3D generation, Tripo’s published default pools allow 10 H-series or 5 P-series
               generations concurrently per account. A hundred simultaneous
               requests would need a queue; waiting increases completion time.
-              These are published limits, not a capacity test of our account.
+              These are published limits, not a capacity test of our account or the image models.
             </p>
             <p>
               No concurrency surcharge or first-ten-free API allowance has been

@@ -1,5 +1,12 @@
 # Coco Wheels product and UI standards
 
+16 November private image comparison reuses the comparison panel, grid, contained
+image surfaces, headings, table and download links. P2/current plus two 2D images
+are the first comparison; desktop has three equal columns, phones stack them.
+Preserve full image framing; identify historical P2 cost/time, actual image costs
+and alpha/opaque output without claiming likeness or a clean cutout. No new modal,
+public navigation or automatic provider calls.
+
 16 November manual Admin checks: initially show only Check balance and Top up
 Tripo using the existing secondary action group. Show configured cost/model,
 checker timestamp and balance fields only after the explicit click. Keep them

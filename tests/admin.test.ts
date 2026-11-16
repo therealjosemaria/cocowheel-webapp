@@ -147,7 +147,7 @@ test("admin HTTP endpoints require only the verified owner, reject other account
         403,
       );
     }
-    for (const route of ["tripo", "tripo/reference.png", "tripo/P2-20260801.glb"]) {
+    for (const route of ["tripo", "tripo/reference.png", "tripo/P2-20260801.glb", "tripo/seedream_v5.png", "tripo/chat_image_2.5_sunburst.png"]) {
       for (const identity of ["", student.cookie, gmail.cookie]) {
         assert.equal((await fetch(base + route, { headers: { Cookie: identity } })).status, 403);
       }

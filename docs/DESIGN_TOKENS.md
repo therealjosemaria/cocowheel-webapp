@@ -1,5 +1,10 @@
 # Coco Wheels visual system
 
+16 November private image comparison uses tripo-grid/tripo-model and existing
+help/body/table tokens. Images use object-fit contain on the existing 360px surface;
+the image-only grid has three minmax(0,1fr) columns from 1000px. No new palette,
+font, shadow or crop.
+
 16 November manual Admin checks reuse the same balance fields, small regular
 copy and shared secondary action group. Hide unchecked metrics instead of adding
 placeholder text, badges or a new disclosure. No new visual tokens.
