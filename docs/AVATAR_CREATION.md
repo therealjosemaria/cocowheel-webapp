@@ -218,4 +218,14 @@ The Mac LaunchAgent is running with the pinned existing venv and 0600 configurat
 Its actual authenticated production HTTPS claim succeeds; periodic Pi heartbeats
 confirm the background instance is connected. Test photo/config copies created on
 the Mac were removed. No paid Tripo task or live user photo was submitted during
-activation. Frontend deployment remains to be verified after the source push.
+activation.
+
+Implementation `b8e0dc1214ae10a7f3f8d2d930d74696a0829f9a` is pushed to main.
+Vercel `dpl_EaUkQP6ukbsGRCy7sbGzxUh3hNvh` is READY for that exact source and
+assigned to www.gumwheel.com / gumwheel.com. Fresh public Chromium checks at
+390/1440px confirm the new Privacy text and the existing signed-out Profile/menu
+sign-in gate, without overflow or page exceptions. All non-GET/HEAD browser
+requests were blocked. The first public harness expected Sign in outside its
+closed menu; opening the existing Profile menu corrected that harness assumption.
+Signed-in upload/generation controls were tested with the isolated actual API,
+not a live user account. The Mac's production background heartbeat remains active.

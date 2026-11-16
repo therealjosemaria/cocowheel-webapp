@@ -88,10 +88,15 @@
       "finding": "Mac production request received Cloudflare 403 with generic Python request identity",
       "fix": "Explicit GUMWHEEL worker User-Agent and JSON Accept headers; no authorization or firewall relaxation",
       "retest": "Actual authenticated Mac HTTPS claim exited 0; background heartbeat observed"
+    },
+    {
+      "finding": "Public harness expected Sign in while the existing Profile menu was closed",
+      "fix": "Open the existing Profile menu before asserting its sign-in action",
+      "retest": "Public 390/1440 checks passed; no product change required"
     }
   ],
   "production": {
-    "status": "API and Mac worker activated; frontend pending source push",
+    "status": "API, Mac worker and frontend activated and verified",
     "paidTripoGeneration": "deferred by owner pending top-up; insufficient balance verified without spending",
     "backup": "private SQLite/config snapshot completed before restart",
     "acceptedOrActiveAtRestart": 0,
@@ -107,13 +112,28 @@
     "liveJobsCreatedForTesting": 0,
     "macWorker": "LaunchAgent running; actual authenticated HTTPS claim and periodic heartbeat verified",
     "macConfigMode": "0600",
-    "testMacCopies": "removed"
+    "testMacCopies": "removed",
+    "frontendSource": "b8e0dc1214ae10a7f3f8d2d930d74696a0829f9a",
+    "frontendDeployment": "dpl_EaUkQP6ukbsGRCy7sbGzxUh3hNvh",
+    "frontendState": "READY",
+    "productionDomains": [
+      "www.gumwheel.com",
+      "gumwheel.com"
+    ],
+    "publicBrowserChecks": {
+      "widths": [
+        390,
+        1440
+      ],
+      "result": "new Privacy copy and signed-out Profile/menu sign-in; no page exceptions or overflow; all non-GET/HEAD blocked"
+    }
   },
   "boundaries": [
     "No physical iPhone/Safari file-picker test",
     "No new live Tripo task; mocked success is not provider success",
     "No real reminder-email delivery test",
     "Four real inference samples and synthetic tests do not calibrate pose/likeness or establish large-scale capacity",
-    "Mac must be awake and user logged in; no promised completion time"
+    "Mac must be awake and user logged in; no promised completion time",
+    "Live signed-in user upload not submitted for testing; actual upload-to-worker path tested with isolated accounts"
   ]
 }
